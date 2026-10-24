@@ -1,0 +1,26 @@
+# Tuivory 초기 이전 검증
+
+2026-10-24 · Linux ARM64 · 첫 배포 대상 0.0.1 · [TVR-2](https://leechis7.atlassian.net/browse/TVR-2)
+
+## 이전 범위
+
+기존 TUIS의 최신 로컬 소스를 기준으로 공통 design/, 언어별 디렉터리, Go 내부 구현·공개 API·DB 없는 견본을 이전했습니다. 제품·패키지·명령·토큰 초안 이름을 tuivory로 변경했습니다. 기존 저장소와 LazyOra 작업 트리는 수정하지 않았습니다.
+
+원본 CSV, LazyOra 출처 manifest·240색상·1572스타일 fixture, 라이선스와 의존성 체크섬은 기존 소스와 바이트 단위로 같습니다. 공통 토큰과 Go embed 사본은 형식 식별자를 제외한 색상·역할 데이터를 유지합니다.
+
+## 로컬 검증
+
+- `make test`: Go race 및 Python 3개 검사 통과. 원본 스타일 비교, 위젯·상태 보존 검사 포함.
+- `make check`: Go vet, 192색상쌍 참조, 토큰 사본·CSV 일치, 로컬 문서 링크와 Shell 구문 통과.
+- `make build`: Linux ARM64 바이너리 `bin/tuivory-linux-arm64` 생성.
+- `make check-consumers`: Go/Python/Node.js의 12팔레트·192쌍 결과 일치.
+- `python3 tools/check_go_module.py`: go/ 단독 테스트 및 외부 소비자 공개 API·내장 토큰 검사 통과. 로컬 replace를 사용한 검사.
+- `python3 tools/smoke_playground.py bin/tuivory-linux-arm64`: 실제 PTY 시작·Ctrl+Q 1회 종료·대체 화면 복원 통과.
+- 실제 위젯으로 dark/light/blackwhite/팝업 SVG를 재생성하고 XML 검사 통과.
+- 저장소 루트에 go.mod가 없고 모든 Go 소스가 go/ 아래에 있는지 확인.
+
+임시 이전 디렉터리가 Git 저장소가 되기 전 빌드의 VCS 메타데이터 탐색이 실패했습니다. 새 저장소를 초기화한 뒤 동일한 기본 빌드·교차 소비 검사가 통과했습니다. 제품 코드나 빌드 검사를 우회하지 않았습니다.
+
+## 검증 범위
+
+위 결과는 로컬 검증입니다. GitHub CI·태그·Release·Go 프록시를 통한 replace 없는 외부 소비 결과는 배포 일감 댓글에 별도로 기록합니다. 실제 SSH 단말·사용자 ANSI 팔레트 전체 호환성이나 Python/JavaScript/Shell UI 패키지 완성을 뜻하지 않습니다.

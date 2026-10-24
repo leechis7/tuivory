@@ -1,0 +1,47 @@
+name: TUIVORY package checks
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Test reference color checks
+        run: python3 -m unittest discover -s tests -v
+      - name: Validate palette example
+        run: python3 tools/check_palette.py design/themes/lazyora-candidate.csv
+      - name: Validate shared token export
+        run: python3 tools/export_tokens.py --check
+      - name: Validate local document targets
+        run: python3 tools/check_links.py
+      - name: Validate terminal sample script
+        run: sh -n shell/examples/terminal-colors.sh
+  go-package:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.9'
+          cache-dependency-path: go/go.sum
+      - name: Test Go style packages and widgets with race detector
+        run: make -C go test
+      - name: Vet Go packages
+        run: make -C go check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compare Go, Python and Node.js token consumers
+        run: make check-consumers
+      - name: Verify isolated Go module
+        run: python3 tools/check_go_module.py
+      - name: Build Linux ARM64 playground
+        run: make build
+      - name: Build native executable for terminal smoke check
+        run: go build -C go -o "$RUNNER_TEMP/tuivory" ./cmd/tuivory
+      - name: Check actual PTY startup and exit
+        run: python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory"

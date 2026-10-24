@@ -1,0 +1,20 @@
+Static example only; this is not a running widget demo.
+
++ Connection -----------------------------------+
+|                                                |
+|  Name       [ Example connection            ]   |
+|                                                |
+|  Theme      [ Dark                        v ]   |
+|                                                |
+|  [ Save ]       [ Cancel ]                      |
+|                                                |
++------------------------------------------------+
+
+State vocabulary:
+  > selected item        focus is tracked separately
+  * changed row          marker is not part of copied data
+  ! Error: ...           color is supplementary
+  Warning: ...           explain impact and recovery
+
+Use a double border or another independent indicator for keyboard focus.
+Do not use a color name as a component's semantic role.

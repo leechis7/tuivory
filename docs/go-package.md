@@ -1,0 +1,101 @@
+# Tuivory Go 스타일 패키지
+
+현재 Go 소스는 `go/`에 있는 독립 하위 모듈입니다. 모듈 경로는 **`github.com/leechis7/tuivory/go`**, 패키지 이름은 **`tuivory`**이며 Tuivory 관련 import는 하나입니다.
+
+```go
+import "github.com/leechis7/tuivory/go"
+```
+
+첫 배포 버전은 `v0.0.1`이며 Go 하위 모듈 태그는 `go/v0.0.1`입니다.
+
+```sh
+go get github.com/leechis7/tuivory/go@v0.0.1
+```
+
+| Go 모듈 내부 | 책임 |
+| --- | --- |
+| `tuivory.go` | 단일 공개 API·역할·상태 타입 |
+| `internal/style` | 테마·프로필·상태 계산 |
+| `internal/widgets` | stock tview 적용·재적용 |
+| `internal/tokens` | 공통 토큰 로더와 생성된 배포용 JSON |
+
+하위 구현은 `internal`로 제한하며 일반 소비자는 import할 필요가 없습니다. 위젯 생성에 필요한 tview/tcell 같은 호스트 라이브러리는 앱에서 사용합니다.
+
+## 시작하기
+
+저장소의 [Go 템플릿](../go/examples/starter/main.go)은 DB 없이 실행할 수 있습니다.
+
+```sh
+go -C go run ./examples/starter
+go -C go run ./cmd/tuivory --theme light --colors 16
+```
+
+```go
+import "github.com/leechis7/tuivory/go"
+
+styler, err := tuivory.New("dark", "256")
+if err != nil { return err }
+styler.Form(form)
+styler.List(list)
+styler.Editor(editor)
+styler.Text(hint, tuivory.Panel, tuivory.Hint)
+```
+
+테마: `dark`, `light`, `blackwhite`. 프로필: `8`, `16`, `256`, `truecolor`. 앱이 단말을 소유한다면 `tuivory.ProfileForColors(screen.Colors(), limited)`로 프로필을 결정합니다. 감지와 스타일 계산은 분리되어 있으며 패키지가 stdin을 읽거나 단말 팔레트를 바꾸지 않습니다.
+
+## 역할과 상태
+
+`Styles`는 실제 팔레트 값과 아래 계산 메서드를 제공합니다. 테마·프로필은 `NewStyles`에서 정하고, 필요한 색상 필드는 앱이 별도 값으로 조정할 수 있습니다. 전역 테마 상태는 없습니다.
+
+- 표면: `Canvas`, `Panel`, `Field`, `Footer`, `Editor`.
+- 텍스트: `Body`, `Hint`, `Accent`, `Warning`.
+- 기본 스타일: 입력·선택·버튼·버튼 포커스·비활성·변경됨·편집기.
+- 확장 스타일: 드롭다운·활성 탭·푸터 버튼·비교표 헤더·분할선·팝업 카드·배경·그림자.
+- 그리드: 기본/줄무늬/현재 행, NULL(기울임), 변경됨, 범위 선택, 활성 셀, 헤더, 구분선·행번호·상태줄.
+- 구문색: 키워드·함수·타입·문자열·숫자·주석·매개변수. 호스트가 lexer 결과를 `SyntaxKind`로 전달합니다. SQL/Oracle parser와 DB 상태는 포함하지 않습니다.
+
+```go
+styler.Grid(table, func(row, col int) tuivory.CellState {
+    return tuivory.CellState{
+        Null: nullCells[row][col],
+        Edited: changedCells[row][col],
+        InRange: selectedCells[row][col],
+    }
+})
+tokenStyle := styler.Styles.SyntaxStyle(tuivory.SyntaxKeyword, styler.Styles.EditorStyle())
+```
+
+`Grid`의 Row/CurrentRow는 표의 실제 선택에서 계산합니다. 그리드 스타일은 줄무늬 → 현재 행 → NULL → 변경됨 → 범위 선택 순으로 합성하며, 활성 셀/활성 헤더는 별도 스타일입니다. 원본처럼 변경됨·범위 선택이 NULL 기울임을 덮을 수 있습니다. `*` 같은 표식, 데이터·행번호·구분선의 실제 그리기와 입력 처리는 앱의 책임입니다.
+
+## 테마 변경
+
+새 Styler를 만든 뒤 기존 위젯에 적용합니다. `Apply`는 숨겨진 Pages, Flex, Form 자식, 트리 노드까지 처리하며 위젯을 새로 만들지 않습니다.
+
+```go
+roles := tuivory.Roles{
+    Surfaces: map[*tview.Box]tuivory.Surface{hint.Box: tuivory.Panel},
+    Text: map[*tview.TextView]tuivory.TextRole{hint: tuivory.Hint},
+}
+styler.Apply(roles, pages)
+// 상태가 있는 그리드·탭·푸터 버튼은 앱이 아는 상태로 다시 적용합니다.
+styler.Tab(tabButton, isActive)
+styler.FooterButton(footerButton)
+```
+
+사용자 래퍼는 `StyleChildren() []tview.Primitive`로 자식을 노출할 수 있습니다. 포커스 이동 후 `RefreshBorders`를 호출하면 현재 배경과 포커스에 맞게 경계색을 다시 결정합니다. 앱의 포커스·이벤트 콜백을 교체하지 않습니다.
+
+폼에서는 `NewChoice`로 만든 선택 필드를 권장합니다. 폼의 공통 입력색 덮어쓰기를 방지하고 열린 목록 아래 한글의 반쪽 문자가 남는 문제를 처리합니다. `Form`은 입력·읽기 전용 설명·stock DropDown의 DrawFunc를 소유합니다. 기존 DrawFunc가 있는 앱은 개별 스타일 함수를 쓰거나 훅을 합성해야 합니다.
+
+`Apply`는 값을 변경하지 않지만 단순 표의 셀 스타일을 재설정합니다. 사용자 셀 상태는 이후 `Grid` 또는 개별 API로 재적용합니다. 모달 포커스 순환·배경 입력 차단·앱 작업 실행은 호스트의 책임입니다.
+
+## 원본 동등성
+
+[출처 기록](lazyora-extraction.md)과 [스타일 범위표](go-style-coverage.md)를 참조하세요. Go 테스트는 LazyOra 원본 함수를 독립 실행해 캡처한 240개 팔레트 값과 1,572개 스타일 사례를 비교합니다. 실제 단말 관찰과 모의 화면 검사는 구분합니다.
+
+## 배포와 이전 프로젝트
+
+이 저장소는 Go 외의 언어도 포함하므로 `go.mod`는 `go/`에 둡니다. Go 버전 조회·설치는 `github.com/leechis7/tuivory/go@v0.0.1`을 사용합니다. 루트 모듈은 제공하지 않습니다.
+
+기존 TUIS의 코드·라이선스·원본 스타일 근거를 보존하며 새 프로젝트로 이전했습니다. [전환 안내](migration.md)를 참고하세요.
+
+공통 원본은 `design/tokens/`에 있습니다. 생성된 `go/internal/tokens/candidate.json`을 모듈 안에 포함하므로 Go 소비자는 레포 루트·Python·Shell·생성 도구 없이 사용할 수 있습니다. `tools/export_tokens.py --check`가 공통 원본과 Go 복사본 일치를 확인합니다.
