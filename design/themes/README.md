@@ -1,5 +1,7 @@
 # 테마 후보와 참조 검사
 
+**한국어 (기본)** · [English](README.en.md)
+
 [lazyora-candidate.csv](lazyora-candidate.csv)는 LazyOra 설계 단계에서 작성한 **12프로필 × 16역할, 192개 전경/배경 쌍**의 예시입니다. 배포된 LazyOra의 현재 팔레트를 그대로 덤프한 파일도, 모든 TUI에 적용할 표준색도 아닙니다.
 
 | 열 | 의미 |

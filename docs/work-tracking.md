@@ -1,16 +1,20 @@
 # Tuivory 작업 관리
 
-Tuivory는 LazyOra와 독립된 프로젝트입니다. Jira 표시 이름은 **Tuivory**, 키는 **TVR**입니다.
+**한국어 (기본)** · [English](work-tracking.en.md)
 
-| 일감 | 범위 | 상태 |
+Tuivory는 독립 프로젝트이며 Jira 표시 이름은 **Tuivory**, 키는 **TVR**입니다. 기능·문서 작업은 실제 TVR 일감을 확인한 뒤 진행합니다.
+
+| 일감 | 범위 | 검증·게시 상태 |
 | --- | --- | --- |
-| [TVR-1](https://leechis7.atlassian.net/browse/TVR-1) | 기존 구현 기반과 검증 근거 요약 이관 | 완료. 이전본 로컬 재검증과 출처 보존 확인 |
-| [TVR-2](https://leechis7.atlassian.net/browse/TVR-2) | 독립 저장소 이전 및 0.0.1 첫 배포 | 완료. [CI 통과](https://github.com/leechis7/tuivory/actions/runs/40057059473) · [0.0.1 배포](https://github.com/leechis7/tuivory/releases/tag/go/v0.0.1) · 공식 Go 프록시를 통한 외부 소비 통과 |
-| [TVR-3](https://leechis7.atlassian.net/browse/TVR-3) | 한국어 기본 문서 유지 및 공개용 영어 문서 보강 | 완료. 영어 문서 4종·상호 링크·동기화 원칙 추가. 로컬 문서 검사·Go 예제 컴파일 통과. 커밋·GitHub 게시·원격 CI 미실행 |
-| [TVR-4](https://leechis7.atlassian.net/browse/TVR-4) | 견본 UI 다국어 지원 및 영문 문서 이미지 추가 | 완료. `--lang ko\|en`·영문 이미지 4종 추가. 로컬 race/vet·문서 검사·Linux ARM64 빌드 및 양 언어 PTY 시작·종료·화면 복원 통과. 커밋·GitHub 게시·원격 CI 미실행 |
+| [TVR-1](https://leechis7.atlassian.net/browse/TVR-1) | 기반과 검증 근거 | 완료. 초기 구현과 출처 보존 검증 |
+| [TVR-2](https://leechis7.atlassian.net/browse/TVR-2) | 독립 저장소 및 첫 Go 배포 | 완료. [CI](https://github.com/leechis7/tuivory/actions/runs/40057059473) · [go/v0.0.1 Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.0.1) · Go 프록시를 통한 외부 프로젝트 사용 검증 통과 |
+| [TVR-3](https://leechis7.atlassian.net/browse/TVR-3) | 한·영 문서와 동기화 원칙 | 최초 문서 보강은 [PR #1](https://github.com/leechis7/tuivory/pull/1)로 병합·게시. 후속 전체 현행화는 한·영 29쌍 정리와 로컬 검증 완료. 후속 게시·CI 결과는 TVR-3 댓글에 기록 |
+| [TVR-4](https://leechis7.atlassian.net/browse/TVR-4) | 견본 언어 선택과 영문 이미지 | 완료. 한국어·영어 UI, 영문 이미지 4종, 양 언어 PTY 검사. PR #1 병합·게시 |
 
-이전 TUIS 일감을 통째로 복사하지 않습니다. 과거 배포·중간 경로 수정 이력은 원본에 보존하며 [이전 요약](migration.md)에서 필요한 출처만 연결합니다. 미구현 언어별 UI 패키지와 실제 단말 검증은 [로드맵](roadmap.md)으로 관리합니다.
+PR #1의 병합 커밋은 `5c3242ff17c719d7558d447c93477234f75fe698`입니다. [dev CI](https://github.com/leechis7/tuivory/actions/runs/40062239810)와 [main CI](https://github.com/leechis7/tuivory/actions/runs/40062241916)는 모두 통과했습니다. 이 병합은 새 태그·Release 배포가 아니며 배포된 Go 버전은 여전히 `v0.0.1`입니다.
 
-칸반 상태는 할 일 → 진행 중 → 검토 → 완료입니다. 작업은 한 번에 하나씩 진행하며 로컬 검증·원격 CI·배포 완료를 구분합니다. 이번 이전 브랜치는 `codex/TVR-2-initial-release`, 통합 브랜치는 main/dev입니다.
+통합 브랜치는 `main`·`dev`, 작업 브랜치는 `codex/실제-TVR-키-설명`을 사용합니다. 상태는 할 일 → 진행 중 → 검토 → 완료이며 한 번에 하나의 작업을 진행합니다. 기능 변경 시 관련 문서도 한국어·영어 함께 현행화하고 로컬 검증·원격 CI·게시·태그 배포를 구분합니다. 커밋·GitHub 게시는 해당 변경에 대한 명시적 승인이 필요합니다.
 
-GitHub 자동 개발 활동 연동은 GitHub for Atlassian의 저장소 접근 설정에 따릅니다. 브랜치·커밋에 실제 TVR 일감 키를 넣고 수동 출처 링크와 자동 연동 상태를 구분합니다.
+이번 문서 현행화의 로컬 검증 결과는 TVR-3 댓글에 기록합니다. 기존 PR의 성공 CI를 후속 로컬 변경의 CI 결과로 간주하지 않습니다.
+
+GitHub 자동 개발 활동 연동은 GitHub for Atlassian의 저장소 접근 설정에 따릅니다. 수동 출처 링크와 자동 연동 완료를 구분합니다. 미구현 언어별 UI 패키지와 실제 단말 검증은 [로드맵](roadmap.md)을 참고하세요.

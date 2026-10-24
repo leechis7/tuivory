@@ -17,7 +17,7 @@ The first release is `v0.0.1`, with repository tag `go/v0.0.1`.
 | `internal/widgets` | Applying and reapplying styles to stock tview widgets |
 | `internal/tokens` | Shared token loader and generated distribution JSON |
 
-Consumers import the public package. The application uses host libraries such as tview and tcell to create widgets and own the terminal.
+Applications import the public package. The application uses host libraries such as tview and tcell to create widgets and own the terminal.
 
 ## A runnable application
 
@@ -57,7 +57,7 @@ go -C go run ./examples/starter
 go -C go run ./cmd/tuivory --lang en --theme light --colors 16
 ```
 
-The playground accepts `--lang en` for English or `--lang ko` for Korean (the default); the starter template keeps Korean example labels. Language selection affects the playground UI, not the public style API. Themes: `dark`, `light`, `blackwhite`. Profiles: `8`, `16`, `256`, `truecolor`. When the application owns the screen, it can select a profile with `tuivory.ProfileForColors(screen.Colors(), limited)`. Detection is separate from style calculation: the package does not read stdin or change the terminal palette.
+These playground commands describe current repository source. The `--lang` option was added after `v0.0.1` and has not received a new version tag. The playground accepts `--lang en` for English or `--lang ko` for Korean (the default); the starter template keeps Korean example labels. Language selection affects the playground UI, not the public style API. Themes: `dark`, `light`, `blackwhite`. Profiles: `8`, `16`, `256`, `truecolor`. When the application owns the screen, it can select a profile with `tuivory.ProfileForColors(screen.Colors(), limited)`. Detection is separate from style calculation: the package does not read stdin or change the terminal palette.
 
 ## Roles and states
 
@@ -113,8 +113,8 @@ For form choices, prefer `NewChoice`. It prevents common form input colors from 
 
 ## Verification and distribution
 
-Go tests compare 240 palette values and 1,572 style cases captured by independently running the original LazyOra functions. See [extraction sources](lazyora-extraction.md) and [style coverage](go-style-coverage.md) (Korean). Simulated screen checks and actual terminal observations are recorded separately.
+Go tests compare 240 palette values and 1,572 style cases captured by independently running the original LazyOra functions. See [extraction sources](lazyora-extraction.en.md) and [style coverage](go-style-coverage.en.md). Simulated screen checks and actual terminal observations are recorded separately.
 
 There is no root Go module: install `github.com/leechis7/tuivory/go@v0.0.1`. The module embeds generated `go/internal/tokens/candidate.json` from shared sources in `design/tokens/`. Consumers need no repository-root files, Python, Shell, or generation tools. `python3 tools/export_tokens.py --check` checks the embedded copy against the shared source.
 
-Tuivory preserves the code, license, and original style evidence from TUIS. See the [migration guide](migration.md) (Korean). For project setup and validation commands, return to the [English README](../README.en.md).
+See [installation and usage](installation.en.md) for current module, command, and token identifiers. Original attribution and licensing are preserved in [NOTICE](../NOTICE.en.md). For setup and validation commands, return to the [English README](../README.en.md).

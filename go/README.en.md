@@ -27,8 +27,8 @@ make test
 make check
 ```
 
-From this directory, use `go run ./cmd/tuivory --lang en` for the English playground, `go run ./examples/starter` for the starter template (Korean labels), or `go test -race ./...` for Go tests. `make build` creates a single Linux ARM64 product binary in the repository's `bin/` directory. Run it with `--lang en` for English or `--lang ko` for Korean. Omitting the flag, including with `make run`, defaults to Korean.
+Language selection is available in current repository source and is not included in the published `v0.0.1` tag. From this directory, use `go run ./cmd/tuivory --lang en` for the English playground, `go run ./examples/starter` for the starter template (Korean labels), or `go test -race ./...` for Go tests. `make build` creates a single Linux ARM64 product binary in the repository's `bin/` directory. Run it with `--lang en` for English or `--lang ko` for Korean. Omitting the flag, including with `make run`, defaults to Korean.
 
-Shared candidate tokens originate in [design/tokens](../design/tokens/README.md) (Korean). `internal/tokens/candidate.json` is a generated distribution copy produced by `tools/export_tokens.py`; do not edit it manually. The module embeds this data, so consumers need neither the repository root nor a generation step.
+Shared candidate tokens originate in [design/tokens](../design/tokens/README.en.md). `internal/tokens/candidate.json` is a generated distribution copy produced by `tools/export_tokens.py`; do not edit it manually. The module embeds this data, so consumers need neither the repository root nor a generation step.
 
-[API and usage](../docs/go-package.en.md) · [Style coverage](../docs/go-style-coverage.md) (Korean) · [Project overview](../README.en.md)
+[API and usage](../docs/go-package.en.md) · [Style coverage](../docs/go-style-coverage.en.md) · [Project overview](../README.en.md)

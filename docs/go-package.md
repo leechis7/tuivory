@@ -21,7 +21,7 @@ go get github.com/leechis7/tuivory/go@v0.0.1
 | `internal/widgets` | stock tview 적용·재적용 |
 | `internal/tokens` | 공통 토큰 로더와 생성된 배포용 JSON |
 
-하위 구현은 `internal`로 제한하며 일반 소비자는 import할 필요가 없습니다. 위젯 생성에 필요한 tview/tcell 같은 호스트 라이브러리는 앱에서 사용합니다.
+하위 구현은 `internal`로 제한하며 앱에서는 import할 필요가 없습니다. 위젯 생성에 필요한 tview/tcell 같은 호스트 라이브러리는 앱에서 사용합니다.
 
 ## 시작하기
 
@@ -32,7 +32,7 @@ go -C go run ./examples/starter
 go -C go run ./cmd/tuivory --theme light --colors 16
 ```
 
-견본은 한국어가 기본이며 `--lang en`을 추가하면 영어 UI로 실행합니다. `--lang ko`는 한국어를 명시합니다. 언어 선택은 견본 UI에만 적용하며 공개 스타일 API에는 영향을 주지 않습니다. 시작 템플릿의 예시 문구는 한국어입니다.
+이 실행 명령은 현재 저장소 소스 기준이며, `--lang`은 배포된 `v0.0.1` 이후 추가되어 아직 새 태그로 배포하지 않았습니다. 견본은 한국어가 기본이며 `--lang en`을 추가하면 영어 UI로 실행합니다. `--lang ko`는 한국어를 명시합니다. 언어 선택은 견본 UI에만 적용하며 공개 스타일 API에는 영향을 주지 않습니다. 시작 템플릿의 예시 문구는 한국어입니다.
 
 ```go
 import "github.com/leechis7/tuivory/go"
@@ -96,10 +96,10 @@ styler.FooterButton(footerButton)
 
 [출처 기록](lazyora-extraction.md)과 [스타일 범위표](go-style-coverage.md)를 참조하세요. Go 테스트는 LazyOra 원본 함수를 독립 실행해 캡처한 240개 팔레트 값과 1,572개 스타일 사례를 비교합니다. 실제 단말 관찰과 모의 화면 검사는 구분합니다.
 
-## 배포와 이전 프로젝트
+## 배포와 독립 사용
 
 이 저장소는 Go 외의 언어도 포함하므로 `go.mod`는 `go/`에 둡니다. Go 버전 조회·설치는 `github.com/leechis7/tuivory/go@v0.0.1`을 사용합니다. 루트 모듈은 제공하지 않습니다.
 
-기존 TUIS의 코드·라이선스·원본 스타일 근거를 보존하며 새 프로젝트로 이전했습니다. [전환 안내](migration.md)를 참고하세요.
+[설치·사용 안내](installation.md)에서 현재 모듈·명령·토큰 식별자를 확인할 수 있습니다. 원출처와 라이선스는 [NOTICE](../NOTICE.md)에 보존합니다.
 
-공통 원본은 `design/tokens/`에 있습니다. 생성된 `go/internal/tokens/candidate.json`을 모듈 안에 포함하므로 Go 소비자는 레포 루트·Python·Shell·생성 도구 없이 사용할 수 있습니다. `tools/export_tokens.py --check`가 공통 원본과 Go 복사본 일치를 확인합니다.
+공통 원본은 `design/tokens/`에 있습니다. 생성된 `go/internal/tokens/candidate.json`을 모듈 안에 포함하므로 Go 프로젝트는 레포 루트·Python·Shell·생성 도구 없이 사용할 수 있습니다. `tools/export_tokens.py --check`가 공통 원본과 Go 복사본 일치를 확인합니다.
