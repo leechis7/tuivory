@@ -1,5 +1,7 @@
 # 프레임워크에 독립적인 TUI 설계 원칙
 
+**한국어 (기본)** · [English](principles.en.md)
+
 상태: 초안. 아래 규칙은 LazyOra 조사에서 일반화한 프로젝트 기준이며, 외부에서 승인된 범용 TUI 표준은 아닙니다. 출처와 제품 적용 사례는 [로드맵](roadmap.md) 및 [LazyOra 제안서](https://github.com/leechis7/lazyora/blob/a38c46ed7f5d85e1fc8f823ef4bfe6fabfdb17f7/docs/ui-style-proposal.md)를 참고하세요.
 
 ## 1. 스타일은 의미에서 결정한다

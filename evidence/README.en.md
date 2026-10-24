@@ -1,0 +1,28 @@
+# Validation evidence
+
+[한국어 (default)](README.md) · **English**
+
+Distinguish calculations, simulations, and actual terminal observations. Mark unverified items as unverified. Use synthetic data instead of actual hostnames, accounts, passwords, or business data.
+
+```text
+Rule/component ID:
+Guide/theme/adapter version or commit:
+Application/widget version, OS/architecture:
+Theme, profile, TERM/COLORTERM, library-reported color count:
+Terminal/version, local/SSH/tmux path:
+ANSI palette (reference/custom/unverified), bold settings:
+Window size (columns×rows), font, language:
+Initial state and reproduction steps:
+Expected / actual result:
+Method: palette calculation / widget simulation / actual terminal
+Result: pass / fail / unverified, exceptions:
+Evidence location, observation date:
+```
+
+## Initial case: LazyOra LORA-69
+
+[Investigation](https://github.com/leechis7/lazyora/blob/a38c46ed7f5d85e1fc8f823ef4bfe6fabfdb17f7/docs/audits/lora-69.md) · [Implementation and validation](https://github.com/leechis7/lazyora/blob/a38c46ed7f5d85e1fc8f823ef4bfe6fabfdb17f7/docs/audits/lora-69-implementation.md)
+
+The case compared 67 scenes × 12 combinations × Korean/English × initial/round-trip: 3,216 frames rendered from actual application widgets through tcell simulation. General rules came from theme restoration broken by value substitution, form input colors hiding read-only descriptions, and ANSI Bold reducing selected-cell contrast.
+
+Oracle data types, workers, and database test infrastructure are not copied here. The application-specific capture harness stays in LazyOra. Tuivory provides its own independent playground and bilingual SVG generation through the [playground guide](../docs/playground.en.md), plus executable checks in `tools/smoke_playground.py`. Use the template above for general observations. The LazyOra case is not evidence of actual SecureCRT/MobaXterm user palettes.

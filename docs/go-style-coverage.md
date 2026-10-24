@@ -1,17 +1,19 @@
 # LazyOra → Tuivory Go 스타일 범위
 
+**한국어 (기본)** · [English](go-style-coverage.en.md)
+
 기준: LazyOra `4530a1156853fa8629a16f654f87680fe2b52e01`. [캡처 manifest](../go/internal/style/testdata/lazyora-source.json)에 원본 파일 SHA-256을 기록합니다. 원본에서 추출한 스타일을 아래 기준으로 검증합니다.
 
 | 원본 스타일 | Tuivory API | 검증 |
 | --- | --- | --- |
-| `theme.go`, `style_tokens.go`의 실제 팔레트 | `tcell.NewStyles` | 3테마 × 4프로필 × 20색상 = 240개 값 |
+| `theme.go`, `style_tokens.go`의 실제 팔레트 | `tuivory.NewStyles` | 3테마 × 4프로필 × 20색상 = 240개 값 |
 | 표면·의미별 텍스트 | `SurfaceColor`, `SurfaceText`, `TextColor`, `TextStyle` | 모든 표면/텍스트 역할 조합 |
 | 입력·선택·버튼·포커스·비활성·변경·편집기 | 각각의 `*Style` 메서드 | 원본 메서드의 전경·배경·속성 |
 | 배경에 따른 포커스 경계 | `BorderStyle`, `RefreshBorders` | 5표면 × 포커스 유무 |
 | `grid.go` 팔레트·셀·헤더·활성 셀 | `GridColors`, `GridCellStyle`, `GridHeaderStyle`, `GridActiveStyle` | 줄무늬/현재 행/NULL/변경/범위의 모든 조합 |
 | 행번호·구분선·그리드 상태줄 | `GridGutterStyle`, `GridDividerColor`, `GridStatusStyle` | 원본의 ANSI·흑백·라이트 분기 |
 | `sql_colors.go` 스타일 계산 | `SyntaxStyle` | 5표면 × 7구문 역할. lexer는 호스트 책임 |
-| `choice.go` 선택 필드 | `DropDownStyle`, `tview.DropDown`, `Choice` | 프로필별 원본 값, 폼 덮어쓰기, 한글 겹침 회귀 |
+| `choice.go` 선택 필드 | `DropDownStyle`, `DropDown`, `NewChoice`/`Choice` | 프로필별 원본 값, 폼 덮어쓰기, 한글 겹침 회귀 |
 | `widgets.go`의 목록·체크박스·트리 | `List`, `Checkbox`, `Tree` | 기존 위젯 적용 및 역할별 재색상 |
 | `theme.go`의 폼·모달·편집기 | `Form`, `Modal`, `Editor` | 폼 실제 렌더링, 값·내부 포커스 유지 |
 | `styleDataTable`, 비교표 | `TableOn`, `ComparisonHeaderStyle` | 본문/헤더 상태, 흑백 헤더 예외 |

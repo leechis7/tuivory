@@ -1,5 +1,7 @@
 # LazyOra 스타일의 첫 Go 패키지 추출
 
+**한국어 (기본)** · [English](lazyora-extraction.en.md)
+
 Tuivory는 여러 언어에서 사용할 터미널 UI 스타일 패키지를 제공하며, 첫 구현은 LazyOra에서 실제 다듬은 Go/tcell/tview 스타일을 추출합니다. 앱이나 DB 코드를 함께 옮기지 않습니다.
 
 ## 원본과 보존 범위
@@ -28,10 +30,10 @@ Go 견본은 실제 추출 패키지의 팔레트와 입력·버튼·드롭다�
 
 ```sh
 go -C go run ./examples/starter
-go -C go run ./cmd/tuivory
+go -C go run ./cmd/tuivory --lang en
 ```
 
-starter는 폼·입력·체크박스·버튼과 F2 테마 전환을 제공하며 DB가 없습니다. 결정적인 견본을 위해 색상 프로필은 256으로 지정합니다. 호스트가 화면을 소유하면 `ProfileForColors(screen.Colors(), limited)`로 감지 결과를 전달할 수 있습니다.
+starter는 폼·입력·체크박스·버튼과 F2 테마 전환을 제공하며 DB가 없고 라벨은 한국어입니다. 견본 언어 선택은 현재 소스 기능으로 배포된 `v0.0.1` 태그에는 포함되지 않습니다. 결정적인 견본을 위해 색상 프로필은 256으로 지정합니다. 호스트가 화면을 소유하면 `ProfileForColors(screen.Colors(), limited)`로 감지 결과를 전달할 수 있습니다.
 
 ## 검증
 
@@ -49,7 +51,7 @@ make -C go check
 
 ## Go 패키지 완전성 보완
 
-Go 패키지에 집중하라는 후속 요청에 따라 [스타일 범위표](go-style-coverage.md)의 누락 항목을 보완했습니다. [사용법](go-package.md)은 역할·상태·테마 재적용 API를 설명합니다. 원본 240색상 비교 외에 전경·배경·속성의 1,572개 원본 스타일 사례를 추가했습니다.
+[스타일 범위표](go-style-coverage.md)는 추출한 계산과 검증 범위를 정리합니다. [사용법](go-package.md)은 역할·상태·테마 재적용 API를 설명합니다. 원본 240색상 비교 외에 전경·배경·속성의 1,572개 원본 스타일 사례를 추가했습니다.
 
 ```sh
 python3 tools/capture_lazyora_matrix.py /path/to/lazyora

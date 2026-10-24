@@ -1,5 +1,7 @@
 # Tuivory Python
 
+**한국어 (기본)** · [English](README.en.md)
+
 현재는 [공통 디자인 데이터](../design/README.md)를 읽는 표준 라이브러리 예제만 제공합니다. Python TUI 스타일 패키지, 위젯 어댑터, PyPI 배포는 아직 구현하지 않았습니다. Go 코드를 호출하지 않습니다.
 
 ```sh

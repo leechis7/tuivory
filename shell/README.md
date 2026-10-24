@@ -1,5 +1,7 @@
 # Tuivory Shell
 
+**한국어 (기본)** · [English](README.en.md)
+
 현재는 [단말 색상 프로필](../docs/terminal-profiles.md)을 관찰하는 POSIX 셸 ANSI 색상 견본만 제공합니다. 공통 토큰을 적용하는 재사용 Shell 함수 패키지는 아직 구현하지 않았습니다. Go나 Python 런타임을 요구하지 않습니다.
 
 ```sh

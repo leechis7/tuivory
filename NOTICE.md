@@ -1,5 +1,7 @@
 # 유래와 라이선스
 
+**한국어 (기본)** · [English](NOTICE.en.md)
+
 Copyright (C) 2026 Chaekang Lee
 
 이 프로젝트의 초기 문서·테마 예시·단말 색 견본은 [LazyOra](https://github.com/leechis7/lazyora) LORA-69 작업에서 파생되었습니다. 개발자: 이채강 (Chaekang Lee), leechis7@gmail.com.
@@ -16,4 +18,4 @@ LazyOra의 실제 테마·스타일 함수에서 파생한 Go 패키지를 추�
 
 ## Tuivory 이전
 
-Tuivory는 [TUIS](https://github.com/leechis7/tuis)의 구현과 언어 중립 구조 전환 작업을 바탕으로 새 저장소에서 시작합니다. 기존 저작권·AGPL-3.0-only 조건과 LazyOra 원본 스타일 출처는 유지합니다. 이전 요약은 [전환 안내](docs/migration.md)를 참고하세요.
+Tuivory는 [TUIS](https://github.com/leechis7/tuis)의 구현과 언어 중립 구조 전환 작업을 바탕으로 새 저장소에서 시작합니다. 기존 저작권·AGPL-3.0-only 조건과 LazyOra 원본 스타일 출처는 유지합니다. 현재 사용법은 [설치·사용 안내](docs/installation.md)를 참고하세요. 이 항목은 원출처를 보존하는 고지이며 현재 제품명·패키지·일감 관리 기준이 아닙니다.

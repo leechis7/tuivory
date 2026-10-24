@@ -1,5 +1,7 @@
 # Tuivory 견본 사용법
 
+**한국어 (기본)** · [English](playground.en.md)
+
 이 화면에서 ‘규칙을 적용하면 어떻게 보이는가’를 직접 확인합니다. 데이터는 합성 예시이며 DB·네트워크 서비스에 접속하거나 설정/입력값을 저장하지 않습니다.
 
 ## 실행
@@ -8,7 +10,7 @@
 go -C go run ./cmd/tuivory
 ```
 
-Go 1.24 이상이 필요합니다. mise 사용자는 `mise install` 후 평소처럼 `go`를 실행하면 됩니다. 기본 로컬 바이너리:
+이 문서는 현재 저장소 소스 기준입니다. `--lang`은 배포된 `v0.0.1` 이후 추가되어 아직 새 태그로 배포하지 않았습니다. Go 1.24 이상이 필요합니다. mise 사용자는 `mise install` 후 평소처럼 `go`를 실행하면 됩니다. 기본 로컬 바이너리:
 
 ```sh
 make build
@@ -70,7 +72,7 @@ make -C go test
 make -C go check
 python3 tools/smoke_playground.py bin/tuivory-linux-arm64
 python3 tools/smoke_playground.py bin/tuivory-linux-arm64 --lang en
-Tuivory_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run '^TestSnapshot$' -count=1
+TUIVORY_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run '^TestSnapshot$' -count=1
 ```
 
 위 스냅샷 검사는 한국어·영어 이미지를 함께 생성합니다. 영어 이미지 이름에는 `-en`이 붙습니다.

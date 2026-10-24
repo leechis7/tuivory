@@ -2,7 +2,7 @@
 
 [한국어 (default)](CONTRIBUTING.md) · **English**
 
-Start with the [shared specifications](design/README.md) and [dependency boundaries](docs/architecture.md) (both in Korean). Keep framework types out of language-independent JSON, and consume shared tokens rather than duplicating their values in language implementations.
+Start with the [shared specifications](design/README.en.md) and [dependency boundaries](docs/architecture.en.md). Keep framework types out of language-independent JSON, and consume shared tokens rather than duplicating their values in language implementations.
 
 For documentation, theme, or tooling changes, explain the problem and reproduction conditions, then describe the relevant principle and how to verify the change.
 
@@ -37,7 +37,7 @@ sh -n shell/examples/terminal-colors.sh
 
 For shared-data changes, also run `make check-consumers` to compare Go, Python, and Node.js output. Node.js 18 or later is required; the Python and Node.js examples have no external dependencies. This check builds a temporary Go validation program for the current host and removes it afterward.
 
-The link checker verifies local file targets only. External URLs and Markdown fragments require separate checks. Use the [terminal evidence template](evidence/README.md) (Korean) for real terminal observations; do not report an untested environment as passing. Distinguish local results from GitHub CI and publication status.
+The link checker verifies local file targets only. External URLs and Markdown fragments require separate checks. Use the [terminal evidence template](evidence/README.en.md) for real terminal observations; do not report an untested environment as passing. Distinguish local results from GitHub CI and publication status.
 
 ## Documentation language
 
@@ -45,12 +45,14 @@ From now on, create and update documentation in Korean and English in the same c
 
 Use meaningful English names for code identifiers and public formats. Commit message descriptions are written in Korean.
 
+For feature additions, changes, and bug fixes, update affected documentation in the same change, including READMEs, usage and API guides, examples, UI images, and the changelog as applicable. Update Korean and English together, and confirm that the implementation, documentation, and validation results agree before completing the task.
+
 ## Work tracking and publication
 
 Tuivory work is tracked in the **TVR** Jira project, independently of LazyOra. Check for an existing issue before starting, and obtain the maintainer's confirmation before creating one. Use the actual TVR issue key in the branch name. Move the issue to in progress when work begins, then complete it with validation evidence after implementation and required checks. Finish the current task before starting another feature branch.
 
-Commits and GitHub publication require the maintainer's explicit approval for the change. The maintainer decides product major versions. See the [repository work rules](AGENTS.md) and [work tracking guide](docs/work-tracking.md) (Korean).
+Commits and GitHub publication require the maintainer's explicit approval for the change. The maintainer decides product major versions. See the [repository work rules](AGENTS.en.md) and [work tracking guide](docs/work-tracking.en.md).
 
 ## License
 
-Project documentation and code use [AGPL-3.0-only](LICENSE). Preserve source attribution and notices, and check the terms before adding external material. See [NOTICE](NOTICE.md) (Korean).
+Project documentation and code use [AGPL-3.0-only](LICENSE). Preserve source attribution and notices, and check the terms before adding external material. See [NOTICE](NOTICE.en.md).
