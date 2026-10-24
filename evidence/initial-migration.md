@@ -24,3 +24,13 @@
 ## 검증 범위
 
 위 결과는 로컬 검증입니다. GitHub CI·태그·Release·Go 프록시를 통한 replace 없는 외부 소비 결과는 배포 일감 댓글에 별도로 기록합니다. 실제 SSH 단말·사용자 ANSI 팔레트 전체 호환성이나 Python/JavaScript/Shell UI 패키지 완성을 뜻하지 않습니다.
+
+## 게시·배포 결과
+
+- 배포 커밋: `cf06d95f4334f65436197ae4f12faf35783f5b7a`.
+- [원격 CI](https://github.com/leechis7/tuivory/actions/runs/40057059473)의 validate/go-package 모두 성공.
+- [Tuivory v0.0.1 Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.0.1), Go 태그 `go/v0.0.1` 게시.
+- 저장소 밖 새 소비자 모듈에서 `GOWORK=off GOPROXY=https://proxy.golang.org go get github.com/leechis7/tuivory/go@v0.0.1` 성공. 로컬 replace 없이 12테마·프로필 조합 스타일, 입력 상태 보존, 내장 토큰 형식·팔레트 해석 검사 통과.
+- 모듈 체크섬: `h1:5xsN+SnSOgwVFGheRzCaS7CXsq6waPiW3+FIKjZTUAg=`.
+
+자동 GitHub 개발 활동 연동의 관리 설정은 도구 접근 범위 밖입니다. 사용자에게 GitHub for Atlassian의 선택 저장소에 tuivory를 추가하는 경로를 안내했고, Jira에는 저장소·CI·Release Web links를 등록했습니다. Web links 등록을 자동 연동 완료로 간주하지 않습니다.
