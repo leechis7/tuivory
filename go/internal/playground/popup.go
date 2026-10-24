@@ -54,21 +54,21 @@ func (u *UI) openPopup(title, text string, editRow int) {
 	p := &popup{previous: u.app.GetFocus()}
 	u.popup = p
 	p.text = tview.NewTextView().SetText(text).SetWrap(true).SetWordWrap(true).SetScrollable(true)
-	p.close = tview.NewButton("닫기 / Esc").SetSelectedFunc(u.closePopup)
+	p.close = tview.NewButton(u.text("닫기 / Esc", "Close / Esc")).SetSelectedFunc(u.closePopup)
 	p.card = newFlex().SetDirection(tview.FlexRow)
 	p.card.SetBorder(true).SetTitle(title).SetBorderPadding(1, 1, 2, 2)
 	p.card.AddItem(p.text, 0, 1, false)
 	p.buttons = newFlex()
 	if editRow > 0 {
-		p.input = tview.NewInputField().SetLabel("새 값 ").SetText(u.rows[editRow-1])
-		p.save = tview.NewButton("저장").SetSelectedFunc(func() {
+		p.input = tview.NewInputField().SetLabel(u.text("새 값 ", "New value ")).SetText(u.rows[editRow-1])
+		p.save = tview.NewButton(u.text("저장", "Save")).SetSelectedFunc(func() {
 			u.rows[editRow-1] = p.input.GetText()
 			u.changed[editRow] = true
 			u.grid.GetCell(editRow, 1).SetText(u.rows[editRow-1])
-			u.grid.GetCell(editRow, 2).SetText("* 변경됨")
+			u.grid.GetCell(editRow, 2).SetText(u.text("* 변경됨", "* Edited"))
 			u.closePopup()
 			u.apply()
-			u.message("* 변경된 견본 셀입니다. DB나 파일에 저장하지 않습니다.")
+			u.message(u.text("* 변경된 견본 셀입니다. DB나 파일에 저장하지 않습니다.", "* Edited sample cell. Nothing is saved to a database or file."))
 		})
 		p.input.SetDoneFunc(func(key tcell.Key) {
 			if key == tcell.KeyEnter {
@@ -131,11 +131,13 @@ func (u *UI) closePopup() {
 	u.app.SetFocus(previous)
 	u.borders()
 }
-func (u *UI) openHelp() { u.openPopup(" TUIVORY 조작 안내 ", guideText, 0) }
+func (u *UI) openHelp() {
+	u.openPopup(u.text(" TUIVORY 조작 안내 ", " TUIVORY Controls "), u.text(guideText, guideTextEN), 0)
+}
 func (u *UI) openPreview() {
 	_, choice := u.choice.GetCurrentOption()
-	u.openPopup(" 팝업 · 현재 입력 미리보기 ", fmt.Sprintf("이름: %s\n선택: %s\n체크: %t\n\n암호 예시는 표시하지 않습니다.\n\nTab/Shift+Tab은 팝업 안에서만 이동합니다.\n바깥 클릭은 뒤 화면을 조작하지 않습니다.\nF2/F3으로 팝업을 연 상태에서도 테마를 바꿀 수 있습니다.\nEsc로 닫으면 이전 포커스로 돌아갑니다.", u.name.GetText(), choice, u.check.IsChecked()), 0)
+	u.openPopup(u.text(" 팝업 · 현재 입력 미리보기 ", " Popup · Current Input Preview "), fmt.Sprintf(u.text("이름: %s\n선택: %s\n체크: %t\n\n암호 예시는 표시하지 않습니다.\n\nTab/Shift+Tab은 팝업 안에서만 이동합니다.\n바깥 클릭은 뒤 화면을 조작하지 않습니다.\nF2/F3으로 팝업을 연 상태에서도 테마를 바꿀 수 있습니다.\nEsc로 닫으면 이전 포커스로 돌아갑니다.", "Name: %s\nChoice: %s\nChecked: %t\n\nThe password example is hidden.\n\nTab/Shift+Tab cycles within this popup.\nOutside clicks do not reach the background.\nF2/F3 changes styles while the popup is open.\nEsc closes it and restores the previous focus."), u.name.GetText(), choice, u.check.IsChecked()), 0)
 }
 func (u *UI) openEdit(row int) {
-	u.openPopup(" 셀 편집 · 합성 데이터 ", "이름 값을 바꾸고 저장하세요. 변경됨 표시는 색상과 *를 함께 사용합니다.", row)
+	u.openPopup(u.text(" 셀 편집 · 합성 데이터 ", " Edit Cell · Synthetic Data "), u.text("이름 값을 바꾸고 저장하세요. 변경됨 표시는 색상과 *를 함께 사용합니다.", "Change the name and save. Edited cells use both color and an * marker."), row)
 }

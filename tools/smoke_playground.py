@@ -15,6 +15,7 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('binary', type=Path)
+    parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
     args = parser.parse_args()
     master, slave = pty.openpty()
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', 36, 120, 0, 0))
@@ -36,7 +37,7 @@ def main():
                     break
 
     try:
-        process = subprocess.Popen([str(args.binary.resolve())], stdin=slave, stdout=slave,
+        process = subprocess.Popen([str(args.binary.resolve()), '--lang', args.lang], stdin=slave, stdout=slave,
                                    stderr=slave, env=dict(os.environ, TERM='xterm-256color'),
                                    preexec_fn=controlling_terminal)
         os.close(slave)
@@ -49,7 +50,11 @@ def main():
         process.wait(timeout=3)
         if process.returncode or b'TUIVORY' not in captured or b'\x1b[?1049l' not in captured:
             raise RuntimeError('startup/exit/alternate-screen restore check failed')
-        print('PTY startup, one Ctrl+Q, and alternate-screen restore passed.')
+        # tcell can emit cursor/backspace sequences between wide glyphs.
+        has_korean = any('\uac00' <= char <= '\ud7a3' for char in captured.decode(errors='replace'))
+        if (args.lang == 'ko' and not has_korean) or (args.lang == 'en' and (has_korean or b'Name' not in captured)):
+            raise RuntimeError('expected UI language was not rendered: ' + args.lang)
+        print(f'PTY {args.lang} UI, startup, one Ctrl+Q, and alternate-screen restore passed.')
     finally:
         if process is not None and process.poll() is None:
             process.kill()

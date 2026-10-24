@@ -36,7 +36,7 @@ func (u *UI) apply() {
 	}
 	viewStyle(u.header, p["header"])
 	viewStyle(u.footer, p["surface"])
-	u.context.SetText(fmt.Sprintf(" 미리보기 %s · 단말 %s", u.resolvedProfile(), detectedProfile(u.terminal.Colors())))
+	u.context.SetText(fmt.Sprintf(u.text(" 미리보기 %s · 단말 %s", " Preview %s · Terminal %s"), u.resolvedProfile(), detectedProfile(u.terminal.Colors())))
 	for _, choice := range []*choice{u.theme, u.profile, u.choice} {
 		styler.DropDown(choice.DropDown)
 		choice.SetDoneFunc(func(key tcell.Key) {
@@ -54,9 +54,9 @@ func (u *UI) apply() {
 		field.SetLabelStyle(p["surface"].Style())
 	}
 	if u.invalid {
-		u.name.SetLabel("오류! 이름 ").SetFieldStyle(p["field"].Style().Underline(true))
+		u.name.SetLabel(u.text("오류! 이름 ", "Error! Name ")).SetFieldStyle(p["field"].Style().Underline(true))
 	} else {
-		u.name.SetLabel("이름     ")
+		u.name.SetLabel(u.text("이름     ", "Name     "))
 	}
 	viewStyle(u.disabled, p["disabled"])
 	u.check.SetLabelStyle(p["surface"].Style()).SetCheckedStyle(p["field"].Style()).SetUncheckedStyle(p["field"].Style()).SetActivatedStyle(p["selection"].Style())
@@ -74,12 +74,12 @@ func (u *UI) apply() {
 	}
 	u.styleGrid()
 	row, col := u.tokens.GetSelection()
-	for c, label := range []string{"역할", "전경", "배경", "색상 견본"} {
+	for c, label := range []string{u.text("역할", "Role"), u.text("전경", "Foreground"), u.text("배경", "Background"), u.text("색상 견본", "Sample")} {
 		u.tokens.SetCell(0, c, tview.NewTableCell(label).SetStyle(p["header"].Style().Underline(true)).SetTransparency(false).SetSelectable(false))
 	}
 	for i, role := range roleNames {
 		pair := p[role]
-		values := []string{role, colorLabel(pair.FG), colorLabel(pair.BG), " Aa 한글 "}
+		values := []string{role, colorLabel(pair.FG), colorLabel(pair.BG), u.text(" Aa 한글 ", " Aa Sample ")}
 		for c, value := range values {
 			style := p["body"].Style()
 			if c == 3 {

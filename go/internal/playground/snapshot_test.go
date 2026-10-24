@@ -20,18 +20,30 @@ func TestSnapshot(t *testing.T) {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		t.Fatal(err)
 	}
-	ui, terminal := testUI(t)
+	for _, lang := range []string{"ko", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			writeSnapshots(t, dir, lang)
+		})
+	}
+}
+
+func writeSnapshots(t *testing.T, dir, lang string) {
+	ui, terminal := testUIOptions(t, Options{Lang: lang, Colors: "truecolor"})
+	suffix := ""
+	if lang == "en" {
+		suffix = "-en"
+	}
 	for i, theme := range themeNames {
 		ui.theme.SetCurrentOption(i)
 		drawUI(ui, terminal)
-		if err := writeSVG(filepath.Join(dir, "playground-"+theme+".svg"), terminal); err != nil {
+		if err := writeSVG(filepath.Join(dir, "playground-"+theme+suffix+".svg"), terminal); err != nil {
 			t.Fatal(err)
 		}
 	}
 	ui.theme.SetCurrentOption(0)
 	ui.openPreview()
 	drawUI(ui, terminal)
-	if err := writeSVG(filepath.Join(dir, "playground-popup.svg"), terminal); err != nil {
+	if err := writeSVG(filepath.Join(dir, "playground-popup"+suffix+".svg"), terminal); err != nil {
 		t.Fatal(err)
 	}
 }
