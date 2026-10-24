@@ -20,9 +20,12 @@ make build
 ```sh
 go -C go run ./cmd/tuivory --theme light --colors 16
 go -C go run ./cmd/tuivory --theme blackwhite --colors 8 --mouse=false
+go -C go run ./cmd/tuivory --lang en
 ```
 
 `--theme`: dark / light / blackwhite. `--colors`: auto / 8 / 16 / 256 / truecolor.
+
+`--lang`: ko / en. 한국어가 기본이며, 동일한 바이너리에서 영어를 선택할 수 있습니다. 예: `./bin/tuivory-linux-arm64 --lang en`. 별도 영어 전용 빌드는 필요하지 않습니다.
 
 색상 선택은 **토큰 프로필 미리보기**이며 실제 터미널 능력이나 팔레트를 변경하지 않습니다. 표현할 수 없는 색상은 라이브러리/단말이 근사할 수 있습니다. 자동 모드는 라이브러리가 보고하는 능력을 사용합니다. TERM이 없으면 이 프로세스에서만 ansi를 사용합니다.
 
@@ -58,14 +61,19 @@ go -C go run ./cmd/tuivory --theme blackwhite --colors 8 --mouse=false
 
 [다크](images/playground-dark.svg) · [라이트](images/playground-light.svg) · [흑백](images/playground-blackwhite.svg) · [팝업](images/playground-popup.svg)
 
+영어 UI: [다크](images/playground-dark-en.svg) · [라이트](images/playground-light-en.svg) · [흑백](images/playground-blackwhite-en.svg) · [팝업](images/playground-popup-en.svg)
+
 이미지는 실제 앱 위젯을 tcell 모의 화면에 그린 뒤 셀에서 생성한 참조 이미지입니다. 실제 SecureCRT/MobaXterm 캡처나 지원 보장으로 해석하지 않습니다. 별도 단말 검증은 [양식](../evidence/README.md)을 사용합니다.
 
 ```sh
 make -C go test
 make -C go check
 python3 tools/smoke_playground.py bin/tuivory-linux-arm64
+python3 tools/smoke_playground.py bin/tuivory-linux-arm64 --lang en
 Tuivory_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run '^TestSnapshot$' -count=1
 ```
+
+위 스냅샷 검사는 한국어·영어 이미지를 함께 생성합니다. 영어 이미지 이름에는 `-en`이 붙습니다.
 
 상태 문구는 실제 카드 배경에서 대비를 다시 확인하고, 색상 강조의 대비가 부족하면 카드의 본문색으로 표시합니다. 상태의 의미는 ‘정상/주의/오류’ 문구로 유지합니다.
 

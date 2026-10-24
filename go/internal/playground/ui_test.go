@@ -12,6 +12,10 @@ import (
 
 func testUI(t *testing.T) (*UI, tcell.SimulationScreen) {
 	t.Helper()
+	return testUIOptions(t, Options{Theme: "dark", Colors: "truecolor", Mouse: true})
+}
+func testUIOptions(t *testing.T, options Options) (*UI, tcell.SimulationScreen) {
+	t.Helper()
 	terminal := tcell.NewSimulationScreen("UTF-8")
 	if err := terminal.Init(); err != nil {
 		t.Fatal(err)
@@ -19,7 +23,7 @@ func testUI(t *testing.T) (*UI, tcell.SimulationScreen) {
 	app := tview.NewApplication().SetScreen(terminal)
 	terminal.SetSize(120, 36)
 	t.Cleanup(terminal.Fini)
-	ui, err := New(app, terminal, Options{Theme: "dark", Colors: "truecolor", Mouse: true})
+	ui, err := New(app, terminal, options)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,5 +1,7 @@
 # Tuivory — 터미널 UI 스타일 패키지
 
+**한국어 (기본)** · [English](README.en.md)
+
 Tuivory (TUI + ivory) provides reusable terminal UI styles across languages. Shared design data lives in `design/`; each language implementation has its own directory and packaging.
 
 **Tuivory(투이보리)**는 Go·Python·JavaScript·Shell에서 일관된 터미널 UI를 만들기 위한 스타일 패키지 프로젝트입니다. 저장소 루트는 특정 언어에 종속하지 않습니다. 공통 테마·색상 프로필·상태 규칙은 `design/`에서 관리하고 실제 적용 코드는 언어별로 구현합니다.
@@ -43,6 +45,8 @@ make build
 ```
 
 `make build`는 Linux ARM64 바이너리 하나를 `bin/tuivory-linux-arm64`에 만듭니다. Go 시작 템플릿은 `go/` 디렉터리에서 `go run ./examples/starter`로 실행합니다.
+
+견본 UI는 한국어가 기본입니다. 같은 바이너리에서 `./bin/tuivory-linux-arm64 --lang en`으로 영어를 선택할 수 있습니다. 소스로 실행할 때는 `go -C go run ./cmd/tuivory --lang en`을 사용합니다. `--lang ko`는 한국어를 명시합니다.
 
 **F2 테마 · F3 색상 · F4 팝업 · F6 화면 전환 · Tab 이동 · Ctrl+Q 종료**
 

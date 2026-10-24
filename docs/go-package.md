@@ -1,5 +1,7 @@
 # Tuivory Go 스타일 패키지
 
+**한국어 (기본)** · [English](go-package.en.md)
+
 현재 Go 소스는 `go/`에 있는 독립 하위 모듈입니다. 모듈 경로는 **`github.com/leechis7/tuivory/go`**, 패키지 이름은 **`tuivory`**이며 Tuivory 관련 import는 하나입니다.
 
 ```go
@@ -29,6 +31,8 @@ go get github.com/leechis7/tuivory/go@v0.0.1
 go -C go run ./examples/starter
 go -C go run ./cmd/tuivory --theme light --colors 16
 ```
+
+견본은 한국어가 기본이며 `--lang en`을 추가하면 영어 UI로 실행합니다. `--lang ko`는 한국어를 명시합니다. 언어 선택은 견본 UI에만 적용하며 공개 스타일 API에는 영향을 주지 않습니다. 시작 템플릿의 예시 문구는 한국어입니다.
 
 ```go
 import "github.com/leechis7/tuivory/go"

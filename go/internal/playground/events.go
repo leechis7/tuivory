@@ -97,7 +97,7 @@ func (u *UI) key(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyF5:
 		u.invalid = !u.invalid
 		u.apply()
-		u.message("입력 오류 표시를 전환했습니다. 입력값은 유지됩니다.")
+		u.message(u.text("입력 오류 표시를 전환했습니다. 입력값은 유지됩니다.", "Input error indicators toggled. Values are preserved."))
 		return nil
 	case tcell.KeyF6:
 		next := (u.page + 1) % 3

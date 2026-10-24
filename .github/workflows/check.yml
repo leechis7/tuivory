@@ -45,4 +45,6 @@ jobs:
       - name: Build native executable for terminal smoke check
         run: go build -C go -o "$RUNNER_TEMP/tuivory" ./cmd/tuivory
       - name: Check actual PTY startup and exit
-        run: python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory"
+        run: |
+          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang ko
+          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang en
