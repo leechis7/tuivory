@@ -14,7 +14,7 @@ go -C go run ./cmd/tuivory
 
 ```sh
 make build
-./bin/tuivory-linux-arm64
+./bin/go/tuivory-linux-arm64
 ```
 
 `make build`는 Linux ARM64만 만듭니다. 다른 환경에서는 `go -C go run ./cmd/tuivory`로 현재 환경에서 실행할 수 있습니다.
@@ -27,7 +27,7 @@ go -C go run ./cmd/tuivory --lang en
 
 `--theme`: dark / light / blackwhite. `--colors`: auto / 8 / 16 / 256 / truecolor.
 
-`--lang`: ko / en. 한국어가 기본이며, 동일한 바이너리에서 영어를 선택할 수 있습니다. 예: `./bin/tuivory-linux-arm64 --lang en`. 별도 영어 전용 빌드는 필요하지 않습니다.
+`--lang`: ko / en. 한국어가 기본이며, 동일한 바이너리에서 영어를 선택할 수 있습니다. 예: `./bin/go/tuivory-linux-arm64 --lang en`. 별도 영어 전용 빌드는 필요하지 않습니다.
 
 색상 선택은 **토큰 프로필 미리보기**이며 실제 터미널 능력이나 팔레트를 변경하지 않습니다. 표현할 수 없는 색상은 라이브러리/단말이 근사할 수 있습니다. 자동 모드는 라이브러리가 보고하는 능력을 사용합니다. TERM이 없으면 이 프로세스에서만 ansi를 사용합니다.
 
@@ -70,8 +70,8 @@ go -C go run ./cmd/tuivory --lang en
 ```sh
 make -C go test
 make -C go check
-python3 tools/smoke_playground.py bin/tuivory-linux-arm64
-python3 tools/smoke_playground.py bin/tuivory-linux-arm64 --lang en
+python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64
+python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang en
 TUIVORY_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run '^TestSnapshot$' -count=1
 ```
 

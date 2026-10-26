@@ -11,7 +11,7 @@
 - 패턴: 기본/포커스/선택/비활성/변경/오류의 상태 조합과 키보드/마우스 계약.
 - 어댑터: 앱 데이터·DB·입력 I/O 소유권을 공통 스타일 계산에 넣지 않기.
 
-견본 TUI는 Go 1.24 이상이 필요합니다. Go 변경 시 `make -C go test`와 `make -C go check`, `python3 tools/check_go_module.py`를 실행합니다. Go 소스·모듈 설정은 go/ 안에 두고 공통 디자인 원본은 design/에서 관리합니다. 기본 로컬 빌드는 `make build`로 Linux ARM64 하나만 생성합니다.
+견본 TUI는 Go 1.24 이상이 필요합니다. Go 변경 시 `make -C go test`와 `make -C go check`, `python3 tools/check_go_module.py`를 실행합니다. Go 소스·모듈 설정은 go/ 안에 두고 공통 디자인 원본은 design/에서 관리합니다. 기본 로컬 빌드는 `make build`로 Linux ARM64 하나를 `bin/go/tuivory-linux-arm64`에 생성합니다. 견본 실행파일은 `bin/<언어>/` 아래에 OS·아키텍처가 포함된 이름으로 둡니다.
 
 필수 가이드 로컬 검사:
 

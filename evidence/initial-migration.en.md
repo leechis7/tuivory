@@ -4,6 +4,8 @@
 
 2026-10-24 · Linux ARM64 · first release target 0.0.1 · [TVR-2](https://leechis7.atlassian.net/browse/TVR-2)
 
+This is the initial release's historical validation record; executable paths below reflect that time. Follow the [playground guide](../docs/playground.en.md) for the current Go build path and commands.
+
 ## Initial scope
 
 The independent repository organizes shared design/, language directories, Go internals/public API, and the database-free playground. Product, package, command, and draft token names use tuivory. The LazyOra checkout was not modified. Source attribution and copyright are preserved in [NOTICE](../NOTICE.en.md).

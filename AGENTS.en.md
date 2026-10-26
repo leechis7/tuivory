@@ -9,6 +9,7 @@
 - Commit and publish to GitHub only after explicit user approval for the change. Write commit message descriptions in Korean.
 - Use the actual created TVR issue key in branch names; do not invent numbers. Finish current work before starting another feature branch.
 - The default local product build is one Linux ARM64 binary through make build. Other local operating systems/architectures require a user request.
+- Put playground build outputs in `bin/<language>/`, with OS and architecture in the filename. The current Go path is `bin/go/tuivory-linux-arm64`; executables for future languages follow the same convention. Python, JavaScript, and Shell run from source by default.
 - Only the user decides the product major version.
 - Create and update documentation in Korean and English together. Keep Korean as default, provide `.en.md` counterparts, and link them reciprocally. Align usage, support scope, and validation results. UI images use their document's language.
 - For feature additions, changes, and bug fixes, update affected READMEs, usage/API guides, examples, UI images, and changelog in the same task. Update Korean and English together and confirm implementation/documentation/validation agreement before completing work.

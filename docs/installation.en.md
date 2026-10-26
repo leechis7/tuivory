@@ -26,7 +26,7 @@ Current `main` includes Korean/English documentation and playground language sel
 go -C go run ./cmd/tuivory --lang ko
 go -C go run ./cmd/tuivory --lang en
 make build
-./bin/tuivory-linux-arm64 --lang en
+./bin/go/tuivory-linux-arm64 --lang en
 ```
 
 Requires Go 1.24 or later. `make build` produces one Linux ARM64 binary supporting both languages. Source execution runs on the current host. The starter template runs with `go -C go run ./examples/starter` and has Korean example labels.

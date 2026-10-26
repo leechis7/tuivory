@@ -14,7 +14,7 @@ This guide describes current repository source. `--lang` was added after the pub
 
 ```sh
 make build
-./bin/tuivory-linux-arm64 --lang en
+./bin/go/tuivory-linux-arm64 --lang en
 ```
 
 `make build` creates only Linux ARM64. On other hosts, run source with `go -C go run ./cmd/tuivory --lang en`.
@@ -67,8 +67,8 @@ These reference images are generated from actual application widget cells on a t
 ```sh
 make -C go test
 make -C go check
-python3 tools/smoke_playground.py bin/tuivory-linux-arm64 --lang ko
-python3 tools/smoke_playground.py bin/tuivory-linux-arm64 --lang en
+python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang ko
+python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang en
 TUIVORY_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run '^TestSnapshot$' -count=1
 ```
 

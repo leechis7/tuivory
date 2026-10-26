@@ -23,7 +23,7 @@ make -C go check
 python3 tools/check_go_module.py
 ```
 
-The default local product build is `make build`, which creates one Linux ARM64 binary.
+The default local product build is `make build`, which creates one Linux ARM64 binary at `bin/go/tuivory-linux-arm64`. Put playground executables in `bin/<language>/`, with OS and architecture in each filename.
 
 Run the documentation and shared-data checks from the repository root:
 

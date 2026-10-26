@@ -44,9 +44,9 @@ make run
 make build
 ```
 
-`make build`는 Linux ARM64 바이너리 하나를 `bin/tuivory-linux-arm64`에 만듭니다. Go 시작 템플릿은 `go/` 디렉터리에서 `go run ./examples/starter`로 실행합니다.
+`make build`는 Linux ARM64 바이너리 하나를 `bin/go/tuivory-linux-arm64`에 만듭니다. Go 시작 템플릿은 `go/` 디렉터리에서 `go run ./examples/starter`로 실행합니다.
 
-견본 UI는 한국어가 기본입니다. 같은 바이너리에서 `./bin/tuivory-linux-arm64 --lang en`으로 영어를 선택할 수 있습니다. 소스로 실행할 때는 `go -C go run ./cmd/tuivory --lang en`을 사용합니다. `--lang ko`는 한국어를 명시합니다.
+견본 UI는 한국어가 기본입니다. 같은 바이너리에서 `./bin/go/tuivory-linux-arm64 --lang en`으로 영어를 선택할 수 있습니다. 소스로 실행할 때는 `go -C go run ./cmd/tuivory --lang en`을 사용합니다. `--lang ko`는 한국어를 명시합니다.
 
 **F2 테마 · F3 색상 · F4 팝업 · F6 화면 전환 · Tab 이동 · Ctrl+Q 종료**
 

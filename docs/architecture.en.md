@@ -13,6 +13,7 @@ tuivory/
 ├── javascript/   Node.js token reading example
 ├── shell/        POSIX ANSI output example
 ├── examples/     Example index and shared static layouts
+├── bin/          Per-language playground executables; Git-ignored, currently bin/go/
 ├── tools/        Data generation, checks, isolated module validation
 └── evidence/     Validation records
 ```

@@ -13,6 +13,7 @@ tuivory/
 ├── javascript/   Node.js 토큰 읽기 예제
 ├── shell/        POSIX ANSI 출력 예제
 ├── examples/     예제 색인과 공통 정적 배치
+├── bin/          언어별 견본 실행파일. Git 제외, 현재 Go는 bin/go/
 ├── tools/        데이터 생성·검사·단독 모듈 검증
 └── evidence/     검증 기록
 ```

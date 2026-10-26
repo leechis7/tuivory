@@ -26,7 +26,7 @@ styler, err := tuivory.New("dark", "256")
 go -C go run ./cmd/tuivory --lang ko
 go -C go run ./cmd/tuivory --lang en
 make build
-./bin/tuivory-linux-arm64 --lang en
+./bin/go/tuivory-linux-arm64 --lang en
 ```
 
 Go 1.24 이상이 필요합니다. `make build`는 두 언어를 지원하는 Linux ARM64 바이너리 하나만 만듭니다. 소스 실행은 현재 호스트에서 동작합니다. 시작 템플릿은 `go -C go run ./examples/starter`이며 예시 라벨은 한국어입니다.

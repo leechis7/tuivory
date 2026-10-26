@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Separate playground build outputs under `bin/<language>/`. The default Go output is now `bin/go/tuivory-linux-arm64`; the default build still produces one Linux ARM64 binary.
 - Added English project, Go usage, and contribution guides alongside the Korean default, with reciprocal language links.
 - Added playground `--lang ko|en`: one binary supports default Korean and optional English, with English UI reference images in English documentation.
 - These changes merged into `main`/`dev` through [PR #1](https://github.com/leechis7/tuivory/pull/1); they have no new version tag yet.

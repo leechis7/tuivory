@@ -41,7 +41,9 @@ jobs:
       - name: Verify isolated Go module
         run: python3 tools/check_go_module.py
       - name: Build Linux ARM64 playground
-        run: make build
+        run: |
+          make build
+          test -x bin/go/tuivory-linux-arm64
       - name: Build native executable for terminal smoke check
         run: go build -C go -o "$RUNNER_TEMP/tuivory" ./cmd/tuivory
       - name: Check actual PTY startup and exit

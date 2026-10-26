@@ -46,10 +46,10 @@ From a repository checkout, run:
 ```sh
 go -C go run ./cmd/tuivory --lang en
 make build
-./bin/tuivory-linux-arm64 --lang en
+./bin/go/tuivory-linux-arm64 --lang en
 ```
 
-The playground uses synthetic data and needs no database or server. `make build` produces a single Linux ARM64 binary at `bin/tuivory-linux-arm64`. This binary supports both languages: `--lang en` selects English; `--lang ko` or no language flag selects Korean. `make run` uses the Korean default. The starter template runs with `go -C go run ./examples/starter` and has Korean example labels.
+The playground uses synthetic data and needs no database or server. `make build` produces a single Linux ARM64 binary at `bin/go/tuivory-linux-arm64`. This binary supports both languages: `--lang en` selects English; `--lang ko` or no language flag selects Korean. `make run` uses the Korean default. The starter template runs with `go -C go run ./examples/starter` and has Korean example labels.
 
 | Key | Action |
 | --- | --- |
