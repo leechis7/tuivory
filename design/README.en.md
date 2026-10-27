@@ -33,3 +33,7 @@ Each language implementation must read identical token values. `make check-consu
 New widget adapters need framework-specific checks for theme round trips, focus/selection separation, modal input blocking/restoration, small windows, and Korean cell handling. Record [terminal evidence](../evidence/README.en.md).
 
 [Shared UI audit](../docs/component-audit.en.md) and [Tree contract/implementation](../docs/tree.en.md) describe this TVR-7 phase. `tree-navigation.json` defines behavior scenarios checked by Go/Rust; `tools/export_tree_cases.py` generates module-local test copies.
+
+## Shared interaction contract
+
+`interaction-cases.json` covers state roles/markers/action permissions, focus navigation, nested popups, restoration and invalid requests. Mirror it into Go/Rust tests with `tools/export_tree_cases.py`. The [control-state/focus/popup guide](../docs/focus.en.md) defines the contract; framework events and terminal I/O remain outside the model.

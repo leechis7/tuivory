@@ -37,3 +37,8 @@ required-features = ["playground"]
 name = "workspace"
 path = "examples/workspace/main.rs"
 required-features = ["playground"]
+
+[[example]]
+name = "focus"
+path = "examples/focus/main.rs"
+required-features = ["playground"]

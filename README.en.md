@@ -122,3 +122,7 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](docs/workspace.en.m
 ## Static distribution and CentOS 7.4
 
 Distributed executables for Go, Rust and future languages must require no separate runtime or shared libraries, and packages must allow static linking in host applications. Current source disables Go CGO and uses Rust musl. Select x86_64 explicitly with `make build-go-x86_64` or `make build-rust-x86_64`. See [builds, support scope and differences from the existing release](docs/static-build.en.md).
+
+## Shared control states, focus and popups
+
+[TVR-8 guide](docs/focus.en.md) covers disabled/read-only/busy composition, stable-ID navigation, nested popup routing/dismissal/restoration and bilingual Go/Rust hosts. These are unreleased source APIs, absent from v0.1.0 tags. Follow the [ordered backlog](docs/components-backlog.en.md), requesting commit/publication approval after each completed and validated stage.

@@ -53,6 +53,20 @@ pub struct Styles {
 }
 
 impl Styles {
+    /// Resolve common control states; the host draws visual().markers separately.
+    pub fn control(
+        &self,
+        state: crate::interaction::ControlState,
+        focused: bool,
+    ) -> Result<Style, Error> {
+        let visual = state.visual();
+        let style = self.role(visual.role)?;
+        Ok(if focused && visual.focusable {
+            style.add_modifier(Modifier::UNDERLINED)
+        } else {
+            style
+        })
+    }
     /// A padded panel using the same focus and ordinary-font fallback contract.
     pub fn panel<'a>(
         &self,

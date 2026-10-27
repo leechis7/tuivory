@@ -113,3 +113,7 @@ styler.FooterButton(footerButton)
 ## 정적 링크
 
 Tuivory는 적용 앱에 필수 공유 라이브러리 의존성을 추가하지 않습니다. Linux 배포 앱은 `CGO_ENABLED=0`으로 빌드하고 최종 ELF와 대상 커널 실행을 검사합니다. 다른 앱 의존성이 추가하는 네이티브 런타임도 앱에서 확인해야 합니다. [정적 배포·외부 앱 검증](static-build.md)
+
+## 공통 컨트롤 상태와 포커스
+
+미배포 공개 API `ControlState.Visual`, `ControlStyle`, `NewFocusStack`으로 상태 표현·안정 ID 탐색·중첩 팝업의 입력 차단과 복귀를 제공합니다. [Go/Rust 공통 계약·실행 예제](focus.md). 실제 위젯·데이터·업무 동작·단말 수명주기는 앱이 연결합니다.

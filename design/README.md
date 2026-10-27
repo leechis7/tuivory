@@ -33,3 +33,7 @@
 위젯 어댑터를 추가할 때에는 테마 왕복 상태 보존, 선택/포커스 분리, 모달 입력 차단·복원, 작은 창과 한글 셀 처리를 해당 프레임워크에서 별도로 검사하고 [단말 증거](../evidence/README.md)를 남깁니다.
 
 [공통 UI 점검](../docs/component-audit.md)과 [Tree 계약·구현](../docs/tree.md)은 이번 TVR-7 단계를 설명합니다. `tree-navigation.json`은 Go/Rust가 함께 검증하는 동작 시나리오이며 `tools/export_tree_cases.py`로 모듈 내부 테스트 사본을 생성합니다.
+
+## 공통 상호작용 계약
+
+`interaction-cases.json`은 상태 역할·표식·실행/편집 허용, 포커스 이동·중첩 팝업·복귀·오류의 공통 시나리오입니다. `tools/export_tree_cases.py`로 Go/Rust 테스트 사본을 동기화합니다. 구체적 계약은 [상태·포커스·팝업](../docs/focus.md)에 두며 프레임워크 이벤트나 터미널 I/O를 공통 모델에 넣지 않습니다.

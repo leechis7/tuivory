@@ -43,6 +43,13 @@ def main():
         (consumer / 'Cargo.toml').write_text(manifest)
         source = '''use tuivory::{Color, ColorProfile, Theme, TokenDocument};
 fn main() {
+    let control_state = tuivory::interaction::ControlState { read_only:true, invalid:true, edited:true, ..Default::default() };
+    assert!(!control_state.visual().editable); assert_eq!(control_state.visual().role,"error"); assert_eq!(control_state.visual().markers,"!*=");
+    let target = |id:&str| tuivory::interaction::FocusTarget { id:id.into(), ..Default::default() };
+    let mut focus = tuivory::interaction::FocusStack::new("root",vec![target("open")]).unwrap();
+    focus.open("dialog",vec![target("close")],"",true).unwrap();
+    assert!(focus.route("root").blocked); assert_eq!(focus.request_close().unwrap().id,"dialog");
+    focus.close("dialog").unwrap(); assert_eq!(focus.focused(),"open");
     let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), branch: true, ..Default::default() }]).unwrap();
     let mut state = tuivory::tree::TreeState::default();
     assert!(matches!(tree.handle(&mut state, tuivory::tree::TreeAction::Right, 4), Some(tuivory::tree::TreeEvent::Expand(_))));
@@ -70,6 +77,7 @@ fn main() {
 '''
         if args.ratatui:
             source = source.replace('    let doc =', '''    let styles = tuivory::ratatui::Styles::new(Theme::Dark, ColorProfile::Ansi8).unwrap();
+    assert!(styles.control(control_state,true).unwrap().add_modifier.contains(ratatui::style::Modifier::UNDERLINED));
     let mut terminal = ratatui::Terminal::new(ratatui::backend::TestBackend::new(24, 4)).unwrap();
     terminal.draw(|f| f.render_widget(styles.block("External", true).unwrap(), f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "╔");

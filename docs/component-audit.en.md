@@ -31,3 +31,7 @@ Inspected [yelog/lazydb](https://github.com/yelog/lazydb) at pinned commit `9c54
 4. **Status/breadcrumbs**: retain current location when shortening paths, prioritize critical status, and define contextual shortcut/message priorities and omitted counts. Apply semantic roles, non-color cues, and Unicode/ASCII conventions throughout.
 
 Phases 1–4 now provide public Go/Rust APIs, database-free bilingual examples, related guides, and local validation. See the [integrated guide](workspace.en.md) and [examples](../examples/README.en.md). Tree is local commit 2005164; subsequent work is also saved in local commits with approval. CI/publication evidence is recorded in TVR; remote terminals and actual LazyOra/LazyBeaver integration require separate checks. TVR-7 stays open.
+
+## 2026-10-28 follow-up
+
+Registered [TVR-8–13](components-backlog.en.md) under TVR-7. The first [state/focus/popup foundation](focus.en.md) is locally implemented/validated and unreleased, distinct from prior v0.1.0 publication. Inputs/forms/tables/complete modals remain follow-up work.

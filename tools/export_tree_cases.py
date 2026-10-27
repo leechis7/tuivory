@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--check', action='store_true')
 args = parser.parse_args()
-for name in ('tree-navigation.json', 'components-cases.json'):
+for name in ('tree-navigation.json', 'components-cases.json', 'interaction-cases.json'):
     data = (ROOT / 'design' / name).read_bytes()
     for directory in ('go/testdata', 'rust/tests/data'):
         target = ROOT / directory / name
