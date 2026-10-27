@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """Verify that go/ works without the repository's shared design directory."""
+import argparse
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+from check_static_elf import inspect
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--static-output', type=Path, help='also export a static x86_64 external test host')
+    args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='tuivory-go-module-') as temporary:
         base = Path(temporary)
         module = base / 'module'
@@ -80,6 +85,12 @@ func TestIsolatedModule(t *testing.T) {
 }
 ''')
         subprocess.run(['go', 'test', '-mod=mod', './...'], cwd=consumer, env=env, check=True)
+        if args.static_output:
+            output = args.static_output.resolve()
+            output.parent.mkdir(parents=True, exist_ok=True)
+            subprocess.run(['go', 'test', '-c', '-mod=mod', '-o', str(output)], cwd=consumer,
+                           env=dict(env, CGO_ENABLED='0', GOOS='linux', GOARCH='amd64'), check=True)
+            inspect(output, 'x86_64')
     print('Go module and single-import consumer passed without repository design assets.')
 
 

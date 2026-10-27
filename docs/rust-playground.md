@@ -15,7 +15,7 @@ make build-rust
 ./bin/rust/tuivory-linux-arm64 --lang ko
 ```
 
-`make build-rust`는 Linux ARM64 GNU 대상과 링커로 `bin/rust/tuivory-linux-arm64` 하나를 만듭니다. 현재 Linux ARM64 호스트에서 검증했습니다. 다른 호스트의 교차 컴파일 환경은 별도로 준비해야 합니다. 기본 `make build`는 계속 Go 실행파일 하나만 생성합니다.
+`rustup target add aarch64-unknown-linux-musl` 후 `make build-rust`는 musl과 번들 `rust-lld`로 정적 `bin/rust/tuivory-linux-arm64` 하나를 만듭니다. x86_64는 `rustup target add x86_64-unknown-linux-musl` 후 `make build-rust-x86_64`입니다. [정적 배포·CentOS 검증·기존 릴리스와의 차이](static-build.md)를 확인하세요. 기본 `make build`는 계속 Go 실행파일 하나만 생성합니다.
 
 `--theme`는 dark/light/blackwhite, `--colors`는 auto/8/16/256/truecolor입니다. auto는 Crossterm이 보고한 색상 수를 사용합니다. 명시적 프로필 선택은 미리보기이며 단말의 실제 능력이나 사용자 팔레트를 바꾸지 않습니다. 대화형 실행에는 TTY가 필요합니다.
 

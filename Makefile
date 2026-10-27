@@ -31,6 +31,12 @@ run-rust:
 build-rust:
 	$(MAKE) -C rust build
 
+.PHONY: build-go-x86_64 build-rust-x86_64
+build-go-x86_64:
+	$(MAKE) -C go build-x86_64
+build-rust-x86_64:
+	$(MAKE) -C rust build-x86_64
+
 .PHONY: run-tree-go run-tree-rust
 run-tree-go:
 	go -C go run ./examples/tree $(ARGS)

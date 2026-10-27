@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Apply static distribution and host-linking requirements to Go, Rust and future languages. Add Rust musl/bundled LLD, Go CGO-disabled ELF checks, explicit x86_64 builds and CentOS 7.4 kernel/external-host validation. Existing v0.1.0 tags/assets remain unchanged. [Support scope](docs/static-build.en.md)
+
 ## 0.1.0 — 2026-10-27
 
 - Implemented remaining TVR-7 UI: independent active/focused tabs, overflow and edited/close requests, padded focus/ASCII panels, column/row splits with keys/dragging and compact restoration, breadcrumb omission/navigation, semantic status/shortcut priorities and packing. Added public Go/Rust APIs, external usage checks, bilingual integrated examples, eight reference SVGs, PTY input checks and synchronized guides; distributed in v0.1.0.

@@ -48,3 +48,7 @@ Go 프로젝트는 공개 모듈만으로 내장 토큰을 사용할 수 있습�
 ## 공통 워크스페이스 컴포넌트
 
 [탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+
+## 정적 실행파일과 구형 Linux
+
+현재 소스는 Go CGO 비활성화·Rust musl 정적 빌드를 제공합니다. CentOS 7.4 x86_64용 명령은 `make build-go-x86_64`, `make build-rust-x86_64`입니다. Rust 대상은 먼저 `rustup target add aarch64-unknown-linux-musl x86_64-unknown-linux-musl`로 설치합니다. 기존 v0.1.0 Rust GNU ARM64 자산과 이번 미배포 정적 빌드는 다릅니다. [정적 배포·지원 범위·외부 앱 검증](static-build.md)

@@ -1,0 +1,21 @@
+{
+  "image": "centos@sha256:78b63c089c40a2ca0d85db9125fb3193c6ff74814bba5f894c803e5ae02a4035",
+  "kernel": "3.10.0-693.el7.x86_64",
+  "kernel_sha256": "8ede7f8d3c8f5e72f1a84713ad59b7b39211ea1af8887389cb50a189df937c6f",
+  "glibc": "2.17-196.el7.x86_64",
+  "result": "passed",
+  "languages": [
+    "ko",
+    "en"
+  ],
+  "binaries_sha256": {
+    "go": "2f71ca4f803240a255f7a7730cff90b3fe5a3bb223a0454eebe76cf0e4da4f6a",
+    "rust": "4b3025f0acf840430d3f23591569e70afee21d665b81b17c7e9f0aa7fb7e730d",
+    "go-tree": "4712e9ddbaec68276b08e31b9f35fddb3b2cb1d1102e5cba976fb06891c183c6",
+    "go-workspace": "095bc1e81d7aa104610cb9289490e0095add91e89828cfc5d3dbfb6b187973d0",
+    "rust-tree": "a5e08ae8671ab6c3359e92f72ef68b79eff05fac8fed51ba761204bfb3d898f9",
+    "rust-workspace": "c8456a8e015b2ef65e69c41b0eaff50fd776247824a46eb0d176cf3864ba0029",
+    "go-host": "9fcb53abb315096f2a537406dd6e9666250cf13202c299b2e45b3455e451f2b5",
+    "rust-host": "aba560985de1bd20874f78c9ce2888aab0acd20a268a1ab37425c4dec38874ac"
+  }
+}

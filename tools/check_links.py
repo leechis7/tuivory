@@ -11,7 +11,7 @@ def main():
     missing = []
     files = list(ROOT.rglob('*.md'))
     for path in files:
-        if '.git' in path.parts:
+        if set(path.relative_to(ROOT).parts) & {'.git', '.venv', 'node_modules', 'target', 'bin'}:
             continue
         for target in re.findall(r'\]\(([^)]+)\)', path.read_text(encoding='utf-8')):
             if '://' in target or target.startswith(('mailto:', '#')):

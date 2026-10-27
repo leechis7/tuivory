@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+from build_rust import linker_environment
+from check_static_elf import inspect
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -15,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ratatui', action='store_true', help='also verify the optional Ratatui adapter externally')
+    parser.add_argument('--static-output', type=Path, help='also export a static x86_64 external host')
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='tuivory-rust-module-') as temporary:
         base = Path(temporary)
@@ -84,6 +87,15 @@ fn main() {
         shutil.copyfile(module / 'Cargo.lock', consumer / 'Cargo.lock')
         subprocess.run(['cargo', 'run', '--manifest-path', str(consumer / 'Cargo.toml'), '--offline'],
                        env=env, check=True)
+        if args.static_output:
+            target = 'x86_64-unknown-linux-musl'
+            static_env = dict(linker_environment(target), CARGO_TARGET_DIR=env['CARGO_TARGET_DIR'])
+            subprocess.run(['cargo', 'build', '--manifest-path', str(consumer / 'Cargo.toml'),
+                            '--offline', '--locked', '--release', '--target', target], env=static_env, check=True)
+            binary = base / 'target' / target / 'release/tuivory-external-check'
+            inspect(binary, 'x86_64')
+            args.static_output.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(binary, args.static_output)
     adapter = ' with Ratatui' if args.ratatui else ''
     print(f'Packaged Rust crate and external project{adapter} passed without repository design assets.')
 

@@ -97,3 +97,7 @@ LazyOra는 첫 적용 대상이며 앱·DB 내부 구현은 공통 코어에 넣
 ## 공통 워크스페이스 컴포넌트
 
 [탭·패널·분할선·상태 표시줄·경로 사용법](docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+
+## 정적 배포와 CentOS 7.4
+
+Go·Rust와 향후 언어의 배포 실행파일은 별도 런타임·공유 라이브러리 없이 실행해야 하며, 적용 앱의 정적 링크도 지원합니다. 현재 소스의 Go는 CGO를 끄고 Rust는 musl을 사용합니다. x86_64 대상은 `make build-go-x86_64`, `make build-rust-x86_64`로 명시합니다. [빌드·지원 범위·기존 릴리스와의 차이](docs/static-build.md)를 확인하세요.

@@ -48,3 +48,7 @@ The new shared component API is documented in the [Go/Rust Tree guide](tree.en.m
 ## Shared workspace components
 
 The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+
+## Static executables and legacy Linux
+
+Current source provides Go CGO-disabled and Rust musl static builds. For CentOS 7.4 x86_64 use `make build-go-x86_64` and `make build-rust-x86_64`. Install Rust targets first with `rustup target add aarch64-unknown-linux-musl x86_64-unknown-linux-musl`. Existing v0.1.0 Rust GNU ARM64 assets differ from these unreleased static builds. [Static distribution, support scope and external-host checks](static-build.en.md)

@@ -15,7 +15,7 @@ make build-rust
 ./bin/rust/tuivory-linux-arm64 --lang en
 ```
 
-`make build-rust` produces one `bin/rust/tuivory-linux-arm64` using the Linux ARM64 GNU target and linker. It was validated on a Linux ARM64 host; cross-compilation on other hosts requires a separately configured toolchain. Default `make build` still produces only the Go executable.
+After `rustup target add aarch64-unknown-linux-musl`, `make build-rust` uses musl and bundled `rust-lld` to produce one static `bin/rust/tuivory-linux-arm64`. For x86_64, run `rustup target add x86_64-unknown-linux-musl` and `make build-rust-x86_64`. See [static distribution, CentOS checks and existing release differences](static-build.en.md). Default `make build` still produces only the Go executable.
 
 `--theme` accepts dark/light/blackwhite; `--colors` accepts auto/8/16/256/truecolor. Auto uses the color count reported by Crossterm. Explicit profile selection is a preview, not a change to terminal capabilities or user palettes. Interactive execution requires a TTY.
 
