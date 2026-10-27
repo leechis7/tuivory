@@ -22,4 +22,4 @@ python3 tools/check_palette.py design/themes/lazyora-candidate.csv
 
 일반 텍스트 4.5:1, 포커스 경계 3:1은 내부 설계 참고 목표입니다. CSV에서는 역할별 target을 명시하며, 검사 통과가 화면 전체의 접근성 인증을 의미하지 않습니다. 레이어 합성·커서·문자 폭·Dim·반전·동작은 별도 확인해야 합니다.
 
-[공통 JSON 토큰 초안](../tokens/README.md)은 이 CSV에서 생성하며 Go·Python·Node.js가 함께 읽습니다. Go에는 토큰 로더와 tcell 스타일 어댑터가 있습니다. DTCG 확장과 완성 위젯 SDK는 아직 제공하지 않습니다. CSV와 초안 JSON을 향후 API 호환성 보장으로 해석하지 마세요.
+[공통 JSON 토큰 초안](../tokens/README.md)은 이 CSV에서 생성하며 Go·Python·Node.js·Rust가 함께 읽습니다. Go에는 토큰 로더와 tcell 스타일 어댑터, Rust에는 코어와 선택적 Ratatui 어댑터가 있습니다. DTCG 확장과 완성 위젯 SDK는 아직 제공하지 않습니다. CSV와 초안 JSON을 향후 API 호환성 보장으로 해석하지 마세요.

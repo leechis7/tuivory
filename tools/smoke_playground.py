@@ -26,13 +26,21 @@ def main():
 
     process = None
     captured = bytearray()
+    cursor_reports = 0
 
     def drain(seconds):
+        nonlocal cursor_reports
         deadline = time.monotonic() + seconds
         while time.monotonic() < deadline:
             if select.select([master], [], [], .05)[0]:
                 try:
                     captured.extend(os.read(master, 65536))
+                    # Ratatui queries the initial cursor position. A real terminal
+                    # replies to DSR; this PTY harness must emulate that response.
+                    queries = captured.count(b'\x1b[6n')
+                    while cursor_reports < queries:
+                        os.write(master, b'\x1b[1;1R')
+                        cursor_reports += 1
                 except OSError:
                     break
 
@@ -49,7 +57,10 @@ def main():
         drain(2)
         process.wait(timeout=3)
         if process.returncode or b'TUIVORY' not in captured or b'\x1b[?1049l' not in captured:
-            raise RuntimeError('startup/exit/alternate-screen restore check failed')
+            raise RuntimeError('startup/exit/alternate-screen restore check failed: '
+                               f'exit={process.returncode}, title={b"TUIVORY" in captured}, '
+                               f'restore={bytes([27]) + b"[?1049l" in captured}, '
+                               f'tail={captured[-300:]!r}')
         # tcell can emit cursor/backspace sequences between wide glyphs.
         has_korean = any('\uac00' <= char <= '\ud7a3' for char in captured.decode(errors='replace'))
         if (args.lang == 'ko' and not has_korean) or (args.lang == 'en' and (has_korean or b'Name' not in captured)):

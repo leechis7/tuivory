@@ -28,6 +28,8 @@
 
 ## 구현 간 검증
 
-같은 입력 토큰은 모든 언어의 구현에서 동일한 값으로 읽혀야 합니다. `make check-consumers`는 Go/Python/Node.js가 12팔레트·192쌍을 그대로 읽는지 비교합니다. 이는 위젯 렌더링·키보드 동작의 동등성을 검증하지 않습니다.
+같은 입력 토큰은 모든 언어의 구현에서 동일한 값으로 읽혀야 합니다. `make check-consumers`는 Go/Python/Node.js가 12팔레트·192쌍을 그대로 읽는지 비교합니다. `make check-rust-consumers`는 Rust도 포함해 같은 데이터를 비교합니다. 이는 위젯 렌더링·키보드 동작의 동등성을 검증하지 않습니다.
 
 위젯 어댑터를 추가할 때에는 테마 왕복 상태 보존, 선택/포커스 분리, 모달 입력 차단·복원, 작은 창과 한글 셀 처리를 해당 프레임워크에서 별도로 검사하고 [단말 증거](../evidence/README.md)를 남깁니다.
+
+[공통 UI 점검](../docs/component-audit.md)과 [Tree 계약·구현](../docs/tree.md)은 이번 TVR-7 단계를 설명합니다. `tree-navigation.json`은 Go/Rust가 함께 검증하는 동작 시나리오이며 `tools/export_tree_cases.py`로 모듈 내부 테스트 사본을 생성합니다.

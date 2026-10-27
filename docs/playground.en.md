@@ -10,11 +10,11 @@ Explore how the style rules look in interactive widgets. Data is synthetic. The 
 go -C go run ./cmd/tuivory --lang en
 ```
 
-This guide describes current repository source. `--lang` was added after the published `v0.0.1` and has not received a new version tag. Requires Go 1.24 or later. With mise, run `mise install`, then use `go` normally. Default local binary:
+This guide describes current repository source. `--lang` and shared UI are included in v0.1.0. Requires Go 1.24 or later. With mise, run `mise install`, then use `go` normally. Default local binary:
 
 ```sh
 make build
-./bin/tuivory-linux-arm64 --lang en
+./bin/go/tuivory-linux-arm64 --lang en
 ```
 
 `make build` creates only Linux ARM64. On other hosts, run source with `go -C go run ./cmd/tuivory --lang en`.
@@ -67,8 +67,8 @@ These reference images are generated from actual application widget cells on a t
 ```sh
 make -C go test
 make -C go check
-python3 tools/smoke_playground.py bin/tuivory-linux-arm64 --lang ko
-python3 tools/smoke_playground.py bin/tuivory-linux-arm64 --lang en
+python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang ko
+python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang en
 TUIVORY_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run '^TestSnapshot$' -count=1
 ```
 

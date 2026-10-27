@@ -29,3 +29,7 @@ Example spacing is two cells horizontally and one row vertically within cards, o
 ## Per-pattern records
 
 Record problem → roles/states → keyboard/mouse contract → limited-terminal fallback → validation scenes → known exceptions. Do not combine computed contrast and actual terminal observations into one pass marker.
+
+## Shared Tree implementation
+
+The tree contract above is implemented for Go/tview and Rust/Ratatui in the [Tree API](tree.en.md). Selection and input focus remain independent; hosts connect data, activation, and loading. Tabs, split panels, status, and breadcrumbs are implemented in the [shared workspace](workspace.en.md).
