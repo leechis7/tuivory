@@ -118,3 +118,7 @@ License: [AGPL-3.0-only](LICENSE). See [NOTICE](NOTICE.en.md) for the origins of
 ## Shared workspace components
 
 The [tabs, panels, splitters, status, and breadcrumbs guide](docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+
+## Static distribution and CentOS 7.4
+
+Distributed executables for Go, Rust and future languages must require no separate runtime or shared libraries, and packages must allow static linking in host applications. Current source disables Go CGO and uses Rust musl. Select x86_64 explicitly with `make build-go-x86_64` or `make build-rust-x86_64`. See [builds, support scope and differences from the existing release](docs/static-build.en.md).

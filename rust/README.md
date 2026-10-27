@@ -90,7 +90,7 @@ make build-rust
 ./bin/rust/tuivory-linux-arm64 --lang en
 ```
 
-`make build-rust`는 Linux ARM64 실행파일 하나를 만들며 Linux ARM64 GNU 대상 도구 체인과 링커가 필요합니다. 현재 Linux ARM64 호스트에서 검증했습니다. 기본 `make build`는 계속 Go 하나만 만듭니다. [한국어 화면·조작법](../docs/rust-playground.md)
+`rustup target add aarch64-unknown-linux-musl` 후 `make build-rust`로 Linux ARM64 정적 실행파일 하나를 만듭니다. rustup의 musl 표준 라이브러리와 번들 `rust-lld`를 사용합니다. x86_64 대상은 `rustup target add x86_64-unknown-linux-musl` 후 `make build-rust-x86_64`입니다. 패키지는 적용 앱의 정적 링크를 막는 필수 네이티브 의존성을 추가하지 않습니다. [정적 배포·CentOS 검증·기존 자산과의 차이](../docs/static-build.md) 기본 `make build`는 계속 Go 하나만 만듭니다. [한국어 화면·조작법](../docs/rust-playground.md)
 
 `make check-rust-consumers`는 Go·Python·Node.js·Rust가 같은 공통 토큰을 읽는지 비교하므로 각 도구가 필요합니다. `make check-consumers`는 기존 Go·Python·Node.js 검사입니다. Rust fmt/clippy 컴포넌트는 `rustup component add rustfmt clippy`로 설치합니다.
 

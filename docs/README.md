@@ -30,3 +30,5 @@
 | [변경 이력](../CHANGELOG.md) | 태그 배포와 미배포 변경 |
 
 현재 제품명은 Tuivory, 공개 Go 패키지는 `tuivory`, 일감 프로젝트는 TVR입니다. 이전 원출처 이름은 라이선스·출처 고지에서만 식별합니다. [LICENSE](../LICENSE)는 원문을 유지합니다.
+
+[정적 배포](static-build.md): Go·Rust·후속 언어 정책·CentOS 7.4·외부 앱 검증

@@ -26,3 +26,7 @@ Evidence location, observation date:
 The case compared 67 scenes × 12 combinations × Korean/English × initial/round-trip: 3,216 frames rendered from actual application widgets through tcell simulation. General rules came from theme restoration broken by value substitution, form input colors hiding read-only descriptions, and ANSI Bold reducing selected-cell contrast.
 
 Oracle data types, workers, and database test infrastructure are not copied here. The application-specific capture harness stays in LazyOra. Tuivory provides its own independent playground and bilingual SVG generation through the [playground guide](../docs/playground.en.md), plus executable checks in `tools/smoke_playground.py`. Use the template above for general observations. The LazyOra case is not evidence of actual SecureCRT/MobaXterm user palettes.
+
+## Static distribution
+
+[Go/Rust/CentOS 7.4 validation](static-build.en.md): actual legacy guest kernel, external static hosts, bilingual UI and local ARM64 checks.

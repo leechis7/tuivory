@@ -61,3 +61,7 @@ LazyOra 적용 검증과 Go 사용성을 유지하면서 Python·JavaScript·She
 ## 공통 워크스페이스 컴포넌트
 
 [탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+
+## 배포 경계
+
+Go·Rust 및 후속 언어의 실행파일은 정적으로 배포하며, 라이브러리는 호스트 앱의 정적 링크를 막는 필수 네이티브 의존성을 추가하지 않습니다. 공통 자산은 모듈 내부에 내장합니다. 인터프리터 기반 참조 예제와 독립 배포 실행파일을 구분합니다. [정적 배포 정책과 검증](static-build.md)

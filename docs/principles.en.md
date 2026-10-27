@@ -102,3 +102,7 @@ Evidence: official sources + application case/capture + observed terminal inform
 ```
 
 Do not assign one status to the whole guide. Record validation levels separately for principles, theme values, adapters, components, and terminal observations.
+
+## Standalone execution and static linking
+
+All distributed language executables must run without dynamic loaders, shared libraries or separately installed language runtimes; libraries preserve host static linking. Build dependencies are allowed. Interpreter-based references remain distinct from standalone distributions. [Static distribution](static-build.en.md)

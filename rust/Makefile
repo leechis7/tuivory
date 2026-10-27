@@ -1,4 +1,4 @@
-.PHONY: test check tokens test-ui check-ui run build
+.PHONY: test check tokens test-ui check-ui run build build-x86_64
 CARGO_TARGET_DIR ?= target
 test:
 	cargo test --locked --all-targets
@@ -17,6 +17,6 @@ check-ui:
 run:
 	cargo run --locked --features playground --example playground -- $(ARGS)
 build:
-	cargo build --locked --release --target aarch64-unknown-linux-gnu --target-dir "$(CARGO_TARGET_DIR)" --features playground --example playground
-	mkdir -p ../bin/rust
-	cp "$(CARGO_TARGET_DIR)/aarch64-unknown-linux-gnu/release/examples/playground" ../bin/rust/tuivory-linux-arm64
+	CARGO_TARGET_DIR="$(CARGO_TARGET_DIR)" python3 ../tools/build_rust.py --arch arm64
+build-x86_64:
+	CARGO_TARGET_DIR="$(CARGO_TARGET_DIR)" python3 ../tools/build_rust.py --arch x86_64

@@ -64,3 +64,7 @@ Project documentation and code use [AGPL-3.0-only](LICENSE). Preserve source att
 `design/tree-navigation.json` is the interaction fixture source. After changes, run `python3 tools/export_tree_cases.py`, update both module copies, and run both language tests, external imports, and bilingual PTY checks. `make check` verifies fixture equality. Update the [audit](docs/component-audit.en.md) and [Tree API](docs/tree.en.md).
 
 Workspace contracts originate in `design/components-cases.json`. Regenerate both module copies with the same exporter, then run external imports, bilingual PTY and integrated input checks from the [workspace guide](docs/workspace.en.md), alongside language-matched images.
+
+## Static distribution requirements
+
+Preserve static distribution and host-application linking when adding languages, features or dependencies. Distinguish build dependencies from external runtimes and verify Linux ELF artifacts and target-kernel execution. Python, JavaScript and Shell remain interpreter-based reference sources. Follow the [build, external-host and CentOS validation commands](docs/static-build.en.md).
