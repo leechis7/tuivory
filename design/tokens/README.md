@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
-[candidate.json](candidate.json)은 Go/Python/Node.js가 함께 읽는 참조 데이터이고 [schema.json](schema.json)은 JSON 구조를 설명하는 스키마입니다. 형식 식별자 `tuivory.tokens.draft`는 초안 구분자이며 제품 버전이 아닙니다. DTCG 호환이나 공개 API 안정성을 보장하지 않습니다.
+[candidate.json](candidate.json)은 Go/Python/Node.js/Rust가 함께 읽는 참조 데이터이고 [schema.json](schema.json)은 JSON 구조를 설명하는 스키마입니다. 형식 식별자 `tuivory.tokens.draft`는 초안 구분자이며 제품 버전이 아닙니다. DTCG 호환이나 공개 API 안정성을 보장하지 않습니다.
 
 ```json
 {
@@ -20,7 +20,7 @@
 - `referenceForeground`/`referenceBackground`: 검증에 사용하는 참조 RGB. ANSI 사용자 팔레트를 강제로 대체하는 값이 아닙니다.
 - `fontWeight`: `none` 또는 `bold`. 굵기가 밝은색으로 변하는 단말은 별도로 검증합니다.
 
-스키마는 구조를 검사합니다. 역할 집합의 일치와 프로필별 색상 범위는 추가 의미 검사가 필요하며 현재 Go의 `tuivory.ParseTokens`가 수행합니다. JSON 객체의 속성명은 중복하지 않습니다.
+스키마는 구조를 검사합니다. 역할 집합의 일치와 프로필별 색상 범위는 추가 의미 검사가 필요하며 현재 Go의 `tuivory.ParseTokens`와 Rust의 `TokenDocument::from_json`이 수행합니다. JSON 객체의 속성명은 중복하지 않습니다.
 
 ## 참조 후보의 출처와 생성
 
@@ -31,4 +31,4 @@ python3 tools/export_tokens.py
 python3 tools/export_tokens.py --check
 ```
 
-공통 원본은 이 디렉터리의 JSON이며 Go 소스는 두지 않습니다. 생성 도구는 같은 내용을 `go/internal/tokens/candidate.json`에도 기록합니다. 이 생성 복사본은 Go 모듈의 독립 배포와 embed를 위한 것이며 수동 편집하지 않습니다. `--check`는 원본 CSV·공통 JSON·Go 배포 복사본이 모두 같은지 확인합니다. Go 프로젝트는 저장소의 다른 디렉터리 없이도 사용할 수 있고 Python·JavaScript는 공통 원본을 직접 읽습니다.
+공통 원본은 이 디렉터리의 JSON이며 Go 소스는 두지 않습니다. 생성 도구는 같은 내용을 `go/internal/tokens/candidate.json`과 `rust/src/data/candidate.json`에도 기록합니다. 이 생성 복사본은 Go·Rust 패키지의 독립 배포와 내장을 위한 것이며 수동 편집하지 않습니다. `--check`는 원본 CSV·공통 JSON·Go·Rust 배포 사본이 모두 같은지 확인합니다. Go·Rust 프로젝트는 저장소의 다른 디렉터리 없이도 사용할 수 있고 Python·JavaScript는 공통 원본을 직접 읽습니다.

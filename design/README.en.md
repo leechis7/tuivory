@@ -28,6 +28,8 @@ Current JSON covers color roles and font weight only. There is no engine executi
 
 ## Cross-implementation validation
 
-Each language implementation must read identical token values. `make check-consumers` compares Go/Python/Node.js across 12 palettes and 192 pairs. It does not establish equal widget rendering or keyboard behavior.
+Each language implementation must read identical token values. `make check-consumers` compares Go/Python/Node.js across 12 palettes and 192 pairs. `make check-rust-consumers` includes Rust in the same comparison. These checks do not establish equal widget rendering or keyboard behavior.
 
 New widget adapters need framework-specific checks for theme round trips, focus/selection separation, modal input blocking/restoration, small windows, and Korean cell handling. Record [terminal evidence](../evidence/README.en.md).
+
+[Shared UI audit](../docs/component-audit.en.md) and [Tree contract/implementation](../docs/tree.en.md) describe this TVR-7 phase. `tree-navigation.json` defines behavior scenarios checked by Go/Rust; `tools/export_tree_cases.py` generates module-local test copies.

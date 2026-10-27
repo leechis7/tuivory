@@ -10,11 +10,11 @@
 go -C go run ./cmd/tuivory
 ```
 
-이 문서는 현재 저장소 소스 기준입니다. `--lang`은 배포된 `v0.0.1` 이후 추가되어 아직 새 태그로 배포하지 않았습니다. Go 1.24 이상이 필요합니다. mise 사용자는 `mise install` 후 평소처럼 `go`를 실행하면 됩니다. 기본 로컬 바이너리:
+이 문서는 현재 저장소 소스 기준입니다. `--lang`과 공통 UI는 v0.1.0에 포함합니다. Go 1.24 이상이 필요합니다. mise 사용자는 `mise install` 후 평소처럼 `go`를 실행하면 됩니다. 기본 로컬 바이너리:
 
 ```sh
 make build
-./bin/tuivory-linux-arm64
+./bin/go/tuivory-linux-arm64
 ```
 
 `make build`는 Linux ARM64만 만듭니다. 다른 환경에서는 `go -C go run ./cmd/tuivory`로 현재 환경에서 실행할 수 있습니다.
@@ -27,7 +27,7 @@ go -C go run ./cmd/tuivory --lang en
 
 `--theme`: dark / light / blackwhite. `--colors`: auto / 8 / 16 / 256 / truecolor.
 
-`--lang`: ko / en. 한국어가 기본이며, 동일한 바이너리에서 영어를 선택할 수 있습니다. 예: `./bin/tuivory-linux-arm64 --lang en`. 별도 영어 전용 빌드는 필요하지 않습니다.
+`--lang`: ko / en. 한국어가 기본이며, 동일한 바이너리에서 영어를 선택할 수 있습니다. 예: `./bin/go/tuivory-linux-arm64 --lang en`. 별도 영어 전용 빌드는 필요하지 않습니다.
 
 색상 선택은 **토큰 프로필 미리보기**이며 실제 터미널 능력이나 팔레트를 변경하지 않습니다. 표현할 수 없는 색상은 라이브러리/단말이 근사할 수 있습니다. 자동 모드는 라이브러리가 보고하는 능력을 사용합니다. TERM이 없으면 이 프로세스에서만 ansi를 사용합니다.
 
@@ -70,8 +70,8 @@ go -C go run ./cmd/tuivory --lang en
 ```sh
 make -C go test
 make -C go check
-python3 tools/smoke_playground.py bin/tuivory-linux-arm64
-python3 tools/smoke_playground.py bin/tuivory-linux-arm64 --lang en
+python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64
+python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang en
 TUIVORY_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run '^TestSnapshot$' -count=1
 ```
 

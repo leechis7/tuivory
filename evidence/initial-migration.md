@@ -4,6 +4,8 @@
 
 2026-10-24 · Linux ARM64 · 첫 배포 대상 0.0.1 · [TVR-2](https://leechis7.atlassian.net/browse/TVR-2)
 
+이 문서는 초기 배포 당시의 검증 기록이므로 아래 실행파일 경로는 당시 기준입니다. 현재 Go 빌드 경로와 실행 명령은 [견본 안내](../docs/playground.md)를 따릅니다.
+
 ## 이전 범위
 
 독립 저장소의 초기 구성으로 공통 design/, 언어별 디렉터리, Go 내부 구현·공개 API·DB 없는 견본을 정리했습니다. 제품·패키지·명령·토큰 초안 이름은 tuivory입니다. LazyOra 작업 트리는 수정하지 않았습니다. 원출처와 저작권은 [NOTICE](../NOTICE.md)에 보존합니다.

@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / 'design' / 'tokens' / 'candidate.json'
 # Generated copy included in the independently distributable Go module.
 GO_ASSET = ROOT / 'go' / 'internal' / 'tokens' / 'candidate.json'
+RUST_ASSET = ROOT / 'rust' / 'src' / 'data' / 'candidate.json'
 
 
 def candidate():
@@ -36,12 +37,12 @@ def main():
     args = parser.parse_args()
     content = json.dumps(candidate(), ensure_ascii=False, indent=2) + '\n'
     if args.check:
-        for target in (TARGET, GO_ASSET):
+        for target in (TARGET, GO_ASSET, RUST_ASSET):
             if not target.exists() or target.read_text(encoding='utf-8') != content:
                 parser.exit(1, 'Token asset differs: {}. Run python3 tools/export_tokens.py\n'.format(target.relative_to(ROOT)))
-        print('Shared design tokens and generated Go asset match the CSV (192 pairs).')
+        print('Shared design tokens and generated Go/Rust assets match the CSV (192 pairs).')
     else:
-        for target in (TARGET, GO_ASSET):
+        for target in (TARGET, GO_ASSET, RUST_ASSET):
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content, encoding='utf-8')
 

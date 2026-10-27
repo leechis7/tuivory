@@ -30,6 +30,7 @@ def main():
         (consumer / 'consumer_test.go').write_text('''package consumer_test
 import (
     "testing"
+    "github.com/gdamore/tcell/v2"
     "github.com/leechis7/tuivory/go"
 )
 func TestIsolatedModule(t *testing.T) {
@@ -41,6 +42,41 @@ func TestIsolatedModule(t *testing.T) {
     palette, err := document.Palette("light", "16")
     if err != nil { t.Fatal(err) }
     if _, err := tuivory.Resolve(palette); err != nil { t.Fatal(err) }
+    colors, _ := tuivory.Resolve(palette)
+    tree, err := tuivory.NewTree([]tuivory.TreeNode{{ID:"root",Name:"External"},{ID:"child",Parent:"root",Name:"Child"}})
+    if err != nil { t.Fatal(err) }
+    state := &tuivory.TreeState{}
+    if tree.Handle(state,tuivory.TreeRight,4).Kind != "expand" { t.Fatal("tree expansion failed") }
+    view, err := tuivory.NewTreeView(tree,state,colors)
+    if err != nil { t.Fatal(err) }
+    screen := tcell.NewSimulationScreen("UTF-8")
+    if err := screen.Init(); err != nil { t.Fatal(err) }
+    defer screen.Fini()
+    screen.SetSize(30,6)
+    view.SetRect(0,0,30,6)
+    view.Draw(screen)
+    marker,_,_,_ := screen.GetContent(1,1)
+    if marker != '>' { t.Fatal("external tree did not render") }
+    tabs, err := tuivory.NewTabs([]tuivory.TabItem{{ID:"a",Title:"Overview"},{ID:"b",Title:"Draft",Edited:true,Closable:true}})
+    if err != nil { t.Fatal(err) }
+    tabState := &tuivory.TabState{}
+    tabs.Handle(tabState,tuivory.TabNext)
+    if tabState.Active != "a" || tabState.Focused != "b" { t.Fatal("tab focus activated content") }
+    tabView, err := tuivory.NewTabView(tabs,tabState,colors)
+    if err != nil { t.Fatal(err) }
+    tabView.SetRect(0,0,30,1)
+    tabView.Draw(screen)
+    panel, err := tuivory.NewPanelView(view,colors)
+    if err != nil { t.Fatal(err) }
+    panel.SetRect(0,0,30,6)
+    panel.Draw(screen)
+    if layout := (tuivory.SplitSpec{FirstMin:5,SecondMin:5}).Layout(&tuivory.SplitState{Preferred:8},30); layout.First!=8 { t.Fatal(layout) }
+    crumbs, err := tuivory.NewBreadcrumbView([]tuivory.PathItem{{ID:"root",Label:"Workspace"},{ID:"current",Label:"Current"}},colors)
+    if err != nil { t.Fatal(err) }
+    crumbs.SetRect(0,0,20,1); crumbs.Draw(screen)
+    status, err := tuivory.NewStatusView([]tuivory.StatusItem{{ID:"e",Text:"Failure",Role:"error",Priority:10}},colors)
+    if err != nil { t.Fatal(err) }
+    status.SetRect(0,0,20,1); status.Draw(screen)
 }
 ''')
         subprocess.run(['go', 'test', '-mod=mod', './...'], cwd=consumer, env=env, check=True)

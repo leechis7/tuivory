@@ -2,12 +2,16 @@
 
 [한국어 (default)](README.md) · **English**
 
-Documentation follows the current repository implementation. The published Go version is `v0.0.1`; playground language selection added to `main` afterward has no new version tag. New documentation, edits, and feature changes update related Korean and English documents together.
+Documentation follows the current repository implementation. The current Go version is `v0.1.0`; Rust is distributed through Git tag `rust/v0.1.0`. New documentation, edits, and feature changes update related Korean and English documents together.
 
 | Document | Contents |
 | --- | --- |
 | [Project overview](../README.en.md) | Scope, installation, quick start |
 | [Installation and usage](installation.en.md) | Current module, CLI, token identifiers; published version versus source |
+| [Rust package](../rust/README.en.md) | Git-distributed crate, tokens, styles, Ratatui adapter, external usage |
+| [Rust playground](rust-playground.en.md) | Ratatui adapter, bilingual execution, controls, images, validation |
+| [UI audit](component-audit.en.md) · [Tree API](tree.en.md) | Go/Rust support, host boundaries, next phases, shared Tree and checks |
+| [Shared workspace](workspace.en.md) | Tabs, panels, splitters, status/breadcrumbs APIs, integrated examples and checks |
 | [Go usage](go-package.en.md) | Public API, roles, states, theme reapplication |
 | [Playground](playground.en.md) | Korean/English execution, controls, image generation |
 | [Architecture](architecture.en.md) | Language boundaries, shared data, embedded assets |
@@ -17,7 +21,7 @@ Documentation follows the current repository implementation. The published Go ve
 | [Component patterns](patterns.en.md) | Widget states and input contracts |
 | [Terminal profiles](terminal-profiles.en.md) | Color capabilities, ANSI, rendering limits |
 | [Extraction sources](lazyora-extraction.en.md) · [Go coverage](go-style-coverage.en.md) | Source hashes, API mapping, parity evidence |
-| [Language examples](../examples/README.en.md) | Actual Go/Python/JavaScript/Shell support |
+| [Language examples](../examples/README.en.md) | Actual Go/Rust/Python/JavaScript/Shell support |
 | [Roadmap](roadmap.en.md) | Implemented and future scope |
 | [Work tracking](work-tracking.en.md) | TVR, PR, CI, publication |
 | [Evidence template](../evidence/README.en.md) · [Initial release evidence](../evidence/initial-migration.en.md) | Calculations, simulation, real terminals, release records |
