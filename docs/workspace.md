@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](workspace.en.md)
 
-TVR-7의 [Tree](tree.md)에 이어 Go/tview와 Rust/Ratatui의 공통 워크스페이스 컴포넌트를 제공합니다. 앱은 데이터·포커스·실행·닫기 승인과 단말 I/O를 소유합니다. DB 조회·SQL 실행·JDBC는 포함하지 않습니다. 현재 배포 태그에는 없는 저장소 구현이며 GitHub 게시·원격 CI·실제 앱 적용은 별도 상태로 관리합니다.
+TVR-7의 [Tree](tree.md)에 이어 Go/tview와 Rust/Ratatui의 공통 워크스페이스 컴포넌트를 제공합니다. 앱은 데이터·포커스·실행·닫기 승인과 단말 I/O를 소유합니다. DB 조회·SQL 실행·JDBC는 포함하지 않습니다. v0.1.0에 포함하며 GitHub CI·실제 앱 적용은 작업 기록에서 구분합니다.
 
 ## 탭
 
@@ -38,7 +38,7 @@ Go `NewSplitView(first, second, state, spec, palette)`는 열/행 배치·마우
 
 ## import와 예제
 
-Go는 현재 체크아웃의 `go/`를 외부 프로젝트의 replace로 지정합니다. `github.com/leechis7/tuivory/go` 하나로 새 API를 사용하며, 후보 토큰을 `CandidateTokens → Palette → Resolve`로 해석해 뷰에 전달합니다. 기존 LazyOra 추출 스타일 전체와 같은 데이터라는 의미는 아닙니다.
+Go는 `go get github.com/leechis7/tuivory/go@v0.1.0`으로 설치하거나 로컬 체크아웃의 `go/`를 replace로 지정합니다. `github.com/leechis7/tuivory/go` 하나로 새 API를 사용하며, 후보 토큰을 `CandidateTokens → Palette → Resolve`로 해석해 뷰에 전달합니다. 기존 LazyOra 추출 스타일 전체와 같은 데이터라는 의미는 아닙니다.
 
 ```go
 tabs, err := tuivory.NewTabs([]tuivory.TabItem{
@@ -92,4 +92,4 @@ python3 tools/smoke_workspace.py /path/to/go-workspace
 python3 tools/smoke_workspace.py /path/to/rust-workspace
 ```
 
-로컬 검증은 한영 PTY 시작·종료·화면 복원과 영문 통합 시나리오(변경 문서 닫기 보류, 키 입력, 분할 드래그, 화면 축소·복귀)를 포함합니다. 로컬 검증과 미실행 GitHub CI·실제 원격 단말·LazyOra/LazyBeaver 적용을 구분합니다. 에픽은 요청대로 열어두며 구현은 로컬 커밋으로만 저장합니다.
+로컬 검증은 한영 PTY 시작·종료·화면 복원과 영문 통합 시나리오(변경 문서 닫기 보류, 키 입력, 분할 드래그, 화면 축소·복귀)를 포함합니다. 로컬 검증과 GitHub CI 결과·실제 원격 단말·LazyOra/LazyBeaver 적용을 구분합니다. 에픽은 요청대로 열어두며 구현은 v0.1.0으로 배포합니다.

@@ -2,7 +2,7 @@
 
 [한국어 (default)](component-audit.md) · **English**
 
-Audited local source on 2026-10-27. TVR-5 baseline commit `b67a4cb` is not published to GitHub. This audit distinguishes the starting point from all TVR-7 local implementation results. The epic remains open as requested; this does not claim remote verification or actual application integration.
+Audited local source on 2026-10-27. TVR-5 baseline commit `b67a4cb` is included in the v0.1.0 release history. This audit distinguishes the starting point from all TVR-7 local implementation results. The epic remains open as requested; this does not claim remote verification or actual application integration.
 
 | Area | Go at start | Rust at start | Result and remaining boundary |
 | --- | --- | --- | --- |
@@ -30,4 +30,4 @@ Inspected [yelog/lazydb](https://github.com/yelog/lazydb) at pinned commit `9c54
 3. **Panels/splitters**: explicit titles, padding, focus, minimum sizes, keyboard resizing and dragging, narrow-screen alternatives; separate preferred sizes from actual layout.
 4. **Status/breadcrumbs**: retain current location when shortening paths, prioritize critical status, and define contextual shortcut/message priorities and omitted counts. Apply semantic roles, non-color cues, and Unicode/ASCII conventions throughout.
 
-Phases 1–4 now provide public Go/Rust APIs, database-free bilingual examples, related guides, and local validation. See the [integrated guide](workspace.en.md) and [examples](../examples/README.en.md). Tree is local commit 2005164; subsequent work is also saved in local commits with approval. Remote CI/terminals and actual LazyOra/LazyBeaver integration remain unverified. Nothing is pushed to GitHub; TVR-7 stays open.
+Phases 1–4 now provide public Go/Rust APIs, database-free bilingual examples, related guides, and local validation. See the [integrated guide](workspace.en.md) and [examples](../examples/README.en.md). Tree is local commit 2005164; subsequent work is also saved in local commits with approval. CI/publication evidence is recorded in TVR; remote terminals and actual LazyOra/LazyBeaver integration require separate checks. TVR-7 stays open.

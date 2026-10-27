@@ -19,7 +19,7 @@ tuivory/
 └── evidence/     검증 기록
 ```
 
-Go는 tview 스타일 어댑터를 제공합니다. Rust는 미배포 공통 토큰·프레임워크 독립 코어와 선택적 Ratatui 0.30.2 어댑터를 제공합니다. Rust 기본 코어는 1.85 이상, 어댑터·대화형 예제는 1.88 이상입니다. 어댑터는 색상·스타일·패널 테두리만 계산하며 단말·이벤트·입력·위젯 상태는 예제 호스트가 소유합니다. [Rust 예제](rust-playground.md) 다른 언어 디렉터리는 현재 제공하는 데이터 읽기·참조 예제를 보존하며 UI 패키지 미구현 상태를 각 README에 명시합니다. 다른 언어에서 Go를 호출하도록 강제하지 않습니다.
+Go는 tview 스타일 어댑터를 제공합니다. Rust는 Git 태그로 배포하는 공통 토큰·프레임워크 독립 코어와 선택적 Ratatui 0.30.2 어댑터를 제공합니다. Rust 기본 코어는 1.85 이상, 어댑터·대화형 예제는 1.88 이상입니다. 어댑터는 색상·스타일·패널 테두리만 계산하며 단말·이벤트·입력·위젯 상태는 예제 호스트가 소유합니다. [Rust 예제](rust-playground.md) 다른 언어 디렉터리는 현재 제공하는 데이터 읽기·참조 예제를 보존하며 UI 패키지 미구현 상태를 각 README에 명시합니다. 다른 언어에서 Go를 호출하도록 강제하지 않습니다.
 
 ## 공통 데이터와 배포 자산
 
@@ -56,8 +56,8 @@ Rust 검사는 rust/만 복사해 Cargo 패키지를 검증하고 외부 path �
 
 LazyOra 적용 검증과 Go 사용성을 유지하면서 Python·JavaScript·Shell의 각 환경에 맞는 API·배포·UI 템플릿을 별도 일감으로 확장합니다. [공통 명세](../design/README.md) · [언어별 예제](../examples/README.md) · [로드맵](roadmap.md)
 
-공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 현재 배포 태그에는 포함되지 않습니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.
+공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 v0.1.0 태그에 포함합니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.
 
 ## 공통 워크스페이스 컴포넌트
 
-[탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. 현재 배포 태그에 없는 로컬 구현이며 커밋만 하고 원격 게시·CI·실제 앱 적용은 별도로 관리합니다.
+[탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.

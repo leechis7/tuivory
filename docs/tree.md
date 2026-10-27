@@ -33,7 +33,7 @@ Rust 위젯은 렌더링만 담당합니다. 예제처럼 키를 `TreeAction`, �
 
 ## Go 사용
 
-현재 체크아웃의 `go/`를 replace로 연결합니다. 배포된 `go/v0.0.1`에는 새 API가 없습니다.
+현재 체크아웃의 `go/`를 replace로 연결합니다. `go get github.com/leechis7/tuivory/go@v0.1.0`으로 설치합니다. 첫 태그 `go/v0.0.1`에는 새 API가 없습니다.
 
 ```go
 tree, err := tuivory.NewTree([]tuivory.TreeNode{
@@ -95,4 +95,4 @@ python3 tools/check_rust_module.py --ratatui
 
 이미지는 실제 Rust 예제를 Ratatui TestBackend 120×28에 그린 참조 SVG이며 원격 단말 캡처가 아닙니다. `cargo run --manifest-path rust/Cargo.toml --features playground --example tree -- --lang ko --colors truecolor --snapshot docs/images/tree-dark.svg`로 재생성합니다. Go 화면 캡처로 해석하지 않습니다.
 
-공통 원본 `design/tree-navigation.json`은 키보드·미로딩 펼침·가로 스크롤·클릭을 포함한 동일 탐색 시퀀스의 기대 상태·이벤트입니다. `tools/export_tree_cases.py`로 각 모듈의 테스트 사본을 생성하고 `--check`로 일치 여부를 검사합니다. 양쪽 테스트는 같은 기대 결과를 검증하며 12팔레트·포커스 분리·리터럴 텍스트·셀 폭·데이터 교체도 확인합니다. 외부 프로젝트 import·한영 PTY 시작/종료/복원도 검사합니다. 실제 원격 단말, 원격 CI, LazyOra/LazyBeaver 적용은 미검증입니다. TVR-7 변경은 아직 로컬 커밋·원격 미게시입니다.
+공통 원본 `design/tree-navigation.json`은 키보드·미로딩 펼침·가로 스크롤·클릭을 포함한 동일 탐색 시퀀스의 기대 상태·이벤트입니다. `tools/export_tree_cases.py`로 각 모듈의 테스트 사본을 생성하고 `--check`로 일치 여부를 검사합니다. 양쪽 테스트는 같은 기대 결과를 검증하며 12팔레트·포커스 분리·리터럴 텍스트·셀 폭·데이터 교체도 확인합니다. 외부 프로젝트 import·한영 PTY 시작/종료/복원도 검사합니다. 실제 원격 단말, 원격 CI, LazyOra/LazyBeaver 적용은 미검증입니다. TVR-7 변경은 v0.1.0에 포함합니다.

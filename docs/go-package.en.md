@@ -5,10 +5,10 @@
 The Go code is an independent submodule in `go/`. Its module path is **`github.com/leechis7/tuivory/go`**, and its single public package is **`tuivory`**. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.0.1
+go get github.com/leechis7/tuivory/go@v0.1.0
 ```
 
-The first release is `v0.0.1`, with repository tag `go/v0.0.1`.
+The current release is `v0.1.0`, tagged `go/v0.1.0`.
 
 | Module path | Responsibility |
 | --- | --- |
@@ -57,7 +57,7 @@ go -C go run ./examples/starter
 go -C go run ./cmd/tuivory --lang en --theme light --colors 16
 ```
 
-These playground commands describe current repository source. The `--lang` option was added after `v0.0.1` and has not received a new version tag. The playground accepts `--lang en` for English or `--lang ko` for Korean (the default); the starter template keeps Korean example labels. Language selection affects the playground UI, not the public style API. Themes: `dark`, `light`, `blackwhite`. Profiles: `8`, `16`, `256`, `truecolor`. When the application owns the screen, it can select a profile with `tuivory.ProfileForColors(screen.Colors(), limited)`. Detection is separate from style calculation: the package does not read stdin or change the terminal palette.
+These commands and the `--lang` option describe `v0.1.0` source. The playground accepts `--lang en` for English or `--lang ko` for Korean (the default); the starter template keeps Korean example labels. Language selection affects the playground UI, not the public style API. Themes: `dark`, `light`, `blackwhite`. Profiles: `8`, `16`, `256`, `truecolor`. When the application owns the screen, it can select a profile with `tuivory.ProfileForColors(screen.Colors(), limited)`. Detection is separate from style calculation: the package does not read stdin or change the terminal palette.
 
 ## Roles and states
 
@@ -115,12 +115,12 @@ For form choices, prefer `NewChoice`. It prevents common form input colors from 
 
 Go tests compare 240 palette values and 1,572 style cases captured by independently running the original LazyOra functions. See [extraction sources](lazyora-extraction.en.md) and [style coverage](go-style-coverage.en.md). Simulated screen checks and actual terminal observations are recorded separately.
 
-There is no root Go module: install `github.com/leechis7/tuivory/go@v0.0.1`. The module embeds generated `go/internal/tokens/candidate.json` from shared sources in `design/tokens/`. Consumers need no repository-root files, Python, Shell, or generation tools. `python3 tools/export_tokens.py --check` checks the embedded copy against the shared source.
+There is no root Go module: install `github.com/leechis7/tuivory/go@v0.1.0`. The module embeds generated `go/internal/tokens/candidate.json` from shared sources in `design/tokens/`. Consumers need no repository-root files, Python, Shell, or generation tools. `python3 tools/export_tokens.py --check` checks the embedded copy against the shared source.
 
 See [installation and usage](installation.en.md) for current module, command, and token identifiers. Original attribution and licensing are preserved in [NOTICE](../NOTICE.en.md). For setup and validation commands, return to the [English README](../README.en.md).
 
-The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is absent from published tags. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
+The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is included in v0.1.0. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
 
 ## Shared workspace components
 
-The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These locally committed APIs are absent from published tags; remote publication/CI and real application integration are tracked separately.
+The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).

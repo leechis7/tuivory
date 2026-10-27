@@ -54,4 +54,4 @@ python3 tools/smoke_playground.py bin/rust/tuivory-linux-arm64 --lang en
 python3 tools/check_rust_module.py --ratatui
 ```
 
-로컬에서 12팔레트 역할·렌더링, 테마 전환 상태 유지, 모달·마우스·화면 크기, 영문 UI, 한·영 PTY 시작·종료·복원과 외부 패키지 import 검사를 통과했습니다. GitHub CI·원격 단말·실제 LazyBeaver 적용은 아직 검증하지 않았습니다. crate·어댑터·예제는 로컬 커밋·원격 미게시 상태입니다. 공통 트리·탭 등의 제품 컴포넌트는 TVR-7에서 별도로 다룹니다.
+로컬에서 12팔레트 역할·렌더링, 테마 전환 상태 유지, 모달·마우스·화면 크기, 영문 UI, 한·영 PTY 시작·종료·복원과 외부 패키지 import 검사를 통과했습니다. GitHub CI 결과는 TVR 일감에 기록하며 원격 단말·실제 LazyBeaver 적용은 별도 확인 대상입니다. crate·어댑터·예제는 v0.1.0에 포함합니다. 공통 트리·탭 등의 제품 컴포넌트는 TVR-7에서 별도로 다룹니다.

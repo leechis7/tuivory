@@ -2,7 +2,7 @@
 
 [한국어 (default)](workspace.md) · **English**
 
-Following TVR-7's [Tree](tree.en.md), Go/tview and Rust/Ratatui provide shared workspace components. Hosts own data, focus, execution, close approval, and terminal I/O. No queries, SQL execution, or JDBC are included. These repository APIs are absent from published tags; GitHub publication, remote CI, and real integration are tracked separately.
+Following TVR-7's [Tree](tree.en.md), Go/tview and Rust/Ratatui provide shared workspace components. Hosts own data, focus, execution, close approval, and terminal I/O. No queries, SQL execution, or JDBC are included. These APIs are included in v0.1.0; CI evidence and real integration are tracked separately.
 
 ## Tabs
 
@@ -38,7 +38,7 @@ Roles use candidate-token names directly. Prefixes warning/error `!`, edited `*`
 
 ## Imports and examples
 
-Go external projects use a replace directive pointing to the checkout's `go/`. All APIs use the single `github.com/leechis7/tuivory/go` import. Resolve the candidate palette with `CandidateTokens → Palette → Resolve` and pass it to views. This does not claim equality with the complete LazyOra-derived Go styler.
+Go external projects install `github.com/leechis7/tuivory/go@v0.1.0` or use a replace directive for a local checkout. All APIs use the single `github.com/leechis7/tuivory/go` import. Resolve the candidate palette with `CandidateTokens → Palette → Resolve` and pass it to views. This does not claim equality with the complete LazyOra-derived Go styler.
 
 ```go
 tabs, err := tuivory.NewTabs([]tuivory.TabItem{
@@ -92,4 +92,4 @@ python3 tools/smoke_workspace.py /path/to/go-workspace
 python3 tools/smoke_workspace.py /path/to/rust-workspace
 ```
 
-Local checks include bilingual PTY startup/exit/restoration and an English integrated input scenario: edited-close guard, keys, divider dragging, and narrow/expanded reflow. Distinguish these from unrun GitHub CI, remote terminals, and actual LazyOra/LazyBeaver integration. The epic stays open as requested; implementation is saved only in local commits.
+Local checks include bilingual PTY startup/exit/restoration and an English integrated input scenario: edited-close guard, keys, divider dragging, and narrow/expanded reflow. Distinguish these from GitHub CI results, remote terminals, and actual LazyOra/LazyBeaver integration. The epic stays open as requested; implementation is distributed in v0.1.0.

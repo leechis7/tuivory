@@ -6,10 +6,10 @@ Tuivory(TUI + ivory)는 독립 터미널 UI 스타일 프로젝트입니다. 현
 
 ## 배포 버전과 현재 소스
 
-배포된 Go 버전은 `v0.0.1`, 저장소 태그는 `go/v0.0.1`입니다.
+현재 Go 버전은 `v0.1.0`, 저장소 태그는 `go/v0.1.0`입니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.0.1
+go get github.com/leechis7/tuivory/go@v0.1.0
 ```
 
 모듈은 저장소의 `go/` 아래에 있습니다. 루트 Go 모듈은 없으며 패키지 이름은 `tuivory`입니다.
@@ -20,7 +20,7 @@ import "github.com/leechis7/tuivory/go"
 styler, err := tuivory.New("dark", "256")
 ```
 
-현재 `main`에는 배포 태그 이후의 한·영 문서와 견본 언어 선택이 포함됩니다. 이 기능은 아직 새 태그로 배포하지 않았습니다. 현재 견본을 실행하려면 저장소를 체크아웃한 뒤 루트에서 실행하세요.
+v0.1.0에는 한영 문서·견본 언어 선택·공통 UI가 포함됩니다. 태그를 체크아웃한 뒤 루트에서 실행하거나 [릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.1.0)의 Linux ARM64 견본을 사용하세요.
 
 ```sh
 go -C go run ./cmd/tuivory --lang ko
@@ -33,7 +33,7 @@ Go 1.24 이상이 필요합니다. `make build`는 두 언어를 지원하는 Li
 
 ## Rust 사용
 
-Rust 코어는 아직 배포하지 않았습니다. Rust 1.85 이상에서 현재 체크아웃의 rust/를 Cargo path 의존성으로 사용합니다. 공통 후보 토큰·색상·스타일 값을 제공합니다. 선택적 Ratatui 0.30.2 어댑터와 Crossterm 0.29 대화형 예제는 Rust 1.88 이상입니다. `make run-rust ARGS="--lang ko"`로 실행하고 `make build-rust`로 `bin/rust/tuivory-linux-arm64`를 만듭니다. [Rust 화면·조작법](rust-playground.md)에서 단말·대상 링커 요구사항을 확인합니다. [Rust 사용법](../rust/README.md)
+Rust는 `rust/v0.1.0` Git 태그로 배포합니다. Rust 1.85 이상에서 `tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.1.0" }`를 사용하거나 로컬 rust/를 Cargo path 의존성으로 연결합니다. crates.io에는 게시하지 않습니다. 공통 후보 토큰·색상·스타일 값을 제공합니다. 선택적 Ratatui 0.30.2 어댑터와 Crossterm 0.29 대화형 예제는 Rust 1.88 이상입니다. `make run-rust ARGS="--lang ko"`로 실행하고 `make build-rust`로 `bin/rust/tuivory-linux-arm64`를 만듭니다. [Rust 화면·조작법](rust-playground.md)에서 단말·대상 링커 요구사항을 확인합니다. [Rust 사용법](../rust/README.md)
 
 ## 공통 데이터와 검증
 
@@ -43,8 +43,8 @@ Go 프로젝트는 공개 모듈만으로 내장 토큰을 사용할 수 있습�
 
 [Go API](go-package.md) · [저장소 구조](architecture.md) · [견본](playground.md) · [검증 기록](../evidence/README.md)
 
-공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 현재 배포 태그에는 포함되지 않습니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.
+공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 v0.1.0 태그에 포함합니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.
 
 ## 공통 워크스페이스 컴포넌트
 
-[탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. 현재 배포 태그에 없는 로컬 구현이며 커밋만 하고 원격 게시·CI·실제 앱 적용은 별도로 관리합니다.
+[탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.

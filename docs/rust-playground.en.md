@@ -54,4 +54,4 @@ python3 tools/smoke_playground.py bin/rust/tuivory-linux-arm64 --lang en
 python3 tools/check_rust_module.py --ratatui
 ```
 
-Local checks passed for twelve palette roles/rendering, state preservation across theme changes, modal/mouse/resize behavior, English UI, Korean/English PTY startup/exit/restoration, and external packaged imports. GitHub CI, remote terminals, and actual LazyBeaver integration have not been validated. The crate, adapter, and example are committed locally and unpublished. Shared product components such as trees and tabs are separate TVR-7 work.
+Local checks passed for twelve palette roles/rendering, state preservation across theme changes, modal/mouse/resize behavior, English UI, Korean/English PTY startup/exit/restoration, and external packaged imports. GitHub CI results are recorded in TVR; remote terminals and actual LazyBeaver integration require separate verification. The crate, adapter, and example are included in v0.1.0. Shared product components such as trees and tabs are separate TVR-7 work.

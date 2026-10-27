@@ -33,7 +33,7 @@ Long names/deep nesting clip and pan in terminal cells. Partially clipped wide/c
 
 ## Go usage
 
-Use a replace directive pointing to the checkout's `go/`. Published `go/v0.0.1` does not contain these APIs.
+Use a replace directive pointing to the checkout's `go/`. Install with `go get github.com/leechis7/tuivory/go@v0.1.0`. The first `go/v0.0.1` tag does not contain these APIs.
 
 ```go
 tree, err := tuivory.NewTree([]tuivory.TreeNode{
@@ -95,4 +95,4 @@ Both examples support F2 themes, F3 color profiles, F4 Unicode/ASCII, Tab focus 
 
 The SVG renders the actual Rust example into a 120×28 Ratatui TestBackend. It is not a remote terminal capture or a Go screenshot. Regenerate with `cargo run --manifest-path rust/Cargo.toml --features playground --example tree -- --lang en --colors truecolor --snapshot docs/images/tree-dark-en.svg`.
 
-Shared source `design/tree-navigation.json` defines expected state/events for an identical navigation sequence, including keys, unloaded expansion, horizontal scrolling, and clicks. `tools/export_tree_cases.py` generates module-local test copies; `--check` verifies equality. Both languages test the same expected results, plus twelve palettes, independent focus, literal text, cell widths, and data replacement. External imports and Korean/English PTY startup/exit/restoration are also checked. Remote terminals, remote CI, and actual LazyOra/LazyBeaver integration remain unverified. TVR-7 changes are committed locally/unpublished.
+Shared source `design/tree-navigation.json` defines expected state/events for an identical navigation sequence, including keys, unloaded expansion, horizontal scrolling, and clicks. `tools/export_tree_cases.py` generates module-local test copies; `--check` verifies equality. Both languages test the same expected results, plus twelve palettes, independent focus, literal text, cell widths, and data replacement. External imports and Korean/English PTY startup/exit/restoration are also checked. Remote terminals, remote CI, and actual LazyOra/LazyBeaver integration remain unverified. TVR-7 changes are included in v0.1.0.

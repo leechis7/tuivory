@@ -30,10 +30,10 @@ theme.Form(form)
 theme.Button(button)
 ```
 
-현재 배포된 Go 버전은 **0.0.1**이며 하위 모듈 태그는 `go/v0.0.1`입니다. 아래 견본의 언어 선택과 영문 이미지는 이후 `main`에 반영한 기능이며 아직 새 버전 태그로 배포하지 않았습니다. 저장소 체크아웃의 명령과 배포 버전 설치를 구분하세요.
+현재 배포 버전은 **0.1.0**입니다. Go 모듈 태그는 `go/v0.1.0`, Rust Git 태그는 `rust/v0.1.0`이며 공통 UI와 한영 견본·문서를 포함합니다. [릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.1.0)에서 Linux ARM64 견본과 소스 패키지를 받습니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.0.1
+go get github.com/leechis7/tuivory/go@v0.1.0
 ```
 
 [Go 사용법](docs/go-package.md) · [설치·사용 안내](docs/installation.md) · [문서 목록](docs/README.md)
@@ -57,7 +57,7 @@ make build
 
 ## Rust 사용
 
-Rust 1.85 이상에서 `rust/`를 path 의존성으로 사용하는 미배포 crate를 제공합니다. [Rust 사용법](rust/README.md)에 설치·API·범위를 설명합니다. 공통 후보 토큰 기준이며 Go의 실제 위젯 스타일 전체를 이식한 것은 아닙니다.
+Rust 1.85 이상에서 `rust/v0.1.0` Git 태그 또는 로컬 `rust/` path 의존성으로 사용하는 crate를 제공합니다. [Rust 사용법](rust/README.md)에 설치·API·범위를 설명합니다. 공통 후보 토큰 기준이며 Go의 실제 위젯 스타일 전체를 이식한 것은 아닙니다.
 
 ```sh
 cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256
@@ -70,7 +70,7 @@ python3 tools/check_rust_module.py
 
 ## 공통 Tree
 
-Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 계약을 사용합니다. 기존 배포 태그에는 없는 로컬 변경입니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
+Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 계약을 사용합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
 
 ```sh
 make run-tree-go ARGS="--lang ko"
@@ -96,4 +96,4 @@ LazyOra는 첫 적용 대상이며 앱·DB 내부 구현은 공통 코어에 넣
 
 ## 공통 워크스페이스 컴포넌트
 
-[탭·패널·분할선·상태 표시줄·경로 사용법](docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. 현재 배포 태그에 없는 로컬 구현이며 커밋만 하고 원격 게시·CI·실제 앱 적용은 별도로 관리합니다.
+[탭·패널·분할선·상태 표시줄·경로 사용법](docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.

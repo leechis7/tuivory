@@ -19,7 +19,7 @@ tuivory/
 └── evidence/     Validation records
 ```
 
-Go provides tview style adapters. Rust provides an unpublished shared-token/framework-independent core and optional Ratatui 0.30.2 adapter. The core requires Rust 1.85+; the adapter and interactive example require 1.88+. The adapter computes colors, styles, and panel borders; the example host owns the terminal, events, inputs, and widget state. See the [Rust example](rust-playground.en.md). Other language directories provide token reading or reference examples and state their current limits. They are not required to call Go.
+Go provides tview style adapters. Rust provides a Git-distributed shared-token/framework-independent core and optional Ratatui 0.30.2 adapter. The core requires Rust 1.85+; the adapter and interactive example require 1.88+. The adapter computes colors, styles, and panel borders; the example host owns the terminal, events, inputs, and widget state. See the [Rust example](rust-playground.en.md). Other language directories provide token reading or reference examples and state their current limits. They are not required to call Go.
 
 ## Shared data and distribution assets
 
@@ -56,8 +56,8 @@ The Rust check copies only rust/, verifies a Cargo package, and runs an external
 
 Maintain Go usability and validate LazyOra integration, then extend APIs, distribution, and UI templates for Python, JavaScript, and Shell through separate work items. [Shared specification](../design/README.en.md) · [Examples](../examples/README.en.md) · [Roadmap](roadmap.en.md)
 
-The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is absent from published tags. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
+The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is included in v0.1.0. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
 
 ## Shared workspace components
 
-The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These locally committed APIs are absent from published tags; remote publication/CI and real application integration are tracked separately.
+The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
