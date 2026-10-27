@@ -109,3 +109,7 @@ styler.FooterButton(footerButton)
 ## 공통 워크스페이스 컴포넌트
 
 [탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+
+## 정적 링크
+
+Tuivory는 적용 앱에 필수 공유 라이브러리 의존성을 추가하지 않습니다. Linux 배포 앱은 `CGO_ENABLED=0`으로 빌드하고 최종 ELF와 대상 커널 실행을 검사합니다. 다른 앱 의존성이 추가하는 네이티브 런타임도 앱에서 확인해야 합니다. [정적 배포·외부 앱 검증](static-build.md)

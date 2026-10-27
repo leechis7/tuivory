@@ -40,3 +40,7 @@ sh -n shell/examples/terminal-colors.sh
 `design/tree-navigation.json`이 동작 계약의 원본입니다. 수정 후 `python3 tools/export_tree_cases.py`로 Go/Rust 테스트 사본을 함께 갱신하고 양쪽 테스트·외부 import·한영 PTY를 실행합니다. `make check`는 사본 일치도 확인합니다. [점검표](docs/component-audit.md)와 [Tree API](docs/tree.md)를 현행화합니다.
 
 공통 워크스페이스의 계약 원본은 `design/components-cases.json`입니다. 같은 생성 도구로 두 모듈의 사본을 갱신하고 [워크스페이스 안내](docs/workspace.md)의 외부 import·한영 PTY·통합 입력 검사와 이미지를 함께 확인합니다.
+
+## 정적 배포 조건
+
+새 언어·기능·의존성을 추가할 때 배포 실행파일과 적용 앱의 정적 링크 조건을 유지합니다. 빌드 의존성과 실행 시 필요한 외부 런타임을 구분하고 Linux 산출물의 ELF 검사와 대상 커널 실행을 검증합니다. 현재 Python·JavaScript·Shell은 인터프리터 기반 참조 소스입니다. [빌드·외부 앱·CentOS 검증 명령](docs/static-build.md)을 따릅니다.

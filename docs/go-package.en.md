@@ -124,3 +124,7 @@ The new shared component API is documented in the [Go/Rust Tree guide](tree.en.m
 ## Shared workspace components
 
 The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+
+## Static linking
+
+Tuivory does not introduce required shared libraries into host applications. Build distributed Linux apps with `CGO_ENABLED=0`, then check the final ELF and execution on the target kernel. Check native runtimes introduced by other application dependencies too. [Static distribution and external-host validation](static-build.en.md)

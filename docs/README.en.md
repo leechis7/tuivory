@@ -30,3 +30,5 @@ Documentation follows the current repository implementation. The current Go vers
 | [Changelog](../CHANGELOG.en.md) | Tagged releases and unreleased changes |
 
 The current product is Tuivory, public Go package `tuivory`, Jira project TVR. Earlier source names are identified only in license/origin notices. [LICENSE](../LICENSE) remains in its original form.
+
+[Static distribution](static-build.en.md): Go/Rust/future language policy, CentOS 7.4 and external hosts

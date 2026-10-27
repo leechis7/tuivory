@@ -90,7 +90,7 @@ make build-rust
 ./bin/rust/tuivory-linux-arm64 --lang en
 ```
 
-`make build-rust` produces one Linux ARM64 executable and requires the Linux ARM64 GNU target toolchain/linker. It was validated on a Linux ARM64 host. Default `make build` still produces only Go. See [English views and controls](../docs/rust-playground.en.md).
+After `rustup target add aarch64-unknown-linux-musl`, `make build-rust` produces one static Linux ARM64 executable using rustup musl and bundled `rust-lld`. For x86_64 run `rustup target add x86_64-unknown-linux-musl` then `make build-rust-x86_64`. The package adds no mandatory native dependencies preventing host static linking. See [static distribution, CentOS checks and existing asset differences](../docs/static-build.en.md). Default `make build` still produces only Go. See [English views and controls](../docs/rust-playground.en.md).
 
 `make check-rust-consumers` compares Go/Python/Node.js/Rust against the shared tokens and requires those tools. `make check-consumers` retains the existing Go/Python/Node.js check. Install format/lint components with `rustup component add rustfmt clippy`.
 
