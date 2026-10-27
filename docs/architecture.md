@@ -55,3 +55,5 @@ Rust 검사는 rust/만 복사해 Cargo 패키지를 검증하고 외부 path �
 ## 다음 구현
 
 LazyOra 적용 검증과 Go 사용성을 유지하면서 Python·JavaScript·Shell의 각 환경에 맞는 API·배포·UI 템플릿을 별도 일감으로 확장합니다. [공통 명세](../design/README.md) · [언어별 예제](../examples/README.md) · [로드맵](roadmap.md)
+
+공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 현재 배포 태그에는 포함되지 않습니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.

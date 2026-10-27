@@ -34,3 +34,7 @@ make check
 공통 후보 토큰의 원본은 [design/tokens](../design/tokens/README.md)에 있습니다. `internal/tokens/candidate.json`은 `tools/export_tokens.py`로 생성한 배포용 복사본입니다. 수동 수정하지 않습니다. Go 모듈을 단독 다운로드해도 이 파일을 embed하므로 레포 루트 데이터나 별도 생성 단계 없이 사용할 수 있습니다.
 
 [API와 사용법](../docs/go-package.md) · [스타일 범위](../docs/go-style-coverage.md)
+
+## 공통 Tree
+
+기존 `Styler.Tree`는 stock tview 트리의 스타일 API입니다. 신규 `NewTree`·`TreeState`·`NewTreeView`는 안정 ID, 펼침/선택/스크롤, 노드 아이콘·보조 설명·개수와 키보드/마우스를 제공합니다. 같은 후보 토큰과 조작 규칙의 Rust 구현도 있습니다. 기존 Go 추출 스타일 전체의 이식이나 배포 태그의 API는 아닙니다. [API·예제](../docs/tree.md) · [현재 점검표](../docs/component-audit.md). 루트에서 `make run-tree-go ARGS="--lang ko"`로 실행합니다.

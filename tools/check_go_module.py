@@ -30,6 +30,7 @@ def main():
         (consumer / 'consumer_test.go').write_text('''package consumer_test
 import (
     "testing"
+    "github.com/gdamore/tcell/v2"
     "github.com/leechis7/tuivory/go"
 )
 func TestIsolatedModule(t *testing.T) {
@@ -41,6 +42,21 @@ func TestIsolatedModule(t *testing.T) {
     palette, err := document.Palette("light", "16")
     if err != nil { t.Fatal(err) }
     if _, err := tuivory.Resolve(palette); err != nil { t.Fatal(err) }
+    colors, _ := tuivory.Resolve(palette)
+    tree, err := tuivory.NewTree([]tuivory.TreeNode{{ID:"root",Name:"External"},{ID:"child",Parent:"root",Name:"Child"}})
+    if err != nil { t.Fatal(err) }
+    state := &tuivory.TreeState{}
+    if tree.Handle(state,tuivory.TreeRight,4).Kind != "expand" { t.Fatal("tree expansion failed") }
+    view, err := tuivory.NewTreeView(tree,state,colors)
+    if err != nil { t.Fatal(err) }
+    screen := tcell.NewSimulationScreen("UTF-8")
+    if err := screen.Init(); err != nil { t.Fatal(err) }
+    defer screen.Fini()
+    screen.SetSize(30,6)
+    view.SetRect(0,0,30,6)
+    view.Draw(screen)
+    marker,_,_,_ := screen.GetContent(1,1)
+    if marker != '>' { t.Fatal("external tree did not render") }
 }
 ''')
         subprocess.run(['go', 'test', '-mod=mod', './...'], cwd=consumer, env=env, check=True)

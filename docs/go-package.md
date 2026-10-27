@@ -103,3 +103,5 @@ styler.FooterButton(footerButton)
 [설치·사용 안내](installation.md)에서 현재 모듈·명령·토큰 식별자를 확인할 수 있습니다. 원출처와 라이선스는 [NOTICE](../NOTICE.md)에 보존합니다.
 
 공통 원본은 `design/tokens/`에 있습니다. 생성된 `go/internal/tokens/candidate.json`을 모듈 안에 포함하므로 Go 프로젝트는 레포 루트·Python·Shell·생성 도구 없이 사용할 수 있습니다. `tools/export_tokens.py --check`가 공통 원본과 Go 복사본 일치를 확인합니다.
+
+공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 현재 배포 태그에는 포함되지 않습니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.

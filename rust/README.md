@@ -93,3 +93,7 @@ make build-rust
 공통 원본은 [design/tokens](https://github.com/leechis7/tuivory/blob/main/design/tokens/README.md)입니다. `src/data/candidate.json`은 `python3 tools/export_tokens.py`로 생성한 배포용 사본이며 수동 편집하지 않습니다. `include_str!`로 포함하므로 외부 Rust 프로젝트에 design/이나 생성 도구가 필요하지 않습니다.
 
 현재 Cargo 버전 0.0.1은 미배포 작업 버전이며 `publish = false`입니다. 커밋·GitHub·crates.io 게시는 별도 승인을 따릅니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
+
+## 공통 Tree
+
+`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}`는 Rust 1.85 이상에서 프레임워크 없이 사용합니다. 선택적 `tuivory::ratatui::TreeWidget`은 Rust 1.88 이상입니다. Go와 같은 안정 ID·펼침·선택·스크롤·이벤트 계약이며 아이콘·보조 설명·개수·Unicode/ASCII를 렌더링합니다. [Tree 사용법](../docs/tree.md) · [지원 범위 점검](../docs/component-audit.md). 루트에서 `make run-tree-rust ARGS="--lang ko"`로 실행합니다. 이 TVR-7 변경은 아직 로컬 커밋·원격 미게시입니다.

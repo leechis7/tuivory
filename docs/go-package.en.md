@@ -118,3 +118,5 @@ Go tests compare 240 palette values and 1,572 style cases captured by independen
 There is no root Go module: install `github.com/leechis7/tuivory/go@v0.0.1`. The module embeds generated `go/internal/tokens/candidate.json` from shared sources in `design/tokens/`. Consumers need no repository-root files, Python, Shell, or generation tools. `python3 tools/export_tokens.py --check` checks the embedded copy against the shared source.
 
 See [installation and usage](installation.en.md) for current module, command, and token identifiers. Original attribution and licensing are preserved in [NOTICE](../NOTICE.en.md). For setup and validation commands, return to the [English README](../README.en.md).
+
+The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is absent from published tags. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.

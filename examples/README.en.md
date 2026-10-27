@@ -19,3 +19,7 @@ The [static component layout](components.txt) is language-independent reference 
 Example sources remain in their language directories. Put compiled playground executables in `bin/<language>/`, with OS and architecture in each filename. Currently, `make build` produces only `bin/go/tuivory-linux-arm64`. From the repository root, run `./bin/go/tuivory-linux-arm64 --lang ko` or `--lang en`.
 
 With Rust 1.88+, run the Rust playground using `make run-rust ARGS="--lang en"`. `make build-rust` produces one `bin/rust/tuivory-linux-arm64`. The default core/JSON example requires Rust 1.85+ and runs with `cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256`. Python, JavaScript, and Shell examples run from source by default; executable packaging can be decided when needed. Git ignores `bin/`.
+
+## Shared Tree examples
+
+[Go source](../go/examples/tree/main.go) · [Rust source](../rust/examples/tree/main.rs) · [Bilingual guide](../docs/tree.en.md). Run `make run-tree-go ARGS="--lang en"` or `make run-tree-rust ARGS="--lang en"` from the root. Both demonstrate the same database-free data/controls without extending the default product build.

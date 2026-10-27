@@ -9,6 +9,7 @@ test:
 check:
 	$(MAKE) -C go check
 	python3 tools/export_tokens.py --check
+	python3 tools/export_tree_cases.py --check
 	python3 tools/check_palette.py design/themes/lazyora-candidate.csv
 	python3 tools/check_links.py
 	sh -n shell/examples/terminal-colors.sh
@@ -29,3 +30,9 @@ run-rust:
 	$(MAKE) -C rust run ARGS="$(ARGS)"
 build-rust:
 	$(MAKE) -C rust build
+
+.PHONY: run-tree-go run-tree-rust
+run-tree-go:
+	go -C go run ./examples/tree $(ARGS)
+run-tree-rust:
+	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example tree -- $(ARGS)

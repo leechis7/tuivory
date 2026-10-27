@@ -14,10 +14,12 @@
 //! ```
 
 use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
+mod tree;
 use ::ratatui::{
     style::{Color, Modifier, Style},
     widgets::{Block, BorderType, Borders},
 };
+pub use tree::TreeWidget;
 
 impl From<crate::Color> for Color {
     fn from(value: crate::Color) -> Self {

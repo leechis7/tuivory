@@ -68,6 +68,15 @@ python3 tools/check_rust_module.py
 
 선택적 Ratatui 0.30.2 어댑터와 Crossterm 0.29 대화형 예제는 Rust 1.88 이상입니다. `make run-rust ARGS="--lang ko"`로 실행하고 `make build-rust`로 `bin/rust/tuivory-linux-arm64`를 만듭니다. 기본 `make build`는 계속 Go 하나만 생성합니다. [Rust 화면·조작법](docs/rust-playground.md) · [영문 화면](docs/rust-playground.en.md)
 
+## 공통 Tree
+
+Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 계약을 사용합니다. 기존 배포 태그에는 없는 로컬 변경입니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
+
+```sh
+make run-tree-go ARGS="--lang ko"
+make run-tree-rust ARGS="--lang ko"
+```
+
 ## 검증
 
 ```sh

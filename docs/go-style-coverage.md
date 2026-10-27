@@ -32,3 +32,5 @@ python3 tools/capture_lazyora_styles.py /path/to/lazyora
 python3 tools/capture_lazyora_matrix.py /path/to/lazyora
 make -C go test
 ```
+
+공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 현재 배포 태그에는 포함되지 않습니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.

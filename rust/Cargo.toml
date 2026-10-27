@@ -25,3 +25,8 @@ crossterm = { version = "0.29", optional = true }
 name = "playground"
 path = "examples/playground/main.rs"
 required-features = ["playground"]
+
+[[example]]
+name = "tree"
+path = "examples/tree/main.rs"
+required-features = ["playground"]

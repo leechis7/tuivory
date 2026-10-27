@@ -40,6 +40,9 @@ def main():
         (consumer / 'Cargo.toml').write_text(manifest)
         source = '''use tuivory::{Color, ColorProfile, Theme, TokenDocument};
 fn main() {
+    let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), branch: true, ..Default::default() }]).unwrap();
+    let mut state = tuivory::tree::TreeState::default();
+    assert!(matches!(tree.handle(&mut state, tuivory::tree::TreeAction::Right, 4), Some(tuivory::tree::TreeEvent::Expand(_))));
     let doc = TokenDocument::candidate().unwrap();
     assert_eq!(doc.roles().len(), 16);
     assert_eq!(doc.palette_names().count(), 12);
@@ -59,6 +62,10 @@ fn main() {
     let mut terminal = ratatui::Terminal::new(ratatui::backend::TestBackend::new(24, 4)).unwrap();
     terminal.draw(|f| f.render_widget(styles.block("External", true).unwrap(), f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "╔");
+    let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), ..Default::default() }]).unwrap();
+    let mut state = tuivory::tree::TreeState::default();
+    terminal.draw(|f| f.render_stateful_widget(tuivory::ratatui::TreeWidget::new(&tree, &styles).unwrap(), f.area(), &mut state)).unwrap();
+    assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), ">");
     let doc =''')
         (consumer / 'src/main.rs').write_text(source)
         shutil.copyfile(module / 'Cargo.lock', consumer / 'Cargo.lock')

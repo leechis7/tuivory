@@ -55,3 +55,5 @@ The Rust check copies only rust/, verifies a Cargo package, and runs an external
 ## Further implementations
 
 Maintain Go usability and validate LazyOra integration, then extend APIs, distribution, and UI templates for Python, JavaScript, and Shell through separate work items. [Shared specification](../design/README.en.md) · [Examples](../examples/README.en.md) · [Roadmap](roadmap.en.md)
+
+The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is absent from published tags. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.

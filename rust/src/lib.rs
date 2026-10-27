@@ -13,6 +13,7 @@
 //! ```
 
 mod tokens;
+pub mod tree;
 mod types;
 
 #[cfg(feature = "ratatui")]

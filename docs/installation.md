@@ -42,3 +42,5 @@ Rust 코어는 아직 배포하지 않았습니다. Rust 1.85 이상에서 현�
 Go 프로젝트는 공개 모듈만으로 내장 토큰을 사용할 수 있습니다. Python·JavaScript는 공통 JSON 읽기 예제, Shell은 ANSI 참조 예제이며 해당 언어의 UI 패키지는 아직 제공하지 않습니다.
 
 [Go API](go-package.md) · [저장소 구조](architecture.md) · [견본](playground.md) · [검증 기록](../evidence/README.md)
+
+공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 현재 배포 태그에는 포함되지 않습니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.

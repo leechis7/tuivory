@@ -34,3 +34,7 @@ sh -n shell/examples/terminal-colors.sh
 기능 추가·수정·버그 수정 시 영향받는 README·사용법·API·예제·UI 이미지·변경 이력 등 관련 문서를 같은 작업에서 현행화합니다. 한국어와 영어를 함께 갱신하고 구현·문서·검증 결과가 일치하는지 확인한 뒤 작업을 완료합니다.
 
 이 프로젝트의 문서·코드는 [AGPL-3.0-only](LICENSE)로 제공합니다. 외부 자료는 출처와 고지 사항을 보존하고 사용 조건을 확인한 뒤 추가하세요.
+
+## 공통 Tree 변경
+
+`design/tree-navigation.json`이 동작 계약의 원본입니다. 수정 후 `python3 tools/export_tree_cases.py`로 Go/Rust 테스트 사본을 함께 갱신하고 양쪽 테스트·외부 import·한영 PTY를 실행합니다. `make check`는 사본 일치도 확인합니다. [점검표](docs/component-audit.md)와 [Tree API](docs/tree.md)를 현행화합니다.

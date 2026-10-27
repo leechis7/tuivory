@@ -17,6 +17,8 @@ jobs:
         run: python3 tools/check_palette.py design/themes/lazyora-candidate.csv
       - name: Validate shared token export
         run: python3 tools/export_tokens.py --check
+      - name: Validate shared tree navigation contract
+        run: python3 tools/export_tree_cases.py --check
       - name: Validate local document targets
         run: python3 tools/check_links.py
       - name: Validate terminal sample script
@@ -50,6 +52,11 @@ jobs:
         run: |
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang ko
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang en
+      - name: Check public Tree example terminal lifecycle
+        run: |
+          go build -C go -o "$RUNNER_TEMP/tuivory-tree" ./examples/tree
+          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-tree" --lang ko
+          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-tree" --lang en
   rust-core:
     runs-on: ubuntu-24.04
     steps:
@@ -86,12 +93,17 @@ jobs:
       - name: Test and lint adapter and interactive host
         run: make test-rust-ui check-rust-ui
       - name: Build native executable for terminal checks
-        run: cargo build --manifest-path rust/Cargo.toml --locked --features playground --example playground
+        run: cargo build --manifest-path rust/Cargo.toml --locked --features playground --examples
       - name: Check Korean and English terminal lifecycle
         run: |
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/playground" --lang ko
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/playground" --lang en
       - name: Verify reference rendering
         run: python3 tools/snapshot_rust.py "$CARGO_TARGET_DIR/debug/examples/playground" --output "$RUNNER_TEMP/tuivory-rust-images"
+      - name: Check public Tree example and reference views
+        run: |
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/tree" --lang ko
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/tree" --lang en
+          python3 tools/snapshot_tree.py "$CARGO_TARGET_DIR/debug/examples/tree" --output "$RUNNER_TEMP/tuivory-tree-images"
       - name: Verify adapter from an external packaged dependency
         run: python3 tools/check_rust_module.py --ratatui

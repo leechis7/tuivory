@@ -10,9 +10,9 @@ Tuivory는 독립 프로젝트이며 Jira 표시 이름은 **Tuivory**, 키는 *
 | [TVR-2](https://leechis7.atlassian.net/browse/TVR-2) | 독립 저장소 및 첫 Go 배포 | 완료. [CI](https://github.com/leechis7/tuivory/actions/runs/40057059473) · [go/v0.0.1 Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.0.1) · Go 프록시를 통한 외부 프로젝트 사용 검증 통과 |
 | [TVR-3](https://leechis7.atlassian.net/browse/TVR-3) | 한·영 문서와 동기화 원칙 | 최초 문서 보강은 [PR #1](https://github.com/leechis7/tuivory/pull/1)로 병합·게시. 후속 전체 현행화는 한·영 29쌍 정리와 로컬 검증 완료. 후속 게시·CI 결과는 TVR-3 댓글에 기록 |
 | [TVR-4](https://leechis7.atlassian.net/browse/TVR-4) | 견본 언어 선택과 영문 이미지 | 완료. 한국어·영어 UI, 영문 이미지 4종, 양 언어 PTY 검사. PR #1 병합·게시 |
-| [TVR-5](https://leechis7.atlassian.net/browse/TVR-5) | Rust 생태계 에픽 | 진행 중. Rust 코어·Ratatui 어댑터·한영 대화형 견본·독립 패키지·문서·이미지 로컬 구현 및 검증. 실제 LazyBeaver 적용과 원격 CI는 미검증. 로컬 커밋·원격 미게시 |
+| [TVR-5](https://leechis7.atlassian.net/browse/TVR-5) | Rust 생태계 에픽 | 진행 중. Rust 코어·Ratatui 어댑터·한영 대화형 견본·독립 패키지·문서·이미지 로컬 구현 및 검증. 실제 LazyBeaver 적용과 원격 CI는 미검증. 로컬 커밋 b67a4cb·원격 미게시 |
 | [TVR-6](https://leechis7.atlassian.net/browse/TVR-6) | Go 모듈 에픽 | 진행 중 유지. 언어별 bin 경로 변경은 로컬 커밋 3081c12, 원격 미게시 |
-| [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) | Go·Rust 공통 UI 에픽 | 할 일. 지원 범위 점검 후 트리·탭·패널·상태 표시줄 구체화 |
+| [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) | Go·Rust 공통 UI 에픽 | 진행 중. 지원 점검·양 언어 Tree 로컬 구현·검증, 로컬 커밋·원격 미게시. 탭·패널·상태 표시줄 후속 |
 
 PR #1의 병합 커밋은 `5c3242ff17c719d7558d447c93477234f75fe698`입니다. [dev CI](https://github.com/leechis7/tuivory/actions/runs/40062239810)와 [main CI](https://github.com/leechis7/tuivory/actions/runs/40062241916)는 모두 통과했습니다. 이 병합은 새 태그·Release 배포가 아니며 배포된 Go 버전은 여전히 `v0.0.1`입니다.
 

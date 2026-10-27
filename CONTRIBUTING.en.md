@@ -58,3 +58,7 @@ Commits and GitHub publication require the maintainer's explicit approval for th
 ## License
 
 Project documentation and code use [AGPL-3.0-only](LICENSE). Preserve source attribution and notices, and check the terms before adding external material. See [NOTICE](NOTICE.en.md).
+
+## Shared Tree changes
+
+`design/tree-navigation.json` is the interaction fixture source. After changes, run `python3 tools/export_tree_cases.py`, update both module copies, and run both language tests, external imports, and bilingual PTY checks. `make check` verifies fixture equality. Update the [audit](docs/component-audit.en.md) and [Tree API](docs/tree.en.md).

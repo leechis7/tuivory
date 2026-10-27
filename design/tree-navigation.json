@@ -1,0 +1,346 @@
+{
+  "height": 3,
+  "nodes": [
+    {
+      "id": "r",
+      "name": "작업 공간 Workspace",
+      "icon": "◇",
+      "ascii_icon": "R"
+    },
+    {
+      "id": "g",
+      "parent": "r",
+      "name": "Examples",
+      "secondary": "샘플 Samples",
+      "count": 2
+    },
+    {
+      "id": "a",
+      "parent": "g",
+      "name": "긴 이름 A long Unicode 이름",
+      "icon": "□",
+      "ascii_icon": "F"
+    },
+    {
+      "id": "b",
+      "parent": "g",
+      "name": "[red]literal"
+    },
+    {
+      "id": "l",
+      "parent": "r",
+      "name": "Lazy branch",
+      "branch": true
+    },
+    {
+      "id": "z",
+      "name": "Other root"
+    }
+  ],
+  "steps": [
+    {
+      "action": "right",
+      "selected": "r",
+      "expanded": [
+        "r"
+      ],
+      "scroll": 0,
+      "horizontal": 0,
+      "event": "expand",
+      "id": "r",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "down",
+      "selected": "g",
+      "expanded": [
+        "r"
+      ],
+      "scroll": 0,
+      "horizontal": 0,
+      "event": "select",
+      "id": "g",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "right",
+      "selected": "g",
+      "expanded": [
+        "g",
+        "r"
+      ],
+      "scroll": 0,
+      "horizontal": 0,
+      "event": "expand",
+      "id": "g",
+      "visible": [
+        "r",
+        "g",
+        "a",
+        "b",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "right",
+      "selected": "a",
+      "expanded": [
+        "g",
+        "r"
+      ],
+      "scroll": 0,
+      "horizontal": 0,
+      "event": "select",
+      "id": "a",
+      "visible": [
+        "r",
+        "g",
+        "a",
+        "b",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "down",
+      "selected": "b",
+      "expanded": [
+        "g",
+        "r"
+      ],
+      "scroll": 1,
+      "horizontal": 0,
+      "event": "select",
+      "id": "b",
+      "visible": [
+        "r",
+        "g",
+        "a",
+        "b",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "left",
+      "selected": "g",
+      "expanded": [
+        "g",
+        "r"
+      ],
+      "scroll": 1,
+      "horizontal": 0,
+      "event": "select",
+      "id": "g",
+      "visible": [
+        "r",
+        "g",
+        "a",
+        "b",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "left",
+      "selected": "g",
+      "expanded": [
+        "r"
+      ],
+      "scroll": 1,
+      "horizontal": 0,
+      "event": "collapse",
+      "id": "g",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "down",
+      "selected": "l",
+      "expanded": [
+        "r"
+      ],
+      "scroll": 1,
+      "horizontal": 0,
+      "event": "select",
+      "id": "l",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "right",
+      "selected": "l",
+      "expanded": [
+        "l",
+        "r"
+      ],
+      "scroll": 1,
+      "horizontal": 0,
+      "event": "expand",
+      "id": "l",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "activate",
+      "selected": "l",
+      "expanded": [
+        "l",
+        "r"
+      ],
+      "scroll": 1,
+      "horizontal": 0,
+      "event": "activate",
+      "id": "l",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "end",
+      "selected": "z",
+      "expanded": [
+        "l",
+        "r"
+      ],
+      "scroll": 1,
+      "horizontal": 0,
+      "event": "select",
+      "id": "z",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "pan_right",
+      "selected": "z",
+      "expanded": [
+        "l",
+        "r"
+      ],
+      "scroll": 1,
+      "horizontal": 4,
+      "event": "",
+      "id": "",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "home",
+      "selected": "r",
+      "expanded": [
+        "l",
+        "r"
+      ],
+      "scroll": 0,
+      "horizontal": 4,
+      "event": "select",
+      "id": "r",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ]
+    },
+    {
+      "action": "click",
+      "selected": "g",
+      "expanded": [
+        "l",
+        "r"
+      ],
+      "scroll": 0,
+      "horizontal": 4,
+      "event": "select",
+      "id": "g",
+      "visible": [
+        "r",
+        "g",
+        "l",
+        "z"
+      ],
+      "column": 0,
+      "row": 1
+    },
+    {
+      "action": "toggle",
+      "selected": "g",
+      "expanded": [
+        "g",
+        "l",
+        "r"
+      ],
+      "scroll": 0,
+      "horizontal": 4,
+      "event": "expand",
+      "id": "g",
+      "visible": [
+        "r",
+        "g",
+        "a",
+        "b",
+        "l",
+        "z"
+      ],
+      "column": 0,
+      "row": 1
+    },
+    {
+      "action": "click",
+      "selected": "a",
+      "expanded": [
+        "g",
+        "l",
+        "r"
+      ],
+      "scroll": 0,
+      "horizontal": 4,
+      "event": "select",
+      "id": "a",
+      "visible": [
+        "r",
+        "g",
+        "a",
+        "b",
+        "l",
+        "z"
+      ],
+      "column": 12,
+      "row": 2
+    }
+  ]
+}

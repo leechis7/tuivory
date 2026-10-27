@@ -34,3 +34,5 @@ The Go package is released as `v0.0.1`. This does not mean a complete multi-lang
 Keep calculations, simulations, and actual SecureCRT/MobaXterm/xterm-compatible terminal results separate. Input I/O, capability detection, and database drivers stay outside the shared core; link to application examples at their source.
 
 Future stages use separate issues. The maintainer decides product major and stable versions. Commits and GitHub publication require explicit approval.
+
+TVR-7 now has a local [support audit](component-audit.en.md) and [shared Tree](tree.en.md). Next come tabs, panels/splitters, then status/breadcrumbs; remote publication/CI and actual host integration remain.

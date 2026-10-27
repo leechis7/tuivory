@@ -42,3 +42,5 @@ The draft token format is `tuivory.tokens.draft`, shared sources live in `design
 Go projects can access embedded tokens through the public module alone. Python and JavaScript provide shared JSON reading examples; Shell provides an ANSI reference example. UI packages for those languages are not yet available.
 
 [Go API](go-package.en.md) · [Architecture](architecture.en.md) · [Playground](playground.en.md) · [Validation evidence](../evidence/README.en.md)
+
+The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is absent from published tags. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.

@@ -21,3 +21,7 @@
 예제 소스는 각 언어 디렉터리에서 유지하고, 빌드한 견본 실행파일은 `bin/<언어>/`로 구분합니다. 파일명에는 OS·아키텍처를 넣습니다. 현재 `make build`는 `bin/go/tuivory-linux-arm64` 하나를 만듭니다. 실행은 저장소 루트에서 `./bin/go/tuivory-linux-arm64 --lang ko` 또는 `--lang en`을 사용합니다.
 
 Rust 견본은 Rust 1.88 이상에서 `make run-rust ARGS="--lang ko"`로 실행합니다. `make build-rust`는 `bin/rust/tuivory-linux-arm64` 하나를 만듭니다. 기본 코어·JSON 예제는 Rust 1.85 이상에서 `cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256`으로 실행합니다. Python·JavaScript·Shell 예제는 기본적으로 소스로 실행하며 별도 실행파일 패키징은 필요할 때 정합니다. `bin/`은 Git에서 제외합니다.
+
+## 공통 Tree 예제
+
+[Go 소스](../go/examples/tree/main.go) · [Rust 소스](../rust/examples/tree/main.rs) · [한영 사용법](../docs/tree.md). 루트의 `make run-tree-go ARGS="--lang ko"`, `make run-tree-rust ARGS="--lang en"`으로 실행합니다. DB 없는 동일 데이터·조작 예제이며 기본 제품 빌드에는 추가하지 않습니다.

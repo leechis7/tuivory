@@ -32,3 +32,5 @@ python3 tools/capture_lazyora_styles.py /path/to/lazyora
 python3 tools/capture_lazyora_matrix.py /path/to/lazyora
 make -C go test
 ```
+
+The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is absent from published tags. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.

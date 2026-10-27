@@ -10,6 +10,7 @@
 | [설치·사용 안내](installation.md) | 현재 모듈·CLI·토큰 식별자와 배포/소스 구분 |
 | [Rust 패키지](../rust/README.md) | 미배포 crate·공통 토큰·스타일·Ratatui 어댑터·외부 사용 |
 | [Rust 견본](rust-playground.md) | Ratatui 어댑터·한영 실행·조작·이미지·검증 |
+| [공통 UI 점검](component-audit.md) · [Tree API](tree.md) | Go·Rust 지원/앱 책임·후속 계획·공통 Tree·검증 |
 | [Go 사용법](go-package.md) | 공개 API·역할·상태·테마 재적용 |
 | [견본](playground.md) | 한국어·영어 실행·키 조작·이미지 생성 |
 | [저장소 구조](architecture.md) | 언어별 경계·공통 데이터·내장 자산 |

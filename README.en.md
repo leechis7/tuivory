@@ -83,6 +83,15 @@ python3 tools/check_rust_module.py
 
 The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example require Rust 1.88+. Run `make run-rust ARGS="--lang en"`; `make build-rust` creates `bin/rust/tuivory-linux-arm64`. Default `make build` still produces only Go. See [Rust views and controls](docs/rust-playground.en.md).
 
+## Shared Tree
+
+Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction contract. These local changes are absent from published tags. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
+
+```sh
+make run-tree-go ARGS="--lang en"
+make run-tree-rust ARGS="--lang en"
+```
+
 ## Validation
 
 ```sh
