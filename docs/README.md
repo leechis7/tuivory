@@ -8,6 +8,8 @@
 | --- | --- |
 | [프로젝트 소개](../README.md) | 제공 범위·설치·빠른 시작 |
 | [설치·사용 안내](installation.md) | 현재 모듈·CLI·토큰 식별자와 배포/소스 구분 |
+| [Rust 패키지](../rust/README.md) | 미배포 crate·공통 토큰·스타일·Ratatui 어댑터·외부 사용 |
+| [Rust 견본](rust-playground.md) | Ratatui 어댑터·한영 실행·조작·이미지·검증 |
 | [Go 사용법](go-package.md) | 공개 API·역할·상태·테마 재적용 |
 | [견본](playground.md) | 한국어·영어 실행·키 조작·이미지 생성 |
 | [저장소 구조](architecture.md) | 언어별 경계·공통 데이터·내장 자산 |
@@ -17,7 +19,7 @@
 | [컴포넌트 패턴](patterns.md) | 위젯별 상태와 조작 계약 |
 | [단말 프로필](terminal-profiles.md) | 색상 능력·ANSI·표현 제한 |
 | [추출 출처](lazyora-extraction.md) · [Go 범위](go-style-coverage.md) | 원본 해시·API 대응·동등성 근거 |
-| [언어별 예제](../examples/README.md) | Go·Python·JavaScript·Shell의 실제 제공 범위 |
+| [언어별 예제](../examples/README.md) | Go·Rust·Python·JavaScript·Shell의 실제 제공 범위 |
 | [로드맵](roadmap.md) | 구현 상태와 후속 범위 |
 | [작업 관리](work-tracking.md) | TVR·PR·CI·게시 상태 |
 | [검증 양식](../evidence/README.md) · [초기 배포 근거](../evidence/initial-migration.md) | 계산·시뮬레이션·실제 단말 및 배포 기록 |

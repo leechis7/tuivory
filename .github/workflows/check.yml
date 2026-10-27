@@ -50,3 +50,48 @@ jobs:
         run: |
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang ko
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang en
+  rust-core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Rust validation toolchain
+        run: rustup toolchain install 1.85.1 --profile minimal --component rustfmt --component clippy
+      - name: Select Rust validation toolchain
+        run: rustup default 1.85.1
+      - name: Check embedded assets
+        run: python3 tools/export_tokens.py --check
+      - name: Test and lint Rust core
+        run: make test-rust check-rust
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.9'
+          cache-dependency-path: go/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compare Go, Python, Node.js and Rust tokens
+        run: make check-rust-consumers
+      - name: Verify standalone Cargo package and external usage
+        run: python3 tools/check_rust_module.py
+  rust-ui:
+    runs-on: ubuntu-24.04
+    env:
+      CARGO_TARGET_DIR: ${{ runner.temp }}/tuivory-rust-ui
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install optional adapter toolchain
+        run: rustup toolchain install 1.88.0 --profile minimal --component rustfmt --component clippy
+      - name: Select optional adapter toolchain
+        run: rustup default 1.88.0
+      - name: Test and lint adapter and interactive host
+        run: make test-rust-ui check-rust-ui
+      - name: Build native executable for terminal checks
+        run: cargo build --manifest-path rust/Cargo.toml --locked --features playground --example playground
+      - name: Check Korean and English terminal lifecycle
+        run: |
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/playground" --lang ko
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/playground" --lang en
+      - name: Verify reference rendering
+        run: python3 tools/snapshot_rust.py "$CARGO_TARGET_DIR/debug/examples/playground" --output "$RUNNER_TEMP/tuivory-rust-images"
+      - name: Verify adapter from an external packaged dependency
+        run: python3 tools/check_rust_module.py --ratatui

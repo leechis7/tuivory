@@ -2,7 +2,7 @@
 
 [한국어 (default)](README.md) · **English**
 
-[candidate.json](candidate.json) is reference data consumed by Go/Python/Node.js; [schema.json](schema.json) describes its JSON structure. The format identifier `tuivory.tokens.draft` marks a draft, not a product version. It guarantees neither DTCG compatibility nor public API stability.
+[candidate.json](candidate.json) is reference data read by Go/Python/Node.js/Rust; [schema.json](schema.json) describes its JSON structure. The format identifier `tuivory.tokens.draft` marks a draft, not a product version. It guarantees neither DTCG compatibility nor public API stability.
 
 ```json
 {
@@ -20,7 +20,7 @@ Top-level `roles` defines display order; `palettes` keys combine theme and capab
 - `referenceForeground`/`referenceBackground`: reference RGB for validation; these do not replace the user's ANSI palette.
 - `fontWeight`: `none` or `bold`. Validate terminals where bold selects brighter colors separately.
 
-The schema checks structure. Matching role sets and profile-specific color ranges require semantic checks, currently performed by Go's `tuivory.ParseTokens`. JSON object property names must not repeat.
+The schema checks structure. Matching role sets and profile-specific color ranges require semantic checks, performed by Go's `tuivory.ParseTokens` and Rust's `TokenDocument::from_json`. JSON object property names must not repeat.
 
 ## Candidate sources and generation
 
@@ -31,4 +31,4 @@ python3 tools/export_tokens.py
 python3 tools/export_tokens.py --check
 ```
 
-Shared JSON stays here; Go source does not. The exporter writes identical content to `go/internal/tokens/candidate.json` for independent distribution and embed. Do not edit that generated copy manually. `--check` compares CSV, shared JSON, and the Go copy. Go projects need no other repository directories; Python and JavaScript read the shared source directly.
+Shared JSON stays here; Go source does not. The exporter writes identical content to `go/internal/tokens/candidate.json` and `rust/src/data/candidate.json` for independent distribution and embedding. Do not edit that generated copy manually. `--check` compares CSV, shared JSON, and the Go/Rust copies. Go/Rust projects need no other repository directories; Python and JavaScript read the shared source directly.

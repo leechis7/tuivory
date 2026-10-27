@@ -7,6 +7,7 @@ Implementation code lives inside each language directory. This directory indexes
 | Language | Example | Available scope |
 | --- | --- | --- |
 | Go | [Starter](../go/examples/starter/main.go), [tokens](../go/examples/tokens/main.go) | Working Go style API and runnable playground |
+| Rust | [Token reader](../rust/examples/tokens.rs), [playground](../docs/rust-playground.en.md) | JSON validation, color/style core, Ratatui adapter, bilingual interactive host |
 | Python | [Token reader](../python/examples/read_tokens.py) | Data example; no UI package |
 | JavaScript | [Token reader](../javascript/examples/read-tokens.mjs) | Data example; no UI package |
 | Shell | [ANSI sample](../shell/examples/terminal-colors.sh) | Reference output; no style function package |
@@ -17,4 +18,4 @@ The [static component layout](components.txt) is language-independent reference 
 
 Example sources remain in their language directories. Put compiled playground executables in `bin/<language>/`, with OS and architecture in each filename. Currently, `make build` produces only `bin/go/tuivory-linux-arm64`. From the repository root, run `./bin/go/tuivory-linux-arm64 --lang ko` or `--lang en`.
 
-Future Rust playground builds will use `bin/rust/`; Rust build commands and executables are not available yet. Python, JavaScript, and Shell examples run from source by default; executable packaging can be decided when needed. Git ignores `bin/`.
+With Rust 1.88+, run the Rust playground using `make run-rust ARGS="--lang en"`. `make build-rust` produces one `bin/rust/tuivory-linux-arm64`. The default core/JSON example requires Rust 1.85+ and runs with `cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256`. Python, JavaScript, and Shell examples run from source by default; executable packaging can be decided when needed. Git ignores `bin/`.

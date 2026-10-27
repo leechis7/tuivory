@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Added the Rust core crate: candidate tokens, profiles, color/style values, strict JSON validation, embedded distribution data, and external project usage validation. Added an optional Ratatui 0.30.2 adapter, Crossterm 0.29 bilingual interactive example, Linux ARM64 build, language-matched reference images, and PTY checks. The core requires Rust 1.85+; the adapter/example require 1.88+. These changes remain committed locally/unpublished; there is no crates.io release.
+
 - Separate playground build outputs under `bin/<language>/`. The default Go output is now `bin/go/tuivory-linux-arm64`; the default build still produces one Linux ARM64 binary.
 - Added English project, Go usage, and contribution guides alongside the Korean default, with reciprocal language links.
 - Added playground `--lang ko|en`: one binary supports default Korean and optional English, with English UI reference images in English documentation.

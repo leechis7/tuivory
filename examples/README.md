@@ -7,6 +7,7 @@
 | 언어 | 예제 | 제공 범위 |
 | --- | --- | --- |
 | Go | [시작 템플릿](../go/examples/starter/main.go), [토큰 읽기](../go/examples/tokens/main.go) | 동작하는 Go 스타일 API·실행형 견본 |
+| Rust | [토큰 읽기](../rust/examples/tokens.rs), [대화형 견본](../docs/rust-playground.md) | JSON 검증·색상/스타일 코어·Ratatui 어댑터·한영 실행 예제 |
 | Python | [토큰 읽기](../python/examples/read_tokens.py) | 데이터 읽기 예제. UI 패키지 미구현 |
 | JavaScript | [토큰 읽기](../javascript/examples/read-tokens.mjs) | 데이터 읽기 예제. UI 패키지 미구현 |
 | Shell | [ANSI 견본](../shell/examples/terminal-colors.sh) | 참조 출력. 스타일 함수 패키지 미구현 |
@@ -19,4 +20,4 @@
 
 예제 소스는 각 언어 디렉터리에서 유지하고, 빌드한 견본 실행파일은 `bin/<언어>/`로 구분합니다. 파일명에는 OS·아키텍처를 넣습니다. 현재 `make build`는 `bin/go/tuivory-linux-arm64` 하나를 만듭니다. 실행은 저장소 루트에서 `./bin/go/tuivory-linux-arm64 --lang ko` 또는 `--lang en`을 사용합니다.
 
-향후 Rust 견본도 빌드 결과를 `bin/rust/`에 둡니다. Rust 빌드 명령과 실행파일은 아직 제공하지 않습니다. Python·JavaScript·Shell 예제는 기본적으로 소스로 실행하며 별도 실행파일 패키징은 필요할 때 정합니다. `bin/`은 Git에서 제외합니다.
+Rust 견본은 Rust 1.88 이상에서 `make run-rust ARGS="--lang ko"`로 실행합니다. `make build-rust`는 `bin/rust/tuivory-linux-arm64` 하나를 만듭니다. 기본 코어·JSON 예제는 Rust 1.85 이상에서 `cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256`으로 실행합니다. Python·JavaScript·Shell 예제는 기본적으로 소스로 실행하며 별도 실행파일 패키징은 필요할 때 정합니다. `bin/`은 Git에서 제외합니다.

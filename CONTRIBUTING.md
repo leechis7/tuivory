@@ -13,6 +13,8 @@
 
 견본 TUI는 Go 1.24 이상이 필요합니다. Go 변경 시 `make -C go test`와 `make -C go check`, `python3 tools/check_go_module.py`를 실행합니다. Go 소스·모듈 설정은 go/ 안에 두고 공통 디자인 원본은 design/에서 관리합니다. 기본 로컬 빌드는 `make build`로 Linux ARM64 하나를 `bin/go/tuivory-linux-arm64`에 생성합니다. 견본 실행파일은 `bin/<언어>/` 아래에 OS·아키텍처가 포함된 이름으로 둡니다.
 
+Rust 변경 시 Rust 1.85 이상에서 `make test-rust check-rust`, `make check-rust-consumers`, `python3 tools/check_rust_module.py`를 실행합니다. 선택적 Ratatui 어댑터·예제 변경은 Rust 1.88 이상에서 `make test-rust-ui check-rust-ui`, `python3 tools/check_rust_module.py --ratatui` 및 한·영 PTY 검사도 실행합니다. [Rust 견본 문서](docs/rust-playground.md)와 이미지를 함께 갱신합니다. Cargo.toml·Rust 소스는 rust/에 둡니다. 토큰 사본은 생성 도구로 갱신하며 프레임워크 타입·단말 I/O를 코어에 넣지 않습니다. [현재 Rust 범위](rust/README.md)를 확인합니다.
+
 필수 가이드 로컬 검사:
 
 ```sh

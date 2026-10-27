@@ -25,6 +25,8 @@ python3 tools/check_go_module.py
 
 The default local product build is `make build`, which creates one Linux ARM64 binary at `bin/go/tuivory-linux-arm64`. Put playground executables in `bin/<language>/`, with OS and architecture in each filename.
 
+For Rust changes, use Rust 1.85 or later and run `make test-rust check-rust`, `make check-rust-consumers`, and `python3 tools/check_rust_module.py`. For optional Ratatui adapter/example changes, also run `make test-rust-ui check-rust-ui`, `python3 tools/check_rust_module.py --ratatui`, and Korean/English PTY checks with Rust 1.88+. Update the [Rust playground guide](docs/rust-playground.en.md) and images together. Keep Cargo.toml and Rust source in rust/. Regenerate token copies through the exporter and keep framework types/terminal I/O out of the core. See [current Rust scope](rust/README.en.md).
+
 Run the documentation and shared-data checks from the repository root:
 
 ```sh

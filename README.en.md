@@ -4,12 +4,13 @@
 
 **Tuivory** (TUI + ivory) provides reusable terminal UI styles, with shared design rules and data for implementations in multiple languages. Korean is the primary documentation language; this English guide covers installation, usage, and the current scope.
 
-The Go package provides working style APIs and integration with tview widgets. Python and JavaScript currently provide token reading examples, and Shell provides an ANSI reference example. Their UI style packages are planned work.
+The Go package provides working style APIs and integration with tview widgets. The unpublished Rust crate provides framework-independent candidate token validation and style values, an optional Ratatui adapter, and a Korean/English interactive playground. Python and JavaScript currently provide token reading examples, and Shell provides an ANSI reference example. Their UI style packages are planned work.
 
 | Directory | Contents |
 | --- | --- |
 | [design/](design/README.en.md) | Shared specifications, themes, JSON tokens and schemas, CSV reference data |
 | [go/](go/README.en.md) | Go module, style implementation, interactive playground, starter example |
+| [rust/](rust/README.en.md) | Rust crate, candidate tokens/styles, optional Ratatui adapter, bilingual interactive playground |
 | [python/](python/README.en.md) | Python token reading example |
 | [javascript/](javascript/README.en.md) | Node.js token reading example |
 | [shell/](shell/README.en.md) | ANSI reference output |
@@ -69,6 +70,19 @@ Use a terminal of at least 80×24 cells. Color selection previews a token profil
 
 This reference image renders actual Go widgets in English through a simulated screen. It is not a capture from a physical terminal. Other views: [light](docs/images/playground-light-en.svg), [black and white](docs/images/playground-blackwhite-en.svg), [popup](docs/images/playground-popup-en.svg).
 
+## Use Rust
+
+The unpublished crate supports Rust 1.85 or later through a path dependency on `rust/`. See the [Rust guide](rust/README.en.md) for setup, API, and scope. It uses shared candidate tokens and is not a port of the full Go widget styler.
+
+```sh
+cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256
+make test-rust check-rust
+make check-rust-consumers
+python3 tools/check_rust_module.py
+```
+
+The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example require Rust 1.88+. Run `make run-rust ARGS="--lang en"`; `make build-rust` creates `bin/rust/tuivory-linux-arm64`. Default `make build` still produces only Go. See [Rust views and controls](docs/rust-playground.en.md).
+
 ## Validation
 
 ```sh
@@ -78,7 +92,7 @@ make check-consumers
 python3 tools/check_go_module.py
 ```
 
-These checks cover Go style parity and state preservation, shared data, local documentation links, cross-language token reading, and standalone Go module use. Python and Node.js examples have no external dependencies; cross-language checks require Node.js 18 or later. Generated Go tokens are checked against the shared source data.
+These checks cover Go style parity and state preservation, shared data, local documentation links, cross-language token reading, and standalone Go module use. Python and Node.js examples have no external dependencies; cross-language checks require Node.js 18 or later. Generated Go/Rust tokens are checked against the shared source data.
 
 Actual terminal observations are recorded separately from simulated checks: [evidence template](evidence/README.en.md) and [initial migration evidence](evidence/initial-migration.en.md). These checks do not establish support for every terminal or user palette.
 

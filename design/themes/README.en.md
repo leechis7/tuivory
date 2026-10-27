@@ -22,4 +22,4 @@ The checker validates required columns, duplicate roles, color ranges, reference
 
 Targets of 4.5:1 for regular text and 3:1 for focus borders are internal design references. CSV rows specify their own target. Passing does not certify whole-screen accessibility; layers, cursor, glyph width, Dim, reverse video, and behavior require separate checks.
 
-The [shared JSON draft](../tokens/README.en.md) is generated from this CSV and read by Go/Python/Node.js. Go has a token loader and tcell style adapter. DTCG extensions and a complete widget SDK are not provided. CSV and draft JSON do not imply future API compatibility guarantees.
+The [shared JSON draft](../tokens/README.en.md) is generated from this CSV and read by Go/Python/Node.js/Rust. Go has a token loader and tcell style adapter; Rust has a core and optional Ratatui adapter. DTCG extensions and a complete widget SDK are not provided. CSV and draft JSON do not imply future API compatibility guarantees.

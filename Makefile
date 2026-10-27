@@ -1,4 +1,4 @@
-.PHONY: run build test check check-consumers
+.PHONY: run build test check check-consumers test-rust check-rust check-rust-consumers test-rust-ui check-rust-ui run-rust build-rust
 run:
 	$(MAKE) -C go run
 build:
@@ -14,3 +14,18 @@ check:
 	sh -n shell/examples/terminal-colors.sh
 check-consumers:
 	python3 tools/check_consumers.py
+test-rust:
+	$(MAKE) -C rust test
+check-rust:
+	$(MAKE) -C rust check
+	python3 tools/export_tokens.py --check
+check-rust-consumers:
+	python3 tools/check_consumers.py --rust
+test-rust-ui:
+	$(MAKE) -C rust test-ui
+check-rust-ui:
+	$(MAKE) -C rust check-ui
+run-rust:
+	$(MAKE) -C rust run ARGS="$(ARGS)"
+build-rust:
+	$(MAKE) -C rust build

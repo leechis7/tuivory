@@ -9,27 +9,29 @@ tuivory/
 ├── design/       Shared specifications, JSON tokens, schemas, CSV candidates
 ├── docs/         Shared documentation and language usage guides
 ├── go/           Go module, public API, internal implementation, examples
+├── rust/         Rust core, Ratatui adapter, independent Cargo package, examples
 ├── python/       Python token reading example
 ├── javascript/   Node.js token reading example
 ├── shell/        POSIX ANSI output example
 ├── examples/     Example index and shared static layouts
-├── bin/          Per-language playground executables; Git-ignored, currently bin/go/
+├── bin/          Git-ignored playground executables in bin/go/ and bin/rust/
 ├── tools/        Data generation, checks, isolated module validation
 └── evidence/     Validation records
 ```
 
-Go is the only implemented UI style package. Other language directories provide data consumption or reference examples and state their current limits. They are not required to call Go.
+Go provides tview style adapters. Rust provides an unpublished shared-token/framework-independent core and optional Ratatui 0.30.2 adapter. The core requires Rust 1.85+; the adapter and interactive example require 1.88+. The adapter computes colors, styles, and panel borders; the example host owns the terminal, events, inputs, and widget state. See the [Rust example](rust-playground.en.md). Other language directories provide token reading or reference examples and state their current limits. They are not required to call Go.
 
 ## Shared data and distribution assets
 
 Shared candidate data is `design/tokens/candidate.json`, sourced from `design/themes/lazyora-candidate.csv`. Python and JavaScript read the shared JSON.
 
-Go embed cannot include files outside the module. The exporter therefore writes identical JSON to `go/internal/tokens/candidate.json`. This is a generated distribution asset, not another source; do not edit it manually. Checks compare it byte for byte. Downloading only the Go module requires neither repository-root data nor a generation step.
+Go embed cannot include files outside the module. The exporter therefore writes identical JSON to `go/internal/tokens/candidate.json`. Rust also embeds the same JSON at `rust/src/data/candidate.json` with `include_str!`; Cargo.toml and Rust source stay in rust/. Both copies are generated distribution assets, not additional sources; do not edit it manually. Checks compare it byte for byte. Downloading only the Go module requires neither repository-root data nor a generation step.
 
 ```sh
 python3 tools/export_tokens.py
 python3 tools/export_tokens.py --check
 python3 tools/check_go_module.py
+python3 tools/check_rust_module.py
 ```
 
 The isolated module check copies only `go/` to a temporary directory, tests it, and verifies an external project using the public API and embedded tokens. It does not copy `design/`.
@@ -47,6 +49,8 @@ theme.Form(form)
 The submodule path is `github.com/leechis7/tuivory/go`, package `tuivory`. Implementation details stay in `go/internal/`. The host owns the screen, events, terminal capability detection, and database state.
 
 The first Go release is `v0.0.1`, tagged `go/v0.0.1`. [Go guide](go-package.en.md) · [Installation and usage](installation.en.md)
+
+The Rust check copies only rust/, verifies a Cargo package, and runs an external path-dependent project without shared source data or a Go checkout. See [Rust scope and API](../rust/README.en.md).
 
 ## Further implementations
 

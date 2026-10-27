@@ -31,9 +31,13 @@ make build
 
 Requires Go 1.24 or later. `make build` produces one Linux ARM64 binary supporting both languages. Source execution runs on the current host. The starter template runs with `go -C go run ./examples/starter` and has Korean example labels.
 
+## Rust usage
+
+The Rust core is not published. With Rust 1.85 or later, use a Cargo path dependency on this checkout's rust/. It provides candidate tokens, colors, and style values. The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example require Rust 1.88+. Run `make run-rust ARGS="--lang en"`; `make build-rust` creates `bin/rust/tuivory-linux-arm64`. See [Rust views and controls](rust-playground.en.md) for terminal and target linker requirements. See the [Rust guide](../rust/README.en.md).
+
 ## Shared data and validation
 
-The draft token format is `tuivory.tokens.draft`, shared sources live in `design/tokens/`, and the Go distribution copy is `go/internal/tokens/candidate.json`. The CLI is named `tuivory`; documentation image generation uses `TUIVORY_SNAPSHOT_DIR`.
+The draft token format is `tuivory.tokens.draft`, shared sources live in `design/tokens/`, and distribution copies are `go/internal/tokens/candidate.json` and `rust/src/data/candidate.json`. The CLI is named `tuivory`; documentation image generation uses `TUIVORY_SNAPSHOT_DIR`.
 
 Go projects can access embedded tokens through the public module alone. Python and JavaScript provide shared JSON reading examples; Shell provides an ANSI reference example. UI packages for those languages are not yet available.
 

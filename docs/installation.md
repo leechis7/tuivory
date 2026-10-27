@@ -31,9 +31,13 @@ make build
 
 Go 1.24 이상이 필요합니다. `make build`는 두 언어를 지원하는 Linux ARM64 바이너리 하나만 만듭니다. 소스 실행은 현재 호스트에서 동작합니다. 시작 템플릿은 `go -C go run ./examples/starter`이며 예시 라벨은 한국어입니다.
 
+## Rust 사용
+
+Rust 코어는 아직 배포하지 않았습니다. Rust 1.85 이상에서 현재 체크아웃의 rust/를 Cargo path 의존성으로 사용합니다. 공통 후보 토큰·색상·스타일 값을 제공합니다. 선택적 Ratatui 0.30.2 어댑터와 Crossterm 0.29 대화형 예제는 Rust 1.88 이상입니다. `make run-rust ARGS="--lang ko"`로 실행하고 `make build-rust`로 `bin/rust/tuivory-linux-arm64`를 만듭니다. [Rust 화면·조작법](rust-playground.md)에서 단말·대상 링커 요구사항을 확인합니다. [Rust 사용법](../rust/README.md)
+
 ## 공통 데이터와 검증
 
-토큰 초안 형식은 `tuivory.tokens.draft`, 공통 원본은 `design/tokens/`, Go 배포용 사본은 `go/internal/tokens/candidate.json`입니다. CLI 이름은 `tuivory`, 문서 이미지 생성 환경변수는 `TUIVORY_SNAPSHOT_DIR`입니다.
+토큰 초안 형식은 `tuivory.tokens.draft`, 공통 원본은 `design/tokens/`, 배포용 사본은 `go/internal/tokens/candidate.json`과 `rust/src/data/candidate.json`입니다. CLI 이름은 `tuivory`, 문서 이미지 생성 환경변수는 `TUIVORY_SNAPSHOT_DIR`입니다.
 
 Go 프로젝트는 공개 모듈만으로 내장 토큰을 사용할 수 있습니다. Python·JavaScript는 공통 JSON 읽기 예제, Shell은 ANSI 참조 예제이며 해당 언어의 UI 패키지는 아직 제공하지 않습니다.
 
