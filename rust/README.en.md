@@ -97,3 +97,7 @@ Cargo version 0.0.1 is an unpublished working version, with `publish = false`. C
 ## Shared Tree
 
 `tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}` works without a framework on Rust 1.85+. Optional `tuivory::ratatui::TreeWidget` requires Rust 1.88+. It shares stable-ID expansion, selection, scroll, and event contracts with Go and renders icons, secondary text, counts, and Unicode/ASCII alternatives. [Tree guide](../docs/tree.en.md) · [Support audit](../docs/component-audit.en.md). Run `make run-tree-rust ARGS="--lang en"` from the root. These TVR-7 changes remain committed locally/unpublished.
+
+## Shared workspace components
+
+The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These locally committed APIs are absent from published tags; remote publication/CI and real application integration are tracked separately.

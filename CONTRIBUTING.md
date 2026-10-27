@@ -38,3 +38,5 @@ sh -n shell/examples/terminal-colors.sh
 ## 공통 Tree 변경
 
 `design/tree-navigation.json`이 동작 계약의 원본입니다. 수정 후 `python3 tools/export_tree_cases.py`로 Go/Rust 테스트 사본을 함께 갱신하고 양쪽 테스트·외부 import·한영 PTY를 실행합니다. `make check`는 사본 일치도 확인합니다. [점검표](docs/component-audit.md)와 [Tree API](docs/tree.md)를 현행화합니다.
+
+공통 워크스페이스의 계약 원본은 `design/components-cases.json`입니다. 같은 생성 도구로 두 모듈의 사본을 갱신하고 [워크스페이스 안내](docs/workspace.md)의 외부 import·한영 PTY·통합 입력 검사와 이미지를 함께 확인합니다.

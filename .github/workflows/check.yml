@@ -57,6 +57,12 @@ jobs:
           go build -C go -o "$RUNNER_TEMP/tuivory-tree" ./examples/tree
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-tree" --lang ko
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-tree" --lang en
+      - name: Check public workspace example terminal lifecycle
+        run: |
+          go build -C go -o "$RUNNER_TEMP/tuivory-workspace" ./examples/workspace
+          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-workspace" --lang ko
+          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-workspace" --lang en
+          python3 tools/smoke_workspace.py "$RUNNER_TEMP/tuivory-workspace"
   rust-core:
     runs-on: ubuntu-24.04
     steps:
@@ -105,5 +111,11 @@ jobs:
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/tree" --lang ko
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/tree" --lang en
           python3 tools/snapshot_tree.py "$CARGO_TARGET_DIR/debug/examples/tree" --output "$RUNNER_TEMP/tuivory-tree-images"
+      - name: Check public workspace example and reference views
+        run: |
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/workspace" --lang ko
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/workspace" --lang en
+          python3 tools/smoke_workspace.py "$CARGO_TARGET_DIR/debug/examples/workspace"
+          python3 tools/snapshot_workspace.py "$CARGO_TARGET_DIR/debug/examples/workspace" --output "$RUNNER_TEMP/tuivory-workspace-images"
       - name: Verify adapter from an external packaged dependency
         run: python3 tools/check_rust_module.py --ratatui

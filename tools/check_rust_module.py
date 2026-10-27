@@ -43,6 +43,14 @@ fn main() {
     let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), branch: true, ..Default::default() }]).unwrap();
     let mut state = tuivory::tree::TreeState::default();
     assert!(matches!(tree.handle(&mut state, tuivory::tree::TreeAction::Right, 4), Some(tuivory::tree::TreeEvent::Expand(_))));
+    let tabs = tuivory::components::Tabs::new(vec![tuivory::components::TabItem { id: "a".into(), title: "Overview".into(), ..Default::default() },tuivory::components::TabItem { id: "b".into(), title: "Draft".into(), edited: true, closable: true, ..Default::default() }]).unwrap();
+    let mut tab_state = tuivory::components::TabState::default();
+    tabs.handle(&mut tab_state,tuivory::components::TabAction::Next);
+    assert_eq!(tab_state.active,"a"); assert_eq!(tab_state.focused,"b");
+    let split = tuivory::components::SplitSpec { first_min: 5,second_min: 5 };
+    assert_eq!(split.layout(&tuivory::components::SplitState { preferred: 8 },30).first,8);
+    let path = tuivory::components::breadcrumbs(&[tuivory::components::PathItem { id: "current".into(), label: "Current".into() }],20);
+    assert_eq!(path[0].id,"current");
     let doc = TokenDocument::candidate().unwrap();
     assert_eq!(doc.roles().len(), 16);
     assert_eq!(doc.palette_names().count(), 12);
@@ -66,6 +74,11 @@ fn main() {
     let mut state = tuivory::tree::TreeState::default();
     terminal.draw(|f| f.render_stateful_widget(tuivory::ratatui::TreeWidget::new(&tree, &styles).unwrap(), f.area(), &mut state)).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), ">");
+    terminal.draw(|f| f.render_stateful_widget(tuivory::ratatui::TabsWidget::new(&tabs, &styles).unwrap(),f.area(),&mut tab_state)).unwrap();
+    let runs = tuivory::components::status_line(&[tuivory::components::StatusItem { id: "e".into(), text: "Failure".into(),role: "error".into(),priority:10 }],24).runs;
+    terminal.draw(|f| f.render_widget(tuivory::ratatui::LineWidget::new(runs.clone(),&styles).unwrap(),f.area())).unwrap();
+    terminal.draw(|f| f.render_widget(styles.panel("External",true,1,true).unwrap(),f.area())).unwrap();
+    assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "+");
     let doc =''')
         (consumer / 'src/main.rs').write_text(source)
         shutil.copyfile(module / 'Cargo.lock', consumer / 'Cargo.lock')

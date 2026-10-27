@@ -11,6 +11,7 @@ Documentation follows the current repository implementation. The published Go ve
 | [Rust package](../rust/README.en.md) | Unpublished crate, tokens, styles, Ratatui adapter, external usage |
 | [Rust playground](rust-playground.en.md) | Ratatui adapter, bilingual execution, controls, images, validation |
 | [UI audit](component-audit.en.md) · [Tree API](tree.en.md) | Go/Rust support, host boundaries, next phases, shared Tree and checks |
+| [Shared workspace](workspace.en.md) | Tabs, panels, splitters, status/breadcrumbs APIs, integrated examples and checks |
 | [Go usage](go-package.en.md) | Public API, roles, states, theme reapplication |
 | [Playground](playground.en.md) | Korean/English execution, controls, image generation |
 | [Architecture](architecture.en.md) | Language boundaries, shared data, embedded assets |

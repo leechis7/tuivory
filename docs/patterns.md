@@ -32,4 +32,4 @@
 
 ## 공통 Tree 구현
 
-위 표의 트리 계약은 [Tree API](tree.md)에서 Go/tview·Rust/Ratatui로 구체화했습니다. 선택·포커스를 분리하고 앱은 노드 데이터·실행·로딩을 연결합니다. 탭·분할 패널·상태 표시줄은 [점검표](component-audit.md)의 후속 단계입니다.
+위 표의 트리 계약은 [Tree API](tree.md)에서 Go/tview·Rust/Ratatui로 구체화했습니다. 선택·포커스를 분리하고 앱은 노드 데이터·실행·로딩을 연결합니다. 탭·분할 패널·상태 표시줄·경로도 [공통 워크스페이스](workspace.md)로 구현했습니다.

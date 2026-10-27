@@ -25,3 +25,7 @@ Rust 견본은 Rust 1.88 이상에서 `make run-rust ARGS="--lang ko"`로 실행
 ## 공통 Tree 예제
 
 [Go 소스](../go/examples/tree/main.go) · [Rust 소스](../rust/examples/tree/main.rs) · [한영 사용법](../docs/tree.md). 루트의 `make run-tree-go ARGS="--lang ko"`, `make run-tree-rust ARGS="--lang en"`으로 실행합니다. DB 없는 동일 데이터·조작 예제이며 기본 제품 빌드에는 추가하지 않습니다.
+
+## 공통 워크스페이스 컴포넌트
+
+[탭·패널·분할선·상태 표시줄·경로 사용법](../docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. 현재 배포 태그에 없는 로컬 구현이며 커밋만 하고 원격 게시·CI·실제 앱 적용은 별도로 관리합니다.

@@ -32,4 +32,4 @@ Record problem → roles/states → keyboard/mouse contract → limited-terminal
 
 ## Shared Tree implementation
 
-The tree contract above is implemented for Go/tview and Rust/Ratatui in the [Tree API](tree.en.md). Selection and input focus remain independent; hosts connect data, activation, and loading. Tabs, split panels, and status bars remain later phases in the [audit](component-audit.en.md).
+The tree contract above is implemented for Go/tview and Rust/Ratatui in the [Tree API](tree.en.md). Selection and input focus remain independent; hosts connect data, activation, and loading. Tabs, split panels, status, and breadcrumbs are implemented in the [shared workspace](workspace.en.md).

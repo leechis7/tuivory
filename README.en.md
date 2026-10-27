@@ -114,3 +114,7 @@ Tuivory is independent of LazyOra, its first integration target. Application and
 Developer: **Chaekang Lee (이채강)** · leechis7@gmail.com
 
 License: [AGPL-3.0-only](LICENSE). See [NOTICE](NOTICE.en.md) for the origins of the initial code and materials.
+
+## Shared workspace components
+
+The [tabs, panels, splitters, status, and breadcrumbs guide](docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These locally committed APIs are absent from published tags; remote publication/CI and real application integration are tracked separately.

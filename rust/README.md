@@ -97,3 +97,7 @@ make build-rust
 ## 공통 Tree
 
 `tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}`는 Rust 1.85 이상에서 프레임워크 없이 사용합니다. 선택적 `tuivory::ratatui::TreeWidget`은 Rust 1.88 이상입니다. Go와 같은 안정 ID·펼침·선택·스크롤·이벤트 계약이며 아이콘·보조 설명·개수·Unicode/ASCII를 렌더링합니다. [Tree 사용법](../docs/tree.md) · [지원 범위 점검](../docs/component-audit.md). 루트에서 `make run-tree-rust ARGS="--lang ko"`로 실행합니다. 이 TVR-7 변경은 아직 로컬 커밋·원격 미게시입니다.
+
+## 공통 워크스페이스 컴포넌트
+
+[탭·패널·분할선·상태 표시줄·경로 사용법](../docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. 현재 배포 태그에 없는 로컬 구현이며 커밋만 하고 원격 게시·CI·실제 앱 적용은 별도로 관리합니다.

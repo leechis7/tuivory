@@ -14,11 +14,13 @@
 //! ```
 
 use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
+mod components;
 mod tree;
 use ::ratatui::{
     style::{Color, Modifier, Style},
     widgets::{Block, BorderType, Borders},
 };
+pub use components::{LineWidget, SplitRects, TabsWidget, split_rects};
 pub use tree::TreeWidget;
 
 impl From<crate::Color> for Color {
@@ -51,6 +53,34 @@ pub struct Styles {
 }
 
 impl Styles {
+    /// A padded panel using the same focus and ordinary-font fallback contract.
+    pub fn panel<'a>(
+        &self,
+        title: &'a str,
+        focused: bool,
+        padding: u16,
+        ascii: bool,
+    ) -> Result<Block<'a>, Error> {
+        let mut block = self
+            .block(title, focused)?
+            .padding(::ratatui::widgets::Padding::uniform(padding));
+        if focused {
+            block = block.title(format!("> {title}"));
+        }
+        if ascii {
+            block = block.border_set(::ratatui::symbols::border::Set {
+                top_left: "+",
+                top_right: "+",
+                bottom_left: "+",
+                bottom_right: "+",
+                vertical_left: "|",
+                vertical_right: "|",
+                horizontal_top: "-",
+                horizontal_bottom: "-",
+            });
+        }
+        Ok(block)
+    }
     /// Load the shared candidate palette, distinct from Go's extracted styles.
     pub fn new(theme: Theme, profile: ColorProfile) -> Result<Self, Error> {
         Ok(Self::from_palette(

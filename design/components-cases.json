@@ -1,0 +1,164 @@
+{
+  "tabs": {
+    "items": [
+      {
+        "id": "a",
+        "title": "Overview"
+      },
+      {
+        "id": "b",
+        "title": "Korean 한글 long document",
+        "edited": true,
+        "closable": true
+      },
+      {
+        "id": "d",
+        "title": "Off",
+        "disabled": true
+      },
+      {
+        "id": "c",
+        "title": "Result",
+        "closable": true
+      }
+    ],
+    "steps": [
+      {
+        "action": "next",
+        "active": "a",
+        "focused": "b",
+        "event": "focus",
+        "id": "b"
+      },
+      {
+        "action": "close",
+        "active": "a",
+        "focused": "b",
+        "event": "close",
+        "id": "b"
+      },
+      {
+        "action": "next",
+        "active": "a",
+        "focused": "c",
+        "event": "focus",
+        "id": "c"
+      },
+      {
+        "action": "activate",
+        "active": "c",
+        "focused": "c",
+        "event": "activate",
+        "id": "c"
+      },
+      {
+        "action": "previous",
+        "active": "c",
+        "focused": "b",
+        "event": "focus",
+        "id": "b"
+      },
+      {
+        "action": "first",
+        "active": "c",
+        "focused": "a",
+        "event": "focus",
+        "id": "a"
+      },
+      {
+        "action": "last",
+        "active": "c",
+        "focused": "c",
+        "event": "focus",
+        "id": "c"
+      }
+    ],
+    "layouts": [
+      {
+        "width": 40,
+        "first": 2,
+        "ids": [
+          "d",
+          "c"
+        ]
+      },
+      {
+        "width": 20,
+        "first": 3,
+        "ids": [
+          "c"
+        ]
+      },
+      {
+        "width": 8,
+        "first": 3,
+        "ids": [
+          "c"
+        ]
+      },
+      {
+        "width": 2,
+        "first": 0,
+        "ids": []
+      }
+    ]
+  },
+  "paths": [
+    {
+      "width": 100,
+      "text": "root / folder / 현재.sql"
+    },
+    {
+      "width": 22,
+      "text": "root / ... / 현재.sql"
+    },
+    {
+      "width": 15,
+      "text": "... / 현재.sql"
+    },
+    {
+      "width": 8,
+      "text": "... / ~l"
+    },
+    {
+      "width": 5,
+      "text": "~.sql"
+    },
+    {
+      "width": 0,
+      "text": ""
+    }
+  ],
+  "status": [
+    {
+      "width": 100,
+      "text": "! Failure | * Draft | F1 Help",
+      "omitted": 0
+    },
+    {
+      "width": 20,
+      "text": "! Failure +2",
+      "omitted": 2
+    },
+    {
+      "width": 14,
+      "text": "! Failure +2",
+      "omitted": 2
+    },
+    {
+      "width": 10,
+      "text": "! Fail~ +2",
+      "omitted": 2
+    },
+    {
+      "width": 1,
+      "text": "!",
+      "omitted": 2
+    },
+    {
+      "width": 0,
+      "text": "",
+      "omitted": 3
+    }
+  ]
+}

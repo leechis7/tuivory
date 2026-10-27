@@ -38,3 +38,7 @@ make check
 ## 공통 Tree
 
 기존 `Styler.Tree`는 stock tview 트리의 스타일 API입니다. 신규 `NewTree`·`TreeState`·`NewTreeView`는 안정 ID, 펼침/선택/스크롤, 노드 아이콘·보조 설명·개수와 키보드/마우스를 제공합니다. 같은 후보 토큰과 조작 규칙의 Rust 구현도 있습니다. 기존 Go 추출 스타일 전체의 이식이나 배포 태그의 API는 아닙니다. [API·예제](../docs/tree.md) · [현재 점검표](../docs/component-audit.md). 루트에서 `make run-tree-go ARGS="--lang ko"`로 실행합니다.
+
+## 공통 워크스페이스 컴포넌트
+
+[탭·패널·분할선·상태 표시줄·경로 사용법](../docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. 현재 배포 태그에 없는 로컬 구현이며 커밋만 하고 원격 게시·CI·실제 앱 적용은 별도로 관리합니다.

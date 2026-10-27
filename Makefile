@@ -36,3 +36,9 @@ run-tree-go:
 	go -C go run ./examples/tree $(ARGS)
 run-tree-rust:
 	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example tree -- $(ARGS)
+
+.PHONY: run-workspace-go run-workspace-rust
+run-workspace-go:
+	go -C go run ./examples/workspace $(ARGS)
+run-workspace-rust:
+	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example workspace -- $(ARGS)

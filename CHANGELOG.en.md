@@ -4,7 +4,10 @@
 
 ## Unreleased
 
-- TVR-7 support audit and shared Tree: Go/tview and Rust/Ratatui stable IDs, expansion/selection/scroll, node metadata, keyboard/mouse and ASCII, shared navigation contract, external imports, bilingual examples and images. Tree changes remain committed locally/unpublished; tabs, panels, and status bars are later phases.
+- Implemented remaining TVR-7 UI: independent active/focused tabs, overflow and edited/close requests, padded focus/ASCII panels, column/row splits with keys/dragging and compact restoration, breadcrumb omission/navigation, semantic status/shortcut priorities and packing. Added public Go/Rust APIs, external usage checks, bilingual integrated examples, eight reference SVGs, PTY input checks and synchronized guides; local commits only.
+
+
+- TVR-7 support audit and shared Tree: Go/tview and Rust/Ratatui stable IDs, expansion/selection/scroll, node metadata, keyboard/mouse and ASCII, shared navigation contract, external imports, bilingual examples and images. Tree changes remain committed locally/unpublished; tabs, panels, status, and breadcrumbs are included in the subsequent implementation below.
 
 - Added the Rust core crate: candidate tokens, profiles, color/style values, strict JSON validation, embedded distribution data, and external project usage validation. Added an optional Ratatui 0.30.2 adapter, Crossterm 0.29 bilingual interactive example, Linux ARM64 build, language-matched reference images, and PTY checks. The core requires Rust 1.85+; the adapter/example require 1.88+. These changes remain committed locally/unpublished; there is no crates.io release.
 

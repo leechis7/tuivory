@@ -35,4 +35,4 @@ Keep calculations, simulations, and actual SecureCRT/MobaXterm/xterm-compatible 
 
 Future stages use separate issues. The maintainer decides product major and stable versions. Commits and GitHub publication require explicit approval.
 
-TVR-7 now has a local [support audit](component-audit.en.md) and [shared Tree](tree.en.md). Next come tabs, panels/splitters, then status/breadcrumbs; remote publication/CI and actual host integration remain.
+TVR-7 now has a local [support audit](component-audit.en.md) and [shared Tree](tree.en.md). Tabs, panels/splitters, and status/breadcrumbs are also implemented and locally validated in the [shared workspace](workspace.en.md). Remote publication/CI and actual host integration remain.

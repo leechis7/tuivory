@@ -36,3 +36,7 @@ Shared candidate tokens originate in [design/tokens](../design/tokens/README.en.
 ## Shared Tree
 
 Existing `Styler.Tree` styles stock tview nodes. New `NewTree`, `TreeState`, and `NewTreeView` provide stable IDs, expansion/selection/scroll, node icons/secondary text/counts, and keyboard/mouse behavior. Rust shares the same candidate tokens and controls. This is neither a port of the complete Go-derived styler nor an API available in published tags. [API and example](../docs/tree.en.md) · [Support audit](../docs/component-audit.en.md). Run `make run-tree-go ARGS="--lang en"` from the root.
+
+## Shared workspace components
+
+The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These locally committed APIs are absent from published tags; remote publication/CI and real application integration are tracked separately.

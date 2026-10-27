@@ -23,3 +23,7 @@ With Rust 1.88+, run the Rust playground using `make run-rust ARGS="--lang en"`.
 ## Shared Tree examples
 
 [Go source](../go/examples/tree/main.go) · [Rust source](../rust/examples/tree/main.rs) · [Bilingual guide](../docs/tree.en.md). Run `make run-tree-go ARGS="--lang en"` or `make run-tree-rust ARGS="--lang en"` from the root. Both demonstrate the same database-free data/controls without extending the default product build.
+
+## Shared workspace components
+
+The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These locally committed APIs are absent from published tags; remote publication/CI and real application integration are tracked separately.

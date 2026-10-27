@@ -12,7 +12,7 @@ Tuivory is independent. Its Jira project is named **Tuivory**, with key **TVR**.
 | [TVR-4](https://leechis7.atlassian.net/browse/TVR-4) | Playground language selection and English images | Complete; Korean/English UI, four English images, PTY checks for both languages; merged and published in PR #1 |
 | [TVR-5](https://leechis7.atlassian.net/browse/TVR-5) | Rust ecosystem epic | In progress. Core, Ratatui adapter, bilingual interactive example, isolated packaging, documentation and images implemented/validated locally. Actual LazyBeaver integration and remote CI remain unverified. Committed locally as b67a4cb; not published |
 | [TVR-6](https://leechis7.atlassian.net/browse/TVR-6) | Go module epic | Remains open. Per-language bin path change committed locally as 3081c12, not pushed |
-| [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) | Go/Rust shared UI epic | In progress. Support audit and both Tree implementations validated locally, committed locally/unpublished. Tabs/panels/status bar remain |
+| [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) | Go/Rust shared UI epic | In progress. Support audit, Tree, tabs, panels/splitters, status and breadcrumbs implemented, validated and committed locally in both languages. Unpublished; remote CI/integration unverified |
 
 PR #1 merged as `5c3242ff17c719d7558d447c93477234f75fe698`. Both [dev CI](https://github.com/leechis7/tuivory/actions/runs/40062239810) and [main CI](https://github.com/leechis7/tuivory/actions/runs/40062241916) passed. This merge did not create a new tag or Release; the published Go version remains `v0.0.1`.
 

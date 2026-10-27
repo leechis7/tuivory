@@ -12,6 +12,7 @@
 //! # Ok::<(), tuivory::Error>(())
 //! ```
 
+pub mod components;
 mod tokens;
 pub mod tree;
 mod types;

@@ -57,6 +57,26 @@ func TestIsolatedModule(t *testing.T) {
     view.Draw(screen)
     marker,_,_,_ := screen.GetContent(1,1)
     if marker != '>' { t.Fatal("external tree did not render") }
+    tabs, err := tuivory.NewTabs([]tuivory.TabItem{{ID:"a",Title:"Overview"},{ID:"b",Title:"Draft",Edited:true,Closable:true}})
+    if err != nil { t.Fatal(err) }
+    tabState := &tuivory.TabState{}
+    tabs.Handle(tabState,tuivory.TabNext)
+    if tabState.Active != "a" || tabState.Focused != "b" { t.Fatal("tab focus activated content") }
+    tabView, err := tuivory.NewTabView(tabs,tabState,colors)
+    if err != nil { t.Fatal(err) }
+    tabView.SetRect(0,0,30,1)
+    tabView.Draw(screen)
+    panel, err := tuivory.NewPanelView(view,colors)
+    if err != nil { t.Fatal(err) }
+    panel.SetRect(0,0,30,6)
+    panel.Draw(screen)
+    if layout := (tuivory.SplitSpec{FirstMin:5,SecondMin:5}).Layout(&tuivory.SplitState{Preferred:8},30); layout.First!=8 { t.Fatal(layout) }
+    crumbs, err := tuivory.NewBreadcrumbView([]tuivory.PathItem{{ID:"root",Label:"Workspace"},{ID:"current",Label:"Current"}},colors)
+    if err != nil { t.Fatal(err) }
+    crumbs.SetRect(0,0,20,1); crumbs.Draw(screen)
+    status, err := tuivory.NewStatusView([]tuivory.StatusItem{{ID:"e",Text:"Failure",Role:"error",Priority:10}},colors)
+    if err != nil { t.Fatal(err) }
+    status.SetRect(0,0,20,1); status.Draw(screen)
 }
 ''')
         subprocess.run(['go', 'test', '-mod=mod', './...'], cwd=consumer, env=env, check=True)
