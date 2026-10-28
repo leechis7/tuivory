@@ -82,6 +82,16 @@ func TestIsolatedModule(t *testing.T) {
     if err := screen.Init(); err != nil { t.Fatal(err) }
     defer screen.Fini()
     screen.SetSize(30,6)
+    safe := tuivory.WideSafeScreen(screen)
+    screen.Put(2,2,"한",tcell.StyleDefault);screen.Put(9,2,"Z",tcell.StyleDefault);screen.Put(8,2,"界",tcell.StyleDefault);screen.Show()
+    safe.Put(3,2,"|",tcell.StyleDefault);safe.Put(8,2,"|",tcell.StyleDefault)
+    screen.Show();physical,cols,_:=screen.GetContents()
+    if string(physical[2*cols+3].Bytes)!="|" || string(physical[2*cols+9].Bytes)!=" " {t.Fatal("wide overlay physical output")}
+    screen.Put(2,3,"한",tcell.StyleDefault);screen.Put(7,3,"界",tcell.StyleDefault);screen.Show()
+    tuivory.DimRegion(screen,tuivory.CellRect{X:3,Y:3,Width:5,Height:1});screen.Show()
+    physical,cols,_=screen.GetContents()
+    if string(physical[3*cols+2].Bytes)!=" " || string(physical[3*cols+8].Bytes)!=" " {t.Fatal("shadow boundary output")}
+
     view.SetRect(0,0,30,6)
     view.Draw(screen)
     marker,_,_,_ := screen.GetContent(1,1)

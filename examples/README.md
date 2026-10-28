@@ -43,3 +43,5 @@ Rust 견본은 Rust 1.88 이상에서 `make run-rust ARGS="--lang ko"`로 실행
 [TVR-12: 알림·진행·데이터 상태](../docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
 
 [TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+
+Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](../docs/overlay-drawing.md)를 참고합니다. 기존 견본의 팝업·Choice와 focus 예제의 PanelView에 공통 보정이 적용됩니다.

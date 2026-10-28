@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"github.com/gdamore/tcell/v2"
+	"github.com/leechis7/tuivory/go/internal/drawing"
 	style "github.com/leechis7/tuivory/go/internal/style"
 	"github.com/rivo/tview"
 )
@@ -20,7 +21,7 @@ func (s Styler) DropDown(field *tview.DropDown) {
 }
 
 // Choice preserves its own colors when a Form reapplies shared input attributes.
-// It also clears wide-glyph remnants beneath an open drop-down, as LazyOra does.
+// Its open list uses the shared repair for both edges of overlapping wide glyphs.
 type Choice struct {
 	*tview.DropDown
 	foreground, background tcell.Color
@@ -41,21 +42,9 @@ func (c *Choice) SetFormAttributes(width int, label, background, _, _ tcell.Colo
 	return c
 }
 
-type choiceOverlayScreen struct{ tcell.Screen }
-
-func (s choiceOverlayScreen) SetContent(x, y int, main rune, combining []rune, st tcell.Style) {
-	if x > 0 {
-		_, _, previous, width := s.Screen.GetContent(x-1, y)
-		if width > 1 {
-			s.Screen.SetContent(x-1, y, ' ', nil, previous)
-		}
-	}
-	s.Screen.SetContent(x, y, main, combining, st)
-}
-
 func (c *Choice) Draw(screen tcell.Screen) {
 	if c.IsOpen() {
-		c.DropDown.Draw(choiceOverlayScreen{Screen: screen})
+		c.DropDown.Draw(drawing.SafeScreen(screen))
 		return
 	}
 	c.DropDown.Draw(screen)

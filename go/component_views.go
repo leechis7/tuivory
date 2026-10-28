@@ -177,6 +177,7 @@ func (v *PanelView) HasFocus() bool                       { return v.Child.HasFo
 func (v *PanelView) Focus(delegate func(tview.Primitive)) { delegate(v.Child) }
 func (v *PanelView) Blur()                                { v.Child.Blur() }
 func (v *PanelView) Draw(screen tcell.Screen) {
+	screen = WideSafeScreen(screen)
 	x, y, w, h := v.GetRect()
 	fillComponent(screen, x, y, w, h, v.palette["surface"].Style())
 	focused := v.HasFocus()

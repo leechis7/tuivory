@@ -36,3 +36,5 @@ Oracle data types, workers, and database test infrastructure are not copied here
 [TVR-8 validation](focus.en.md): shared contracts, twelve palettes, localized PTYs, external static hosts, CentOS 7.4 and localized references. Local validation before publication; remote publication/CI results are recorded separately in TVR-8 comments.
 
 [TVR-9–13 component validation](components.en.md): public APIs, row sources, requests/lifetimes, geometry, localized PTYs and static external hosts.
+
+[TVR-14 overlay boundary validation](overlay-drawing.en.md): shared Go API, actual widgets, output after Show, external static imports, PTYs and limitations.

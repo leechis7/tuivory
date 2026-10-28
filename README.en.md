@@ -136,3 +136,5 @@ Distributed executables for Go, Rust and future languages must require no separa
 [TVR-12: Notices, progress and data states](docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.
 
 [TVR-13: Layout, density and supporting components](docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+
+Go popup/shadow wide-glyph protection: [shared drawing API](docs/overlay-drawing.en.md).
