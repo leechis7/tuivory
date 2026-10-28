@@ -53,6 +53,9 @@ func TestIsolatedModule(t *testing.T) {
     picker, pickerErr := tuivory.NewSearchPicker([]tuivory.ListItem{{ID:"rust",Label:"Rust"}})
     if pickerErr!=nil { t.Fatal(pickerErr) };picker.Handle("open","",4);picker.Handle("insert","Rust",4)
     if picker.Handle("activate","",4).ID!="rust" { t.Fatal("external picker") }
+    gridRows,_:=tuivory.NewMemoryRows([]tuivory.GridRecord{{ID:"row",Cells:map[string]string{"name":"External"}}})
+    grid,_:=tuivory.NewGrid([]tuivory.GridColumn{{ID:"name",Width:12,Editable:true}},gridRows)
+    if grid.Handle("copy",4).Text!="External" || grid.Handle("activate",4).Kind!="edit" {t.Fatal("external grid")}
     theme, err := tuivory.New("dark", "256")
     if err != nil { t.Fatal(err) }
     if theme.Styles.Profile() != "256" { t.Fatal("profile missing") }

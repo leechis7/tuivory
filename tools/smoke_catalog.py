@@ -32,6 +32,12 @@ try:
   send(b'\r');assert 'change: rust' in visible(),visible()
   send(b'\r');send(b'Go');send(b'\x1b');assert 'v Rust' in visible(),visible()
   send(b'\r');send(b'NoSuchItem');assert ('No results' in visible() or '결과없음' in visible().replace(' ','')),visible()
+ if args.mode=='grid':
+  send(b'\x1b[B');send(b'\r');assert 'edit: row-2' in visible(),visible()
+  send(b' ');send(b'\x03');assert 'copy: row-2' in visible(),visible()
+  send(b'\x1b[20~');assert 'sort:' in visible(),visible()
+  send(b'\x1b[6~');send(b'\x1b[F');assert 'row-99999' in visible(),visible()
+  send(b'\x1b[<0;7;4M\x1b[<0;7;4m');assert 'sort:' in visible(),visible()
  for height,width in ((16,40),(36,120)):
   fcntl.ioctl(master,termios.TIOCSWINSZ,struct.pack('HHHH',height,width,0,0));os.killpg(p.pid,signal.SIGWINCH);drain(.25)
  send(b'\x11');p.wait(timeout=3);assert p.returncode==0 and b'\x1b[?1049l' in captured

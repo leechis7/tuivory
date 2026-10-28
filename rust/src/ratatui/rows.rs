@@ -1,7 +1,7 @@
 use super::Styles;
 use crate::forms::{ComponentLine, Form};
 use ratatui::{buffer::Buffer, layout::Rect, style::Modifier, widgets::Widget};
-/// Literal semantic rows. Missing optional roles use body; token errors are not hidden.
+/// Literal semantic rows; all semantic roles must exist in the supplied palette.
 pub struct RowsWidget<'a> {
     pub rows: &'a [ComponentLine],
     pub styles: &'a Styles,
@@ -30,6 +30,26 @@ impl Widget for RowsWidget<'_> {
                 usize::from(area.width),
                 style,
             );
+            for span in &row.spans {
+                let start = span.start.min(usize::from(area.width));
+                let width = span.width.min(usize::from(area.width) - start);
+                let mut style = self.styles.role(&span.role).expect("span role");
+                if span.focused && self.focused {
+                    style = style.add_modifier(Modifier::UNDERLINED)
+                }
+                let x = area.x + start as u16;
+                let y = area.y + i as u16;
+                for offset in 0..width {
+                    buf[(x + offset as u16, y)].set_symbol(" ").set_style(style);
+                }
+                buf.set_stringn(
+                    x,
+                    y,
+                    crate::components::cell_text(&span.text, width),
+                    width,
+                    style,
+                );
+            }
         }
     }
 }
@@ -82,6 +102,23 @@ impl Widget for SearchPickerWidget<'_> {
         let rows = self
             .model
             .layout(area.width.into(), area.height.into(), self.ascii);
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: self.focused,
+        }
+        .render(area, buf);
+    }
+}
+
+pub struct GridWidget<'a> {
+    pub model: &'a crate::grid::Grid,
+    pub styles: &'a Styles,
+    pub focused: bool,
+}
+impl Widget for GridWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = self.model.layout(area.width.into(), area.height.into());
         RowsWidget {
             rows: &rows,
             styles: self.styles,

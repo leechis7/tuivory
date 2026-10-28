@@ -8,8 +8,33 @@ import (
 	ui "github.com/leechis7/tuivory/go"
 	"github.com/rivo/tview"
 	"log"
+	"strconv"
+	"strings"
 )
 
+type demoRows struct {
+	count int
+	en    bool
+}
+
+func (s demoRows) Len() int { return s.count }
+func (s demoRows) IndexOf(id string) int {
+	n, e := strconv.Atoi(strings.TrimPrefix(id, "row-"))
+	if e != nil || n < 0 || n >= s.count || id != fmt.Sprintf("row-%d", n) {
+		return -1
+	}
+	return n
+}
+func (s demoRows) Row(n int) ui.GridRecord {
+	if n < 0 || n >= s.count {
+		return ui.GridRecord{}
+	}
+	name := fmt.Sprintf("Synthetic %d", n)
+	if !s.en {
+		name = fmt.Sprintf("합성 항목 %d", n)
+	}
+	return ui.GridRecord{ID: fmt.Sprintf("row-%d", n), Cells: map[string]string{"name": name, "value": fmt.Sprint(n * 10), "state": "ready"}, State: ui.ControlState{Disabled: n == 1, Edited: n == 3}}
+}
 func main() {
 	lang := flag.String("lang", "ko", "ko/en")
 	theme := flag.String("theme", "dark", "theme")
@@ -26,7 +51,7 @@ func main() {
 		}
 		return ko
 	}
-	if *mode != "forms" && *mode != "collections" {
+	if *mode != "forms" && *mode != "collections" && *mode != "grid" {
 		log.Fatal("unknown component")
 	}
 	options := []ui.FormOption{{ID: "fast", Label: text("빠르게", "Fast")}, {ID: "old", Label: text("사용 불가", "Unavailable"), Disabled: true}, {ID: "safe", Label: text("안전하게", "Safe")}}
@@ -67,11 +92,25 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	if *mode == "grid" {
+		grid, _ := ui.NewGrid([]ui.GridColumn{{ID: "name", Label: text("이름", "Name"), Width: 28, Editable: true}, {ID: "value", Label: text("값", "Value"), Width: 16, Editable: true}, {ID: "state", Label: text("상태", "State"), Width: 16}}, demoRows{count: 100000, en: *lang == "en"})
+		grid.Empty = text("결과 없음", "No results")
+		view, err = ui.NewGridView(grid, palette, func(e ui.GridEvent) { footer.SetText(e.Kind + ": " + e.RowID + " / " + e.ColumnID) })
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	panel, _ := ui.NewPanelView(view, palette)
 	panel.ASCII = *ascii
 	panel.SetTitle(*mode)
 	root := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 1, 0, false).AddItem(panel, 0, 1, true).AddItem(footer, 1, 0, false)
 	app.SetInputCapture(func(e *tcell.EventKey) *tcell.EventKey {
+		if *mode == "grid" && e.Key() == tcell.KeyCtrlC {
+			if view.Key != nil {
+				view.Key(e)
+			}
+			return nil
+		}
 		if e.Key() == tcell.KeyCtrlQ {
 			app.Stop()
 			return nil

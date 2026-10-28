@@ -21,6 +21,7 @@ use std::{
     time::Duration,
 };
 use tuivory::collections::{ListItem, SearchPicker};
+use tuivory::grid::{Grid, GridColumn, GridRecord, GridSource};
 use tuivory::{
     ColorProfile, Theme,
     forms::{Form, FormEvent, FormField, FormOption},
@@ -109,6 +110,41 @@ fn key(form: &mut Form, code: KeyCode) -> FormEvent {
     };
     form.handle(action, &value)
 }
+struct DemoRows {
+    count: usize,
+    en: bool,
+}
+impl GridSource for DemoRows {
+    fn len(&self) -> usize {
+        self.count
+    }
+    fn index_of(&self, id: &str) -> Option<usize> {
+        let n = id.strip_prefix("row-")?.parse::<usize>().ok()?;
+        (n < self.count).then_some(n)
+    }
+    fn row(&self, n: usize) -> GridRecord {
+        if n >= self.count {
+            return GridRecord::default();
+        }
+        GridRecord {
+            id: format!("row-{n}"),
+            cells: [
+                (
+                    "name".into(),
+                    format!("{} {n}", text(self.en, "합성 항목", "Synthetic")),
+                ),
+                ("value".into(), (n * 10).to_string()),
+                ("state".into(), "ready".into()),
+            ]
+            .into(),
+            state: ControlState {
+                disabled: n == 1,
+                edited: n == 3,
+                ..Default::default()
+            },
+        }
+    }
+}
 struct Session;
 impl Drop for Session {
     fn drop(&mut self) {
@@ -144,7 +180,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--snapshot" => output = Some(args.next().ok_or("missing output")?),
             "--mode" => {
                 mode = args.next().ok_or("missing mode")?;
-                if !["forms", "collections"].contains(&mode.as_str()) {
+                if !["forms", "collections", "grid"].contains(&mode.as_str()) {
                     return Err("unknown mode".into());
                 }
             }
@@ -152,6 +188,30 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     let styles = Styles::new(theme, colors)?;
+    let mut grid = Grid::new(
+        vec![
+            GridColumn {
+                id: "name".into(),
+                label: text(en, "이름", "Name"),
+                width: 28,
+                editable: true,
+            },
+            GridColumn {
+                id: "value".into(),
+                label: text(en, "값", "Value"),
+                width: 16,
+                editable: true,
+            },
+            GridColumn {
+                id: "state".into(),
+                label: text(en, "상태", "State"),
+                width: 16,
+                editable: false,
+            },
+        ],
+        Box::new(DemoRows { count: 100000, en }),
+    )?;
+    grid.empty = text(en, "결과 없음", "No results");
     let mut form = demo(en);
     let mut picker = SearchPicker::new(vec![
         ListItem {
@@ -196,6 +256,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let draw = |f: &mut ratatui::Frame<'_>,
                 form: &Form,
                 picker: &SearchPicker,
+                grid: &Grid,
                 status: &str,
                 body: &mut Rect| {
         let r = f.area();
@@ -212,7 +273,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         let area = Rect::new(r.x, r.y + 1, r.width, r.height.saturating_sub(2));
         *body = panel.inner(area);
         f.render_widget(panel, area);
-        if mode == "collections" {
+        if mode == "grid" {
+            let rows = grid.layout(body.width.into(), body.height.into());
+            f.render_widget(
+                RowsWidget {
+                    rows: &rows,
+                    styles: &styles,
+                    focused: true,
+                },
+                *body,
+            );
+        } else if mode == "collections" {
             let rows = picker.layout(body.width.into(), body.height.into(), ascii);
             f.render_widget(
                 RowsWidget {
@@ -241,7 +312,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     if let Some(path) = output {
         let mut terminal = Terminal::new(TestBackend::new(120, 36))?;
-        terminal.draw(|f| draw(f, &form, &picker, &status, &mut body))?;
+        terminal.draw(|f| draw(f, &form, &picker, &grid, &status, &mut body))?;
         snapshot::write(std::path::Path::new(&path), terminal.backend().buffer())?;
         return Ok(());
     }
@@ -253,7 +324,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
     loop {
-        terminal.draw(|f| draw(f, &form, &picker, &status, &mut body))?;
+        terminal.draw(|f| draw(f, &form, &picker, &grid, &status, &mut body))?;
         if !event::poll(Duration::from_millis(100))? {
             continue;
         }
@@ -262,7 +333,36 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if k.code == KeyCode::Char('q') && k.modifiers.contains(KeyModifiers::CONTROL) {
                     break;
                 }
-                if mode == "collections" {
+                if mode == "grid" {
+                    let action = match k.code {
+                        KeyCode::Left => "left",
+                        KeyCode::Right => "right",
+                        KeyCode::Up => "up",
+                        KeyCode::Down => "down",
+                        KeyCode::Home => "first",
+                        KeyCode::End => "last",
+                        KeyCode::PageUp => "page_up",
+                        KeyCode::PageDown => "page_down",
+                        KeyCode::Enter => "activate",
+                        KeyCode::F(6) => "row_mode",
+                        KeyCode::F(7) => "widen",
+                        KeyCode::F(8) => "narrow",
+                        KeyCode::F(9) => "sort",
+                        KeyCode::Char(' ') => "select",
+                        KeyCode::Char('c') if k.modifiers.contains(KeyModifiers::CONTROL) => "copy",
+                        _ => "",
+                    };
+                    let e = if k.code == KeyCode::F(5) {
+                        grid.request_filter("sample")
+                    } else {
+                        grid.handle(action, body.height.into())
+                    };
+                    FormEvent {
+                        kind: e.kind,
+                        id: format!("{} / {}", e.row_id, e.column_id),
+                        ..Default::default()
+                    }
+                } else if mode == "collections" {
                     let action = match k.code {
                         KeyCode::Up => "previous",
                         KeyCode::Down => "next",
@@ -295,13 +395,28 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if m.kind == MouseEventKind::Down(MouseButton::Left)
                     && body.contains((m.column, m.row).into()) =>
             {
-                let rows = if mode == "collections" {
+                let rows = if mode == "grid" {
+                    grid.layout(body.width.into(), body.height.into())
+                } else if mode == "collections" {
                     picker.layout(body.width.into(), body.height.into(), ascii)
                 } else {
                     form.layout(body.width.into(), body.height.into())
                 };
                 if let Some(row) = rows.get(usize::from(m.row - body.y)) {
-                    if mode == "collections" {
+                    if mode == "grid" {
+                        let e = grid.click(
+                            &row.id,
+                            &row.value,
+                            usize::from(m.column - body.x),
+                            body.width.into(),
+                            body.height.into(),
+                        );
+                        FormEvent {
+                            kind: e.kind,
+                            id: format!("{} / {}", e.row_id, e.column_id),
+                            ..Default::default()
+                        }
+                    } else if mode == "collections" {
                         let e = if !picker.open {
                             picker.handle("open", "", body.height.into())
                         } else {

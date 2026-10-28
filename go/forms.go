@@ -8,9 +8,16 @@ import (
 )
 
 // ComponentLine is literal presentation data; ID identifies a hit-tested item.
+type ComponentSpan struct {
+	Start, Width int
+	Text, Role   string
+	Focused      bool
+}
+
 type ComponentLine struct {
 	ID, Text, Role, Value string
 	Focused               bool
+	Spans                 []ComponentSpan
 }
 type FormOption struct {
 	ID, Label string

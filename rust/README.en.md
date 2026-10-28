@@ -115,3 +115,5 @@ Unreleased `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `S
 [TVR-9: Inputs and forms](../docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
 
 [TVR-10: Lists, menus and search selection](../docs/collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+
+[TVR-11: Tables and data grid](../docs/grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
