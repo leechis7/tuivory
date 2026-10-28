@@ -1,0 +1,14 @@
+{
+  "format": "tuivory.layout.draft",
+  "compact_below": 80,
+  "compact": {
+    "gap": 0,
+    "padding": 0,
+    "control_gap": 1
+  },
+  "comfortable": {
+    "gap": 2,
+    "padding": 1,
+    "control_gap": 2
+  }
+}

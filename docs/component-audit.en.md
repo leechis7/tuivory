@@ -34,4 +34,8 @@ Phases 1–4 now provide public Go/Rust APIs, database-free bilingual examples, 
 
 ## 2026-10-28 follow-up
 
-Registered [TVR-8–13](components-backlog.en.md) under TVR-7. The first [state/focus/popup foundation](focus.en.md) is locally implemented/validated and unreleased, distinct from prior v0.1.0 publication. Inputs/forms/tables/complete modals remain follow-up work.
+Registered [TVR-8–13](components-backlog.en.md) under TVR-7. The first [state/focus/popup foundation](focus.en.md) is locally implemented/validated and unreleased, distinct from prior v0.1.0 publication. Forms, lists/search, virtual grids, feedback and layout/supporting APIs now follow TVR-9–13. A complete application Dialog/workflow remains host composition.
+
+## TVR-9–13 result
+
+Public Go/Rust [forms](forms.en.md), [lists/menus/search](collections.en.md), [virtual grids](grid.en.md), [notices/progress/data states](feedback.en.md), [spacing/geometry/badges/chips/help](layout.en.md) are implemented with localized catalog hosts and tests. Sort/filter/edit/copy, validation, clocks and business actions remain host-owned. Accordion/Drawer/Stepper reuse existing state and panel composition. All stage commits target dev; main/release is separate.

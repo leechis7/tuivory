@@ -192,6 +192,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut colors = ColorProfile::Indexed256;
     let mut output = None;
     let mut mode = "forms".to_owned();
+    let mut density = tuivory::layout::Density::Auto;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -206,16 +207,23 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--theme" => theme = args.next().ok_or("missing theme")?.parse()?,
             "--colors" => colors = args.next().ok_or("missing colors")?.parse()?,
             "--snapshot" => output = Some(args.next().ok_or("missing output")?),
+            "--density" => density = args.next().ok_or("missing density")?.parse()?,
             "--mode" => {
                 mode = args.next().ok_or("missing mode")?;
-                if !["forms", "collections", "grid", "feedback"].contains(&mode.as_str()) {
+                if !["forms", "collections", "grid", "feedback", "layout"].contains(&mode.as_str())
+                {
                     return Err("unknown mode".into());
                 }
             }
             _ => return Err(format!("unknown option {arg}").into()),
         }
     }
-    let styles = Styles::new(theme, colors)?;
+    let mut styles = Styles::new(theme, colors)?;
+    let mut layout_demo = LayoutDemo {
+        density,
+        removed: false,
+        help_open: false,
+    };
     let mut grid = Grid::new(
         vec![
             GridColumn {
@@ -317,6 +325,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 form: &Form,
                 picker: &SearchPicker,
                 grid: &Grid,
+                layout_demo: &LayoutDemo,
+                styles: &Styles,
                 queue: &NoticeQueue,
                 progress: &Progress,
                 now: u64,
@@ -336,7 +346,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         let area = Rect::new(r.x, r.y + 1, r.width, r.height.saturating_sub(2));
         *body = panel.inner(area);
         f.render_widget(panel, area);
-        if mode == "feedback" {
+        if mode == "layout" {
+            let rows = layout_demo.rows(body.width.into(), body.height.into(), en);
+            f.render_widget(
+                RowsWidget {
+                    rows: &rows,
+                    styles,
+                    focused: true,
+                },
+                *body,
+            );
+        } else if mode == "feedback" {
             let rows = feedback_rows(
                 queue,
                 progress,
@@ -348,7 +368,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             f.render_widget(
                 RowsWidget {
                     rows: &rows,
-                    styles: &styles,
+                    styles,
                     focused: true,
                 },
                 *body,
@@ -358,7 +378,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             f.render_widget(
                 RowsWidget {
                     rows: &rows,
-                    styles: &styles,
+                    styles,
                     focused: true,
                 },
                 *body,
@@ -368,7 +388,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             f.render_widget(
                 RowsWidget {
                     rows: &rows,
-                    styles: &styles,
+                    styles,
                     focused: true,
                 },
                 *body,
@@ -377,7 +397,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             f.render_widget(
                 FormWidget {
                     form,
-                    styles: &styles,
+                    styles,
                     focused: true,
                 },
                 *body,
@@ -394,7 +414,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut terminal = Terminal::new(TestBackend::new(120, 36))?;
         terminal.draw(|f| {
             draw(
-                f, &form, &picker, &grid, &queue, &progress, now, &status, &mut body,
+                f,
+                &form,
+                &picker,
+                &grid,
+                &layout_demo,
+                &styles,
+                &queue,
+                &progress,
+                now,
+                &status,
+                &mut body,
             )
         })?;
         snapshot::write(std::path::Path::new(&path), terminal.backend().buffer())?;
@@ -410,7 +440,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     loop {
         terminal.draw(|f| {
             draw(
-                f, &form, &picker, &grid, &queue, &progress, now, &status, &mut body,
+                f,
+                &form,
+                &picker,
+                &grid,
+                &layout_demo,
+                &styles,
+                &queue,
+                &progress,
+                now,
+                &status,
+                &mut body,
             )
         })?;
         if !event::poll(Duration::from_millis(100))? {
@@ -421,7 +461,27 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if k.code == KeyCode::Char('q') && k.modifiers.contains(KeyModifiers::CONTROL) {
                     break;
                 }
-                if mode == "feedback" {
+                if k.code == KeyCode::F(2) || k.code == KeyCode::F(3) {
+                    if k.code == KeyCode::F(2) {
+                        theme = match theme {
+                            Theme::Dark => Theme::Light,
+                            Theme::Light => Theme::Blackwhite,
+                            Theme::Blackwhite => Theme::Dark,
+                        };
+                    } else {
+                        colors = match colors {
+                            ColorProfile::Ansi8 => ColorProfile::Ansi16,
+                            ColorProfile::Ansi16 => ColorProfile::Indexed256,
+                            ColorProfile::Indexed256 => ColorProfile::Truecolor,
+                            ColorProfile::Truecolor => ColorProfile::Ansi8,
+                        };
+                    }
+                    styles = Styles::new(theme, colors)?;
+                    continue;
+                }
+                if mode == "layout" {
+                    layout_demo.key(k.code)
+                } else if mode == "feedback" {
                     let event = if k.code == KeyCode::Char('c') {
                         progress.request_cancel()
                     } else if k.code == KeyCode::Char('t') {
@@ -523,7 +583,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if m.kind == MouseEventKind::Down(MouseButton::Left)
                     && body.contains((m.column, m.row).into()) =>
             {
-                let rows = if mode == "feedback" {
+                let rows = if mode == "layout" {
+                    layout_demo.rows(body.width.into(), body.height.into(), en)
+                } else if mode == "feedback" {
                     feedback_rows(
                         &queue,
                         &progress,
@@ -540,7 +602,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     form.layout(body.width.into(), body.height.into())
                 };
                 if let Some(row) = rows.get(usize::from(m.row - body.y)) {
-                    if mode == "feedback" {
+                    if mode == "layout" {
+                        FormEvent::default()
+                    } else if mode == "feedback" {
                         if queue.visible(now).iter().any(|n| n.id == row.id) {
                             queue.focused = row.id.clone();
                         }
@@ -594,4 +658,210 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
+}
+
+fn layout_help(en: bool) -> tuivory::layout::Help {
+    use tuivory::layout::{Help, Shortcut};
+    Help::new(vec![
+        Shortcut {
+            key: "Ctrl+Q".into(),
+            text: text(en, "종료", "Quit"),
+            priority: 100,
+            disabled: false,
+        },
+        Shortcut {
+            key: "F1/Esc".into(),
+            text: text(en, "도움말 열기/복귀", "Open help / return"),
+            priority: 90,
+            disabled: false,
+        },
+        Shortcut {
+            key: "x".into(),
+            text: text(en, "필터 제거 요청", "Request filter removal"),
+            priority: 80,
+            disabled: false,
+        },
+        Shortcut {
+            key: "d".into(),
+            text: text(en, "밀도 전환", "Change density"),
+            priority: 70,
+            disabled: false,
+        },
+    ])
+    .unwrap()
+}
+struct LayoutDemo {
+    density: tuivory::layout::Density,
+    removed: bool,
+    help_open: bool,
+}
+impl LayoutDemo {
+    fn rows(&self, w: usize, h: usize, en: bool) -> Vec<tuivory::forms::ComponentLine> {
+        use tuivory::forms::{ComponentLine, ComponentSpan};
+        use tuivory::layout::{Badge, CellRect, Chip, SpacingTokens, StackItem};
+        if self.help_open {
+            return layout_help(en).layout(w, h);
+        }
+        if w == 0 || h == 0 {
+            return vec![];
+        }
+        let tokens = SpacingTokens::for_width(self.density, w);
+        let (rects, hidden) = tuivory::layout::stack_rects(
+            CellRect {
+                x: 0,
+                y: 0,
+                width: w,
+                height: h.saturating_sub(2),
+            },
+            &[
+                StackItem {
+                    id: "main".into(),
+                    min: 12,
+                    preferred: 40,
+                    weight: 1,
+                },
+                StackItem {
+                    id: "aside".into(),
+                    min: 10,
+                    preferred: 24,
+                    weight: 0,
+                },
+            ],
+            tokens,
+            false,
+        )
+        .unwrap();
+        let mut rows = vec![
+            ComponentLine {
+                role: "surface".into(),
+                ..Default::default()
+            };
+            h
+        ];
+        let mut add = |y: usize, x: usize, width: usize, value: String, role: String| {
+            if y < h && width > 0 {
+                rows[y].spans.push(ComponentSpan {
+                    start: x,
+                    width,
+                    text: value,
+                    role,
+                    focused: false,
+                })
+            }
+        };
+        for slot in rects {
+            let r = slot.rect;
+            if r.width == 0 || r.height == 0 {
+                continue;
+            }
+            add(
+                r.y,
+                r.x,
+                r.width,
+                format!("[ {} ]", slot.id),
+                "header".into(),
+            );
+            if slot.id == "main" {
+                if r.height > 1 {
+                    let line = Badge {
+                        id: "count".into(),
+                        label: text(en, "작업", "Tasks"),
+                        count: Some(145),
+                        ..Default::default()
+                    }
+                    .line(r.width);
+                    add(r.y + 1, r.x, r.width, line.text, line.role)
+                }
+                if !self.removed && r.height > 2 {
+                    let line = Chip {
+                        id: "filter".into(),
+                        label: text(en, "검토 필터", "Review filter"),
+                        state: ControlState {
+                            selected: true,
+                            ..Default::default()
+                        },
+                        removable: true,
+                    }
+                    .line(r.width);
+                    add(r.y + 2, r.x, r.width, line.text, line.role)
+                }
+            } else {
+                for (i, line) in layout_help(en)
+                    .layout(r.width, r.height.saturating_sub(1))
+                    .into_iter()
+                    .enumerate()
+                {
+                    add(r.y + 1 + i, r.x, r.width, line.text, line.role)
+                }
+            }
+        }
+        let placement = tuivory::layout::drawer_layout(
+            CellRect {
+                x: 0,
+                y: 0,
+                width: w,
+                height: h,
+            },
+            24,
+            40,
+        );
+        rows[h - 1] = ComponentLine {
+            text: tuivory::components::cell_text(
+                &format!(
+                    "density={:?} gap={} padding={} hidden={} overlay={}",
+                    self.density,
+                    tokens.gap,
+                    tokens.padding,
+                    hidden.len(),
+                    placement.overlay
+                ),
+                w,
+            ),
+            role: "hint".into(),
+            ..Default::default()
+        };
+        rows
+    }
+    fn key(&mut self, code: KeyCode) -> FormEvent {
+        use tuivory::layout::{Chip, Density};
+        if code == KeyCode::F(1) {
+            self.help_open = !self.help_open;
+            return FormEvent::default();
+        }
+        if self.help_open {
+            if code == KeyCode::Esc {
+                self.help_open = false
+            }
+            return FormEvent::default();
+        }
+        if code == KeyCode::Char('x') {
+            let event = Chip {
+                id: "filter".into(),
+                removable: true,
+                ..Default::default()
+            }
+            .request_remove();
+            if !event.kind.is_empty() {
+                self.removed = true
+            }
+            return FormEvent {
+                kind: event.kind,
+                id: event.id,
+                ..Default::default()
+            };
+        }
+        if code == KeyCode::Char('d') {
+            self.density = if self.density == Density::Compact {
+                Density::Comfortable
+            } else {
+                Density::Compact
+            };
+            return FormEvent {
+                kind: "density".into(),
+                id: format!("{:?}", self.density),
+                ..Default::default()
+            };
+        }
+        FormEvent::default()
+    }
 }

@@ -113,3 +113,5 @@ Go·Rust와 향후 언어의 배포 실행파일은 별도 런타임·공유 라
 [TVR-11: 표·데이터 그리드](docs/grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
 
 [TVR-12: 알림·진행·데이터 상태](docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+
+[TVR-13: 배치·밀도·부가 컴포넌트](docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.

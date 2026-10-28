@@ -41,6 +41,7 @@ func main() {
 	colors := flag.String("colors", "256", "color profile")
 	ascii := flag.Bool("ascii", false, "ASCII borders")
 	mode := flag.String("mode", "forms", "component")
+	densityFlag := flag.String("density", "auto", "auto/compact/comfortable")
 	flag.Parse()
 	if *lang != "ko" && *lang != "en" {
 		log.Fatal("invalid language")
@@ -51,7 +52,7 @@ func main() {
 		}
 		return ko
 	}
-	if *mode != "forms" && *mode != "collections" && *mode != "grid" && *mode != "feedback" {
+	if *mode != "forms" && *mode != "collections" && *mode != "grid" && *mode != "feedback" && *mode != "layout" {
 		log.Fatal("unknown component")
 	}
 	options := []ui.FormOption{{ID: "fast", Label: text("빠르게", "Fast")}, {ID: "old", Label: text("사용 불가", "Unavailable"), Disabled: true}, {ID: "safe", Label: text("안전하게", "Safe")}}
@@ -152,11 +153,83 @@ func main() {
 			}
 		}
 	}
+	if *mode == "layout" {
+		density := ui.Density(*densityFlag)
+		if _, e := ui.ResolveSpacing(density, 120); e != nil {
+			log.Fatal(e)
+		}
+		removed, helpOpen := false, false
+		view, err = ui.NewRowsView(func(w, h int) []ui.ComponentLine {
+			return layoutDemoRows(w, h, density, removed, helpOpen, *lang == "en")
+		}, palette)
+		if err != nil {
+			log.Fatal(err)
+		}
+		view.Key = func(key *tcell.EventKey) {
+			if key.Key() == tcell.KeyF1 {
+				helpOpen = !helpOpen
+				return
+			}
+			if helpOpen {
+				if key.Key() == tcell.KeyEscape {
+					helpOpen = false
+				}
+				return
+			}
+			if key.Key() == tcell.KeyRune && key.Rune() == 'x' {
+				event := (ui.Chip{ID: "filter", Removable: true}).RequestRemove()
+				if event.Kind != "" {
+					removed = true
+					footer.SetText(event.Kind + ": " + event.ID)
+				}
+			}
+			if key.Key() == tcell.KeyRune && key.Rune() == 'd' {
+				if density == ui.DensityCompact {
+					density = ui.DensityComfortable
+				} else {
+					density = ui.DensityCompact
+				}
+				footer.SetText("density: " + string(density))
+			}
+		}
+	}
 	panel, _ := ui.NewPanelView(view, palette)
 	panel.ASCII = *ascii
 	panel.SetTitle(*mode)
 	root := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 1, 0, false).AddItem(panel, 0, 1, true).AddItem(footer, 1, 0, false)
 	app.SetInputCapture(func(e *tcell.EventKey) *tcell.EventKey {
+		if e.Key() == tcell.KeyF2 || e.Key() == tcell.KeyF3 {
+			if e.Key() == tcell.KeyF2 {
+				values := []string{"dark", "light", "blackwhite"}
+				for i, v := range values {
+					if *theme == v {
+						*theme = values[(i+1)%len(values)]
+						break
+					}
+				}
+			} else {
+				values := []string{"8", "16", "256", "truecolor"}
+				for i, v := range values {
+					if *colors == v {
+						*colors = values[(i+1)%len(values)]
+						break
+					}
+				}
+			}
+			source, e := doc.Palette(*theme, *colors)
+			if e != nil {
+				log.Fatal(e)
+			}
+			palette, _ = ui.Resolve(source)
+			if e = view.SetPalette(palette); e != nil {
+				log.Fatal(e)
+			}
+			_ = panel.SetPalette(palette)
+			header.SetTextColor(palette["body"].FG).SetBackgroundColor(palette["surface"].BG)
+			footer.SetTextColor(palette["hint"].FG).SetBackgroundColor(palette["surface"].BG)
+			return nil
+		}
+
 		if *mode == "grid" && e.Key() == tcell.KeyCtrlC {
 			if view.Key != nil {
 				view.Key(e)
@@ -188,4 +261,69 @@ func feedbackRows(queue *ui.NoticeQueue, progress *ui.Progress, w, h int, now ui
 	}
 	rows = append(rows, ui.ComponentLine{Role: "hint"})
 	return append(rows, progress.Layout(w, now)...)
+}
+
+func layoutHelp(en bool) *ui.Help {
+	tr := func(ko, english string) string {
+		if en {
+			return english
+		}
+		return ko
+	}
+	help, _ := ui.NewHelp([]ui.Shortcut{{Key: "Ctrl+Q", Text: tr("종료", "Quit"), Priority: 100}, {Key: "F1/Esc", Text: tr("도움말 열기/복귀", "Open help / return"), Priority: 90}, {Key: "x", Text: tr("필터 제거 요청", "Request filter removal"), Priority: 80}, {Key: "d", Text: tr("밀도 전환", "Change density"), Priority: 70}})
+	return help
+}
+func layoutDemoRows(w, h int, density ui.Density, removed, helpOpen, en bool) []ui.ComponentLine {
+	if helpOpen {
+		return layoutHelp(en).Layout(w, h)
+	}
+	if w <= 0 || h <= 0 {
+		return nil
+	}
+	tokens, _ := ui.ResolveSpacing(density, w)
+	rects, hidden, _ := ui.StackRects(ui.CellRect{Width: w, Height: max(0, h-2)}, []ui.StackItem{{ID: "main", Min: 12, Preferred: 40, Weight: 1}, {ID: "aside", Min: 10, Preferred: 24}}, tokens, false)
+	rows := make([]ui.ComponentLine, h)
+	for i := range rows {
+		rows[i].Role = "surface"
+	}
+	add := func(y, x, width int, text, role string) {
+		if y < 0 || y >= h || width <= 0 {
+			return
+		}
+		rows[y].Spans = append(rows[y].Spans, ui.ComponentSpan{Start: x, Width: width, Text: text, Role: role})
+	}
+	tr := func(ko, english string) string {
+		if en {
+			return english
+		}
+		return ko
+	}
+	count := uint64(145)
+	for _, slot := range rects {
+		r := slot.Rect
+		if r.Width == 0 || r.Height == 0 {
+			continue
+		}
+		add(r.Y, r.X, r.Width, "[ "+slot.ID+" ]", "header")
+		if slot.ID == "main" {
+			badge := ui.Badge{ID: "count", Label: tr("작업", "Tasks"), Count: &count}
+			line := badge.Line(r.Width)
+			if r.Height > 1 {
+				add(r.Y+1, r.X, r.Width, line.Text, line.Role)
+			}
+			if !removed && r.Height > 2 {
+				chip := ui.Chip{ID: "filter", Label: tr("검토 필터", "Review filter"), Removable: true, State: ui.ControlState{Selected: true}}
+				line = chip.Line(r.Width)
+				add(r.Y+2, r.X, r.Width, line.Text, line.Role)
+				rows[r.Y+2].ID = "filter"
+			}
+		} else {
+			for i, line := range layoutHelp(en).Layout(r.Width, max(0, r.Height-1)) {
+				add(r.Y+1+i, r.X, r.Width, line.Text, line.Role)
+			}
+		}
+	}
+	placement := ui.DrawerLayout(ui.CellRect{Width: w, Height: h}, 24, 40)
+	rows[h-1] = ui.ComponentLine{Text: ui.CellText(fmt.Sprintf("density=%s gap=%d padding=%d hidden=%d overlay=%t", density, tokens.Gap, tokens.Padding, len(hidden), placement.Overlay), w), Role: "hint"}
+	return rows
 }

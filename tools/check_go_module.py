@@ -59,6 +59,9 @@ func TestIsolatedModule(t *testing.T) {
     notices,_:=tuivory.NewNoticeQueue(2);_ = notices.Push(tuivory.Notice{ID:"err",Severity:"error",ExpiresAt:1})
     if len(notices.Visible(100))!=1 { t.Fatal("external notice lifetime") }
     operation:=tuivory.Progress{ID:"load",Status:"loading",Cancellable:true};if operation.RequestCancel().Kind!="cancel"{t.Fatal("external cancel")}
+    spacing,spacingErr:=tuivory.ResolveSpacing(tuivory.DensityAuto,40);if spacingErr!=nil||spacing.Padding!=0{t.Fatal("external spacing")}
+    layout,layoutErr:=tuivory.StackLayout([]tuivory.StackItem{{ID:"main",Min:10,Preferred:20,Weight:1}},30,1);if layoutErr!=nil||layout.Slots[0].Size!=30{t.Fatal("external stack")}
+    if (tuivory.Chip{ID:"filter",Removable:true}).RequestRemove().Kind!="remove"{t.Fatal("external chip")}
     theme, err := tuivory.New("dark", "256")
     if err != nil { t.Fatal(err) }
     if theme.Styles.Profile() != "256" { t.Fatal("profile missing") }

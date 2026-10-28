@@ -3,11 +3,11 @@
 import argparse,fcntl,os,pty,select,signal,struct,subprocess,termios,time
 from pathlib import Path
 from smoke_focus import Screen
-parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('binary',type=Path);parser.add_argument('--mode',default='forms');parser.add_argument('--lang',choices=['ko','en'],default='en');args=parser.parse_args()
+parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('binary',type=Path);parser.add_argument('--mode',default='forms');parser.add_argument('--lang',choices=['ko','en'],default='en');parser.add_argument('--ascii',action='store_true');args=parser.parse_args()
 master,slave=pty.openpty();fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',36,120,0,0))
 def terminal():
  os.setsid();fcntl.ioctl(0,termios.TIOCSCTTY,0)
-p=subprocess.Popen([str(args.binary.resolve()),'--mode',args.mode,'--lang',args.lang],stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave);screen=Screen();captured=bytearray();reports=0
+p=subprocess.Popen([str(args.binary.resolve()),'--mode',args.mode,'--lang',args.lang]+(['--ascii'] if args.ascii else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave);screen=Screen();captured=bytearray();reports=0
 def drain(seconds=.25):
  global reports
  end=time.monotonic()+seconds
@@ -43,9 +43,18 @@ try:
   send(b't');assert '[!]' in visible() and 'expired:' in visible(),visible()
   send(b'c');assert 'cancel: load' in visible(),visible()
   send(b'\x1b[3~');assert 'dismiss: error' in visible(),visible()
+ if args.mode=='layout':
+  assert 'Tasks' in visible() or '작업' in visible().replace(' ',''),visible()
+  send(b'\x1bOP');assert 'Ctrl+Q' in visible() and '[ main ]' not in visible(),visible()
+  send(b'x');assert 'remove: filter' not in visible(),visible()
+  send(b'\x1b');send(b'x');assert 'remove: filter' in visible(),visible()
+  send(b'd');assert 'density:' in visible(),visible()
+ for key in (b'\x1b[12~',b'\x1b[13~'):
+  send(key)
  for height,width in ((16,40),(36,120)):
   fcntl.ioctl(master,termios.TIOCSWINSZ,struct.pack('HHHH',height,width,0,0));os.killpg(p.pid,signal.SIGWINCH);drain(.25)
  send(b'\x11');p.wait(timeout=3);assert p.returncode==0 and b'\x1b[?1049l' in captured
+ if args.ascii: assert '◆' not in captured.decode(errors='replace')
  korean=any('\uac00'<=c<='\ud7a3' for c in captured.decode(errors='replace'));assert korean==(args.lang=='ko')
  print(f'{args.mode} PTY {args.lang}: actions, resize and terminal restoration passed')
 finally:

@@ -37,6 +37,6 @@ Future stages use separate issues. The maintainer decides product major and stab
 
 TVR-7 now has a local [support audit](component-audit.en.md) and [shared Tree](tree.en.md). Tabs, panels/splitters, and status/breadcrumbs are also implemented and locally validated in the [shared workspace](workspace.en.md). These components were published in v0.1.0 with passing remote CI; actual host integration remains separate.
 
-## MUI review follow-up sequence
+## MUI component stages
 
-[TVR-8–13](components-backlog.en.md): states/focus/popups → inputs/forms → lists/search → tables → feedback → layout/density/supporting components. The first [public APIs and bilingual hosts](focus.en.md) are locally implemented/validated, with source publication approved; track remote CI/merge results in TVR-8 comments. Language expansion and application integration remain separate plans; keep only one active feature branch.
+TVR-8–13 provide shared states/focus/popups, [forms](forms.en.md), [lists/search](collections.en.md), [virtual grids](grid.en.md), [feedback](feedback.en.md), and [layout/density/supporting components](layout.en.md). Public Go/Rust models/renderers, localized catalog hosts/references and validation are provided. Approved changes integrate into dev only; CI/PR evidence is recorded in each issue. A separate release instruction controls main/tags/Releases; application integration remains separate.
