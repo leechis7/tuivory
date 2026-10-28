@@ -72,7 +72,7 @@ impl Styles {
             style
         })
     }
-    /// A padded panel using the same focus and ordinary-font fallback contract.
+    /// A padded panel using the same focus and ordinary-font fallback rules.
     pub fn panel<'a>(
         &self,
         title: &'a str,

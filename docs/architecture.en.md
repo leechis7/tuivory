@@ -2,7 +2,7 @@
 
 [한국어 (default)](architecture.md) · **English**
 
-Tuivory provides terminal UI styles for use across languages. Shared design and validation contracts are independent of each language implementation and package. Go source, go.mod, and go.sum stay out of the repository root.
+Tuivory provides terminal UI styles for use across languages. Shared design and validation specifications are independent of each language implementation and package. Go source, go.mod, and go.sum stay out of the repository root.
 
 ```text
 tuivory/

@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](focus.en.md)
 
-Go의 `ControlState`, `ControlStyle`, `FocusStack`과 Rust의 `interaction::{ControlState, FocusStack}`, `Styles::control`은 같은 계약을 제공합니다. 이 API는 0.2.0에 포함한 기능입니다. [후속 단계](components-backlog.md)
+Go의 `ControlState`, `ControlStyle`, `FocusStack`과 Rust의 `interaction::{ControlState, FocusStack}`, `Styles::control`은 같은 동작 규칙을 따릅니다. 이 API는 0.2.0에 포함한 기능입니다. [후속 단계](components-backlog.md)
 
 ## 상태 합성
 

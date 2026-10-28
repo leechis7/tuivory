@@ -17,10 +17,10 @@
 | [Go 사용법](go-package.md) | 공개 API·역할·상태·테마 재적용 |
 | [견본](playground.md) | 한국어·영어 실행·키 조작·이미지 생성 |
 | [저장소 구조](architecture.md) | 언어별 경계·공통 데이터·내장 자산 |
-| [공통 명세](../design/README.md) | 언어 독립 설계 계약 |
+| [공통 명세](../design/README.md) | 언어 독립 설계 명세 |
 | [토큰](../design/tokens/README.md) · [테마](../design/themes/README.md) | JSON·스키마·CSV와 검증 범위 |
 | [설계 원칙](principles.md) | 의미·프로필·상태·입력·셀·검증 |
-| [컴포넌트 패턴](patterns.md) | 위젯별 상태와 조작 계약 |
+| [컴포넌트 패턴](patterns.md) | 위젯별 상태와 조작 규칙 |
 | [단말 프로필](terminal-profiles.md) | 색상 능력·ANSI·표현 제한 |
 | [추출 출처](lazyora-extraction.md) · [Go 범위](go-style-coverage.md) | 원본 해시·API 대응·동등성 근거 |
 | [언어별 예제](../examples/README.md) | Go·Rust·Python·JavaScript·Shell의 실제 제공 범위 |

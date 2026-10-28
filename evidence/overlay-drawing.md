@@ -14,7 +14,7 @@
 
 | 방법 | 결과 |
 | --- | --- |
-| `make test check` | Go 전체 race·vet, 토큰/계약 사본·팔레트·링크·도구·Shell 검사 통과 |
+| `make test check` | Go 전체 race·vet, 토큰/명세 사본·팔레트·링크·도구·Shell 검사 통과 |
 | `go/drawing_test.go` | 다섯 쓰기 경로·한글/CJK/이모지·카드/그림자 좌우·다중 프레임·Sync·끝 열·잘림·스타일을 Show 이후 Runes/Bytes로 검사 |
 | 실제 위젯 통합 | Go 팝업의 포커스 테두리·열린 Choice 목록·Unicode/ASCII 패널을 Show 이후 검사 |
 | `tools/check_go_module.py --static-output /tmp/tuivory-tvr14-external-x86_64` | 저장소 design/ 없는 독립 모듈·외부 단일 import 앱의 새 API 출력 검사, x86_64 ELF의 PT_INTERP/DT_NEEDED 부재 검사 통과 |

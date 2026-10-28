@@ -11,6 +11,8 @@ For documentation, theme, or tooling changes, explain the problem and reproducti
 - Patterns: combinations of default, focused, selected, disabled, changed, and error states, plus keyboard and mouse behavior.
 - Adapters: keep application data, databases, and input I/O ownership outside shared style calculations.
 
+Use **specification** for shared design, data and API definitions, and **rules** for interaction, input handling, navigation and state behavior. Keep the Korean counterparts **명세** and **규칙** aligned, and adjust whole sentences to read naturally.
+
 ## Layout and validation
 
 Keep Go source and module configuration in `go/`, shared design sources in `design/`, and other language implementations in their respective directories. Keep the repository root language-neutral.
@@ -63,12 +65,14 @@ Project documentation and code use [AGPL-3.0-only](LICENSE). Preserve source att
 
 `design/tree-navigation.json` is the interaction fixture source. After changes, run `python3 tools/export_tree_cases.py`, update both module copies, and run both language tests, external imports, and bilingual PTY checks. `make check` verifies fixture equality. Update the [audit](docs/component-audit.en.md) and [Tree API](docs/tree.en.md).
 
-Workspace contracts originate in `design/components-cases.json`. Regenerate both module copies with the same exporter, then run external imports, bilingual PTY and integrated input checks from the [workspace guide](docs/workspace.en.md), alongside language-matched images.
+Workspace specifications originate in `design/components-cases.json`. Regenerate both module copies with the same exporter, then run external imports, bilingual PTY and integrated input checks from the [workspace guide](docs/workspace.en.md), alongside language-matched images.
 
 ## Static distribution requirements
 
-Preserve static distribution and host-application linking when adding languages, features or dependencies. Distinguish build dependencies from external runtimes and verify Linux ELF artifacts and target-kernel execution. Python, JavaScript and Shell remain interpreter-based reference sources. Follow the [build, external-host and CentOS validation commands](docs/static-build.en.md).
+Preserve static distribution and host linking for Go, Rust and future languages without an explicit exception. Distinguish build dependencies from external runtimes, and check static Linux ELF files plus execution on the target kernel. Current Shell sources are interpreter-based references; standalone Shell executables must meet the same static requirements. See [static builds, external hosts and CentOS checks](docs/static-build.en.md).
+
+Python, TypeScript and JavaScript are user-authorized exceptions delivered as normal packages using their runtimes. Static distribution, standalone executables, static ELF checks and CentOS validation are not required. Document supported runtimes/dependencies and verify installation/import/types/examples in clean external environments. Plain JavaScript users must not need a TypeScript compiler.
 
 ## Component stages
 
-Follow [TVR-8–13 in order](docs/components-backlog.en.md). For interaction changes, synchronize `design/interaction-cases.json` and module copies with `tools/export_tree_cases.py`; check Go/Rust contracts, twelve palettes, external imports, static linking and bilingual PTYs. Run `python3 tools/smoke_focus.py BINARY --lang ko|en` and `python3 tools/snapshot_focus.py RUST_BINARY`. Report each completed stage and request approval before committing/publishing it.
+Follow [TVR-8–13 in order](docs/components-backlog.en.md). For interaction changes, synchronize `design/interaction-cases.json` and module copies with `tools/export_tree_cases.py`; check Go/Rust specifications, twelve palettes, external imports, static linking and bilingual PTYs. Run `python3 tools/smoke_focus.py BINARY --lang ko|en` and `python3 tools/snapshot_focus.py RUST_BINARY`. Report each completed stage and request approval before committing/publishing it.

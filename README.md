@@ -72,7 +72,7 @@ python3 tools/check_rust_module.py
 
 ## 공통 Tree
 
-Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 계약을 사용합니다. Go `go/v0.2.0`과 Rust `rust/v0.2.0`에 포함합니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
+Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 규칙을 사용합니다. Go `go/v0.2.0`과 Rust `rust/v0.2.0`에 포함합니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
 
 ```sh
 make run-tree-go ARGS="--lang ko"

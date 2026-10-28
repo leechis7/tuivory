@@ -104,7 +104,7 @@ Cargo version 0.2.0 retains `publish = false` for Git distribution. It is not pu
 
 ## Shared Tree
 
-`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}` works without a framework on Rust 1.85+. Optional `tuivory::ratatui::TreeWidget` requires Rust 1.88+. It shares stable-ID expansion, selection, scroll, and event contracts with Go and renders icons, secondary text, counts, and Unicode/ASCII alternatives. [Tree guide](../docs/tree.en.md) · [Support audit](../docs/component-audit.en.md). Run `make run-tree-rust ARGS="--lang en"` from the root. These TVR-7 changes are included in `rust/v0.2.0`.
+`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}` works without a framework on Rust 1.85+. Optional `tuivory::ratatui::TreeWidget` requires Rust 1.88+. It shares stable-ID expansion, selection, scroll, and event handling rules with Go and renders icons, secondary text, counts, and Unicode/ASCII alternatives. [Tree guide](../docs/tree.en.md) · [Support audit](../docs/component-audit.en.md). Run `make run-tree-rust ARGS="--lang en"` from the root. These TVR-7 changes are included in `rust/v0.2.0`.
 
 ## Shared workspace components
 
@@ -112,7 +112,7 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.e
 
 ## Shared control states and focus
 
-Version 0.2.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `Styles::control` are available. See the [shared contract and localized examples](../docs/focus.en.md); run `make run-focus-rust ARGS="--lang en"` from the root. These APIs are included in rust/v0.2.0.
+Version 0.2.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `Styles::control` are available. See the [shared specification and localized examples](../docs/focus.en.md); run `make run-focus-rust ARGS="--lang en"` from the root. These APIs are included in rust/v0.2.0.
 
 [TVR-9: Inputs and forms](../docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 

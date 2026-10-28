@@ -11,7 +11,7 @@ Checked local 0.2.0 candidates on Linux ARM64 on 2026-10-28. [Scope and publicat
 | Check | Result |
 | --- | --- |
 | Product/Cargo/lock/crate versions | All 0.2.0; dependency versions unchanged |
-| `make test check` | Go race/vet, shared data/contracts, palette, links, tools and Shell passed |
+| `make test check` | Go race/vet, shared data/specifications, palette, links, tools and Shell passed |
 | Rust 1.85.1 core, 1.88.0 all-features | Tests, rustdoc, fmt and clippy passed |
 | Isolated Go module/external import | Public APIs and post-Show output passed without repository design/ |
 | Standalone Rust crate/external Ratatui host | 0.2.0 packaging, models/renderers and static external host passed |

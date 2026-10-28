@@ -12,7 +12,7 @@ The root uses the language-neutral `design/docs/go/rust/python/javascript/shell/
 
 ## Implemented today
 
-- [Shared specification](../design/README.en.md): semantic roles, terminal profiles, component state, input, and cell layout contracts.
+- [Shared specification](../design/README.en.md): semantic roles, terminal profiles, component state, input, and cell layout rules.
 - [Shared tokens](../design/tokens/README.en.md): draft JSON and schema, 12 palettes and 192 reference pairs.
 - [Go package](lazyora-extraction.en.md): styles extracted from LazyOra, stock tview application methods, starter template, framework-independent candidate token loader.
 - [Go playground](playground.en.md): inputs, choices, tables, popups, and theme-change state preservation.

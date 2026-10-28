@@ -6,7 +6,7 @@ Following TVR-7's [Tree](tree.en.md), Go/tview and Rust/Ratatui provide shared w
 
 ## Tabs
 
-| Contract | Behavior |
+| Aspect | Behavior |
 | --- | --- |
 | Data | Stable unique ID, title, edited, closable, disabled; empty/duplicate IDs are errors |
 | State | Independent active ID, navigation focus ID, and first visible index |
@@ -81,7 +81,7 @@ Both examples default to Korean and support `--lang en`, `--theme dark|light|bla
 
 ## Validation scope
 
-Shared `design/components-cases.json` defines identical Go/Rust expectations for tab navigation/closing/overflow, breadcrumb omission, and status priority/packing. `tools/export_tree_cases.py` mirrors this and the Tree contract into module-local tests. Separate checks cover twelve-palette rendering, independent focus, close-request data preservation, split-preference restoration after narrow screens, dragging/clicks, zero-sized areas, and external imports/rendering.
+Shared `design/components-cases.json` defines identical Go/Rust expectations for tab navigation/closing/overflow, breadcrumb omission, and status priority/packing. `tools/export_tree_cases.py` mirrors this and the Tree specification into module-local tests. Separate checks cover twelve-palette rendering, independent focus, close-request data preservation, split-preference restoration after narrow screens, dragging/clicks, zero-sized areas, and external imports/rendering.
 
 ```sh
 make test check

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mirror shared component contracts and layout tokens into standalone tests."""
+"""Mirror shared component scenarios and layout tokens into standalone tests."""
 import argparse
 from pathlib import Path
 
@@ -13,8 +13,8 @@ for name in ('tree-navigation.json', 'components-cases.json', 'interaction-cases
         target = ROOT / directory / name
         if args.check:
             if not target.exists() or target.read_bytes() != data:
-                raise SystemExit(f'Generated component contract differs: {target}')
+                raise SystemExit(f'Generated shared test data differs: {target}')
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
-print('Go/Rust component contract copies match.' if args.check else 'Component contract copies generated.')
+print('Go/Rust shared test data copies match.' if args.check else 'Shared test data copies generated.')

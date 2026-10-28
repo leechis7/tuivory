@@ -6,7 +6,7 @@
 
 | Check | Result |
 | --- | --- |
-| Shared contract | Six state cases and 24 sequential scenarios from `design/interaction-cases.json` passed in Go/Rust: navigation, disabled/hidden skipping, nesting, empty scopes, routing, close requests, restoration and invalid-request atomicity |
+| Shared specification | Six state cases and 24 sequential scenarios from `design/interaction-cases.json` passed in Go/Rust: navigation, disabled/hidden skipping, nesting, empty scopes, routing, close requests, restoration and invalid-request atomicity |
 | Additional boundaries | Stable-ID reorder/wrapping, Go copy ownership, 64-popup limit/overflow rejection, empty-ID and required-role checks passed |
 | Theme/presentation | Three themes × four color profiles passed role/focus checks; all state markers retained |
 | Go | Race tests/vet and isolated go/ external imports/rendering passed |
@@ -16,7 +16,7 @@
 | Static distribution | Go CGO-disabled and Rust musl x86_64 hosts/external apps passed ELF architecture/interpreter/shared-library checks |
 | CentOS 7.4 | Actual `3.10.0-693.el7.x86_64` kernel/7.4.1708 userspace/glibc 2.17 VM passed four localized startup/exit/restore checks and external static-host APIs/rendering |
 | Localized references | Actual Rust TestBackend at 120×32 generated and language-checked dark/light/blackwhite/popup/nested/ASCII views: six per language, twelve total |
-| Shared assets/docs | Token/component contract synchronization, palette/local Markdown links and Shell syntax passed |
+| Shared assets/docs | Token/component specification synchronization, palette/local Markdown links and Shell syntax passed |
 
 Reproduce with `tools/check_centos74.py`, passing the two new examples through `--binary` and external hosts through `--consumer`. Log: `/tmp/tuivory-focus-centos74.log`; original hashes: `/tmp/tuivory-focus-centos74.json`; preserved [JSON record](focus-results.json). Kernel/image digests are pinned in the checker. QEMU TCG boots the actual legacy kernel rather than relying solely on containers sharing the modern host kernel.
 

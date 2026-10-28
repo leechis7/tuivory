@@ -2,11 +2,11 @@
 
 [한국어 (default)](README.md) · **English**
 
-Status: draft. Tuivory provides reusable terminal UI styles. This specification is an internal contract for consistent themes, color profiles, and component states across packages. It and the [shared tokens](tokens/README.en.md) are language-independent; they declare neither a stable product version nor an external standard.
+Status: draft. Tuivory provides reusable terminal UI styles. This specification provides shared guidance for consistent themes, color profiles, and component states across packages. It and the [shared tokens](tokens/README.en.md) are language-independent; they declare neither a stable product version nor an external standard.
 
-## Contract boundaries
+## Specification scope
 
-| Area | Shared contract | Language adapter/application responsibility |
+| Area | Shared specification | Language adapter/application responsibility |
 | --- | --- | --- |
 | Color | Semantic roles, foreground/background pairs, explicit profiles | Framework conversion and terminal detection |
 | Theme | Shared roles, dark/light/blackwhite reference candidates | User-theme loading and whole-screen reapplication |
@@ -14,7 +14,7 @@ Status: draft. Tuivory provides reusable terminal UI styles. This specification 
 | Layout | Terminal cells, Korean width, small windows | Measurement, scrolling, and layers in each framework |
 | Input | Tab between areas, modal focus trapping/restoration | Key conversion, application keymaps and actions |
 
-Use [principles](../docs/principles.en.md), [component patterns](../docs/patterns.en.md), and [terminal profiles](../docs/terminal-profiles.en.md) as the shared baseline rather than duplicating their contracts.
+Use [principles](../docs/principles.en.md), [component patterns](../docs/patterns.en.md), and [terminal profiles](../docs/terminal-profiles.en.md) as the shared baseline rather than duplicating their specifications.
 
 ## Token interpretation
 
@@ -24,7 +24,7 @@ Use [principles](../docs/principles.en.md), [component patterns](../docs/pattern
 4. Widgets compose actual surfaces and states. Borders, underlines, words, and markers supplement color.
 5. Reapplication preserves application values, selections, focus, and scroll.
 
-Current JSON covers color roles and font weight only. There is no engine executing complete spacing, border, or component state definitions from JSON. The linked guides define these contracts for validation in language implementations.
+Current JSON covers color roles and font weight only. There is no engine executing complete spacing, border, or component state definitions from JSON. The linked guides define these specifications for validation in language implementations.
 
 ## Cross-implementation validation
 
@@ -32,11 +32,11 @@ Each language implementation must read identical token values. `make check-consu
 
 New widget adapters need framework-specific checks for theme round trips, focus/selection separation, modal input blocking/restoration, small windows, and Korean cell handling. Record [terminal evidence](../evidence/README.en.md).
 
-[Shared UI audit](../docs/component-audit.en.md) and [Tree contract/implementation](../docs/tree.en.md) describe this TVR-7 phase. `tree-navigation.json` defines behavior scenarios checked by Go/Rust; `tools/export_tree_cases.py` generates module-local test copies.
+[Shared UI audit](../docs/component-audit.en.md) and [Tree specification/implementation](../docs/tree.en.md) describe this TVR-7 phase. `tree-navigation.json` defines behavior scenarios checked by Go/Rust; `tools/export_tree_cases.py` generates module-local test copies.
 
-## Shared interaction contract
+## Shared interaction rules
 
-`interaction-cases.json` covers state roles/markers/action permissions, focus navigation, nested popups, restoration and invalid requests. Mirror it into Go/Rust tests with `tools/export_tree_cases.py`. The [control-state/focus/popup guide](../docs/focus.en.md) defines the contract; framework events and terminal I/O remain outside the model.
+`interaction-cases.json` covers state roles/markers/action permissions, focus navigation, nested popups, restoration and invalid requests. Mirror it into Go/Rust tests with `tools/export_tree_cases.py`. The [control-state/focus/popup guide](../docs/focus.en.md) defines the specification; framework events and terminal I/O remain outside the model.
 
 ## Layout defaults
 

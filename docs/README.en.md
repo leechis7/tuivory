@@ -17,10 +17,10 @@ Documentation follows the current repository implementation. The current Go vers
 | [Go usage](go-package.en.md) | Public API, roles, states, theme reapplication |
 | [Playground](playground.en.md) | Korean/English execution, controls, image generation |
 | [Architecture](architecture.en.md) | Language boundaries, shared data, embedded assets |
-| [Shared specification](../design/README.en.md) | Language-independent design contracts |
+| [Shared specification](../design/README.en.md) | Language-independent design specifications |
 | [Tokens](../design/tokens/README.en.md) · [Themes](../design/themes/README.en.md) | JSON, schema, CSV, validation scope |
 | [Principles](principles.en.md) | Meaning, profiles, state, input, cells, validation |
-| [Component patterns](patterns.en.md) | Widget states and input contracts |
+| [Component patterns](patterns.en.md) | Widget states and input handling rules |
 | [Terminal profiles](terminal-profiles.en.md) | Color capabilities, ANSI, rendering limits |
 | [Extraction sources](lazyora-extraction.en.md) · [Go coverage](go-style-coverage.en.md) | Source hashes, API mapping, parity evidence |
 | [Language examples](../examples/README.en.md) | Actual Go/Rust/Python/JavaScript/Shell support |

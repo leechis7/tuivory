@@ -87,7 +87,7 @@ The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example requi
 
 ## Shared Tree
 
-Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction contract. Included in `go/v0.2.0` and `rust/v0.2.0`. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
+Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction rules. Included in `go/v0.2.0` and `rust/v0.2.0`. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
 
 ```sh
 make run-tree-go ARGS="--lang en"

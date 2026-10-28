@@ -12,7 +12,7 @@ Audited local source on 2026-10-27. TVR-5 baseline commit `b67a4cb` is included 
 | Status bar | `FooterButton` style only; host priorities/omission | Example Paragraph, no public status component | Implemented semantic/non-color cues, status/shortcut priority, whole-item packing and omitted counts |
 | Breadcrumbs | No dedicated API | No dedicated API | Implemented stable IDs, current-location priority, ancestor omission, cell widths and navigation requests |
 | Semantic styles | Actual LazyOra-derived styles plus separate candidate JSON interpretation | Candidate JSON core and Ratatui conversion | Tree uses identical candidate roles; this does not establish parity with the full Go styler |
-| Terminal/validation | tcell simulations, existing bilingual PTY checks, isolated Go module | TestBackend, existing bilingual PTY checks, packaged external Cargo usage | All shared components participate in isolated imports, common contracts, twelve-palette rendering, bilingual PTY and integrated input checks |
+| Terminal/validation | tcell simulations, existing bilingual PTY checks, isolated Go module | TestBackend, existing bilingual PTY checks, packaged external Cargo usage | All shared components participate in isolated imports, common specifications, twelve-palette rendering, bilingual PTY and integrated input checks |
 
 ## Principles adopted from the reference
 
@@ -21,11 +21,11 @@ Inspected [yelog/lazydb](https://github.com/yelog/lazydb) at pinned commit `9c54
 - [Explorer model](https://github.com/yelog/lazydb/blob/9c54a65ba35fc594f4ff6f0e7767958563929e7e/src/model/explorer.rs): stable identity, expansion set, selection, and logical rows versus viewport. Tuivory accepts host-supplied flat parent-ID data instead of database catalogs.
 - [Explorer/tab rendering](https://github.com/yelog/lazydb/blob/9c54a65ba35fc594f4ff6f0e7767958563929e7e/src/ui/mod.rs): indentation, disclosure, icons, primary/secondary hierarchy, and separate click targets. Applied to Tree and tab state, markers, overflow, and click boundaries.
 - [Layout](https://github.com/yelog/lazydb/blob/9c54a65ba35fc594f4ff6f0e7767958563929e7e/src/ui/layout.rs): separate minimum sizes from user size preferences. Its application-specific widths are not adopted.
-- [Shortcut hints](https://github.com/yelog/lazydb/blob/9c54a65ba35fc594f4ff6f0e7767958563929e7e/src/ui/shortcut_hints.rs): cell measurement, complete-hint packing, and omitted counts inform the implemented priority/whole-item packing contract.
+- [Shortcut hints](https://github.com/yelog/lazydb/blob/9c54a65ba35fc594f4ff6f0e7767958563929e7e/src/ui/shortcut_hints.rs): cell measurement, complete-hint packing, and omitted counts inform the implemented priority/whole-item packing rules.
 
 ## Implementation results
 
-1. **Tree — implemented locally**: shared data/state/event contract, public Go/tview and Rust/Ratatui renderers, database-free bilingual examples, contract fixtures, and external usage checks.
+1. **Tree — implemented locally**: shared data/state/event specification, public Go/tview and Rust/Ratatui renderers, database-free bilingual examples, shared test cases, and external usage checks.
 2. **Tabs**: separate active/focused IDs, keyboard navigation followed by confirmation, immediate click activation, close requests approved by the host, long titles and overflow. Requesting close never deletes host documents.
 3. **Panels/splitters**: explicit titles, padding, focus, minimum sizes, keyboard resizing and dragging, narrow-screen alternatives; separate preferred sizes from actual layout.
 4. **Status/breadcrumbs**: retain current location when shortening paths, prioritize critical status, and define contextual shortcut/message priorities and omitted counts. Apply semantic roles, non-color cues, and Unicode/ASCII conventions throughout.

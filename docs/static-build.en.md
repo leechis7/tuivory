@@ -4,9 +4,11 @@
 
 Static executables are included in **0.2.0**; existing 0.1.0 assets are preserved. [Assets, installation and validation](release-0.2.0.en.md).
 
-Distributed executables for Go, Rust and future languages must run without a dynamic loader, shared libraries or a separately installed language runtime. Tuivory packages must not introduce mandatory native dependencies that prevent host applications from linking statically. Build-time Go modules and Rust crates are allowed; shared tokens are embedded so runtime data files are unnecessary. The OS kernel and terminal are part of the execution environment.
+Distributed executables for Go, Rust and future languages without an explicit exception must run without a dynamic loader, shared libraries or a separately installed language runtime. Those packages must not introduce mandatory native dependencies that prevent static host linking. Build-time Go modules and Rust crates are allowed; shared tokens are embedded so runtime data files are unnecessary. The OS kernel and terminal are part of the execution environment.
 
-Current Python, JavaScript and Shell sources are reference examples requiring their respective interpreters. Any future standalone executable distribution must meet the same static distribution requirements.
+Python, TypeScript and JavaScript support are user-authorized exceptions. Normal Python/npm packages and source examples use their language runtimes; static distribution, standalone executables, static ELF checks and CentOS validation are not required. Document supported runtimes/versions/dependencies and verify installation/import/execution in clean external environments. [Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) · [TypeScript/JavaScript TVR-16](https://leechis7.atlassian.net/browse/TVR-16).
+
+Shell currently provides interpreter-based references. Any future independent Shell executable must follow the default static-distribution requirements. The build/ELF/CentOS commands below target static Go/Rust distribution.
 
 ## Build
 

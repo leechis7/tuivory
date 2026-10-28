@@ -2,6 +2,12 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## Unreleased
+
+- Treat Python/TypeScript/JavaScript support as normal runtime-based packages without mandatory static distribution, standalone executables or CentOS checks; align work rules, contribution/distribution guides and TVR-15/16 scope.
+
+- Align documentation and public API descriptions: use specification for shared design/API definitions and rules for interaction, input handling and navigation; keep Korean/English wording synchronized.
+
 ## 0.2.0 — 2026-10-28
 
 - TVR-14: Go [wide-glyph overlay drawing](docs/overlay-drawing.en.md). Shared APIs repair both popup/card/shadow edges and stale continuations, with physical output regressions after Show.
@@ -16,7 +22,7 @@
 
 - TVR-9: [Inputs and forms](docs/forms.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; included in 0.2.0.
 
-- TVR-8 shared control-state/focus/popup foundation: public Go/Rust state composition, stable-ID navigation, nested scopes, dismissal/restoration and input routing; executable hosts, twelve localized references, shared contracts, PTY and external static-host checks. [API](docs/focus.en.md) · [ordered backlog](docs/components-backlog.en.md). Included in v0.2.0 tags.
+- TVR-8 shared control-state/focus/popup foundation: public Go/Rust state composition, stable-ID navigation, nested scopes, dismissal/restoration and input routing; executable hosts, twelve localized references, shared specifications, PTY and external static-host checks. [API](docs/focus.en.md) · [ordered backlog](docs/components-backlog.en.md). Included in v0.2.0 tags.
 
 - Apply static distribution and host-linking requirements to Go, Rust and future languages. Add Rust musl/bundled LLD, Go CGO-disabled ELF checks, explicit x86_64 builds and CentOS 7.4 kernel/external-host validation. Existing v0.1.0 tags/assets remain unchanged. [Support scope](docs/static-build.en.md)
 
@@ -25,7 +31,7 @@
 - Implemented remaining TVR-7 UI: independent active/focused tabs, overflow and edited/close requests, padded focus/ASCII panels, column/row splits with keys/dragging and compact restoration, breadcrumb omission/navigation, semantic status/shortcut priorities and packing. Added public Go/Rust APIs, external usage checks, bilingual integrated examples, eight reference SVGs, PTY input checks and synchronized guides; distributed in v0.1.0.
 
 
-- TVR-7 support audit and shared Tree: Go/tview and Rust/Ratatui stable IDs, expansion/selection/scroll, node metadata, keyboard/mouse and ASCII, shared navigation contract, external imports, bilingual examples and images. Tree changes are included in v0.1.0; tabs, panels, status, and breadcrumbs are included in the subsequent implementation below.
+- TVR-7 support audit and shared Tree: Go/tview and Rust/Ratatui stable IDs, expansion/selection/scroll, node metadata, keyboard/mouse and ASCII, shared navigation rules, external imports, bilingual examples and images. Tree changes are included in v0.1.0; tabs, panels, status, and breadcrumbs are included in the subsequent implementation below.
 
 - Added the Rust core crate: candidate tokens, profiles, color/style values, strict JSON validation, embedded distribution data, and external project usage validation. Added an optional Ratatui 0.30.2 adapter, Crossterm 0.29 bilingual interactive example, Linux ARM64 build, language-matched reference images, and PTY checks. The core requires Rust 1.85+; the adapter/example require 1.88+. Distributed through Git tag `rust/v0.1.0`; there is no crates.io release.
 

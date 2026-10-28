@@ -14,7 +14,7 @@ Before repair, writing `한` at `(2,0)` and border `│` at `(3,0)`, then callin
 
 | Method | Result |
 | --- | --- |
-| `make test check` | Full Go race/vet, token/contract copies, palette, links, tools and Shell checks passed |
+| `make test check` | Full Go race/vet, token/specification copies, palette, links, tools and Shell checks passed |
 | `go/drawing_test.go` | Five writing paths, CJK/emoji, both card/shadow edges, multiple frames, Sync, last-column/clipping/styles checked via output Runes/Bytes after Show |
 | Actual widget integration | Focused Go popup borders, open Choice lists and Unicode/ASCII panels inspected after Show |
 | `tools/check_go_module.py --static-output /tmp/tuivory-tvr14-external-x86_64` | Isolated module without repository design/, external single-import API/output checks, and x86_64 ELF without PT_INTERP/DT_NEEDED passed |

@@ -6,7 +6,7 @@ TVR-7의 [Tree](tree.md)에 이어 Go/tview와 Rust/Ratatui의 공통 워크스�
 
 ## 탭
 
-| 계약 | 동작 |
+| 항목 | 동작 |
 | --- | --- |
 | 데이터 | 안정된 고유 ID·제목·변경됨·닫기 가능·비활성. 빈/중복 ID는 오류 |
 | 상태 | 활성 ID, 탐색 포커스 ID, 첫 표시 인덱스를 분리 |
@@ -81,7 +81,7 @@ make run-workspace-rust ARGS="--lang en --ascii"
 
 ## 검증 범위
 
-공통 `design/components-cases.json`은 탭 탐색/닫기/넘침, 경로 생략, 상태 우선순위·생략 결과를 Go/Rust에서 동일하게 검사합니다. `tools/export_tree_cases.py`는 이 파일과 Tree 계약의 테스트 사본을 함께 생성합니다. 별도로 12팔레트 렌더링·포커스 구분·닫기 요청의 데이터 보존·작은 화면 후 분할 선호 복원·드래그·클릭·0 크기 영역·외부 프로젝트 import/렌더링을 확인합니다.
+공통 `design/components-cases.json`은 탭 탐색/닫기/넘침, 경로 생략, 상태 우선순위·생략 결과를 Go/Rust에서 동일하게 검사합니다. `tools/export_tree_cases.py`는 이 파일과 Tree 명세의 테스트 사본을 함께 생성합니다. 별도로 12팔레트 렌더링·포커스 구분·닫기 요청의 데이터 보존·작은 화면 후 분할 선호 복원·드래그·클릭·0 크기 영역·외부 프로젝트 import/렌더링을 확인합니다.
 
 ```sh
 make test check

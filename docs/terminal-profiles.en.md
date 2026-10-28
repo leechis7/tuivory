@@ -17,4 +17,4 @@ Compare both bold models: font weight only, and foreground indices 0–7 becomin
 
 TERM alone does not establish color, mouse, or extended key support. Record reported capability, terminal/version, SSH/tmux path, palette, and bold settings in the [evidence template](../evidence/README.en.md).
 
-Product-specific function keys and database confirmation policies remain application contracts. This guide defines no new terminal input protocol.
+Product-specific function keys and database confirmation policies remain application rules. This guide defines no new terminal input protocol.

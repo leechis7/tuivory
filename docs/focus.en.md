@@ -2,7 +2,7 @@
 
 [한국어 (default)](focus.md) · **English**
 
-Go `ControlState`, `ControlStyle`, `FocusStack` and Rust `interaction::{ControlState, FocusStack}`, `Styles::control` follow the same contract. These APIs are included in v0.2.0. [Following stages](components-backlog.en.md)
+Go `ControlState`, `ControlStyle`, `FocusStack` and Rust `interaction::{ControlState, FocusStack}`, `Styles::control` follow the same behavior rules. These APIs are included in v0.2.0. [Following stages](components-backlog.en.md)
 
 ## State composition
 

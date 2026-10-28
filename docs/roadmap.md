@@ -12,7 +12,7 @@
 
 ## 현재 구현
 
-- [공통 명세](../design/README.md): 의미별 역할, 단말 프로필, 컴포넌트 상태·조작·셀 배치 계약.
+- [공통 명세](../design/README.md): 의미별 역할, 단말 프로필, 컴포넌트 상태·조작·셀 배치 규칙.
 - [공통 토큰](../design/tokens/README.md): JSON 데이터·스키마 초안, 12팔레트·192쌍 참조 후보.
 - [Go 패키지](lazyora-extraction.md): LazyOra 실제 테마·프로필·상태 스타일과 stock tview 적용 함수, 시작 템플릿. 프레임워크 독립 후보 토큰 로더도 제공합니다.
 - [Go 견본](playground.md): tview 화면에서 입력·선택·표·팝업과 테마 변경 상태 보존 검사.

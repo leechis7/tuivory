@@ -11,7 +11,7 @@
 | 검사 | 결과 |
 | --- | --- |
 | 제품/Cargo/lock/crate 버전 | 모두 0.2.0. 의존성 버전은 유지 |
-| `make test check` | Go race/vet·공통 데이터/계약·팔레트·링크·도구·Shell 통과 |
+| `make test check` | Go race/vet·공통 데이터/명세·팔레트·링크·도구·Shell 통과 |
 | Rust 1.85.1 core, 1.88.0 all-features | 테스트·rustdoc·fmt·clippy 통과 |
 | 독립 Go 모듈·외부 import | 저장소 design/ 없이 공개 API·Show 이후 출력 검사 통과 |
 | 독립 Rust crate·Ratatui 외부 앱 | 0.2.0 패키지·모델/렌더러·정적 외부 호스트 통과 |
