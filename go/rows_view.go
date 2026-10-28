@@ -3,6 +3,8 @@ package tuivory
 import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/rivo/uniseg"
+	"strings"
 )
 
 // RowsView renders literal, cell-clipped semantic lines and delegates actions.
@@ -315,4 +317,42 @@ func NewProgressView(progress *Progress, palette Palette, frame func() uint64, o
 }
 func NewDataStateView(state *DataState, palette Palette) (*RowsView, error) {
 	return NewRowsView(func(w, h int) []ComponentLine { return state.Layout(w) }, palette)
+}
+
+func NewBadgeView(badge *Badge, palette Palette) (*RowsView, error) {
+	return NewRowsView(func(w, h int) []ComponentLine { return []ComponentLine{badge.Line(w)} }, palette)
+}
+func NewChipView(chip *Chip, palette Palette, onEvent func(ComponentEvent)) (*RowsView, error) {
+	v, e := NewRowsView(func(w, h int) []ComponentLine { return []ComponentLine{chip.Line(w)} }, palette)
+	if e != nil {
+		return nil, e
+	}
+	emit := func() {
+		event := chip.RequestRemove()
+		if onEvent != nil && event.Kind != "" {
+			onEvent(event)
+		}
+	}
+	v.Key = func(e *tcell.EventKey) {
+		if e.Key() == tcell.KeyDelete || e.Key() == tcell.KeyRune && e.Rune() == 'x' {
+			emit()
+		}
+	}
+	v.Pointer = func(line ComponentLine, x int) {
+		if strings.HasSuffix(line.Text, " x") && x == uniseg.StringWidth(line.Text)-1 {
+			emit()
+		}
+	}
+	return v, nil
+}
+func NewHelpView(help *Help, palette Palette) (*RowsView, error) {
+	return NewRowsView(help.Layout, palette)
+}
+func (v *RowsView) SetPalette(palette Palette) error {
+	copy, e := componentPalette(palette, "surface", "body", "hint", "field", "button", "error", "selection", "disabled", "edited", "header", "info", "success", "warning")
+	if e != nil {
+		return e
+	}
+	v.palette = copy
+	return nil
 }

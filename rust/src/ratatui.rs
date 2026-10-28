@@ -17,8 +17,8 @@ use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
 mod components;
 mod rows;
 pub use rows::{
-    DataStateWidget, FormWidget, GridWidget, ListWidget, NoticeWidget, ProgressWidget, RowsWidget,
-    SearchPickerWidget,
+    BadgeWidget, ChipWidget, DataStateWidget, FormWidget, GridWidget, HelpWidget, ListWidget,
+    NoticeWidget, ProgressWidget, RowsWidget, SearchPickerWidget, StackRects, stack_rects,
 };
 mod tree;
 use ::ratatui::{

@@ -178,3 +178,88 @@ impl Widget for DataStateWidget<'_> {
         .render(area, buf);
     }
 }
+
+pub struct BadgeWidget<'a> {
+    pub model: &'a crate::layout::Badge,
+    pub styles: &'a Styles,
+}
+impl Widget for BadgeWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = [self.model.line(area.width.into())];
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: false,
+        }
+        .render(area, buf);
+    }
+}
+pub struct ChipWidget<'a> {
+    pub model: &'a crate::layout::Chip,
+    pub styles: &'a Styles,
+    pub focused: bool,
+}
+impl Widget for ChipWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = [self.model.line(area.width.into())];
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: self.focused,
+        }
+        .render(area, buf);
+    }
+}
+pub struct HelpWidget<'a> {
+    pub model: &'a crate::layout::Help,
+    pub styles: &'a Styles,
+}
+impl Widget for HelpWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = self.model.layout(area.width.into(), area.height.into());
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: false,
+        }
+        .render(area, buf);
+    }
+}
+pub type StackRects = (Vec<(String, Rect)>, Vec<String>);
+
+/// Convert shared terminal-cell geometry into Ratatui rectangles.
+pub fn stack_rects(
+    area: Rect,
+    items: &[crate::layout::StackItem],
+    tokens: crate::layout::SpacingTokens,
+    vertical: bool,
+) -> Result<StackRects, crate::Error> {
+    let (rects, hidden) = crate::layout::stack_rects(
+        crate::layout::CellRect {
+            x: area.x.into(),
+            y: area.y.into(),
+            width: area.width.into(),
+            height: area.height.into(),
+        },
+        items,
+        tokens,
+        vertical,
+    )?;
+    Ok((
+        rects
+            .into_iter()
+            .map(|r| {
+                (
+                    r.id,
+                    Rect::new(
+                        r.rect.x as u16,
+                        r.rect.y as u16,
+                        r.rect.width as u16,
+                        r.rect.height as u16,
+                    ),
+                )
+            })
+            .collect(),
+        hidden,
+    ))
+}

@@ -6,12 +6,12 @@ Registered under TVR-7 with user approval following the 2026-10-28 MUI review. R
 
 | Order | Issue | Scope | Status |
 | --- | --- | --- | --- |
-| 1 | [TVR-8](https://leechis7.atlassian.net/browse/TVR-8) | Shared control states, focus and popup foundation | Local implementation/validation. [API](focus.en.md). Source publication approved; see issue comments for remote CI/merge evidence |
-| 2 | [TVR-9](https://leechis7.atlassian.net/browse/TVR-9) | Inputs/buttons/checks/radios/selects/forms | Dev implementation/validation; CI and merge evidence in Jira |
-| 3 | [TVR-10](https://leechis7.atlassian.net/browse/TVR-10) | Lists/menus/search selection | Dev implementation/validation; CI and merge evidence in Jira |
-| 4 | [TVR-11](https://leechis7.atlassian.net/browse/TVR-11) | Tables/data grid | Dev implementation/validation; CI and merge evidence in Jira |
-| 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | Notifications/progress/loading/empty/error views | Dev implementation/validation; CI and merge evidence in Jira |
-| 6 | [TVR-13](https://leechis7.atlassian.net/browse/TVR-13) | Layout/density tokens, badges/chips/help and related components | Backlog |
+| 1 | [TVR-8](https://leechis7.atlassian.net/browse/TVR-8) | Shared control states, focus and popup foundation | dev implementation/validation complete; PR/CI evidence in Jira |
+| 2 | [TVR-9](https://leechis7.atlassian.net/browse/TVR-9) | Inputs/buttons/checks/radios/selects/forms | dev implementation/validation complete; PR/CI evidence in Jira |
+| 3 | [TVR-10](https://leechis7.atlassian.net/browse/TVR-10) | Lists/menus/search selection | dev implementation/validation complete; PR/CI evidence in Jira |
+| 4 | [TVR-11](https://leechis7.atlassian.net/browse/TVR-11) | Tables/data grid | dev implementation/validation complete; PR/CI evidence in Jira |
+| 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | Notifications/progress/loading/empty/error views | dev implementation/validation complete; PR/CI evidence in Jira |
+| 6 | [TVR-13](https://leechis7.atlassian.net/browse/TVR-13) | Layout/density tokens, badges/chips/help and related components | dev implementation/validation complete; PR/CI evidence in Jira |
 
 Finish implementation, bilingual documentation/images and validation for each stage, report results and request explicit commit/publication approval for that stage. Earlier publication approval does not cover later stages. Do not start another feature branch before finishing the current stage's commit/publication; keep TVR-7 open.
 
@@ -22,3 +22,5 @@ References: [MUI components](https://mui.com/material-ui/all-components/), [Text
 Approved stage publication/merges target `dev` only. After all work is complete, a separate user release instruction authorizes `main`, tags and Releases. Do not synchronize main/dev after each stage.
 
 On 2026-10-28 the user explicitly authorized TVR-9 through TVR-13 implementation, commits, publication and individual dev merges in order without further approval prompts. Report each checkpoint; main/tags/Releases still require a separate instruction.
+
+TVR-8–13 public APIs/examples are complete in the dev integration sequence. Historical initial checkpoints above do not imply pending implementation. Main/tags/releases remain separate; application/SSH integration and other languages remain follow-up work.
