@@ -75,3 +75,5 @@ TUIVORY_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run
 The snapshot test generates both languages; English filenames end in `-en`. Status contrast is checked against the actual card surface. Insufficiently contrasting accents fall back to body text; words such as OK/Warning/Error preserve meaning.
 
 The playground uses the [Go styles extracted from LazyOra](lazyora-extraction.en.md). Shared JSON supplies role ordering and cross-language examples; candidate CSV data is distinct from the extracted palette. The playground does not include a SQL editor, database features, or a general widget SDK.
+
+Go playground popups/choices use [TVR-14 shared drawing](overlay-drawing.en.md), with actual card/list output regressions after Show.

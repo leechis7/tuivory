@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/leechis7/tuivory/go/internal/drawing"
 	"github.com/rivo/tview"
 )
 
@@ -22,21 +23,13 @@ type popupLayer struct {
 
 func (p *popupLayer) Draw(screen tcell.Screen) {
 	x, y, w, h := p.owner.layers.GetRect()
-	for row := y; row < y+h; row++ {
-		for col := x; col < x+w; col++ {
-			r, c, style, width := screen.GetContent(col, row)
-			screen.SetContent(col, row, r, c, style.Dim(true))
-			if width > 1 {
-				col++
-			}
-		}
-	}
+	drawing.Dim(screen, x, y, w, h)
 	width, height := min(76, max(1, w-6)), min(20, max(1, h-4))
 	if p.owner.popup.input != nil {
 		height = min(height, 10)
 	}
 	p.Flex.SetRect(x+(w-width)/2, y+(h-height)/2, width, height)
-	p.Flex.Draw(screen)
+	p.Flex.Draw(drawing.SafeScreen(screen))
 }
 func (p *popupLayer) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive) {
 	return func(action tview.MouseAction, event *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {

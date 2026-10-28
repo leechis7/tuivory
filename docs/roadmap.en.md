@@ -6,7 +6,7 @@
 
 Provide a TUI style package that applications import. Go `v0.1.0` and the Rust Git package are published; current work maintains Go usability and parity with its source styles and validates actual LazyOra imports. Documentation, specifications, and templates support package use and validation. Other language UI packages remain future work. The direction is shared rules, reusable implementations, and a catalog, similar in purpose to Bootstrap, Tailwind CSS, or MUI; web CSS is not applied directly to terminals.
 
-Maintain Go source parity while building the Rust foundation for LazyBeaver under TVR-5. The Rust candidate-token/style core, optional Ratatui adapter, and bilingual interactive example are implemented and validated locally; actual LazyBeaver integration and publication remain. Shared UI improvements are tracked separately in TVR-7.
+Maintain Go source parity while building the Rust foundation for LazyBeaver under TVR-5. The Rust candidate-token/style core, optional Ratatui adapter, and bilingual interactive example are implemented and validated locally; Rust Git distribution is complete; actual LazyBeaver integration remains separate. Shared UI improvements are tracked separately in TVR-7.
 
 The root uses the language-neutral `design/docs/go/rust/python/javascript/shell/examples` layout. Go is a submodule at `github.com/leechis7/tuivory/go`; its first release is 0.0.1.
 
@@ -35,4 +35,8 @@ Keep calculations, simulations, and actual SecureCRT/MobaXterm/xterm-compatible 
 
 Future stages use separate issues. The maintainer decides product major and stable versions. Commits and GitHub publication require explicit approval.
 
-TVR-7 now has a local [support audit](component-audit.en.md) and [shared Tree](tree.en.md). Tabs, panels/splitters, and status/breadcrumbs are also implemented and locally validated in the [shared workspace](workspace.en.md). Remote publication/CI and actual host integration remain.
+TVR-7 now has a local [support audit](component-audit.en.md) and [shared Tree](tree.en.md). Tabs, panels/splitters, and status/breadcrumbs are also implemented and locally validated in the [shared workspace](workspace.en.md). These components were published in v0.1.0 with passing remote CI; actual host integration remains separate.
+
+## MUI component stages
+
+TVR-8–13 provide shared states/focus/popups, [forms](forms.en.md), [lists/search](collections.en.md), [virtual grids](grid.en.md), [feedback](feedback.en.md), and [layout/density/supporting components](layout.en.md). Public Go/Rust models/renderers, localized catalog hosts/references and validation are provided. Stage integration through dev is complete, and v0.2.0 publication is approved. CI/PR/publication evidence is recorded in each issue; application integration remains separate.

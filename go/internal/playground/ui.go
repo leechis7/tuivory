@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/leechis7/tuivory/go/internal/drawing"
 	"github.com/rivo/tview"
 )
 
@@ -298,25 +299,12 @@ Ctrl+Q: 종료
 80×24 미만이면 터미널을 넓히라는 안내를 보여줍니다.
 실제 ANSI 팔레트, 글꼴, 마우스 지원은 단말마다 다릅니다.`
 
-// Protect a leading half of an existing two-cell glyph when a choice list opens.
-type wideSafeScreen struct{ tcell.Screen }
-
-func (s wideSafeScreen) SetContent(x, y int, r rune, c []rune, style tcell.Style) {
-	if x > 0 {
-		_, _, old, w := s.Screen.GetContent(x-1, y)
-		if w > 1 {
-			s.Screen.SetContent(x-1, y, ' ', nil, old)
-		}
-	}
-	s.Screen.SetContent(x, y, r, c, style)
-}
-
-// Choice keeps a wide glyph behind an opened list from hiding its first cell.
+// Choice uses shared wide-glyph overlap protection for its open list.
 type choice struct{ *tview.DropDown }
 
 func (c *choice) Draw(screen tcell.Screen) {
 	if c.IsOpen() {
-		c.DropDown.Draw(wideSafeScreen{screen})
+		c.DropDown.Draw(drawing.SafeScreen(screen))
 		return
 	}
 	c.DropDown.Draw(screen)

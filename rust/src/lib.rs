@@ -12,7 +12,13 @@
 //! # Ok::<(), tuivory::Error>(())
 //! ```
 
+pub mod collections;
 pub mod components;
+pub mod feedback;
+pub mod forms;
+pub mod grid;
+pub mod interaction;
+pub mod layout;
 mod tokens;
 pub mod tree;
 mod types;

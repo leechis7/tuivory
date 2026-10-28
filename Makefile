@@ -37,6 +37,12 @@ build-go-x86_64:
 build-rust-x86_64:
 	$(MAKE) -C rust build-x86_64
 
+.PHONY: run-focus-go run-focus-rust
+run-focus-go:
+	go -C go run ./examples/focus $(ARGS)
+run-focus-rust:
+	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example focus -- $(ARGS)
+
 .PHONY: run-tree-go run-tree-rust
 run-tree-go:
 	go -C go run ./examples/tree $(ARGS)
@@ -48,3 +54,9 @@ run-workspace-go:
 	go -C go run ./examples/workspace $(ARGS)
 run-workspace-rust:
 	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example workspace -- $(ARGS)
+
+.PHONY: run-catalog-go run-catalog-rust
+run-catalog-go:
+	go -C go run ./examples/catalog $(ARGS)
+run-catalog-rust:
+	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example catalog -- $(ARGS)

@@ -63,6 +63,24 @@ jobs:
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-workspace" --lang ko
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-workspace" --lang en
           python3 tools/smoke_workspace.py "$RUNNER_TEMP/tuivory-workspace"
+      - name: Check public catalog widgets
+        run: |
+          go build -C go -o "$RUNNER_TEMP/tuivory-catalog" ./examples/catalog
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --lang ko
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --lang en
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode collections --lang ko
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode collections --lang en
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode grid --lang ko
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode grid --lang en
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode feedback --lang ko
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode feedback --lang en
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode layout --lang ko
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode layout --lang en
+      - name: Check public focus and nested popup example
+        run: |
+          go build -C go -o "$RUNNER_TEMP/tuivory-focus" ./examples/focus
+          python3 tools/smoke_focus.py "$RUNNER_TEMP/tuivory-focus" --lang ko
+          python3 tools/smoke_focus.py "$RUNNER_TEMP/tuivory-focus" --lang en
   rust-core:
     runs-on: ubuntu-24.04
     steps:
@@ -117,6 +135,28 @@ jobs:
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/workspace" --lang en
           python3 tools/smoke_workspace.py "$CARGO_TARGET_DIR/debug/examples/workspace"
           python3 tools/snapshot_workspace.py "$CARGO_TARGET_DIR/debug/examples/workspace" --output "$RUNNER_TEMP/tuivory-workspace-images"
+      - name: Check public focus scopes, popups and reference views
+        run: |
+          python3 tools/smoke_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --lang ko
+          python3 tools/smoke_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --lang en
+          python3 tools/snapshot_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --output "$RUNNER_TEMP/tuivory-focus-images"
+      - name: Check public catalog widgets and references
+        run: |
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode grid --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode grid --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode grid --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode feedback --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode feedback --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode feedback --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --output "$RUNNER_TEMP/catalog-images"
       - name: Verify adapter from an external packaged dependency
         run: python3 tools/check_rust_module.py --ratatui
   static-centos74:
@@ -144,6 +184,8 @@ jobs:
           python3 tools/build_rust.py --arch x86_64 --examples
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-tree" ./examples/tree
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-workspace" ./examples/workspace
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-focus" ./examples/focus
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-catalog" ./examples/catalog
       - name: Export static external application checks
         run: |
           python3 tools/check_go_module.py --static-output "$RUNNER_TEMP/go-host"
@@ -157,6 +199,10 @@ jobs:
             --binary go-workspace="$RUNNER_TEMP/go-workspace" \
             --binary rust-tree="$CARGO_TARGET_DIR/x86_64-unknown-linux-musl/release/examples/tree" \
             --binary rust-workspace="$CARGO_TARGET_DIR/x86_64-unknown-linux-musl/release/examples/workspace" \
+            --binary go-focus="$RUNNER_TEMP/go-focus" \
+            --binary rust-focus="$CARGO_TARGET_DIR/x86_64-unknown-linux-musl/release/examples/focus" \
+            --binary go-catalog="$RUNNER_TEMP/go-catalog" \
+            --binary rust-catalog="$CARGO_TARGET_DIR/x86_64-unknown-linux-musl/release/examples/catalog" \
             --consumer go-host="$RUNNER_TEMP/go-host" \
             --consumer rust-host="$RUNNER_TEMP/rust-host"
       - name: Print guest evidence

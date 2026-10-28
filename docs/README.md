@@ -2,7 +2,9 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
-문서는 현재 저장소 구현을 기준으로 유지합니다. 현재 Go 버전은 `v0.1.0`이며 Rust도 Git 태그 `rust/v0.1.0`으로 배포합니다. 신규 작성·수정과 기능 변경 시 관련 한국어·영어 문서를 함께 갱신합니다.
+현재 제품 버전은 **0.2.0**입니다. [변경 범위·설치·배포 자산](release-0.2.0.md).
+
+문서는 현재 저장소 구현을 기준으로 유지합니다. 현재 Go 버전은 `v0.2.0`이며 Rust도 Git 태그 `rust/v0.2.0`으로 배포합니다. 신규 작성·수정과 기능 변경 시 관련 한국어·영어 문서를 함께 갱신합니다.
 
 | 문서 | 내용 |
 | --- | --- |
@@ -32,3 +34,19 @@
 현재 제품명은 Tuivory, 공개 Go 패키지는 `tuivory`, 일감 프로젝트는 TVR입니다. 이전 원출처 이름은 라이선스·출처 고지에서만 식별합니다. [LICENSE](../LICENSE)는 원문을 유지합니다.
 
 [정적 배포](static-build.md): Go·Rust·후속 언어 정책·CentOS 7.4·외부 앱 검증
+
+## 컴포넌트 확장
+
+[상태·포커스·팝업 API](focus.md) · [MUI 비교 후속 백로그](components-backlog.md). TVR-8 기반을 먼저 검증하고 입력·폼 → 목록·검색 → 표 → 알림 → 부가 컴포넌트 순으로 진행합니다.
+
+[TVR-9: 입력·폼](forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
+
+[TVR-10: 목록·메뉴·검색 선택](collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
+
+[TVR-11: 표·데이터 그리드](grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
+
+[TVR-12: 알림·진행·데이터 상태](feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
+
+[TVR-13: 배치·밀도·부가 컴포넌트](layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
+
+[두 칸 문자·오버레이 그리기](overlay-drawing.md): Go 공개 화면 래퍼·그림자·Show 이후 출력 회귀.

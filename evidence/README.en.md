@@ -30,3 +30,13 @@ Oracle data types, workers, and database test infrastructure are not copied here
 ## Static distribution
 
 [Go/Rust/CentOS 7.4 validation](static-build.en.md): actual legacy guest kernel, external static hosts, bilingual UI and local ARM64 checks.
+
+## Shared control states, focus and popups
+
+[TVR-8 validation](focus.en.md): shared contracts, twelve palettes, localized PTYs, external static hosts, CentOS 7.4 and localized references. Local validation before publication; remote publication/CI results are recorded separately in TVR-8 comments.
+
+[TVR-9–13 component validation](components.en.md): public APIs, row sources, requests/lifetimes, geometry, localized PTYs and static external hosts.
+
+[TVR-14 overlay boundary validation](overlay-drawing.en.md): shared Go API, actual widgets, output after Show, external static imports, PTYs and limitations.
+
+[0.2.0 release preparation validation](release-0.2.0.en.md): candidate assets, versions/checksums, static builds, external installation and native/legacy-kernel execution.

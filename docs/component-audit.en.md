@@ -31,3 +31,11 @@ Inspected [yelog/lazydb](https://github.com/yelog/lazydb) at pinned commit `9c54
 4. **Status/breadcrumbs**: retain current location when shortening paths, prioritize critical status, and define contextual shortcut/message priorities and omitted counts. Apply semantic roles, non-color cues, and Unicode/ASCII conventions throughout.
 
 Phases 1–4 now provide public Go/Rust APIs, database-free bilingual examples, related guides, and local validation. See the [integrated guide](workspace.en.md) and [examples](../examples/README.en.md). Tree is local commit 2005164; subsequent work is also saved in local commits with approval. CI/publication evidence is recorded in TVR; remote terminals and actual LazyOra/LazyBeaver integration require separate checks. TVR-7 stays open.
+
+## 2026-10-28 follow-up
+
+Registered [TVR-8–13](components-backlog.en.md) under TVR-7. The first [state/focus/popup foundation](focus.en.md) is included in v0.2.0, distinct from prior v0.1.0 publication. Forms, lists/search, virtual grids, feedback and layout/supporting APIs now follow TVR-9–13. A complete application Dialog/workflow remains host composition.
+
+## TVR-9–13 result
+
+Public Go/Rust [forms](forms.en.md), [lists/menus/search](collections.en.md), [virtual grids](grid.en.md), [notices/progress/data states](feedback.en.md), [spacing/geometry/badges/chips/help](layout.en.md) are implemented with localized catalog hosts and tests. Sort/filter/edit/copy, validation, clocks and business actions remain host-owned. Accordion/Drawer/Stepper reuse existing state and panel composition. All stages integrated through dev and are included in v0.2.0.

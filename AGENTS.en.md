@@ -16,3 +16,5 @@
 - Keep the playground database-free and the style principles general. Do not pull LazyOra/Oracle internals into the shared core. Connect cross-project application examples through source links.
 
 - Distributed executables for Go, Rust and all future languages must be static artifacts requiring no dynamic loader, shared libraries or separately installed language runtime. Tuivory packages must not introduce mandatory native dependencies that prevent static linking in host applications. Build-time modules/crates are allowed. Python/JavaScript/Shell sources are interpreter-based references; standalone distributions must meet the same rule. Verify Linux artifacts through ELF inspection and target OS/kernel execution. [Static distribution](docs/static-build.en.md)
+
+- After user approval, publish and merge each component stage into `dev` only. Update `main`, tags and Releases only after all work is complete and a separate release instruction is given. Do not automatically synchronize `main` and `dev` during stage publication.

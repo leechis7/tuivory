@@ -43,6 +43,19 @@ def main():
         (consumer / 'Cargo.toml').write_text(manifest)
         source = '''use tuivory::{Color, ColorProfile, Theme, TokenDocument};
 fn main() {
+    let control_state = tuivory::interaction::ControlState { read_only:true, invalid:true, edited:true, ..Default::default() };
+    assert!(!control_state.visual().editable); assert_eq!(control_state.visual().role,"error"); assert_eq!(control_state.visual().markers,"!*=");
+    let target = |id:&str| tuivory::interaction::FocusTarget { id:id.into(), ..Default::default() };
+    let mut focus = tuivory::interaction::FocusStack::new("root",vec![target("open")]).unwrap();
+    focus.open("dialog",vec![target("close")],"",true).unwrap();
+    assert!(focus.route("root").blocked); assert_eq!(focus.request_close().unwrap().id,"dialog");
+    focus.close("dialog").unwrap(); assert_eq!(focus.focused(),"open");
+    let mut form=tuivory::forms::Form::new(vec![tuivory::forms::FormField{id:"name".into(),kind:"text".into(),required:true,..Default::default()}]).unwrap();
+    assert_eq!(form.handle("submit","").kind,"invalid");form.handle("insert","External");assert_eq!(form.handle("submit","").kind,"submit");
+    let mut picker=tuivory::collections::SearchPicker::new(vec![tuivory::collections::ListItem{id:"rust".into(),label:"Rust".into(),..Default::default()}]).unwrap();picker.handle("open","",4);picker.handle("insert","Rust",4);assert_eq!(picker.handle("activate","",4).id,"rust");
+    let rows=tuivory::grid::MemoryRows::new(vec![tuivory::grid::GridRecord{id:"row".into(),cells:[("name".into(),"External".into())].into(),..Default::default()}]).unwrap();let mut grid=tuivory::grid::Grid::new(vec![tuivory::grid::GridColumn{id:"name".into(),width:12,editable:true,..Default::default()}],Box::new(rows)).unwrap();assert_eq!(grid.handle("copy",4).text,"External");assert_eq!(grid.handle("activate",4).kind,"edit");
+    let mut notices=tuivory::feedback::NoticeQueue::new(2).unwrap();notices.push(tuivory::feedback::Notice{id:"err".into(),severity:"error".into(),expires_at:1,..Default::default()}).unwrap();assert_eq!(notices.visible(100).len(),1);let progress=tuivory::feedback::Progress{id:"load".into(),status:"loading".into(),cancellable:true,..Default::default()};assert_eq!(progress.request_cancel().kind,"cancel");
+    let spacing=tuivory::layout::SpacingTokens::for_width(tuivory::layout::Density::Auto,40);assert_eq!(spacing.padding,0);let layout=tuivory::layout::stack_layout(&[tuivory::layout::StackItem{id:"main".into(),min:10,preferred:20,weight:1}],30,1).unwrap();assert_eq!(layout.slots[0].size,30);assert_eq!(tuivory::layout::Chip{id:"filter".into(),removable:true,..Default::default()}.request_remove().kind,"remove");
     let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), branch: true, ..Default::default() }]).unwrap();
     let mut state = tuivory::tree::TreeState::default();
     assert!(matches!(tree.handle(&mut state, tuivory::tree::TreeAction::Right, 4), Some(tuivory::tree::TreeEvent::Expand(_))));
@@ -70,6 +83,7 @@ fn main() {
 '''
         if args.ratatui:
             source = source.replace('    let doc =', '''    let styles = tuivory::ratatui::Styles::new(Theme::Dark, ColorProfile::Ansi8).unwrap();
+    assert!(styles.control(control_state,true).unwrap().add_modifier.contains(ratatui::style::Modifier::UNDERLINED));
     let mut terminal = ratatui::Terminal::new(ratatui::backend::TestBackend::new(24, 4)).unwrap();
     terminal.draw(|f| f.render_widget(styles.block("External", true).unwrap(), f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "╔");

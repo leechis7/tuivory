@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/leechis7/tuivory/go/internal/drawing"
 	style "github.com/leechis7/tuivory/go/internal/style"
 	"github.com/rivo/tview"
 )
@@ -72,7 +73,7 @@ func TestChoiceRetainsOwnStyleAndClearsWideGlyph(t *testing.T) {
 	terminal.SetSize(20, 5)
 	base := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
 	terminal.SetContent(0, 0, '한', nil, base)
-	overlay := choiceOverlayScreen{Screen: terminal}
+	overlay := drawing.SafeScreen(terminal)
 	overlay.SetContent(1, 0, 'x', nil, base)
 	r, _, _, _ := terminal.GetContent(0, 0)
 	if r != ' ' {
@@ -96,5 +97,48 @@ func TestChoiceRetainsOwnStyleAndClearsWideGlyph(t *testing.T) {
 				t.Fatalf("form overwrote choice: %s/%s", theme, profile)
 			}
 		}
+	}
+}
+
+func TestOpenChoiceOutputAfterShowOverWideBackground(t *testing.T) {
+	screen := tcell.NewSimulationScreen("UTF-8")
+	if err := screen.Init(); err != nil {
+		t.Fatal(err)
+	}
+	defer screen.Fini()
+	screen.SetSize(24, 8)
+	choice := NewChoice("", []string{"abc", "def"}, 0, nil)
+	choice.SetRect(3, 1, 8, 1)
+	choice.SetTextOptions("", "", "", "", "")
+	choice.Focus(func(tview.Primitive) {})
+	choice.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, 0, 0), func(p tview.Primitive) { p.Focus(func(tview.Primitive) {}) })
+	if !choice.IsOpen() {
+		t.Fatal("choice did not open")
+	}
+	for _, offset := range []int{0, 1} {
+		screen.Clear()
+		for row := 0; row < 8; row++ {
+			for col := offset; col < 23; col += 2 {
+				screen.Put(col, row, "한", tcell.StyleDefault)
+			}
+		}
+		screen.Show()
+		choice.Draw(screen)
+		screen.Show()
+		cells, cols, _ := screen.GetContents()
+		for i, want := range "abc" {
+			c := cells[2*cols+3+i]
+			if string(c.Runes) != string(want) || string(c.Bytes) != string(want) {
+				t.Fatalf("list output %d = %q/%q", i, c.Runes, c.Bytes)
+			}
+		}
+		outside := 2
+		if offset == 1 {
+			outside = 6
+		}
+		if c := cells[2*cols+outside]; string(c.Runes) != " " || string(c.Bytes) != " " {
+			t.Fatalf("list boundary remnant at %d: %q/%q", outside, c.Runes, c.Bytes)
+		}
+
 	}
 }

@@ -39,6 +39,29 @@ import (
     "github.com/leechis7/tuivory/go"
 )
 func TestIsolatedModule(t *testing.T) {
+    controlState := tuivory.ControlState{ReadOnly:true,Invalid:true,Edited:true}
+    if controlState.Visual().Editable || controlState.Visual().Role!="error" || controlState.Visual().Markers!="!*=" { t.Fatal("control states") }
+    focus, err := tuivory.NewFocusStack("root",[]tuivory.FocusTarget{{ID:"open"}})
+    if err != nil { t.Fatal(err) }
+    if err:=focus.Open("dialog",[]tuivory.FocusTarget{{ID:"close"}},"",true); err!=nil { t.Fatal(err) }
+    if !focus.Route("root").Blocked || focus.RequestClose().ID!="dialog" { t.Fatal("popup scope") }
+    if err:=focus.Close("dialog");err!=nil || focus.Focused()!="open" { t.Fatal("focus restore") }
+    form, formErr := tuivory.NewForm([]tuivory.FormField{{ID:"name",Kind:"text",Required:true}})
+    if formErr!=nil || form.Handle("submit","").Kind!="invalid" { t.Fatal("external form") }
+    form.Handle("insert","External")
+    if form.Handle("submit","").Kind!="submit" { t.Fatal("external submit") }
+    picker, pickerErr := tuivory.NewSearchPicker([]tuivory.ListItem{{ID:"rust",Label:"Rust"}})
+    if pickerErr!=nil { t.Fatal(pickerErr) };picker.Handle("open","",4);picker.Handle("insert","Rust",4)
+    if picker.Handle("activate","",4).ID!="rust" { t.Fatal("external picker") }
+    gridRows,_:=tuivory.NewMemoryRows([]tuivory.GridRecord{{ID:"row",Cells:map[string]string{"name":"External"}}})
+    grid,_:=tuivory.NewGrid([]tuivory.GridColumn{{ID:"name",Width:12,Editable:true}},gridRows)
+    if grid.Handle("copy",4).Text!="External" || grid.Handle("activate",4).Kind!="edit" {t.Fatal("external grid")}
+    notices,_:=tuivory.NewNoticeQueue(2);_ = notices.Push(tuivory.Notice{ID:"err",Severity:"error",ExpiresAt:1})
+    if len(notices.Visible(100))!=1 { t.Fatal("external notice lifetime") }
+    operation:=tuivory.Progress{ID:"load",Status:"loading",Cancellable:true};if operation.RequestCancel().Kind!="cancel"{t.Fatal("external cancel")}
+    spacing,spacingErr:=tuivory.ResolveSpacing(tuivory.DensityAuto,40);if spacingErr!=nil||spacing.Padding!=0{t.Fatal("external spacing")}
+    layout,layoutErr:=tuivory.StackLayout([]tuivory.StackItem{{ID:"main",Min:10,Preferred:20,Weight:1}},30,1);if layoutErr!=nil||layout.Slots[0].Size!=30{t.Fatal("external stack")}
+    if (tuivory.Chip{ID:"filter",Removable:true}).RequestRemove().Kind!="remove"{t.Fatal("external chip")}
     theme, err := tuivory.New("dark", "256")
     if err != nil { t.Fatal(err) }
     if theme.Styles.Profile() != "256" { t.Fatal("profile missing") }
@@ -48,6 +71,7 @@ func TestIsolatedModule(t *testing.T) {
     if err != nil { t.Fatal(err) }
     if _, err := tuivory.Resolve(palette); err != nil { t.Fatal(err) }
     colors, _ := tuivory.Resolve(palette)
+    if _,err:=tuivory.ControlStyle(colors,controlState,true);err!=nil { t.Fatal(err) }
     tree, err := tuivory.NewTree([]tuivory.TreeNode{{ID:"root",Name:"External"},{ID:"child",Parent:"root",Name:"Child"}})
     if err != nil { t.Fatal(err) }
     state := &tuivory.TreeState{}
@@ -58,6 +82,16 @@ func TestIsolatedModule(t *testing.T) {
     if err := screen.Init(); err != nil { t.Fatal(err) }
     defer screen.Fini()
     screen.SetSize(30,6)
+    safe := tuivory.WideSafeScreen(screen)
+    screen.Put(2,2,"한",tcell.StyleDefault);screen.Put(9,2,"Z",tcell.StyleDefault);screen.Put(8,2,"界",tcell.StyleDefault);screen.Show()
+    safe.Put(3,2,"|",tcell.StyleDefault);safe.Put(8,2,"|",tcell.StyleDefault)
+    screen.Show();physical,cols,_:=screen.GetContents()
+    if string(physical[2*cols+3].Bytes)!="|" || string(physical[2*cols+9].Bytes)!=" " {t.Fatal("wide overlay physical output")}
+    screen.Put(2,3,"한",tcell.StyleDefault);screen.Put(7,3,"界",tcell.StyleDefault);screen.Show()
+    tuivory.DimRegion(screen,tuivory.CellRect{X:3,Y:3,Width:5,Height:1});screen.Show()
+    physical,cols,_=screen.GetContents()
+    if string(physical[3*cols+2].Bytes)!=" " || string(physical[3*cols+8].Bytes)!=" " {t.Fatal("shadow boundary output")}
+
     view.SetRect(0,0,30,6)
     view.Draw(screen)
     marker,_,_,_ := screen.GetContent(1,1)

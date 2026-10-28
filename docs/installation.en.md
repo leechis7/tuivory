@@ -2,14 +2,16 @@
 
 [한국어 (default)](installation.md) · **English**
 
+Current product version is **0.2.0**. [Changes, installation and release assets](release-0.2.0.en.md).
+
 Tuivory (TUI + ivory) is an independent terminal UI style project. Current module, command, and token identifiers use Tuivory; work is tracked in Jira project TVR. Original attribution is preserved in [NOTICE](../NOTICE.en.md).
 
 ## Published version and current source
 
-The current Go version is `v0.1.0`, tagged `go/v0.1.0`.
+The current Go version is `v0.2.0`, tagged `go/v0.2.0`.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.1.0
+go get github.com/leechis7/tuivory/go@v0.2.0
 ```
 
 The module lives in `go/`. There is no root Go module; the package name is `tuivory`.
@@ -20,7 +22,7 @@ import "github.com/leechis7/tuivory/go"
 styler, err := tuivory.New("dark", "256")
 ```
 
-v0.1.0 includes bilingual docs, playground language selection, and shared UI. Check out the tag and run from the root, or use Linux ARM64 playgrounds from the [release](https://github.com/leechis7/tuivory/releases/tag/go/v0.1.0):
+v0.2.0 includes bilingual docs, playground language selection, and shared UI. Check out the tag and run from the root, or use Linux ARM64 playgrounds from the [release](https://github.com/leechis7/tuivory/releases/tag/go/v0.2.0):
 
 ```sh
 go -C go run ./cmd/tuivory --lang ko
@@ -33,7 +35,7 @@ Requires Go 1.24 or later. `make build` produces one Linux ARM64 binary supporti
 
 ## Rust usage
 
-Rust is distributed through Git tag `rust/v0.1.0`. With Rust 1.85+, use `tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.1.0" }` or a local path dependency on rust/. It is not published to crates.io. It provides candidate tokens, colors, and style values. The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example require Rust 1.88+. Run `make run-rust ARGS="--lang en"`; `make build-rust` creates `bin/rust/tuivory-linux-arm64`. See [Rust views and controls](rust-playground.en.md) for terminal and target linker requirements. See the [Rust guide](../rust/README.en.md).
+Rust is distributed through Git tag `rust/v0.2.0`. With Rust 1.85+, use `tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.2.0" }` or a local path dependency on rust/. It is not published to crates.io. It provides candidate tokens, colors, and style values. The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example require Rust 1.88+. Run `make run-rust ARGS="--lang en"`; `make build-rust` creates `bin/rust/tuivory-linux-arm64`. See [Rust views and controls](rust-playground.en.md) for terminal and target linker requirements. See the [Rust guide](../rust/README.en.md).
 
 ## Shared data and validation
 
@@ -43,12 +45,12 @@ Go projects can access embedded tokens through the public module alone. Python a
 
 [Go API](go-package.en.md) · [Architecture](architecture.en.md) · [Playground](playground.en.md) · [Validation evidence](../evidence/README.en.md)
 
-The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is included in v0.1.0. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
+The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is included in v0.2.0. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
 
 ## Shared workspace components
 
-The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.2.0` and `rust/v0.2.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
 
 ## Static executables and legacy Linux
 
-Current source provides Go CGO-disabled and Rust musl static builds. For CentOS 7.4 x86_64 use `make build-go-x86_64` and `make build-rust-x86_64`. Install Rust targets first with `rustup target add aarch64-unknown-linux-musl x86_64-unknown-linux-musl`. Existing v0.1.0 Rust GNU ARM64 assets differ from these unreleased static builds. [Static distribution, support scope and external-host checks](static-build.en.md)
+Current source provides Go CGO-disabled and Rust musl static builds. For CentOS 7.4 x86_64 use `make build-go-x86_64` and `make build-rust-x86_64`. Install Rust targets first with `rustup target add aarch64-unknown-linux-musl x86_64-unknown-linux-musl`. Existing v0.1.0 Rust GNU ARM64 assets differ from v0.2.0 static builds. [Static distribution, support scope and external-host checks](static-build.en.md)
