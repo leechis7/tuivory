@@ -56,6 +56,9 @@ func TestIsolatedModule(t *testing.T) {
     gridRows,_:=tuivory.NewMemoryRows([]tuivory.GridRecord{{ID:"row",Cells:map[string]string{"name":"External"}}})
     grid,_:=tuivory.NewGrid([]tuivory.GridColumn{{ID:"name",Width:12,Editable:true}},gridRows)
     if grid.Handle("copy",4).Text!="External" || grid.Handle("activate",4).Kind!="edit" {t.Fatal("external grid")}
+    notices,_:=tuivory.NewNoticeQueue(2);_ = notices.Push(tuivory.Notice{ID:"err",Severity:"error",ExpiresAt:1})
+    if len(notices.Visible(100))!=1 { t.Fatal("external notice lifetime") }
+    operation:=tuivory.Progress{ID:"load",Status:"loading",Cancellable:true};if operation.RequestCancel().Kind!="cancel"{t.Fatal("external cancel")}
     theme, err := tuivory.New("dark", "256")
     if err != nil { t.Fatal(err) }
     if theme.Styles.Profile() != "256" { t.Fatal("profile missing") }

@@ -10,7 +10,7 @@
 | 2 | [TVR-9](https://leechis7.atlassian.net/browse/TVR-9) | 입력·버튼·체크·라디오·선택·폼 | dev 구현·검증. CI·병합 근거는 Jira 댓글 참조 |
 | 3 | [TVR-10](https://leechis7.atlassian.net/browse/TVR-10) | 목록·메뉴·검색 선택 | dev 구현·검증. CI·병합 근거는 Jira 댓글 참조 |
 | 4 | [TVR-11](https://leechis7.atlassian.net/browse/TVR-11) | 표·데이터 그리드 | dev 구현·검증. CI·병합 근거는 Jira 댓글 참조 |
-| 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | 알림·진행·로딩/빈 결과/오류 | 백로그 |
+| 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | 알림·진행·로딩/빈 결과/오류 | dev 구현·검증. CI·병합 근거는 Jira 댓글 참조 |
 | 6 | [TVR-13](https://leechis7.atlassian.net/browse/TVR-13) | 배치·밀도 토큰·Badge/Chip·도움말 등 | 백로그 |
 
 각 단계에서 구현·한영 문서/이미지·검증을 마친 뒤 결과와 커밋·게시 여부를 알리고 해당 단계의 명시적 승인을 받습니다. 이전 단계의 게시 승인을 다음 단계에 적용하지 않습니다. 커밋·게시 전에는 다음 기능 브랜치를 시작하지 않으며 TVR-7 에픽은 열린 상태로 유지합니다.

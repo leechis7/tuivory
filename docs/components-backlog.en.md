@@ -10,7 +10,7 @@ Registered under TVR-7 with user approval following the 2026-10-28 MUI review. R
 | 2 | [TVR-9](https://leechis7.atlassian.net/browse/TVR-9) | Inputs/buttons/checks/radios/selects/forms | Dev implementation/validation; CI and merge evidence in Jira |
 | 3 | [TVR-10](https://leechis7.atlassian.net/browse/TVR-10) | Lists/menus/search selection | Dev implementation/validation; CI and merge evidence in Jira |
 | 4 | [TVR-11](https://leechis7.atlassian.net/browse/TVR-11) | Tables/data grid | Dev implementation/validation; CI and merge evidence in Jira |
-| 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | Notifications/progress/loading/empty/error views | Backlog |
+| 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | Notifications/progress/loading/empty/error views | Dev implementation/validation; CI and merge evidence in Jira |
 | 6 | [TVR-13](https://leechis7.atlassian.net/browse/TVR-13) | Layout/density tokens, badges/chips/help and related components | Backlog |
 
 Finish implementation, bilingual documentation/images and validation for each stage, report results and request explicit commit/publication approval for that stage. Earlier publication approval does not cover later stages. Do not start another feature branch before finishing the current stage's commit/publication; keep TVR-7 open.

@@ -21,6 +21,7 @@ use std::{
     time::Duration,
 };
 use tuivory::collections::{ListItem, SearchPicker};
+use tuivory::feedback::{DataState, Notice, NoticeAction, NoticeEvent, NoticeQueue, Progress};
 use tuivory::grid::{Grid, GridColumn, GridRecord, GridSource};
 use tuivory::{
     ColorProfile, Theme,
@@ -110,6 +111,33 @@ fn key(form: &mut Form, code: KeyCode) -> FormEvent {
     };
     form.handle(action, &value)
 }
+fn feedback_rows(
+    queue: &NoticeQueue,
+    progress: &Progress,
+    w: usize,
+    h: usize,
+    now: u64,
+    en: bool,
+) -> Vec<tuivory::forms::ComponentLine> {
+    if h == 0 {
+        return vec![];
+    }
+    let mut rows = queue.layout(w, h.saturating_sub(4).max(1), now);
+    if rows.is_empty() {
+        rows = DataState {
+            kind: "empty".into(),
+            text: text(en, "알림 없음", "No pending notices"),
+            ..Default::default()
+        }
+        .layout(w)
+    }
+    rows.push(tuivory::forms::ComponentLine {
+        role: "hint".into(),
+        ..Default::default()
+    });
+    rows.extend(progress.layout(w, now));
+    rows
+}
 struct DemoRows {
     count: usize,
     en: bool,
@@ -180,7 +208,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--snapshot" => output = Some(args.next().ok_or("missing output")?),
             "--mode" => {
                 mode = args.next().ok_or("missing mode")?;
-                if !["forms", "collections", "grid"].contains(&mode.as_str()) {
+                if !["forms", "collections", "grid", "feedback"].contains(&mode.as_str()) {
                     return Err("unknown mode".into());
                 }
             }
@@ -212,6 +240,38 @@ fn main() -> Result<(), Box<dyn Error>> {
         Box::new(DemoRows { count: 100000, en }),
     )?;
     grid.empty = text(en, "결과 없음", "No results");
+    let mut queue = NoticeQueue::new(8)?;
+    queue.push(Notice {
+        id: "saved".into(),
+        text: text(en, "임시 알림", "Transient notice"),
+        severity: "success".into(),
+        expires_at: 5,
+        ..Default::default()
+    })?;
+    queue.push(Notice {
+        id: "error".into(),
+        text: text(en, "연결 실패", "Connection failed"),
+        detail: text(en, "재시도가 필요합니다", "Retry is available"),
+        severity: "error".into(),
+        expires_at: 1,
+        actions: vec![NoticeAction {
+            id: "retry".into(),
+            label: text(en, "재시도", "Retry"),
+            disabled: false,
+        }],
+        ..Default::default()
+    })?;
+    let mut progress = Progress {
+        id: "load".into(),
+        label: text(en, "합성 작업", "Synthetic operation"),
+        status: "loading".into(),
+        current: 50,
+        total: 100,
+        cancellable: true,
+        cancel_label: text(en, "c 취소 요청", "c request cancellation"),
+        ..Default::default()
+    };
+    let mut now = 0;
     let mut form = demo(en);
     let mut picker = SearchPicker::new(vec![
         ListItem {
@@ -257,6 +317,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 form: &Form,
                 picker: &SearchPicker,
                 grid: &Grid,
+                queue: &NoticeQueue,
+                progress: &Progress,
+                now: u64,
                 status: &str,
                 body: &mut Rect| {
         let r = f.area();
@@ -273,7 +336,24 @@ fn main() -> Result<(), Box<dyn Error>> {
         let area = Rect::new(r.x, r.y + 1, r.width, r.height.saturating_sub(2));
         *body = panel.inner(area);
         f.render_widget(panel, area);
-        if mode == "grid" {
+        if mode == "feedback" {
+            let rows = feedback_rows(
+                queue,
+                progress,
+                body.width.into(),
+                body.height.into(),
+                now,
+                en,
+            );
+            f.render_widget(
+                RowsWidget {
+                    rows: &rows,
+                    styles: &styles,
+                    focused: true,
+                },
+                *body,
+            );
+        } else if mode == "grid" {
             let rows = grid.layout(body.width.into(), body.height.into());
             f.render_widget(
                 RowsWidget {
@@ -312,7 +392,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     if let Some(path) = output {
         let mut terminal = Terminal::new(TestBackend::new(120, 36))?;
-        terminal.draw(|f| draw(f, &form, &picker, &grid, &status, &mut body))?;
+        terminal.draw(|f| {
+            draw(
+                f, &form, &picker, &grid, &queue, &progress, now, &status, &mut body,
+            )
+        })?;
         snapshot::write(std::path::Path::new(&path), terminal.backend().buffer())?;
         return Ok(());
     }
@@ -324,7 +408,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
     loop {
-        terminal.draw(|f| draw(f, &form, &picker, &grid, &status, &mut body))?;
+        terminal.draw(|f| {
+            draw(
+                f, &form, &picker, &grid, &queue, &progress, now, &status, &mut body,
+            )
+        })?;
         if !event::poll(Duration::from_millis(100))? {
             continue;
         }
@@ -333,7 +421,47 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if k.code == KeyCode::Char('q') && k.modifiers.contains(KeyModifiers::CONTROL) {
                     break;
                 }
-                if mode == "grid" {
+                if mode == "feedback" {
+                    let event = if k.code == KeyCode::Char('c') {
+                        progress.request_cancel()
+                    } else if k.code == KeyCode::Char('t') {
+                        now = 100;
+                        queue.expire(now);
+                        NoticeEvent {
+                            kind: "expired".into(),
+                            ..Default::default()
+                        }
+                    } else {
+                        let action = match k.code {
+                            KeyCode::Up => "previous",
+                            KeyCode::Down => "next",
+                            KeyCode::Enter => "activate",
+                            KeyCode::Delete => "dismiss",
+                            _ => "",
+                        };
+                        queue.handle(
+                            action,
+                            now,
+                            usize::from(body.height).saturating_sub(4).max(1),
+                        )
+                    };
+                    if event.kind == "dismiss" {
+                        queue.dismiss(&event.id);
+                    }
+                    if event.kind == "cancel" {
+                        progress.status = "cancelled".into();
+                        progress.message = text(
+                            en,
+                            "앱이 취소를 처리했습니다",
+                            "The host handled cancellation",
+                        );
+                    }
+                    FormEvent {
+                        kind: event.kind,
+                        id: format!("{} / {}", event.id, event.action),
+                        ..Default::default()
+                    }
+                } else if mode == "grid" {
                     let action = match k.code {
                         KeyCode::Left => "left",
                         KeyCode::Right => "right",
@@ -395,7 +523,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if m.kind == MouseEventKind::Down(MouseButton::Left)
                     && body.contains((m.column, m.row).into()) =>
             {
-                let rows = if mode == "grid" {
+                let rows = if mode == "feedback" {
+                    feedback_rows(
+                        &queue,
+                        &progress,
+                        body.width.into(),
+                        body.height.into(),
+                        now,
+                        en,
+                    )
+                } else if mode == "grid" {
                     grid.layout(body.width.into(), body.height.into())
                 } else if mode == "collections" {
                     picker.layout(body.width.into(), body.height.into(), ascii)
@@ -403,7 +540,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                     form.layout(body.width.into(), body.height.into())
                 };
                 if let Some(row) = rows.get(usize::from(m.row - body.y)) {
-                    if mode == "grid" {
+                    if mode == "feedback" {
+                        if queue.visible(now).iter().any(|n| n.id == row.id) {
+                            queue.focused = row.id.clone();
+                        }
+                        FormEvent::default()
+                    } else if mode == "grid" {
                         let e = grid.click(
                             &row.id,
                             &row.value,

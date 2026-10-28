@@ -132,3 +132,5 @@ Distributed executables for Go, Rust and future languages must require no separa
 [TVR-10: Lists, menus and search selection](docs/collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
 
 [TVR-11: Tables and data grid](docs/grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+
+[TVR-12: Notices, progress and data states](docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.

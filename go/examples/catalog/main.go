@@ -51,7 +51,7 @@ func main() {
 		}
 		return ko
 	}
-	if *mode != "forms" && *mode != "collections" && *mode != "grid" {
+	if *mode != "forms" && *mode != "collections" && *mode != "grid" && *mode != "feedback" {
 		log.Fatal("unknown component")
 	}
 	options := []ui.FormOption{{ID: "fast", Label: text("빠르게", "Fast")}, {ID: "old", Label: text("사용 불가", "Unavailable"), Disabled: true}, {ID: "safe", Label: text("안전하게", "Safe")}}
@@ -100,6 +100,58 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	if *mode == "feedback" {
+		queue, _ := ui.NewNoticeQueue(8)
+		_ = queue.Push(ui.Notice{ID: "saved", Text: text("임시 알림", "Transient notice"), Severity: "success", ExpiresAt: 5})
+		_ = queue.Push(ui.Notice{ID: "error", Text: text("연결 실패", "Connection failed"), Detail: text("재시도가 필요합니다", "Retry is available"), Severity: "error", ExpiresAt: 1, Actions: []ui.NoticeAction{{ID: "retry", Label: text("재시도", "Retry")}}})
+		progress := &ui.Progress{ID: "load", Label: text("합성 작업", "Synthetic operation"), Status: "loading", Current: 50, Total: 100, Cancellable: true, CancelLabel: text("c 취소 요청", "c request cancellation")}
+		now := uint64(0)
+		height := 1
+		view, err = ui.NewRowsView(func(w, h int) []ui.ComponentLine {
+			height = h
+			return feedbackRows(queue, progress, w, h, now, *lang == "en")
+		}, palette)
+		if err != nil {
+			log.Fatal(err)
+		}
+		emit := func(e ui.NoticeEvent) {
+			if e.Kind == "" {
+				return
+			}
+			footer.SetText(e.Kind + ": " + e.ID + " / " + e.Action)
+			if e.Kind == "dismiss" {
+				queue.Dismiss(e.ID)
+			}
+			if e.Kind == "cancel" {
+				progress.Status = "cancelled"
+				progress.Message = text("앱이 취소를 처리했습니다", "The host handled cancellation")
+			}
+		}
+		view.Key = func(key *tcell.EventKey) {
+			if key.Key() == tcell.KeyRune && key.Rune() == 'c' {
+				emit(progress.RequestCancel())
+				return
+			}
+			if key.Key() == tcell.KeyRune && key.Rune() == 't' {
+				now = 100
+				queue.Expire(now)
+				emit(ui.NoticeEvent{Kind: "expired"})
+				return
+			}
+			action := ui.NavigationKey(key)
+			if key.Key() == tcell.KeyDelete {
+				action = "dismiss"
+			}
+			emit(queue.Handle(action, now, max(1, height-4)))
+		}
+		view.Click = func(line ui.ComponentLine) {
+			for _, n := range queue.Visible(now) {
+				if n.ID == line.ID {
+					queue.Focused = n.ID
+				}
+			}
+		}
+	}
 	panel, _ := ui.NewPanelView(view, palette)
 	panel.ASCII = *ascii
 	panel.SetTitle(*mode)
@@ -120,4 +172,20 @@ func main() {
 	if err := app.SetRoot(root, true).SetFocus(view).EnableMouse(true).Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func feedbackRows(queue *ui.NoticeQueue, progress *ui.Progress, w, h int, now uint64, en bool) []ui.ComponentLine {
+	if h <= 0 {
+		return nil
+	}
+	rows := queue.Layout(w, max(1, h-4), now)
+	if len(rows) == 0 {
+		message := "알림 없음"
+		if en {
+			message = "No pending notices"
+		}
+		rows = ui.DataState{Kind: "empty", Text: message}.Layout(w)
+	}
+	rows = append(rows, ui.ComponentLine{Role: "hint"})
+	return append(rows, progress.Layout(w, now)...)
 }
