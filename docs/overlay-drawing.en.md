@@ -4,7 +4,7 @@
 
 When CJK or emoji cross Go/tcell popup, card, drop-down or shadow edges, a border present in the logical buffer can disappear after `Show()`, or an older hidden character can reappear. Clipping text alone does not repair underlying wide-glyph starts and continuation cells.
 
-The current working source exposes `WideSafeScreen` and `DimRegion` to repair these boundaries. They are absent from the existing `go/v0.1.0` tag. This change targets Go/tcell; it does not establish Rust/Ratatui API support or validation. No mandatory native library or runtime dependency is added.
+Go v0.2.0 exposes `WideSafeScreen` and `DimRegion` to repair these boundaries. This change targets Go/tcell; it does not establish Rust/Ratatui API support or validation. No mandatory native library or runtime dependency is added.
 
 ## Host usage
 

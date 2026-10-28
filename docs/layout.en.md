@@ -21,7 +21,7 @@ make run-catalog-go ARGS="--mode layout --lang ko"
 make run-catalog-rust ARGS="--mode layout --lang en"
 ```
 
-Hosts own data, business actions, clocks and terminal lifecycle. Public models emit requests and render literal cell-clipped rows. Existing v0.1.0 tags do not include these APIs; approved changes merge into dev only. Static linking, Unicode/ASCII and color-profile requirements remain.
+Hosts own data, business actions, clocks and terminal lifecycle. Public models emit requests and render literal cell-clipped rows. These APIs are included in v0.2.0. Static linking, Unicode/ASCII and color-profile requirements remain.
 
 ![Layout, density and supporting components](images/layout-dark-en.svg)
 

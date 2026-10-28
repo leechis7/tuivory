@@ -2,7 +2,9 @@
 
 [한국어 (default)](README.md) · **English**
 
-Documentation follows the current repository implementation. The current Go version is `v0.1.0`; Rust is distributed through Git tag `rust/v0.1.0`. New documentation, edits, and feature changes update related Korean and English documents together.
+Current product version is **0.2.0**. [Changes, installation and release assets](release-0.2.0.en.md).
+
+Documentation follows the current repository implementation. The current Go version is `v0.2.0`; Rust is distributed through Git tag `rust/v0.2.0`. New documentation, edits, and feature changes update related Korean and English documents together.
 
 | Document | Contents |
 | --- | --- |
@@ -37,14 +39,14 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 
 [Control states/focus/popups](focus.en.md) · [MUI follow-up backlog](components-backlog.en.md). Validate TVR-8 first, then forms → lists/search → tables → feedback → supporting components.
 
-[TVR-9: Inputs and forms](forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-9: Inputs and forms](forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-10: Lists, menus and search selection](collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-10: Lists, menus and search selection](collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-11: Tables and data grid](grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-11: Tables and data grid](grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-12: Notices, progress and data states](feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-12: Notices, progress and data states](feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 [Wide glyphs and overlay drawing](overlay-drawing.en.md): public Go screen wrapper, shadows and output regressions after Show.

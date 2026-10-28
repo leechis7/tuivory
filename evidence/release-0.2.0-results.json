@@ -1,0 +1,119 @@
+{
+  "version": "0.2.0",
+  "stage": "local-preparation-not-published",
+  "source_base_commit": "b9993d63dcf3e63bf59ba5abd61086dec9644b00",
+  "source_uncommitted": true,
+  "assets": {
+    "tuivory-go-v0.2.0-linux-arm64.tar.gz": {
+      "sha256": "0db8af407f57a011d223269a9dee5e6cc876850aff7731480b3577ae68efab8b",
+      "size": 5554134
+    },
+    "tuivory-go-v0.2.0-linux-x86_64.tar.gz": {
+      "sha256": "f58b484c71c293ce6684c7c9aa72644b84b4e6004c970bbd50012b1e602abad3",
+      "size": 6008448
+    },
+    "tuivory-rust-v0.2.0-linux-arm64.tar.gz": {
+      "sha256": "5a5049f58674ee4fccc33cba7e39b9a801c8430df2eb59cde8c420185175c8b0",
+      "size": 1275093
+    },
+    "tuivory-rust-v0.2.0-linux-x86_64.tar.gz": {
+      "sha256": "aa00692a97cc8d7210196567f6ee474dc41d5373c5ee14b782403fcda6fbd537",
+      "size": 1289658
+    },
+    "tuivory-0.2.0.crate": {
+      "sha256": "3873806973736433689170b0806b604e4d35eebab8a61e012a6af9a0751e9b1b",
+      "size": 91898
+    }
+  },
+  "binaries": {
+    "go/tuivory-linux-arm64": {
+      "sha256": "404f5b71159eafd60e9fd3490fb84c38c2a1d98367f51605d03d805eed6540de",
+      "static_elf": true,
+      "architecture": "arm64"
+    },
+    "go/tuivory-catalog-linux-arm64": {
+      "sha256": "91b251cfc3e215f6129183efb1c6d7e8cf210e4ddc0cda0952f75212156584d0",
+      "static_elf": true,
+      "architecture": "arm64"
+    },
+    "go/tuivory-linux-x86_64": {
+      "sha256": "85a31c40e6c433401256558d1d3f218d8be92166e189ae26c810f5ac43d3d358",
+      "static_elf": true,
+      "architecture": "x86_64"
+    },
+    "go/tuivory-catalog-linux-x86_64": {
+      "sha256": "0a1c7cd6dc15f63396ce60fc5432aff6153ea2e6963c4c273d57814881d0bbe3",
+      "static_elf": true,
+      "architecture": "x86_64"
+    },
+    "rust/tuivory-linux-arm64": {
+      "sha256": "8b966ae2823a0a3f909b2ff4946ab91ce4de9cea6757087d94f9cc45547b6e1a",
+      "static_elf": true,
+      "architecture": "arm64"
+    },
+    "rust/tuivory-catalog-linux-arm64": {
+      "sha256": "b5e3753512c26435905570b380a12546743c52b7fe00511ca55a1cfc725fc55d",
+      "static_elf": true,
+      "architecture": "arm64"
+    },
+    "rust/tuivory-linux-x86_64": {
+      "sha256": "c7869b4a40af9877d94ee4c2324c038a78a2d36f4062d2b76064ec4cfc1ba2dc",
+      "static_elf": true,
+      "architecture": "x86_64"
+    },
+    "rust/tuivory-catalog-linux-x86_64": {
+      "sha256": "ea455602a974c0aea26e01c13dc822e4f2bacb43b68c2da7e1d9ff3cbe0eb72c",
+      "static_elf": true,
+      "architecture": "x86_64"
+    }
+  },
+  "checks": {
+    "versions": "passed",
+    "go_race_vet_shared_checks": "passed",
+    "rust_core_1.85.1_tests_clippy": "passed",
+    "rust_ui_1.88.0_tests_clippy": "passed",
+    "isolated_go_import": "passed",
+    "isolated_rust_crate_ratatui_import": "passed",
+    "asset_checksums": "passed",
+    "native_arm64_pty": {
+      "result": "passed",
+      "languages": [
+        "ko",
+        "en"
+      ],
+      "playgrounds": 2,
+      "catalog_modes": [
+        "forms",
+        "collections",
+        "grid",
+        "feedback",
+        "layout"
+      ],
+      "scenarios": 24
+    },
+    "localized_references": {
+      "result": "passed",
+      "count": 30,
+      "refreshed_forms": 6
+    }
+  },
+  "centos74": {
+    "image": "centos@sha256:78b63c089c40a2ca0d85db9125fb3193c6ff74814bba5f894c803e5ae02a4035",
+    "kernel": "3.10.0-693.el7.x86_64",
+    "kernel_sha256": "8ede7f8d3c8f5e72f1a84713ad59b7b39211ea1af8887389cb50a189df937c6f",
+    "glibc": "2.17-196.el7.x86_64",
+    "result": "passed",
+    "languages": [
+      "ko",
+      "en"
+    ],
+    "binaries_sha256": {
+      "go": "85a31c40e6c433401256558d1d3f218d8be92166e189ae26c810f5ac43d3d358",
+      "rust": "c7869b4a40af9877d94ee4c2324c038a78a2d36f4062d2b76064ec4cfc1ba2dc",
+      "go-catalog": "0a1c7cd6dc15f63396ce60fc5432aff6153ea2e6963c4c273d57814881d0bbe3",
+      "rust-catalog": "ea455602a974c0aea26e01c13dc822e4f2bacb43b68c2da7e1d9ff3cbe0eb72c",
+      "go-host": "e5f9c1c581edee6b68c434c40076165d58065b9ce204283b2ed600bfb02531aa",
+      "rust-host": "46d5380ea0dedb2d5177491c22276dbd27500c16cfa546e0145d72a24ff5d19a"
+    }
+  }
+}

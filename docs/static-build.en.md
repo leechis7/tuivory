@@ -2,6 +2,8 @@
 
 [한국어 (default)](static-build.md) · **English**
 
+Static executables are included in **0.2.0**; existing 0.1.0 assets are preserved. [Assets, installation and validation](release-0.2.0.en.md).
+
 Distributed executables for Go, Rust and future languages must run without a dynamic loader, shared libraries or a separately installed language runtime. Tuivory packages must not introduce mandatory native dependencies that prevent host applications from linking statically. Build-time Go modules and Rust crates are allowed; shared tokens are embedded so runtime data files are unnecessary. The OS kernel and terminal are part of the execution environment.
 
 Current Python, JavaScript and Shell sources are reference examples requiring their respective interpreters. Any future standalone executable distribution must meet the same static distribution requirements.
@@ -52,4 +54,4 @@ Checks cover Korean/English startup, Ctrl+Q exit, alternate-screen restoration a
 
 ## Publication status
 
-These source changes are not yet included in a tagged release. The existing `v0.1.0` Rust ARM64 release binary uses GNU/glibc 2.39 and differs from the new static artifacts. Existing tags and assets have not been changed. The previous Go ARM64 artifact is already static but is not a CentOS 7.4 x86_64 artifact. Record new commits, publication and remote CI results separately.
+These static builds are included in the v0.2.0 tagged release. The existing `v0.1.0` Rust ARM64 release binary uses GNU/glibc 2.39 and differs from the new static artifacts. Existing tags and assets have not been changed. The previous Go ARM64 artifact is already static but is not a CentOS 7.4 x86_64 artifact. Record new commits, publication and remote CI results separately.

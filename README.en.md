@@ -2,6 +2,8 @@
 
 [한국어 (default)](README.md) · **English**
 
+**0.2.0**: shared components, static executables and overlay repairs. [Release guide](docs/release-0.2.0.en.md).
+
 **Tuivory** (TUI + ivory) provides reusable terminal UI styles, with shared design rules and data for implementations in multiple languages. Korean is the primary documentation language; this English guide covers installation, usage, and the current scope.
 
 The Go package provides working style APIs and integration with tview widgets. The Rust crate provides framework-independent candidate token validation and style values, an optional Ratatui adapter, and a Korean/English interactive playground. Python and JavaScript currently provide token reading examples, and Shell provides an ANSI reference example. Their UI style packages are planned work.
@@ -22,7 +24,7 @@ The Go package provides working style APIs and integration with tview widgets. T
 Requires Go 1.24 or later. The module path is `github.com/leechis7/tuivory/go` and the package name is `tuivory`.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.1.0
+go get github.com/leechis7/tuivory/go@v0.2.0
 ```
 
 Apply styles to widgets created by your application:
@@ -36,7 +38,7 @@ theme.Form(form)
 theme.Button(button)
 ```
 
-Themes: `dark`, `light`, `blackwhite`. Color profiles: `8`, `16`, `256`, `truecolor`. The current release is **0.1.0**, tagged `go/v0.1.0` for Go and `rust/v0.1.0` for Rust Git dependencies. It includes shared UI, bilingual playgrounds and documentation. The [release](https://github.com/leechis7/tuivory/releases/tag/go/v0.1.0) provides Linux ARM64 playgrounds and source packages.
+Themes: `dark`, `light`, `blackwhite`. Color profiles: `8`, `16`, `256`, `truecolor`. The current release is **0.2.0**, tagged `go/v0.2.0` for Go and `rust/v0.2.0` for Rust Git dependencies. It includes shared UI, bilingual playgrounds and documentation. The [release](https://github.com/leechis7/tuivory/releases/tag/go/v0.2.0) provides static Linux ARM64/x86_64 playgrounds/catalogs and source packages.
 
 See the [Go usage guide](docs/go-package.en.md) for a complete runnable example, roles, state handling, and theme changes. See [installation and usage](docs/installation.en.md) and the [documentation index](docs/README.en.md).
 
@@ -72,7 +74,7 @@ This reference image renders actual Go widgets in English through a simulated sc
 
 ## Use Rust
 
-The crate supports Rust 1.85+ through Git tag `rust/v0.1.0` or a local path dependency on `rust/`. See the [Rust guide](rust/README.en.md) for setup, API, and scope. It uses shared candidate tokens and is not a port of the full Go widget styler.
+The crate supports Rust 1.85+ through Git tag `rust/v0.2.0` or a local path dependency on `rust/`. See the [Rust guide](rust/README.en.md) for setup, API, and scope. It uses shared candidate tokens and is not a port of the full Go widget styler.
 
 ```sh
 cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256
@@ -85,7 +87,7 @@ The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example requi
 
 ## Shared Tree
 
-Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction contract. Included in `go/v0.1.0` and `rust/v0.1.0`. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
+Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction contract. Included in `go/v0.2.0` and `rust/v0.2.0`. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
 
 ```sh
 make run-tree-go ARGS="--lang en"
@@ -117,7 +119,7 @@ License: [AGPL-3.0-only](LICENSE). See [NOTICE](NOTICE.en.md) for the origins of
 
 ## Shared workspace components
 
-The [tabs, panels, splitters, status, and breadcrumbs guide](docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+The [tabs, panels, splitters, status, and breadcrumbs guide](docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.2.0` and `rust/v0.2.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
 
 ## Static distribution and CentOS 7.4
 
@@ -125,16 +127,16 @@ Distributed executables for Go, Rust and future languages must require no separa
 
 ## Shared control states, focus and popups
 
-[TVR-8 guide](docs/focus.en.md) covers disabled/read-only/busy composition, stable-ID navigation, nested popup routing/dismissal/restoration and bilingual Go/Rust hosts. These are unreleased source APIs, absent from v0.1.0 tags. Follow the [ordered backlog](docs/components-backlog.en.md), requesting commit/publication approval after each completed and validated stage.
+[TVR-8 guide](docs/focus.en.md) covers disabled/read-only/busy composition, stable-ID navigation, nested popup routing/dismissal/restoration and bilingual Go/Rust hosts. These APIs are included in v0.2.0. Follow the [ordered backlog](docs/components-backlog.en.md), requesting commit/publication approval after each completed and validated stage.
 
-[TVR-9: Inputs and forms](docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-9: Inputs and forms](docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-10: Lists, menus and search selection](docs/collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-10: Lists, menus and search selection](docs/collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-11: Tables and data grid](docs/grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-11: Tables and data grid](docs/grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-12: Notices, progress and data states](docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-12: Notices, progress and data states](docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-13: Layout, density and supporting components](docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-13: Layout, density and supporting components](docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 Go popup/shadow wide-glyph protection: [shared drawing API](docs/overlay-drawing.en.md).

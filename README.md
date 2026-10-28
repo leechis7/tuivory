@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+**0.2.0**: 공통 컴포넌트·정적 실행파일·오버레이 수정. [릴리스 안내](docs/release-0.2.0.md).
+
 Tuivory (TUI + ivory) provides reusable terminal UI styles across languages. Shared design data lives in `design/`; each language implementation has its own directory and packaging.
 
 **Tuivory(투이보리)**는 Go·Rust·Python·JavaScript·Shell에서 일관된 터미널 UI를 만들기 위한 스타일 패키지 프로젝트입니다. 저장소 루트는 특정 언어에 종속하지 않습니다. 공통 테마·색상 프로필·상태 규칙은 `design/`에서 관리하고 실제 적용 코드는 언어별로 구현합니다.
@@ -30,10 +32,10 @@ theme.Form(form)
 theme.Button(button)
 ```
 
-현재 배포 버전은 **0.1.0**입니다. Go 모듈 태그는 `go/v0.1.0`, Rust Git 태그는 `rust/v0.1.0`이며 공통 UI와 한영 견본·문서를 포함합니다. [릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.1.0)에서 Linux ARM64 견본과 소스 패키지를 받습니다.
+현재 배포 버전은 **0.2.0**입니다. Go 모듈 태그는 `go/v0.2.0`, Rust Git 태그는 `rust/v0.2.0`이며 공통 UI와 한영 견본·문서를 포함합니다. [릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.2.0)에서 Linux ARM64/x86_64 정적 견본·카탈로그와 소스 패키지를 받습니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.1.0
+go get github.com/leechis7/tuivory/go@v0.2.0
 ```
 
 [Go 사용법](docs/go-package.md) · [설치·사용 안내](docs/installation.md) · [문서 목록](docs/README.md)
@@ -57,7 +59,7 @@ make build
 
 ## Rust 사용
 
-Rust 1.85 이상에서 `rust/v0.1.0` Git 태그 또는 로컬 `rust/` path 의존성으로 사용하는 crate를 제공합니다. [Rust 사용법](rust/README.md)에 설치·API·범위를 설명합니다. 공통 후보 토큰 기준이며 Go의 실제 위젯 스타일 전체를 이식한 것은 아닙니다.
+Rust 1.85 이상에서 `rust/v0.2.0` Git 태그 또는 로컬 `rust/` path 의존성으로 사용하는 crate를 제공합니다. [Rust 사용법](rust/README.md)에 설치·API·범위를 설명합니다. 공통 후보 토큰 기준이며 Go의 실제 위젯 스타일 전체를 이식한 것은 아닙니다.
 
 ```sh
 cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256
@@ -70,7 +72,7 @@ python3 tools/check_rust_module.py
 
 ## 공통 Tree
 
-Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 계약을 사용합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
+Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 계약을 사용합니다. Go `go/v0.2.0`과 Rust `rust/v0.2.0`에 포함합니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
 
 ```sh
 make run-tree-go ARGS="--lang ko"
@@ -96,7 +98,7 @@ LazyOra는 첫 적용 대상이며 앱·DB 내부 구현은 공통 코어에 넣
 
 ## 공통 워크스페이스 컴포넌트
 
-[탭·패널·분할선·상태 표시줄·경로 사용법](docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+[탭·패널·분할선·상태 표시줄·경로 사용법](docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.2.0`과 Rust `rust/v0.2.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
 
 ## 정적 배포와 CentOS 7.4
 
@@ -104,16 +106,16 @@ Go·Rust와 향후 언어의 배포 실행파일은 별도 런타임·공유 라
 
 ## 공통 상태·포커스·팝업 기반
 
-[TVR-8 사용법](docs/focus.md)은 disabled/read-only/busy 등 상태 합성, 안정 ID 포커스 탐색, 중첩 팝업 입력 차단·닫기 요청·포커스 복귀와 한영 Go/Rust 예제를 설명합니다. 현재 미배포 소스이며 기존 v0.1.0 태그에는 없습니다. [추천 순서와 백로그](docs/components-backlog.md)를 따르고 각 단계에서 구현·검증 후 커밋·게시 승인을 받습니다.
+[TVR-8 사용법](docs/focus.md)은 disabled/read-only/busy 등 상태 합성, 안정 ID 포커스 탐색, 중첩 팝업 입력 차단·닫기 요청·포커스 복귀와 한영 Go/Rust 예제를 설명합니다. 0.2.0 태그에 포함합니다. [추천 순서와 백로그](docs/components-backlog.md)를 따르고 각 단계에서 구현·검증 후 커밋·게시 승인을 받습니다.
 
-[TVR-9: 입력·폼](docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-9: 입력·폼](docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-10: 목록·메뉴·검색 선택](docs/collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-10: 목록·메뉴·검색 선택](docs/collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-11: 표·데이터 그리드](docs/grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-11: 표·데이터 그리드](docs/grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-12: 알림·진행·데이터 상태](docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-12: 알림·진행·데이터 상태](docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-13: 배치·밀도·부가 컴포넌트](docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-13: 배치·밀도·부가 컴포넌트](docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
 Go 팝업·그림자의 두 칸 문자 경계 보호: [공통 그리기 API](docs/overlay-drawing.md).

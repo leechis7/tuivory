@@ -2,13 +2,15 @@
 
 [한국어 (default)](go-package.md) · **English**
 
+Current product version is **0.2.0**. [Changes, installation and release assets](release-0.2.0.en.md).
+
 The Go code is an independent submodule in `go/`. Its module path is **`github.com/leechis7/tuivory/go`**, and its single public package is **`tuivory`**. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.1.0
+go get github.com/leechis7/tuivory/go@v0.2.0
 ```
 
-The current release is `v0.1.0`, tagged `go/v0.1.0`.
+The current release is `v0.2.0`, tagged `go/v0.2.0`.
 
 | Module path | Responsibility |
 | --- | --- |
@@ -57,7 +59,7 @@ go -C go run ./examples/starter
 go -C go run ./cmd/tuivory --lang en --theme light --colors 16
 ```
 
-These commands and the `--lang` option describe `v0.1.0` source. The playground accepts `--lang en` for English or `--lang ko` for Korean (the default); the starter template keeps Korean example labels. Language selection affects the playground UI, not the public style API. Themes: `dark`, `light`, `blackwhite`. Profiles: `8`, `16`, `256`, `truecolor`. When the application owns the screen, it can select a profile with `tuivory.ProfileForColors(screen.Colors(), limited)`. Detection is separate from style calculation: the package does not read stdin or change the terminal palette.
+These commands and the `--lang` option describe `v0.2.0` source. The playground accepts `--lang en` for English or `--lang ko` for Korean (the default); the starter template keeps Korean example labels. Language selection affects the playground UI, not the public style API. Themes: `dark`, `light`, `blackwhite`. Profiles: `8`, `16`, `256`, `truecolor`. When the application owns the screen, it can select a profile with `tuivory.ProfileForColors(screen.Colors(), limited)`. Detection is separate from style calculation: the package does not read stdin or change the terminal palette.
 
 ## Roles and states
 
@@ -115,15 +117,15 @@ For form choices, prefer `NewChoice`. It prevents common form input colors from 
 
 Go tests compare 240 palette values and 1,572 style cases captured by independently running the original LazyOra functions. See [extraction sources](lazyora-extraction.en.md) and [style coverage](go-style-coverage.en.md). Simulated screen checks and actual terminal observations are recorded separately.
 
-There is no root Go module: install `github.com/leechis7/tuivory/go@v0.1.0`. The module embeds generated `go/internal/tokens/candidate.json` from shared sources in `design/tokens/`. Consumers need no repository-root files, Python, Shell, or generation tools. `python3 tools/export_tokens.py --check` checks the embedded copy against the shared source.
+There is no root Go module: install `github.com/leechis7/tuivory/go@v0.2.0`. The module embeds generated `go/internal/tokens/candidate.json` from shared sources in `design/tokens/`. Consumers need no repository-root files, Python, Shell, or generation tools. `python3 tools/export_tokens.py --check` checks the embedded copy against the shared source.
 
 See [installation and usage](installation.en.md) for current module, command, and token identifiers. Original attribution and licensing are preserved in [NOTICE](../NOTICE.en.md). For setup and validation commands, return to the [English README](../README.en.md).
 
-The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is included in v0.1.0. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
+The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is included in v0.2.0. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
 
 ## Shared workspace components
 
-The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.2.0` and `rust/v0.2.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
 
 ## Static linking
 
@@ -133,14 +135,14 @@ Tuivory does not introduce required shared libraries into host applications. Bui
 
 Unreleased public APIs `ControlState.Visual`, `ControlStyle`, `NewFocusStack` provide state appearance, stable-ID navigation, nested popup routing and restoration. See the [Go/Rust contract and examples](focus.en.md). Hosts connect actual widgets, data, business actions and terminal lifecycle.
 
-[TVR-9: Inputs and forms](forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-9: Inputs and forms](forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-10: Lists, menus and search selection](collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-10: Lists, menus and search selection](collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-11: Tables and data grid](grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-11: Tables and data grid](grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-12: Notices, progress and data states](feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-12: Notices, progress and data states](feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-Wrap the entire card Draw with `WideSafeScreen(screen)` and draw shadows with `DimRegion(screen, CellRect{...})`. See [overlay drawing](overlay-drawing.en.md) for both-edge repairs and post-Show tests. These APIs are in the working source, absent from the existing v0.1.0 tag.
+Wrap the entire card Draw with `WideSafeScreen(screen)` and draw shadows with `DimRegion(screen, CellRect{...})`. See [overlay drawing](overlay-drawing.en.md) for both-edge repairs and post-Show tests. These APIs are included in v0.2.0.
