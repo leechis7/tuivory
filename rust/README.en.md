@@ -112,7 +112,7 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.e
 
 ## Shared control states and focus
 
-Unreleased `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `Styles::control` are available. See the [shared contract and localized examples](../docs/focus.en.md); run `make run-focus-rust ARGS="--lang en"` from the root. These APIs are absent from existing rust/v0.2.0 tags.
+Version 0.2.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `Styles::control` are available. See the [shared contract and localized examples](../docs/focus.en.md); run `make run-focus-rust ARGS="--lang en"` from the root. These APIs are included in rust/v0.2.0.
 
 [TVR-9: Inputs and forms](../docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 

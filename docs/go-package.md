@@ -118,7 +118,7 @@ Tuivory는 적용 앱에 필수 공유 라이브러리 의존성을 추가하지
 
 ## 공통 컨트롤 상태와 포커스
 
-미배포 공개 API `ControlState.Visual`, `ControlStyle`, `NewFocusStack`으로 상태 표현·안정 ID 탐색·중첩 팝업의 입력 차단과 복귀를 제공합니다. [Go/Rust 공통 계약·실행 예제](focus.md). 실제 위젯·데이터·업무 동작·단말 수명주기는 앱이 연결합니다.
+0.2.0 공개 API `ControlState.Visual`, `ControlStyle`, `NewFocusStack`으로 상태 표현·안정 ID 탐색·중첩 팝업의 입력 차단과 복귀를 제공합니다. [Go/Rust 공통 계약·실행 예제](focus.md). 실제 위젯·데이터·업무 동작·단말 수명주기는 앱이 연결합니다.
 
 [TVR-9: 입력·폼](forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
