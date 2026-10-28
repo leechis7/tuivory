@@ -41,3 +41,5 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.e
 [TVR-12: Notices, progress and data states](../docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.
 
 [TVR-13: Layout, density and supporting components](../docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+
+See [overlay drawing](../docs/overlay-drawing.en.md) for Go popup/external-card usage. Existing playground popups/Choice and the focus example PanelView use the shared repair.

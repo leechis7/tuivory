@@ -93,3 +93,5 @@ python3 tools/smoke_workspace.py /path/to/rust-workspace
 ```
 
 로컬 검증은 한영 PTY 시작·종료·화면 복원과 영문 통합 시나리오(변경 문서 닫기 보류, 키 입력, 분할 드래그, 화면 축소·복귀)를 포함합니다. 로컬 검증과 GitHub CI 결과·실제 원격 단말·LazyOra/LazyBeaver 적용을 구분합니다. 에픽은 요청대로 열어두며 구현은 v0.1.0으로 배포합니다.
+
+Go `PanelView`는 [공통 두 칸 문자 보정](overlay-drawing.md)을 자동 적용합니다. 외부 카드와 그림자는 공개 화면 래퍼·DimRegion으로 연결합니다.

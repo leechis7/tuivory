@@ -142,3 +142,5 @@ Unreleased public APIs `ControlState.Visual`, `ControlStyle`, `NewFocusStack` pr
 [TVR-12: Notices, progress and data states](feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.
 
 [TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+
+Wrap the entire card Draw with `WideSafeScreen(screen)` and draw shadows with `DimRegion(screen, CellRect{...})`. See [overlay drawing](overlay-drawing.en.md) for both-edge repairs and post-Show tests. These APIs are in the working source, absent from the existing v0.1.0 tag.

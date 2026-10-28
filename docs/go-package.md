@@ -127,3 +127,5 @@ Tuivory는 적용 앱에 필수 공유 라이브러리 의존성을 추가하지
 [TVR-12: 알림·진행·데이터 상태](feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
 
 [TVR-13: 배치·밀도·부가 컴포넌트](layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+
+`WideSafeScreen(screen)`으로 카드 전체 Draw를 감싸고, 그림자는 `DimRegion(screen, CellRect{...})`으로 그립니다. 좌우 경계 보정·Show 이후 검사는 [오버레이 그리기](overlay-drawing.md)를 보세요. 현재 작업 소스 기능이며 기존 v0.1.0 태그에는 없습니다.

@@ -46,3 +46,5 @@
 [TVR-12: 알림·진행·데이터 상태](feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
 
 [TVR-13: 배치·밀도·부가 컴포넌트](layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+
+[두 칸 문자·오버레이 그리기](overlay-drawing.md): Go 공개 화면 래퍼·그림자·Show 이후 출력 회귀.

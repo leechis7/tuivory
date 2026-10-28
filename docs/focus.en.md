@@ -82,3 +82,5 @@ These are actual Rust example TestBackend references at 120×32, not Go captures
 `design/interaction-cases.json` is mirrored into both modules' tests for matching state composition, navigation, nesting, empty popups, routing, restoration and invalid requests. Checks cover all twelve palettes, external imports/static hosts and bilingual PTY keys/clicks, theme changes, 40×16 resizing and normal exit. [Evidence](../evidence/focus.en.md)
 
 This foundation does not provide an input editor, validation engine, complete Dialog widget, asynchronous operation or terminal event loop. The host connects actual widget focus, layer layout/clipping/visibility and business actions. Examples reuse public panels as host implementations; LazyOra/LazyBeaver integration remains separate. [Static distribution requirements](static-build.en.md)
+
+Use [WideSafeScreen and DimRegion](overlay-drawing.en.md) for Go popup edges crossing CJK/emoji. These drawing APIs are separate from focus models.

@@ -93,3 +93,5 @@ python3 tools/smoke_workspace.py /path/to/rust-workspace
 ```
 
 Local checks include bilingual PTY startup/exit/restoration and an English integrated input scenario: edited-close guard, keys, divider dragging, and narrow/expanded reflow. Distinguish these from GitHub CI results, remote terminals, and actual LazyOra/LazyBeaver integration. The epic stays open as requested; implementation is distributed in v0.1.0.
+
+Go `PanelView` automatically uses the [shared wide-glyph repair](overlay-drawing.en.md). External cards and shadows use the public wrapper and DimRegion.

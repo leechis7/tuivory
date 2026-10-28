@@ -80,3 +80,5 @@ TUIVORY_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run
 상태 문구는 실제 카드 배경에서 대비를 다시 확인하고, 색상 강조의 대비가 부족하면 카드의 본문색으로 표시합니다. 상태의 의미는 ‘정상/주의/오류’ 문구로 유지합니다.
 
 견본의 색상은 [LazyOra 실제 스타일에서 추출한 Go 패키지](lazyora-extraction.md)를 사용합니다. 공통 JSON은 역할 표시 순서와 교차 언어 데이터 예제에 사용하며, CSV 후보는 실제 추출 팔레트와 구분합니다. SQL 편집기·DB 기능·범용 위젯 SDK를 포함하지 않습니다.
+
+Go 견본 팝업·선택박스는 [TVR-14 공통 그리기](overlay-drawing.md)를 사용합니다. 실제 카드/목록의 Show 이후 출력 회귀를 검사합니다.

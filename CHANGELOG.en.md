@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-14: Go [wide-glyph overlay drawing](docs/overlay-drawing.en.md). Shared APIs repair both popup/card/shadow edges and stale continuations, with physical output regressions after Show.
+
 - TVR-13: [Layout, density and supporting components](docs/layout.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; dev integration only.
 
 - TVR-12: [Notices, progress and data states](docs/feedback.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; dev integration only.

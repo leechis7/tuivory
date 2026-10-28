@@ -46,3 +46,5 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 [TVR-12: Notices, progress and data states](feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.
 
 [TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+
+[Wide glyphs and overlay drawing](overlay-drawing.en.md): public Go screen wrapper, shadows and output regressions after Show.
