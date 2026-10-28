@@ -15,6 +15,7 @@
 pub mod collections;
 pub mod components;
 pub mod forms;
+pub mod grid;
 pub mod interaction;
 mod tokens;
 pub mod tree;

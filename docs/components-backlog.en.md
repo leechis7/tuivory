@@ -9,7 +9,7 @@ Registered under TVR-7 with user approval following the 2026-10-28 MUI review. R
 | 1 | [TVR-8](https://leechis7.atlassian.net/browse/TVR-8) | Shared control states, focus and popup foundation | Local implementation/validation. [API](focus.en.md). Source publication approved; see issue comments for remote CI/merge evidence |
 | 2 | [TVR-9](https://leechis7.atlassian.net/browse/TVR-9) | Inputs/buttons/checks/radios/selects/forms | Dev implementation/validation; CI and merge evidence in Jira |
 | 3 | [TVR-10](https://leechis7.atlassian.net/browse/TVR-10) | Lists/menus/search selection | Dev implementation/validation; CI and merge evidence in Jira |
-| 4 | [TVR-11](https://leechis7.atlassian.net/browse/TVR-11) | Tables/data grid | Backlog |
+| 4 | [TVR-11](https://leechis7.atlassian.net/browse/TVR-11) | Tables/data grid | Dev implementation/validation; CI and merge evidence in Jira |
 | 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | Notifications/progress/loading/empty/error views | Backlog |
 | 6 | [TVR-13](https://leechis7.atlassian.net/browse/TVR-13) | Layout/density tokens, badges/chips/help and related components | Backlog |
 

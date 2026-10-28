@@ -8,12 +8,22 @@ use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 #[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(default)]
+pub struct ComponentSpan {
+    pub start: usize,
+    pub width: usize,
+    pub text: String,
+    pub role: String,
+    pub focused: bool,
+}
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(default)]
 pub struct ComponentLine {
     pub id: String,
     pub text: String,
     pub role: String,
     pub value: String,
     pub focused: bool,
+    pub spans: Vec<ComponentSpan>,
 }
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
@@ -361,6 +371,7 @@ impl Form {
                     role: role.into(),
                     focused: focus,
                     value: value.into(),
+                    spans: vec![],
                 })
             };
             add(

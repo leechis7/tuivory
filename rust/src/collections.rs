@@ -180,6 +180,7 @@ impl ListModel {
                 role: role.into(),
                 focused: item.id == self.focused,
                 value: item.id.clone(),
+                spans: vec![],
             });
             if !item.secondary.is_empty() {
                 rows.push(ComponentLine {
@@ -187,6 +188,7 @@ impl ListModel {
                     text: format!("    {}", item.secondary),
                     role: "hint".into(),
                     value: item.id.clone(),
+                    spans: vec![],
                     ..Default::default()
                 })
             }
