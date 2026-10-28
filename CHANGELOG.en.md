@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-9: [Inputs and forms](docs/forms.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; dev integration only.
+
 - TVR-8 shared control-state/focus/popup foundation: public Go/Rust state composition, stable-ID navigation, nested scopes, dismissal/restoration and input routing; executable hosts, twelve localized references, shared contracts, PTY and external static-host checks. [API](docs/focus.en.md) · [ordered backlog](docs/components-backlog.en.md). Source changes not yet included in a tagged release.
 
 - Apply static distribution and host-linking requirements to Go, Rust and future languages. Add Rust musl/bundled LLD, Go CGO-disabled ELF checks, explicit x86_64 builds and CentOS 7.4 kernel/external-host validation. Existing v0.1.0 tags/assets remain unchanged. [Support scope](docs/static-build.en.md)

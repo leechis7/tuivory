@@ -54,3 +54,9 @@ run-workspace-go:
 	go -C go run ./examples/workspace $(ARGS)
 run-workspace-rust:
 	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example workspace -- $(ARGS)
+
+.PHONY: run-catalog-go run-catalog-rust
+run-catalog-go:
+	go -C go run ./examples/catalog $(ARGS)
+run-catalog-rust:
+	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example catalog -- $(ARGS)

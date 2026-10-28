@@ -36,3 +36,5 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 ## Component expansion
 
 [Control states/focus/popups](focus.en.md) · [MUI follow-up backlog](components-backlog.en.md). Validate TVR-8 first, then forms → lists/search → tables → feedback → supporting components.
+
+[TVR-9: Inputs and forms](forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.

@@ -1,0 +1,243 @@
+#[path = "../playground/snapshot.rs"]
+mod snapshot;
+use crossterm::{
+    cursor::Show,
+    event::{
+        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
+        MouseButton, MouseEventKind,
+    },
+    execute,
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+};
+use ratatui::{
+    Terminal,
+    backend::{CrosstermBackend, TestBackend},
+    layout::Rect,
+    widgets::Paragraph,
+};
+use std::{
+    error::Error,
+    io::{self, IsTerminal},
+    time::Duration,
+};
+use tuivory::{
+    ColorProfile, Theme,
+    forms::{Form, FormEvent, FormField, FormOption},
+    interaction::ControlState,
+    ratatui::{FormWidget, Styles},
+};
+fn text(en: bool, ko: &str, english: &str) -> String {
+    if en { english } else { ko }.into()
+}
+fn demo(en: bool) -> Form {
+    let option = |id: &str, ko: &str, english: &str, disabled: bool| FormOption {
+        id: id.into(),
+        label: text(en, ko, english),
+        disabled,
+    };
+    let options = vec![
+        option("fast", "빠르게", "Fast", false),
+        option("old", "사용 불가", "Unavailable", true),
+        option("safe", "안전하게", "Safe", false),
+    ];
+    let field = |id: &str, kind: &str, ko: &str, english: &str| FormField {
+        id: id.into(),
+        kind: kind.into(),
+        label: text(en, ko, english),
+        ..Default::default()
+    };
+    let mut name = field("name", "text", "이름", "Name");
+    name.required = true;
+    name.help = text(en, "필수 입력", "Required");
+    let mut notes = field("notes", "textarea", "메모", "Notes");
+    notes.value = text(en, "합성 데이터", "Synthetic data");
+    let mut read = field("read", "text", "읽기 전용", "Read-only");
+    read.value = "Tuivory".into();
+    read.state = ControlState {
+        read_only: true,
+        ..Default::default()
+    };
+    let mut agree = field("agree", "checkbox", "동의", "Agree");
+    agree.required = true;
+    let mut radio = field("radio", "radio", "방식", "Method");
+    radio.options = options.clone();
+    radio.choice = "fast".into();
+    let mut select = field("select", "select", "선택", "Choice");
+    select.options = options;
+    select.choice = "fast".into();
+    let mut submit = field("submit", "button", "제출", "Submit");
+    submit.action = "submit".into();
+    let mut cancel = field("cancel", "button", "취소", "Cancel");
+    cancel.action = "cancel".into();
+    Form::new(vec![
+        name, notes, read, agree, radio, select, submit, cancel,
+    ])
+    .unwrap()
+}
+fn key(form: &mut Form, code: KeyCode) -> FormEvent {
+    let (action, value) = match code {
+        KeyCode::Tab => ("next", String::new()),
+        KeyCode::BackTab => ("previous", String::new()),
+        KeyCode::Enter => ("activate", String::new()),
+        KeyCode::Esc => ("cancel", String::new()),
+        KeyCode::Left => ("left", String::new()),
+        KeyCode::Right => ("right", String::new()),
+        KeyCode::Up => ("up", String::new()),
+        KeyCode::Down => ("down", String::new()),
+        KeyCode::Home => ("home", String::new()),
+        KeyCode::End => ("end", String::new()),
+        KeyCode::Backspace => ("backspace", String::new()),
+        KeyCode::Delete => ("delete", String::new()),
+        KeyCode::Char(c) => {
+            let kind = form
+                .fields()
+                .iter()
+                .find(|f| f.id == form.focused())
+                .map(|f| f.kind.as_str())
+                .unwrap_or("");
+            (
+                if c == ' ' && kind != "text" && kind != "textarea" {
+                    "toggle"
+                } else {
+                    "insert"
+                },
+                c.to_string(),
+            )
+        }
+        _ => ("", String::new()),
+    };
+    form.handle(action, &value)
+}
+struct Session;
+impl Drop for Session {
+    fn drop(&mut self) {
+        let _ = disable_raw_mode();
+        let _ = execute!(
+            io::stdout(),
+            DisableMouseCapture,
+            LeaveAlternateScreen,
+            Show
+        );
+    }
+}
+fn main() -> Result<(), Box<dyn Error>> {
+    let mut en = false;
+    let mut ascii = false;
+    let mut theme = Theme::Dark;
+    let mut colors = ColorProfile::Indexed256;
+    let mut output = None;
+    let mut args = std::env::args().skip(1);
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--lang" => {
+                en = match args.next().as_deref() {
+                    Some("en") => true,
+                    Some("ko") => false,
+                    _ => return Err("invalid language".into()),
+                }
+            }
+            "--ascii" => ascii = true,
+            "--theme" => theme = args.next().ok_or("missing theme")?.parse()?,
+            "--colors" => colors = args.next().ok_or("missing colors")?.parse()?,
+            "--snapshot" => output = Some(args.next().ok_or("missing output")?),
+            "--mode" => {
+                if args.next().as_deref() != Some("forms") {
+                    return Err("unknown mode".into());
+                }
+            }
+            _ => return Err(format!("unknown option {arg}").into()),
+        }
+    }
+    let styles = Styles::new(theme, colors)?;
+    let mut form = demo(en);
+    let mut status = text(
+        en,
+        "Tab 이동 / Enter 확정 / Esc 취소 / Ctrl+Q 종료",
+        "Tab move / Enter confirm / Esc cancel / Ctrl+Q quit",
+    );
+    let mut body = Rect::default();
+    let draw = |f: &mut ratatui::Frame<'_>, form: &Form, status: &str, body: &mut Rect| {
+        let r = f.area();
+        f.render_widget(Paragraph::new("").style(styles.role("surface").unwrap()), r);
+        f.render_widget(
+            Paragraph::new(format!(
+                "TUIVORY Catalog / {}",
+                text(en, "이름 · 공통 컴포넌트", "Name / shared components")
+            )),
+            Rect::new(r.x, r.y, r.width, u16::from(r.height > 0)),
+        );
+        let title = text(en, "입력·폼", "Inputs and forms");
+        let panel = styles.panel(&title, true, 1, ascii).unwrap();
+        let area = Rect::new(r.x, r.y + 1, r.width, r.height.saturating_sub(2));
+        *body = panel.inner(area);
+        f.render_widget(panel, area);
+        f.render_widget(
+            FormWidget {
+                form,
+                styles: &styles,
+                focused: true,
+            },
+            *body,
+        );
+        if r.height > 0 {
+            f.render_widget(
+                Paragraph::new(status),
+                Rect::new(r.x, r.bottom() - 1, r.width, 1),
+            );
+        }
+    };
+    if let Some(path) = output {
+        let mut terminal = Terminal::new(TestBackend::new(120, 36))?;
+        terminal.draw(|f| draw(f, &form, &status, &mut body))?;
+        snapshot::write(std::path::Path::new(&path), terminal.backend().buffer())?;
+        return Ok(());
+    }
+    if !io::stdin().is_terminal() {
+        return Err("terminal required".into());
+    }
+    enable_raw_mode()?;
+    let _session = Session;
+    execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
+    let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
+    loop {
+        terminal.draw(|f| draw(f, &form, &status, &mut body))?;
+        if !event::poll(Duration::from_millis(100))? {
+            continue;
+        }
+        let event = match event::read()? {
+            Event::Key(k) if matches!(k.kind, KeyEventKind::Press | KeyEventKind::Repeat) => {
+                if k.code == KeyCode::Char('q') && k.modifiers.contains(KeyModifiers::CONTROL) {
+                    break;
+                }
+                key(&mut form, k.code)
+            }
+            Event::Mouse(m)
+                if m.kind == MouseEventKind::Down(MouseButton::Left)
+                    && body.contains((m.column, m.row).into()) =>
+            {
+                let rows = form.layout(body.width.into(), body.height.into());
+                if let Some(row) = rows.get(usize::from(m.row - body.y)) {
+                    form.click(&row.id, &row.value)
+                } else {
+                    FormEvent::default()
+                }
+            }
+            _ => FormEvent::default(),
+        };
+        if !event.kind.is_empty() {
+            status = format!("{}: {}", event.kind, event.id);
+            if event.kind == "invalid" {
+                for id in event.missing {
+                    form.set_feedback(
+                        &id,
+                        "",
+                        &text(en, "입력 내용을 확인하세요", "Check this value"),
+                    );
+                }
+            } else if event.kind == "change" {
+                form.set_feedback(&event.id, "", "");
+            }
+        }
+    }
+    Ok(())
+}

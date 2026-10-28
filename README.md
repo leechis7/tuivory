@@ -105,3 +105,5 @@ Go·Rust와 향후 언어의 배포 실행파일은 별도 런타임·공유 라
 ## 공통 상태·포커스·팝업 기반
 
 [TVR-8 사용법](docs/focus.md)은 disabled/read-only/busy 등 상태 합성, 안정 ID 포커스 탐색, 중첩 팝업 입력 차단·닫기 요청·포커스 복귀와 한영 Go/Rust 예제를 설명합니다. 현재 미배포 소스이며 기존 v0.1.0 태그에는 없습니다. [추천 순서와 백로그](docs/components-backlog.md)를 따르고 각 단계에서 구현·검증 후 커밋·게시 승인을 받습니다.
+
+[TVR-9: 입력·폼](docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.

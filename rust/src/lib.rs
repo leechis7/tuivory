@@ -13,6 +13,7 @@
 //! ```
 
 pub mod components;
+pub mod forms;
 pub mod interaction;
 mod tokens;
 pub mod tree;
