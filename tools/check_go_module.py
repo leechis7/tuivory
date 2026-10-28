@@ -39,6 +39,13 @@ import (
     "github.com/leechis7/tuivory/go"
 )
 func TestIsolatedModule(t *testing.T) {
+    controlState := tuivory.ControlState{ReadOnly:true,Invalid:true,Edited:true}
+    if controlState.Visual().Editable || controlState.Visual().Role!="error" || controlState.Visual().Markers!="!*=" { t.Fatal("control states") }
+    focus, err := tuivory.NewFocusStack("root",[]tuivory.FocusTarget{{ID:"open"}})
+    if err != nil { t.Fatal(err) }
+    if err:=focus.Open("dialog",[]tuivory.FocusTarget{{ID:"close"}},"",true); err!=nil { t.Fatal(err) }
+    if !focus.Route("root").Blocked || focus.RequestClose().ID!="dialog" { t.Fatal("popup scope") }
+    if err:=focus.Close("dialog");err!=nil || focus.Focused()!="open" { t.Fatal("focus restore") }
     theme, err := tuivory.New("dark", "256")
     if err != nil { t.Fatal(err) }
     if theme.Styles.Profile() != "256" { t.Fatal("profile missing") }
@@ -48,6 +55,7 @@ func TestIsolatedModule(t *testing.T) {
     if err != nil { t.Fatal(err) }
     if _, err := tuivory.Resolve(palette); err != nil { t.Fatal(err) }
     colors, _ := tuivory.Resolve(palette)
+    if _,err:=tuivory.ControlStyle(colors,controlState,true);err!=nil { t.Fatal(err) }
     tree, err := tuivory.NewTree([]tuivory.TreeNode{{ID:"root",Name:"External"},{ID:"child",Parent:"root",Name:"Child"}})
     if err != nil { t.Fatal(err) }
     state := &tuivory.TreeState{}

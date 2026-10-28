@@ -33,3 +33,7 @@ Record problem → roles/states → keyboard/mouse contract → limited-terminal
 ## Shared Tree implementation
 
 The tree contract above is implemented for Go/tview and Rust/Ratatui in the [Tree API](tree.en.md). Selection and input focus remain independent; hosts connect data, activation, and loading. Tabs, split panels, status, and breadcrumbs are implemented in the [shared workspace](workspace.en.md).
+
+## Common state and focus implementation
+
+[TVR-8](focus.en.md) provides public Go/Rust state composition, ID navigation, nested modal input routing, close requests and focus restoration. Complete inputs/forms/Dialogs follow later; distinguish example-local behavior from public foundation APIs.

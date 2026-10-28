@@ -107,3 +107,7 @@ Cargo version 0.1.0 retains `publish = false` for Git distribution. It is not pu
 ## Shared workspace components
 
 The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+
+## Shared control states and focus
+
+Unreleased `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `Styles::control` are available. See the [shared contract and localized examples](../docs/focus.en.md); run `make run-focus-rust ARGS="--lang en"` from the root. These APIs are absent from existing rust/v0.1.0 tags.

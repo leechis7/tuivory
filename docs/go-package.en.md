@@ -128,3 +128,7 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) do
 ## Static linking
 
 Tuivory does not introduce required shared libraries into host applications. Build distributed Linux apps with `CGO_ENABLED=0`, then check the final ELF and execution on the target kernel. Check native runtimes introduced by other application dependencies too. [Static distribution and external-host validation](static-build.en.md)
+
+## Shared control states and focus
+
+Unreleased public APIs `ControlState.Visual`, `ControlStyle`, `NewFocusStack` provide state appearance, stable-ID navigation, nested popup routing and restoration. See the [Go/Rust contract and examples](focus.en.md). Hosts connect actual widgets, data, business actions and terminal lifecycle.

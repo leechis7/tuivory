@@ -1,0 +1,321 @@
+{
+  "states": [
+    {
+      "state": {},
+      "role": "body",
+      "markers": "",
+      "focusable": true,
+      "activatable": true,
+      "editable": true
+    },
+    {
+      "state": {
+        "read_only": true
+      },
+      "role": "body",
+      "markers": "=",
+      "focusable": true,
+      "activatable": true,
+      "editable": false
+    },
+    {
+      "state": {
+        "busy": true
+      },
+      "role": "body",
+      "markers": "~",
+      "focusable": true,
+      "activatable": false,
+      "editable": false
+    },
+    {
+      "state": {
+        "selected": true,
+        "edited": true
+      },
+      "role": "selection",
+      "markers": ">*",
+      "focusable": true,
+      "activatable": true,
+      "editable": true
+    },
+    {
+      "state": {
+        "invalid": true,
+        "selected": true,
+        "edited": true
+      },
+      "role": "error",
+      "markers": "!>*",
+      "focusable": true,
+      "activatable": true,
+      "editable": true
+    },
+    {
+      "state": {
+        "disabled": true,
+        "read_only": true,
+        "busy": true,
+        "selected": true,
+        "edited": true,
+        "invalid": true
+      },
+      "role": "disabled",
+      "markers": "-!>*~=",
+      "focusable": false,
+      "activatable": false,
+      "editable": false
+    }
+  ],
+  "root": [
+    {
+      "id": "open"
+    },
+    {
+      "id": "disabled",
+      "state": {
+        "disabled": true
+      }
+    },
+    {
+      "id": "hidden",
+      "hidden": true
+    },
+    {
+      "id": "read",
+      "state": {
+        "read_only": true
+      }
+    },
+    {
+      "id": "busy",
+      "state": {
+        "busy": true
+      }
+    },
+    {
+      "id": "tail"
+    }
+  ],
+  "steps": [
+    {
+      "op": "move",
+      "expect_scope": "root",
+      "expect_focus": "read",
+      "expect_depth": 0
+    },
+    {
+      "op": "move",
+      "expect_scope": "root",
+      "expect_focus": "busy",
+      "expect_depth": 0
+    },
+    {
+      "op": "move",
+      "expect_scope": "root",
+      "expect_focus": "read",
+      "expect_depth": 0,
+      "backwards": true
+    },
+    {
+      "op": "focus",
+      "expect_scope": "root",
+      "expect_focus": "read",
+      "expect_depth": 0,
+      "id": "disabled",
+      "accepted": false
+    },
+    {
+      "op": "focus",
+      "expect_scope": "root",
+      "expect_focus": "open",
+      "expect_depth": 0,
+      "id": "open",
+      "accepted": true
+    },
+    {
+      "op": "open",
+      "expect_scope": "outer",
+      "expect_focus": "child",
+      "expect_depth": 1,
+      "id": "outer",
+      "targets": [
+        {
+          "id": "child"
+        },
+        {
+          "id": "close"
+        }
+      ],
+      "initial": "child",
+      "dismissible": true
+    },
+    {
+      "op": "route",
+      "expect_scope": "outer",
+      "expect_focus": "child",
+      "expect_depth": 1,
+      "target": "root",
+      "blocked": true
+    },
+    {
+      "op": "open",
+      "expect_scope": "outer",
+      "expect_focus": "child",
+      "expect_depth": 1,
+      "id": "outer",
+      "targets": [],
+      "error": true
+    },
+    {
+      "op": "open",
+      "expect_scope": "outer",
+      "expect_focus": "child",
+      "expect_depth": 1,
+      "id": "bad",
+      "targets": [
+        {
+          "id": "a",
+          "hidden": true
+        }
+      ],
+      "initial": "a",
+      "error": true
+    },
+    {
+      "op": "move",
+      "expect_scope": "outer",
+      "expect_focus": "close",
+      "expect_depth": 1
+    },
+    {
+      "op": "open",
+      "expect_scope": "inner",
+      "expect_focus": "ok",
+      "expect_depth": 2,
+      "id": "inner",
+      "targets": [
+        {
+          "id": "ok"
+        }
+      ],
+      "dismissible": true
+    },
+    {
+      "op": "close",
+      "expect_scope": "inner",
+      "expect_focus": "ok",
+      "expect_depth": 2,
+      "id": "outer",
+      "error": true
+    },
+    {
+      "op": "request",
+      "expect_scope": "inner",
+      "expect_focus": "ok",
+      "expect_depth": 2,
+      "request": "inner"
+    },
+    {
+      "op": "close",
+      "expect_scope": "outer",
+      "expect_focus": "close",
+      "expect_depth": 1,
+      "id": "inner"
+    },
+    {
+      "op": "update",
+      "expect_scope": "outer",
+      "expect_focus": "close",
+      "expect_depth": 1,
+      "id": "root",
+      "targets": [
+        {
+          "id": "open",
+          "state": {
+            "disabled": true
+          }
+        },
+        {
+          "id": "replacement"
+        }
+      ]
+    },
+    {
+      "op": "close",
+      "expect_scope": "root",
+      "expect_focus": "replacement",
+      "expect_depth": 0,
+      "id": "outer"
+    },
+    {
+      "op": "update",
+      "expect_scope": "root",
+      "expect_focus": "replacement",
+      "expect_depth": 0,
+      "id": "root",
+      "targets": [
+        {
+          "id": "x"
+        },
+        {
+          "id": "x"
+        }
+      ],
+      "error": true
+    },
+    {
+      "op": "open",
+      "expect_scope": "empty",
+      "expect_focus": "",
+      "expect_depth": 1,
+      "id": "empty",
+      "targets": [],
+      "dismissible": false
+    },
+    {
+      "op": "move",
+      "expect_scope": "empty",
+      "expect_focus": "",
+      "expect_depth": 1
+    },
+    {
+      "op": "route",
+      "expect_scope": "empty",
+      "expect_focus": "",
+      "expect_depth": 1,
+      "target": "root",
+      "blocked": true
+    },
+    {
+      "op": "route",
+      "expect_scope": "empty",
+      "expect_focus": "",
+      "expect_depth": 1,
+      "target": "",
+      "blocked": false
+    },
+    {
+      "op": "request",
+      "expect_scope": "empty",
+      "expect_focus": "",
+      "expect_depth": 1,
+      "request": ""
+    },
+    {
+      "op": "close",
+      "expect_scope": "root",
+      "expect_focus": "replacement",
+      "expect_depth": 0,
+      "id": "empty"
+    },
+    {
+      "op": "close",
+      "expect_scope": "root",
+      "expect_focus": "replacement",
+      "expect_depth": 0,
+      "id": "root",
+      "error": true
+    }
+  ]
+}

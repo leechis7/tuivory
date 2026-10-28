@@ -32,3 +32,7 @@ Documentation follows the current repository implementation. The current Go vers
 The current product is Tuivory, public Go package `tuivory`, Jira project TVR. Earlier source names are identified only in license/origin notices. [LICENSE](../LICENSE) remains in its original form.
 
 [Static distribution](static-build.en.md): Go/Rust/future language policy, CentOS 7.4 and external hosts
+
+## Component expansion
+
+[Control states/focus/popups](focus.en.md) · [MUI follow-up backlog](components-backlog.en.md). Validate TVR-8 first, then forms → lists/search → tables → feedback → supporting components.

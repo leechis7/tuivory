@@ -101,3 +101,7 @@ LazyOra는 첫 적용 대상이며 앱·DB 내부 구현은 공통 코어에 넣
 ## 정적 배포와 CentOS 7.4
 
 Go·Rust와 향후 언어의 배포 실행파일은 별도 런타임·공유 라이브러리 없이 실행해야 하며, 적용 앱의 정적 링크도 지원합니다. 현재 소스의 Go는 CGO를 끄고 Rust는 musl을 사용합니다. x86_64 대상은 `make build-go-x86_64`, `make build-rust-x86_64`로 명시합니다. [빌드·지원 범위·기존 릴리스와의 차이](docs/static-build.md)를 확인하세요.
+
+## 공통 상태·포커스·팝업 기반
+
+[TVR-8 사용법](docs/focus.md)은 disabled/read-only/busy 등 상태 합성, 안정 ID 포커스 탐색, 중첩 팝업 입력 차단·닫기 요청·포커스 복귀와 한영 Go/Rust 예제를 설명합니다. 현재 미배포 소스이며 기존 v0.1.0 태그에는 없습니다. [추천 순서와 백로그](docs/components-backlog.md)를 따르고 각 단계에서 구현·검증 후 커밋·게시 승인을 받습니다.

@@ -1,0 +1,17 @@
+{
+  "image": "centos@sha256:78b63c089c40a2ca0d85db9125fb3193c6ff74814bba5f894c803e5ae02a4035",
+  "kernel": "3.10.0-693.el7.x86_64",
+  "kernel_sha256": "8ede7f8d3c8f5e72f1a84713ad59b7b39211ea1af8887389cb50a189df937c6f",
+  "glibc": "2.17-196.el7.x86_64",
+  "result": "passed",
+  "languages": [
+    "ko",
+    "en"
+  ],
+  "binaries_sha256": {
+    "go-focus": "30421a380cf901f5066c0b86ea663f4355f9d0236fc14533950addda666455e5",
+    "rust-focus": "5b5664b4e32aca379435ea7a05e0c14204d9adb0f560996d6fabf73baeefef07",
+    "go-host": "e282f859c53b9a219f1002ce40d0ba609d2dfef24d4afb465687d457faa6ff4c",
+    "rust-host": "3c838579cf8f5f94e15713297c674b35a46d9429604fded7932d677a42b4e38b"
+  }
+}

@@ -68,3 +68,7 @@ Workspace contracts originate in `design/components-cases.json`. Regenerate both
 ## Static distribution requirements
 
 Preserve static distribution and host-application linking when adding languages, features or dependencies. Distinguish build dependencies from external runtimes and verify Linux ELF artifacts and target-kernel execution. Python, JavaScript and Shell remain interpreter-based reference sources. Follow the [build, external-host and CentOS validation commands](docs/static-build.en.md).
+
+## Component stages
+
+Follow [TVR-8–13 in order](docs/components-backlog.en.md). For interaction changes, synchronize `design/interaction-cases.json` and module copies with `tools/export_tree_cases.py`; check Go/Rust contracts, twelve palettes, external imports, static linking and bilingual PTYs. Run `python3 tools/smoke_focus.py BINARY --lang ko|en` and `python3 tools/snapshot_focus.py RUST_BINARY`. Report each completed stage and request approval before committing/publishing it.

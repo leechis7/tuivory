@@ -44,3 +44,7 @@ sh -n shell/examples/terminal-colors.sh
 ## 정적 배포 조건
 
 새 언어·기능·의존성을 추가할 때 배포 실행파일과 적용 앱의 정적 링크 조건을 유지합니다. 빌드 의존성과 실행 시 필요한 외부 런타임을 구분하고 Linux 산출물의 ELF 검사와 대상 커널 실행을 검증합니다. 현재 Python·JavaScript·Shell은 인터프리터 기반 참조 소스입니다. [빌드·외부 앱·CentOS 검증 명령](docs/static-build.md)을 따릅니다.
+
+## 단계별 컴포넌트 작업
+
+TVR-8~13은 [백로그 순서](docs/components-backlog.md)로 진행합니다. 상태·포커스 변경 시 공통 `design/interaction-cases.json`과 양 모듈 사본을 `tools/export_tree_cases.py`로 동기화하고 Go/Rust 계약·12팔레트·외부 import·정적 링크·한영 PTY를 확인합니다. 새 예제의 PTY 검사는 `python3 tools/smoke_focus.py BINARY --lang ko|en`, 참조 이미지는 `python3 tools/snapshot_focus.py RUST_BINARY`입니다. 단계별 결과를 보고하고 해당 변경의 커밋·게시 승인을 받습니다.
