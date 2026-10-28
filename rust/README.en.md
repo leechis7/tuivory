@@ -123,3 +123,5 @@ Version 0.2.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui
 [TVR-12: Notices, progress and data states](../docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 [TVR-13: Layout, density and supporting components](../docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
+
+[TVR-17 grid options](../docs/grid.en.md): simple/data presets, ranges, column configuration, status, response generations and a five-row comparison. Unreleased source.

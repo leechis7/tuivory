@@ -40,3 +40,7 @@ TVR-7 now has a local [support audit](component-audit.en.md) and [shared Tree](t
 ## MUI component stages
 
 TVR-8–13 provide shared states/focus/popups, [forms](forms.en.md), [lists/search](collections.en.md), [virtual grids](grid.en.md), [feedback](feedback.en.md), and [layout/density/supporting components](layout.en.md). Public Go/Rust models/renderers, localized catalog hosts/references and validation are provided. Stage integration through dev is complete, and v0.2.0 publication is approved. CI/PR/publication evidence is recorded in each issue; application integration remains separate.
+
+## TVR-17 grid configuration (unreleased)
+
+[Shared options/presets](grid.en.md) extend the existing Grid with Go/Rust ranges, original-value copy, numbering, columns, density, status, stale-response protection and identical comparison data. [Local validation](grid-validation.en.md) is separate from GitHub CI/tags and actual LazyOra integration.

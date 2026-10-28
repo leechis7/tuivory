@@ -10,7 +10,23 @@ pub struct RowsWidget<'a> {
 impl Widget for RowsWidget<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let base = self.styles.role("surface").expect("surface role");
+        // Repair pre-existing wide glyphs intersecting either horizontal edge.
+        let bounds = buf.area;
+        let area = area.intersection(bounds);
+        if area.is_empty() {
+            return;
+        }
         for y in area.y..area.bottom() {
+            if area.x > bounds.x && crate::components::cells(buf[(area.x - 1, y)].symbol()) > 1 {
+                buf[(area.x - 1, y)].set_symbol(" ");
+            }
+            if area.right() > area.x
+                && area.right() < bounds.right()
+                && crate::components::cells(buf[(area.right() - 1, y)].symbol()) > 1
+            {
+                buf[(area.right(), y)].set_symbol(" ");
+            }
+
             for x in area.x..area.right() {
                 buf[(x, y)].set_symbol(" ").set_style(base);
             }
@@ -22,6 +38,11 @@ impl Widget for RowsWidget<'_> {
                 .expect("validated semantic row role");
             if row.focused && self.focused {
                 style = style.add_modifier(Modifier::UNDERLINED)
+            }
+            if row.role.starts_with("grid.") {
+                for x in area.x..area.right() {
+                    buf[(x, area.y + i as u16)].set_symbol(" ").set_style(style);
+                }
             }
             buf.set_stringn(
                 area.x,

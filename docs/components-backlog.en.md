@@ -24,3 +24,7 @@ Approved stage publication/merges target `dev` only. After all work is complete,
 On 2026-10-28 the user explicitly authorized TVR-9 through TVR-13 implementation, commits, publication and individual dev merges in order without further approval prompts. Report each checkpoint; main/tags/Releases still require a separate instruction.
 
 TVR-8–13 public APIs/examples are complete in the dev integration sequence. Historical initial checkpoints above do not imply pending implementation. Main/tags/releases remain separate; application/SSH integration and other languages remain follow-up work.
+
+## TVR-17 grid configuration (unreleased)
+
+[Shared options/presets](grid.en.md) extend the existing Grid with Go/Rust ranges, original-value copy, numbering, columns, density, status, stale-response protection and identical comparison data. [Local validation](grid-validation.en.md) is separate from GitHub CI/tags and actual LazyOra integration.

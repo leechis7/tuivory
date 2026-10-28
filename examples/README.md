@@ -34,14 +34,16 @@ Rust 견본은 Rust 1.88 이상에서 `make run-rust ARGS="--lang ko"`로 실행
 
 [Go 소스](../go/examples/focus/main.go) · [Rust 소스](../rust/examples/focus/main.rs) · [사용법](../docs/focus.md). `make run-focus-go ARGS="--lang ko"`, `make run-focus-rust ARGS="--lang en"`으로 실행합니다. 읽기 전용·처리 중·비활성 탐색, 중첩 팝업·입력 차단·포커스 복귀·한영 표시를 검증하는 호스트입니다. 제품 기본 빌드는 늘리지 않습니다.
 
-[TVR-9: 입력·폼](../docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-9: 입력·폼](../docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-10: 목록·메뉴·검색 선택](../docs/collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-10: 목록·메뉴·검색 선택](../docs/collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-11: 표·데이터 그리드](../docs/grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-11: 표·데이터 그리드](../docs/grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-12: 알림·진행·데이터 상태](../docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-12: 알림·진행·데이터 상태](../docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
 Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](../docs/overlay-drawing.md)를 참고합니다. 기존 견본의 팝업·Choice와 focus 예제의 PanelView에 공통 보정이 적용됩니다.
+
+[TVR-17 그리드 비교](../docs/grid.md): `make run-catalog-go ARGS="--mode grid --grid-sample --grid-preset data --lang ko"`. Rust는 `run-catalog-rust`, 간결 구성은 `--grid-preset simple`을 사용합니다. 같은 5행 데이터와 2번 행 이름 선택입니다. TVR-17은 미배포 소스입니다.

@@ -39,3 +39,7 @@ Registered [TVR-8–13](components-backlog.en.md) under TVR-7. The first [state/
 ## TVR-9–13 result
 
 Public Go/Rust [forms](forms.en.md), [lists/menus/search](collections.en.md), [virtual grids](grid.en.md), [notices/progress/data states](feedback.en.md), [spacing/geometry/badges/chips/help](layout.en.md) are implemented with localized catalog hosts and tests. Sort/filter/edit/copy, validation, clocks and business actions remain host-owned. Accordion/Drawer/Stepper reuse existing state and panel composition. All stages integrated through dev and are included in v0.2.0.
+
+## TVR-17 grid configuration (unreleased)
+
+[Shared options/presets](grid.en.md) extend the existing Grid with Go/Rust ranges, original-value copy, numbering, columns, density, status, stale-response protection and identical comparison data. [Local validation](grid-validation.en.md) is separate from GitHub CI/tags and actual LazyOra integration.

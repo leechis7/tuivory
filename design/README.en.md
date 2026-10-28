@@ -43,3 +43,5 @@ New widget adapters need framework-specific checks for theme round trips, focus/
 `layout-tokens.json` defines draft compact/comfortable spacing and the cell-width threshold. Go/Rust embed matching code defaults and verify mirrored test data; no external runtime file or complete JSON layout engine is introduced. [Layout API](../docs/layout.en.md).
 
 At either horizontal overlay/shadow edge, replace intersected wide graphemes with spaces while retaining outside styles. Hosts repaint backgrounds; regressions inspect buffers after presentation. [Go implementation and validation scope](../docs/overlay-drawing.en.md).
+
+[TVR-17 grid options, priority and original-value/host boundaries](../docs/grid.en.md): simple/data presets on one Go/Rust core; unreleased source.

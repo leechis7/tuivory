@@ -123,3 +123,5 @@ make build-rust
 [TVR-12: 알림·진행·데이터 상태](../docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
 [TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
+
+[TVR-17 그리드 옵션](../docs/grid.md): simple/data 프리셋·범위·열 구성·상태줄·응답 세대 검사와 5행 비교 예제. 미배포 소스입니다.

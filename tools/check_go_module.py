@@ -56,6 +56,10 @@ func TestIsolatedModule(t *testing.T) {
     gridRows,_:=tuivory.NewMemoryRows([]tuivory.GridRecord{{ID:"row",Cells:map[string]string{"name":"External"}}})
     grid,_:=tuivory.NewGrid([]tuivory.GridColumn{{ID:"name",Width:12,Editable:true}},gridRows)
     if grid.Handle("copy",4).Text!="External" || grid.Handle("activate",4).Kind!="edit" {t.Fatal("external grid")}
+    gridOptions,_:=tuivory.GridPreset("data");if err:=grid.SetOptions(gridOptions);err!=nil{t.Fatal(err)}
+    grid.SetCellInfo(func(r tuivory.GridRecord,c tuivory.GridColumn)tuivory.GridCellInfo{return tuivory.GridCellInfo{Display:"formatted",HasDisplay:true,Metadata:"TEXT"}})
+    if !grid.SelectRange(tuivory.GridRange{AnchorRow:"row",EndRow:"row",AnchorColumn:"name",EndColumn:"name"})||grid.Handle("copy_range",4).Text!="External" {t.Fatal("external options/raw range")}
+    grid.RequestFilter("old");oldRevision:=grid.Revision();grid.RequestFilter("new");if grid.ApplySource(oldRevision,gridRows){t.Fatal("stale source")}
     notices,_:=tuivory.NewNoticeQueue(2);_ = notices.Push(tuivory.Notice{ID:"err",Severity:"error",ExpiresAt:1})
     if len(notices.Visible(100))!=1 { t.Fatal("external notice lifetime") }
     operation:=tuivory.Progress{ID:"load",Status:"loading",Cancellable:true};if operation.RequestCancel().Kind!="cancel"{t.Fatal("external cancel")}
@@ -92,6 +96,9 @@ func TestIsolatedModule(t *testing.T) {
     physical,cols,_=screen.GetContents()
     if string(physical[3*cols+2].Bytes)!=" " || string(physical[3*cols+8].Bytes)!=" " {t.Fatal("shadow boundary output")}
 
+    gridView,gridErr:=tuivory.NewGridView(grid,colors,nil);if gridErr!=nil{t.Fatal(gridErr)}
+    gridView.SetRect(0,0,30,6);gridView.Draw(screen);screen.Show()
+    physical,cols,_=screen.GetContents();if string(physical[grid.Geometry(30,6).Gutter-1].Bytes)!="│"{t.Fatal("external grid physical header")}
     view.SetRect(0,0,30,6)
     view.Draw(screen)
     marker,_,_,_ := screen.GetContent(1,1)

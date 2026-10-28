@@ -32,14 +32,16 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.e
 
 [Go source](../go/examples/focus/main.go) · [Rust source](../rust/examples/focus/main.rs) · [Guide](../docs/focus.en.md). Run `make run-focus-go ARGS="--lang ko"` or `make run-focus-rust ARGS="--lang en"`. Hosts exercise read-only/busy/disabled navigation, nested popups, input routing/restoration and localized views. Default product builds are unchanged.
 
-[TVR-9: Inputs and forms](../docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-9: Inputs and forms](../docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-10: Lists, menus and search selection](../docs/collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-10: Lists, menus and search selection](../docs/collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-11: Tables and data grid](../docs/grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-11: Tables and data grid](../docs/grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-12: Notices, progress and data states](../docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-12: Notices, progress and data states](../docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
-[TVR-13: Layout, density and supporting components](../docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+[TVR-13: Layout, density and supporting components](../docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 See [overlay drawing](../docs/overlay-drawing.en.md) for Go popup/external-card usage. Existing playground popups/Choice and the focus example PanelView use the shared repair.
+
+[TVR-17 grid comparison](../docs/grid.en.md): `make run-catalog-go ARGS="--mode grid --grid-sample --grid-preset data --lang en"`. Use `run-catalog-rust` for Rust or `--grid-preset simple` for the simple presentation. Both use the same five rows and row 2 name selection. TVR-17 is unreleased source.

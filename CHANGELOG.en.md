@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-17: extend the existing Go/Rust grid with presentation/input options, simple/data presets, range copy, stale-response protection, public catalog comparisons and bilingual documentation/images.
+
 - Treat Python/TypeScript/JavaScript support as normal runtime-based packages without mandatory static distribution, standalone executables or CentOS checks; align work rules, contribution/distribution guides and TVR-15/16 scope.
 
 - Align documentation and public API descriptions: use specification for shared design/API definitions and rules for interaction, input handling and navigation; keep Korean/English wording synchronized.

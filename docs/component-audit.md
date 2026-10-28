@@ -39,3 +39,7 @@
 ## TVR-9~13 결과
 
 공개 Go/Rust [폼](forms.md), [목록·메뉴·검색](collections.md), [가상 그리드](grid.md), [알림·진행·데이터 상태](feedback.md), [간격·배치·Badge/Chip·도움말](layout.md)을 한영 카탈로그·검사와 구현했습니다. 정렬/필터/편집/복사·검증·시간·업무 실행은 앱 책임입니다. Accordion/Drawer/Stepper는 기존 상태·패널을 조합합니다. 단계별 dev 통합을 마쳤으며 0.2.0 릴리스에 포함합니다.
+
+## TVR-17 그리드 구성 (미배포)
+
+기존 Grid에 [공통 옵션·프리셋](grid.md)을 추가합니다. Go/Rust 범위 선택·원문 복사·행 번호·열 표시·밀도·상태줄·지연 응답 보호와 같은 데이터 비교 예제를 제공합니다. [로컬 검증](grid-validation.md)과 GitHub CI·태그·실제 LazyOra 적용은 구분합니다.

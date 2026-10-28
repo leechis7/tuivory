@@ -43,3 +43,5 @@
 `layout-tokens.json`은 compact/comfortable 간격과 셀 너비 경계 초안입니다. Go/Rust 코드는 같은 기본값을 내장하고 모듈별 테스트 사본으로 일치 여부를 검증합니다. 외부 런타임 파일이나 완성 JSON 배치 엔진을 추가한 것은 아닙니다. [배치 API](../docs/layout.md).
 
 오버레이와 그림자의 양쪽 가로 경계에서 두 칸 문자가 잘리면 전체 grapheme을 공백 처리하고 바깥 스타일을 보존합니다. 호스트가 배경을 다시 그리며, 검사는 출력 반영 이후 버퍼를 확인합니다. [Go 구현과 검증 범위](../docs/overlay-drawing.md).
+
+[TVR-17 그리드 옵션·우선순위·원문/호스트 경계](../docs/grid.md): 한 Go/Rust 코어의 simple/data 프리셋이며 미배포 소스입니다.

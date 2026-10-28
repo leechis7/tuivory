@@ -140,3 +140,5 @@ Distributed executables for Go, Rust and future languages must require no separa
 [TVR-13: Layout, density and supporting components](docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 Go popup/shadow wide-glyph protection: [shared drawing API](docs/overlay-drawing.en.md).
+
+[TVR-17 grid configuration](docs/grid.en.md): simple/data presets, ranges, column options, status and stale-response protection on the same Go/Rust grid. Unreleased source.

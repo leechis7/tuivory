@@ -119,3 +119,5 @@ Go·Rust와 향후 언어의 배포 실행파일은 별도 런타임·공유 라
 [TVR-13: 배치·밀도·부가 컴포넌트](docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
 Go 팝업·그림자의 두 칸 문자 경계 보호: [공통 그리기 API](docs/overlay-drawing.md).
+
+[TVR-17 그리드 구성](docs/grid.md): 같은 Go/Rust 그리드의 simple/data 프리셋·범위 선택·열 옵션·상태줄·지연 응답 검사. 미배포 소스입니다.

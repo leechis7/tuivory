@@ -40,3 +40,5 @@ ANSI 팔레트(참조/사용자 변경/미확인), 굵게 설정:
 [TVR-14 오버레이 경계 검증](overlay-drawing.md): Go 공통 API·실제 위젯·Show 이후 출력·외부 정적 import·PTY 결과와 한계.
 
 [0.2.0 릴리스 준비 검증](release-0.2.0.md): 후보 자산·버전·체크섬·정적 빌드·외부 설치·native/구형 커널 실행.
+
+[TVR-17 그리드 로컬 검증](../docs/grid-validation.md) · [정적 산출물·CentOS·소스 해시](grid-options-results.json). 로컬 커밋 전 작업 소스의 검증이며 GitHub에는 미게시입니다.  실제 LazyOra 적용은 별도입니다.
