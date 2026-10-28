@@ -14,7 +14,7 @@ Tuivory is independent. Its Jira project is named **Tuivory**, with key **TVR**.
 | [TVR-6](https://leechis7.atlassian.net/browse/TVR-6) | Go module epic | Remains open. Go go/v0.1.0 includes per-language output paths and shared APIs; see issue comments for CI/publication evidence |
 | [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) | Go/Rust shared UI epic | In progress. Support audit, Tree, tabs, panels/splitters, status and breadcrumbs implemented, validated and committed locally in both languages. Distributed in v0.1.0; see comments for CI/publication evidence; real integration is separate |
 
-PR #1 merged as `5c3242ff17c719d7558d447c93477234f75fe698`. Both [dev CI](https://github.com/leechis7/tuivory/actions/runs/40062239810) and [main CI](https://github.com/leechis7/tuivory/actions/runs/40062241916) passed. This merge did not create a new tag or Release; the Go version at that time was `v0.0.1`; the current version is `v0.1.0`.
+PR #1 merged as `5c3242ff17c719d7558d447c93477234f75fe698`. Both [dev CI](https://github.com/leechis7/tuivory/actions/runs/40062239810) and [main CI](https://github.com/leechis7/tuivory/actions/runs/40062241916) passed. This merge did not create a new tag or Release; the Go version at that time was `v0.0.1`; the current version is `v0.2.0`.
 
 Integration branches are `main` and `dev`; work branches use `codex/actual-TVR-key-description`. The workflow is to do → in progress → review → done, with one task at a time. Feature changes include related documentation updates in Korean and English. Distinguish local checks, remote CI, publication, and tagged releases. Commits and GitHub publication require explicit approval for the change.
 
@@ -28,10 +28,14 @@ TVR-5/TVR-6 now cover static distribution and host-linking requirements for Go, 
 
 ## Shared component expansion backlog
 
-With approval, TVR-8–13 were registered under TVR-7 in the recommended order. See [scope/order/publication checkpoints](components-backlog.en.md). TVR-8 is locally implemented/validated and source publication is approved. Record remote CI, PR and merge evidence in TVR-8 comments. TVR-9–13 remain in the backlog and the epic stays open. Remote CI/publication remain separate from local validation.
+TVR-8–13 were registered under TVR-7 in the approved order and all completed dev integration and remote CI. See [scope/order/publication checkpoints](components-backlog.en.md). TVR-14 Go overlay repairs also merged into dev through PR #13. Each issue records PR/CI/merge evidence; keep the epic open. These changes are now included in 0.2.0 preparation.
 
 On 2026-10-28 the user limited stage integration to `dev`. Validate and merge TVR-8 from its existing branch into dev; leave main/tags/Releases unchanged until a separate release instruction after all work. Record PR/CI evidence in TVR-8 comments.
 
 ## TVR-9–13 completion
 
 The user explicitly authorized sequential implementation, commits and dev merges through TVR-13. All five stages provide public APIs, bilingual docs/hosts/references and local checks; PR/final-dev CI and merge commits are recorded per issue. Main/tags/releases remain unchanged until a separate release instruction. Keep TVR-7 open.
+
+## 0.2.0 release
+
+The user approved full publication after preparation. Include TVR-8–14/static changes, validate dev/main, tag the same commit with go/v0.2.0 and rust/v0.2.0, rebuild assets from that commit, and verify real tag installation/downloads. Record actual PR/CI/publication evidence in TVR-7 and TVR-5/6 comments. Keep epics open. [Release guide](release-0.2.0.en.md).

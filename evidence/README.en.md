@@ -38,3 +38,5 @@ Oracle data types, workers, and database test infrastructure are not copied here
 [TVR-9–13 component validation](components.en.md): public APIs, row sources, requests/lifetimes, geometry, localized PTYs and static external hosts.
 
 [TVR-14 overlay boundary validation](overlay-drawing.en.md): shared Go API, actual widgets, output after Show, external static imports, PTYs and limitations.
+
+[0.2.0 release preparation validation](release-0.2.0.en.md): candidate assets, versions/checksums, static builds, external installation and native/legacy-kernel execution.

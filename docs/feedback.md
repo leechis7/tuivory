@@ -19,7 +19,7 @@ make run-catalog-go ARGS="--mode feedback --lang ko"
 make run-catalog-rust ARGS="--mode feedback --lang en"
 ```
 
-호스트가 데이터·업무 동작·시간·단말 수명주기를 소유합니다. 공개 모델은 요청을 반환하고 실제 행은 셀 폭에 맞춰 문자 그대로 렌더링합니다. 기존 v0.1.0 태그에는 없으며 승인된 변경은 dev에만 병합합니다. 정적 링크·Unicode/ASCII·색상 프로필 조건을 유지합니다.
+호스트가 데이터·업무 동작·시간·단말 수명주기를 소유합니다. 공개 모델은 요청을 반환하고 실제 행은 셀 폭에 맞춰 문자 그대로 렌더링합니다. 0.2.0 태그에 포함합니다. 정적 링크·Unicode/ASCII·색상 프로필 조건을 유지합니다.
 
 ![알림·진행·데이터 상태](images/feedback-dark.svg)
 

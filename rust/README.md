@@ -2,15 +2,17 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+crate 버전은 **0.2.0**이며 루트 `VERSION`과 일치합니다. `rust/v0.2.0` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.2.0.md).
+
 TVR-5의 공통 후보 토큰·스타일 코어, 선택적 Ratatui 어댑터와 DB 없는 대화형 예제를 제공합니다. 기본 코어는 Rust 1.85 이상(1.85.1 검증), Ratatui 0.30.2 어댑터와 Crossterm 0.29 예제는 Rust 1.88 이상(1.88.0 검증)입니다. 코어와 어댑터는 Go 코드·단말 I/O·DB에 의존하지 않습니다.
 
 ## 사용
 
-버전 0.1.0은 `rust/v0.1.0` Git 태그로 배포하며 crates.io에는 게시하지 않습니다. 외부 프로젝트의 Cargo.toml에서 Git 의존성을 지정하거나 로컬 체크아웃의 rust/를 path 의존성으로 사용합니다.
+버전 0.2.0은 `rust/v0.2.0` Git 태그로 배포하며 crates.io에는 게시하지 않습니다. 외부 프로젝트의 Cargo.toml에서 Git 의존성을 지정하거나 로컬 체크아웃의 rust/를 path 의존성으로 사용합니다.
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.1.0" }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.2.0" }
 # Ratatui 사용 시 features = ["ratatui"] 추가
 ```
 
@@ -66,7 +68,7 @@ fn main() -> Result<(), tuivory::Error> {
 
 `Styles::from_palette()`로 검증된 사용자 팔레트를 사용할 수 있습니다. `role()`은 Ratatui Style을 반환하고, `block(title, focused)`는 역할 색상과 포커스 시 이중 테두리를 적용합니다. 코어 Color/Style의 `Into` 변환은 ANSI 인덱스·RGB·굵기를 보존합니다. 테마 변경 시 호스트가 Styles만 교체하고 위젯 상태를 유지합니다.
 
-입력·목록·표·모달은 [대화형 예제](../docs/rust-playground.md)의 호스트 구현입니다. 재사용 위젯 API로 제공하는 것은 아닙니다.
+기존 [playground](../docs/rust-playground.md)의 입력·목록·표·모달은 호스트 구현입니다. 별도로 0.2.0은 `forms`·`collections`·`grid`·`feedback`·`layout` 모델과 공개 Ratatui 위젯을 제공합니다. [카탈로그와 API](../docs/release-0.2.0.md)를 참고하세요.
 
 ## 예제와 검증
 
@@ -98,26 +100,26 @@ make build-rust
 
 공통 원본은 [design/tokens](https://github.com/leechis7/tuivory/blob/main/design/tokens/README.md)입니다. `src/data/candidate.json`은 `python3 tools/export_tokens.py`로 생성한 배포용 사본이며 수동 편집하지 않습니다. `include_str!`로 포함하므로 외부 Rust 프로젝트에 design/이나 생성 도구가 필요하지 않습니다.
 
-현재 Cargo 버전은 0.1.0이며 Git 배포를 위해 `publish = false`를 유지합니다. crates.io 게시는 수행하지 않았습니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
+현재 Cargo 버전은 0.2.0이며 Git 배포를 위해 `publish = false`를 유지합니다. crates.io 게시는 수행하지 않았습니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
 
 ## 공통 Tree
 
-`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}`는 Rust 1.85 이상에서 프레임워크 없이 사용합니다. 선택적 `tuivory::ratatui::TreeWidget`은 Rust 1.88 이상입니다. Go와 같은 안정 ID·펼침·선택·스크롤·이벤트 계약이며 아이콘·보조 설명·개수·Unicode/ASCII를 렌더링합니다. [Tree 사용법](../docs/tree.md) · [지원 범위 점검](../docs/component-audit.md). 루트에서 `make run-tree-rust ARGS="--lang ko"`로 실행합니다. 이 TVR-7 변경은 `rust/v0.1.0`에 포함합니다.
+`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}`는 Rust 1.85 이상에서 프레임워크 없이 사용합니다. 선택적 `tuivory::ratatui::TreeWidget`은 Rust 1.88 이상입니다. Go와 같은 안정 ID·펼침·선택·스크롤·이벤트 계약이며 아이콘·보조 설명·개수·Unicode/ASCII를 렌더링합니다. [Tree 사용법](../docs/tree.md) · [지원 범위 점검](../docs/component-audit.md). 루트에서 `make run-tree-rust ARGS="--lang ko"`로 실행합니다. 이 TVR-7 변경은 `rust/v0.2.0`에 포함합니다.
 
 ## 공통 워크스페이스 컴포넌트
 
-[탭·패널·분할선·상태 표시줄·경로 사용법](../docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+[탭·패널·분할선·상태 표시줄·경로 사용법](../docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.2.0`과 Rust `rust/v0.2.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
 
 ## 공통 컨트롤 상태와 포커스
 
-미배포 `interaction::{ControlState, FocusTarget, FocusStack}`과 Ratatui `Styles::control`을 제공합니다. [공통 계약·한영 예제](../docs/focus.md)를 참조하고 루트에서 `make run-focus-rust ARGS="--lang ko"`로 실행합니다. 이 API는 기존 rust/v0.1.0 태그에는 없습니다.
+0.2.0의 `interaction::{ControlState, FocusTarget, FocusStack}`과 Ratatui `Styles::control`을 제공합니다. [공통 계약·한영 예제](../docs/focus.md)를 참조하고 루트에서 `make run-focus-rust ARGS="--lang ko"`로 실행합니다. 이 API는 rust/v0.2.0에 포함합니다.
 
-[TVR-9: 입력·폼](../docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-9: 입력·폼](../docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-10: 목록·메뉴·검색 선택](../docs/collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-10: 목록·메뉴·검색 선택](../docs/collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-11: 표·데이터 그리드](../docs/grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-11: 표·데이터 그리드](../docs/grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-12: 알림·진행·데이터 상태](../docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-12: 알림·진행·데이터 상태](../docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+[TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
