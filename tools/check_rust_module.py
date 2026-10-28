@@ -52,6 +52,7 @@ fn main() {
     focus.close("dialog").unwrap(); assert_eq!(focus.focused(),"open");
     let mut form=tuivory::forms::Form::new(vec![tuivory::forms::FormField{id:"name".into(),kind:"text".into(),required:true,..Default::default()}]).unwrap();
     assert_eq!(form.handle("submit","").kind,"invalid");form.handle("insert","External");assert_eq!(form.handle("submit","").kind,"submit");
+    let mut picker=tuivory::collections::SearchPicker::new(vec![tuivory::collections::ListItem{id:"rust".into(),label:"Rust".into(),..Default::default()}]).unwrap();picker.handle("open","",4);picker.handle("insert","Rust",4);assert_eq!(picker.handle("activate","",4).id,"rust");
     let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), branch: true, ..Default::default() }]).unwrap();
     let mut state = tuivory::tree::TreeState::default();
     assert!(matches!(tree.handle(&mut state, tuivory::tree::TreeAction::Right, 4), Some(tuivory::tree::TreeEvent::Expand(_))));

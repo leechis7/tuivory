@@ -119,3 +119,80 @@ func NewFormView(form *Form, palette Palette, onEvent func(FormEvent)) (*RowsVie
 	}
 	return v, nil
 }
+
+func NavigationKey(e *tcell.EventKey) string {
+	switch e.Key() {
+	case tcell.KeyUp:
+		return "previous"
+	case tcell.KeyDown:
+		return "next"
+	case tcell.KeyHome:
+		return "first"
+	case tcell.KeyEnd:
+		return "last"
+	case tcell.KeyPgUp:
+		return "page_up"
+	case tcell.KeyPgDn:
+		return "page_down"
+	case tcell.KeyEnter:
+		return "activate"
+	case tcell.KeyEscape:
+		return "cancel"
+	case tcell.KeyRune:
+		if e.Rune() == ' ' {
+			return "select"
+		}
+	}
+	return ""
+}
+func NewListView(model *ListModel, palette Palette, ascii bool, onEvent func(ListEvent)) (*RowsView, error) {
+	height := 1
+	v, e := NewRowsView(func(w, h int) []ComponentLine { height = h; return model.Layout(w, h, ascii) }, palette)
+	if e != nil {
+		return nil, e
+	}
+	emit := func(event ListEvent) {
+		if onEvent != nil && event.Kind != "" {
+			onEvent(event)
+		}
+	}
+	v.Key = func(key *tcell.EventKey) { emit(model.Handle(NavigationKey(key), height)) }
+	v.Click = func(line ComponentLine) {
+		if model.Focus(line.ID) {
+			emit(model.Handle("activate", height))
+		}
+	}
+	return v, nil
+}
+func NewSearchPickerView(model *SearchPicker, palette Palette, ascii bool, onEvent func(ListEvent)) (*RowsView, error) {
+	height := 1
+	v, e := NewRowsView(func(w, h int) []ComponentLine { height = h; return model.Layout(w, h, ascii) }, palette)
+	if e != nil {
+		return nil, e
+	}
+	emit := func(event ListEvent) {
+		if onEvent != nil && event.Kind != "" {
+			onEvent(event)
+		}
+	}
+	v.Key = func(key *tcell.EventKey) {
+		action := NavigationKey(key)
+		value := ""
+		if key.Key() == tcell.KeyRune {
+			action = "insert"
+			value = string(key.Rune())
+		}
+		if key.Key() == tcell.KeyBackspace || key.Key() == tcell.KeyBackspace2 {
+			action = "backspace"
+		}
+		emit(model.Handle(action, value, height))
+	}
+	v.Click = func(line ComponentLine) {
+		if !model.Open {
+			emit(model.Handle("open", "", height))
+		} else {
+			emit(model.Click(line.ID))
+		}
+	}
+	return v, nil
+}

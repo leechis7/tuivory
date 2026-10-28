@@ -20,11 +20,12 @@ use std::{
     io::{self, IsTerminal},
     time::Duration,
 };
+use tuivory::collections::{ListItem, SearchPicker};
 use tuivory::{
     ColorProfile, Theme,
     forms::{Form, FormEvent, FormField, FormOption},
     interaction::ControlState,
-    ratatui::{FormWidget, Styles},
+    ratatui::{FormWidget, RowsWidget, Styles},
 };
 fn text(en: bool, ko: &str, english: &str) -> String {
     if en { english } else { ko }.into()
@@ -126,6 +127,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut theme = Theme::Dark;
     let mut colors = ColorProfile::Indexed256;
     let mut output = None;
+    let mut mode = "forms".to_owned();
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -141,7 +143,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--colors" => colors = args.next().ok_or("missing colors")?.parse()?,
             "--snapshot" => output = Some(args.next().ok_or("missing output")?),
             "--mode" => {
-                if args.next().as_deref() != Some("forms") {
+                mode = args.next().ok_or("missing mode")?;
+                if !["forms", "collections"].contains(&mode.as_str()) {
                     return Err("unknown mode".into());
                 }
             }
@@ -150,13 +153,51 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let styles = Styles::new(theme, colors)?;
     let mut form = demo(en);
+    let mut picker = SearchPicker::new(vec![
+        ListItem {
+            id: "group".into(),
+            label: text(en, "언어", "Languages"),
+            separator: true,
+            ..Default::default()
+        },
+        ListItem {
+            id: "go".into(),
+            label: "Go".into(),
+            secondary: text(en, "공통 공개 모듈", "Shared public module"),
+            icon: "◆".into(),
+            ascii_icon: "*".into(),
+            shortcut: "G".into(),
+            ..Default::default()
+        },
+        ListItem {
+            id: "old".into(),
+            label: text(en, "비활성 항목", "Disabled item"),
+            disabled: true,
+            ..Default::default()
+        },
+        ListItem {
+            id: "rust".into(),
+            label: "Rust".into(),
+            secondary: text(en, "공통 공개 crate", "Shared public crate"),
+            icon: "◆".into(),
+            ascii_icon: "*".into(),
+            shortcut: "R".into(),
+            ..Default::default()
+        },
+    ])?;
+    picker.list.empty = text(en, "결과 없음", "No results");
+    picker.handle("open", "", 1);
     let mut status = text(
         en,
         "Tab 이동 / Enter 확정 / Esc 취소 / Ctrl+Q 종료",
         "Tab move / Enter confirm / Esc cancel / Ctrl+Q quit",
     );
     let mut body = Rect::default();
-    let draw = |f: &mut ratatui::Frame<'_>, form: &Form, status: &str, body: &mut Rect| {
+    let draw = |f: &mut ratatui::Frame<'_>,
+                form: &Form,
+                picker: &SearchPicker,
+                status: &str,
+                body: &mut Rect| {
         let r = f.area();
         f.render_widget(Paragraph::new("").style(styles.role("surface").unwrap()), r);
         f.render_widget(
@@ -166,19 +207,31 @@ fn main() -> Result<(), Box<dyn Error>> {
             )),
             Rect::new(r.x, r.y, r.width, u16::from(r.height > 0)),
         );
-        let title = text(en, "입력·폼", "Inputs and forms");
+        let title = mode.clone();
         let panel = styles.panel(&title, true, 1, ascii).unwrap();
         let area = Rect::new(r.x, r.y + 1, r.width, r.height.saturating_sub(2));
         *body = panel.inner(area);
         f.render_widget(panel, area);
-        f.render_widget(
-            FormWidget {
-                form,
-                styles: &styles,
-                focused: true,
-            },
-            *body,
-        );
+        if mode == "collections" {
+            let rows = picker.layout(body.width.into(), body.height.into(), ascii);
+            f.render_widget(
+                RowsWidget {
+                    rows: &rows,
+                    styles: &styles,
+                    focused: true,
+                },
+                *body,
+            );
+        } else {
+            f.render_widget(
+                FormWidget {
+                    form,
+                    styles: &styles,
+                    focused: true,
+                },
+                *body,
+            );
+        }
         if r.height > 0 {
             f.render_widget(
                 Paragraph::new(status),
@@ -188,7 +241,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     if let Some(path) = output {
         let mut terminal = Terminal::new(TestBackend::new(120, 36))?;
-        terminal.draw(|f| draw(f, &form, &status, &mut body))?;
+        terminal.draw(|f| draw(f, &form, &picker, &status, &mut body))?;
         snapshot::write(std::path::Path::new(&path), terminal.backend().buffer())?;
         return Ok(());
     }
@@ -200,7 +253,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
     loop {
-        terminal.draw(|f| draw(f, &form, &status, &mut body))?;
+        terminal.draw(|f| draw(f, &form, &picker, &status, &mut body))?;
         if !event::poll(Duration::from_millis(100))? {
             continue;
         }
@@ -209,15 +262,59 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if k.code == KeyCode::Char('q') && k.modifiers.contains(KeyModifiers::CONTROL) {
                     break;
                 }
-                key(&mut form, k.code)
+                if mode == "collections" {
+                    let action = match k.code {
+                        KeyCode::Up => "previous",
+                        KeyCode::Down => "next",
+                        KeyCode::Home => "first",
+                        KeyCode::End => "last",
+                        KeyCode::PageUp => "page_up",
+                        KeyCode::PageDown => "page_down",
+                        KeyCode::Enter => "activate",
+                        KeyCode::Esc => "cancel",
+                        KeyCode::Backspace => "backspace",
+                        KeyCode::Char(_) => "insert",
+                        _ => "",
+                    };
+                    let value = if let KeyCode::Char(c) = k.code {
+                        c.to_string()
+                    } else {
+                        String::new()
+                    };
+                    let e = picker.handle(action, &value, body.height.into());
+                    FormEvent {
+                        kind: e.kind,
+                        id: e.id,
+                        ..Default::default()
+                    }
+                } else {
+                    key(&mut form, k.code)
+                }
             }
             Event::Mouse(m)
                 if m.kind == MouseEventKind::Down(MouseButton::Left)
                     && body.contains((m.column, m.row).into()) =>
             {
-                let rows = form.layout(body.width.into(), body.height.into());
+                let rows = if mode == "collections" {
+                    picker.layout(body.width.into(), body.height.into(), ascii)
+                } else {
+                    form.layout(body.width.into(), body.height.into())
+                };
                 if let Some(row) = rows.get(usize::from(m.row - body.y)) {
-                    form.click(&row.id, &row.value)
+                    if mode == "collections" {
+                        let e = if !picker.open {
+                            picker.handle("open", "", body.height.into())
+                        } else {
+                            picker.click(&row.id)
+                        };
+                        FormEvent {
+                            kind: e.kind,
+                            id: e.id,
+                            ..Default::default()
+                        }
+                    } else {
+                        form.click(&row.id, &row.value)
+                    }
                 } else {
                     FormEvent::default()
                 }

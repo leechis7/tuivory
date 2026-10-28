@@ -38,3 +38,5 @@
 [상태·포커스·팝업 API](focus.md) · [MUI 비교 후속 백로그](components-backlog.md). TVR-8 기반을 먼저 검증하고 입력·폼 → 목록·검색 → 표 → 알림 → 부가 컴포넌트 순으로 진행합니다.
 
 [TVR-9: 입력·폼](forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
+
+[TVR-10: 목록·메뉴·검색 선택](collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.

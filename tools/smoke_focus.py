@@ -75,6 +75,8 @@ class Screen:
                 width = 2 if unicodedata.east_asian_width(char) in ('W', 'F') else 1
                 if 0 <= self.y < 60 and 0 <= self.x < 160:
                     self.rows[self.y][self.x] = char
+                    if width==2 and self.x+1<160:
+                        self.rows[self.y][self.x+1] = " "
                 self.x += width
 
     def status(self):

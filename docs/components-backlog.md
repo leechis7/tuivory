@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | 1 | [TVR-8](https://leechis7.atlassian.net/browse/TVR-8) | 공통 상태·포커스·팝업 기반 | 로컬 구현·검증. [API](focus.md). 소스 게시 승인. 원격 CI·병합 근거는 일감 댓글 참조 |
 | 2 | [TVR-9](https://leechis7.atlassian.net/browse/TVR-9) | 입력·버튼·체크·라디오·선택·폼 | dev 구현·검증. CI·병합 근거는 Jira 댓글 참조 |
-| 3 | [TVR-10](https://leechis7.atlassian.net/browse/TVR-10) | 목록·메뉴·검색 선택 | 백로그 |
+| 3 | [TVR-10](https://leechis7.atlassian.net/browse/TVR-10) | 목록·메뉴·검색 선택 | dev 구현·검증. CI·병합 근거는 Jira 댓글 참조 |
 | 4 | [TVR-11](https://leechis7.atlassian.net/browse/TVR-11) | 표·데이터 그리드 | 백로그 |
 | 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | 알림·진행·로딩/빈 결과/오류 | 백로그 |
 | 6 | [TVR-13](https://leechis7.atlassian.net/browse/TVR-13) | 배치·밀도 토큰·Badge/Chip·도움말 등 | 백로그 |

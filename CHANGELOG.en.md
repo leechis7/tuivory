@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-10: [Lists, menus and search selection](docs/collections.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; dev integration only.
+
 - TVR-9: [Inputs and forms](docs/forms.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; dev integration only.
 
 - TVR-8 shared control-state/focus/popup foundation: public Go/Rust state composition, stable-ID navigation, nested scopes, dismissal/restoration and input routing; executable hosts, twelve localized references, shared contracts, PTY and external static-host checks. [API](docs/focus.en.md) · [ordered backlog](docs/components-backlog.en.md). Source changes not yet included in a tagged release.

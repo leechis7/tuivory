@@ -68,6 +68,8 @@ jobs:
           go build -C go -o "$RUNNER_TEMP/tuivory-catalog" ./examples/catalog
           python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --lang ko
           python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --lang en
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode collections --lang ko
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode collections --lang en
       - name: Check public focus and nested popup example
         run: |
           go build -C go -o "$RUNNER_TEMP/tuivory-focus" ./examples/focus
@@ -137,6 +139,9 @@ jobs:
           python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --lang ko
           python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --lang en
           python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --output "$RUNNER_TEMP/catalog-images"
       - name: Verify adapter from an external packaged dependency
         run: python3 tools/check_rust_module.py --ratatui
   static-centos74:
