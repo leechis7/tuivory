@@ -29,3 +29,5 @@ TVR-5/TVR-6 now cover static distribution and host-linking requirements for Go, 
 ## Shared component expansion backlog
 
 With approval, TVR-8–13 were registered under TVR-7 in the recommended order. See [scope/order/publication checkpoints](components-backlog.en.md). TVR-8 is locally implemented/validated and source publication is approved. Record remote CI, PR and merge evidence in TVR-8 comments. TVR-9–13 remain in the backlog and the epic stays open. Remote CI/publication remain separate from local validation.
+
+On 2026-10-28 the user limited stage integration to `dev`. Validate and merge TVR-8 from its existing branch into dev; leave main/tags/Releases unchanged until a separate release instruction after all work. Record PR/CI evidence in TVR-8 comments.

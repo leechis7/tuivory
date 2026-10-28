@@ -18,3 +18,5 @@
 공통 모델은 상태·이벤트·표현 계약을 제공하고 앱이 검증·검색·DB·업무 실행·시간·외부 I/O·단말 수명주기를 연결합니다. 모든 단계에서 정적 링크, 동일한 Go/Rust 동작, 한영 예제, Unicode/ASCII·색상 프로필·좁은 화면을 검증합니다. 기존 라이브러리가 제공하는 동작은 재사용하고 필요할 때 공통 어댑터·조합을 추가합니다.
 
 참고는 [MUI 컴포넌트](https://mui.com/material-ui/all-components/), [입력](https://mui.com/material-ui/react-text-field/), [Dialog](https://mui.com/material-ui/react-dialog/), [MUI X Data Grid](https://mui.com/x/react-data-grid/), [테마](https://mui.com/material-ui/customization/theming/)입니다. 웹의 픽셀·DOM·그림자·애니메이션은 터미널 셀·포커스·키보드 조작에 맞게 판단합니다. 명령 팔레트는 검색+목록+팝업 조합으로 검토하고 이미지·전용 아이콘 폰트가 필요한 기능은 우선순위를 낮춥니다.
+
+각 단계의 승인된 소스 게시·병합은 `dev`까지만 진행합니다. 전체 작업 완료 후 사용자의 별도 릴리스 지시로 `main` 반영·태그·Release를 진행하며 단계마다 main/dev를 동기화하지 않습니다.
