@@ -15,6 +15,8 @@
 
 use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
 mod components;
+mod rows;
+pub use rows::{FormWidget, RowsWidget};
 mod tree;
 use ::ratatui::{
     style::{Color, Modifier, Style},

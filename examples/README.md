@@ -33,3 +33,5 @@ Rust 견본은 Rust 1.88 이상에서 `make run-rust ARGS="--lang ko"`로 실행
 ## 상태·포커스·중첩 팝업 예제
 
 [Go 소스](../go/examples/focus/main.go) · [Rust 소스](../rust/examples/focus/main.rs) · [사용법](../docs/focus.md). `make run-focus-go ARGS="--lang ko"`, `make run-focus-rust ARGS="--lang en"`으로 실행합니다. 읽기 전용·처리 중·비활성 탐색, 중첩 팝업·입력 차단·포커스 복귀·한영 표시를 검증하는 호스트입니다. 제품 기본 빌드는 늘리지 않습니다.
+
+[TVR-9: 입력·폼](../docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.

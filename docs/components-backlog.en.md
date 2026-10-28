@@ -7,7 +7,7 @@ Registered under TVR-7 with user approval following the 2026-10-28 MUI review. R
 | Order | Issue | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | [TVR-8](https://leechis7.atlassian.net/browse/TVR-8) | Shared control states, focus and popup foundation | Local implementation/validation. [API](focus.en.md). Source publication approved; see issue comments for remote CI/merge evidence |
-| 2 | [TVR-9](https://leechis7.atlassian.net/browse/TVR-9) | Inputs/buttons/checks/radios/selects/forms | Backlog |
+| 2 | [TVR-9](https://leechis7.atlassian.net/browse/TVR-9) | Inputs/buttons/checks/radios/selects/forms | Dev implementation/validation; CI and merge evidence in Jira |
 | 3 | [TVR-10](https://leechis7.atlassian.net/browse/TVR-10) | Lists/menus/search selection | Backlog |
 | 4 | [TVR-11](https://leechis7.atlassian.net/browse/TVR-11) | Tables/data grid | Backlog |
 | 5 | [TVR-12](https://leechis7.atlassian.net/browse/TVR-12) | Notifications/progress/loading/empty/error views | Backlog |
@@ -20,3 +20,5 @@ Shared models provide state/event/presentation contracts. Hosts connect validati
 References: [MUI components](https://mui.com/material-ui/all-components/), [TextField](https://mui.com/material-ui/react-text-field/), [Dialog](https://mui.com/material-ui/react-dialog/), [MUI X Data Grid](https://mui.com/x/react-data-grid/), [theming](https://mui.com/material-ui/customization/theming/). Adapt web pixels/DOM/shadows/animation to terminal cells/focus/keyboard behavior. Evaluate command palettes as search+list+popup composition; defer image/custom-icon-font dependencies.
 
 Approved stage publication/merges target `dev` only. After all work is complete, a separate user release instruction authorizes `main`, tags and Releases. Do not synchronize main/dev after each stage.
+
+On 2026-10-28 the user explicitly authorized TVR-9 through TVR-13 implementation, commits, publication and individual dev merges in order without further approval prompts. Report each checkpoint; main/tags/Releases still require a separate instruction.

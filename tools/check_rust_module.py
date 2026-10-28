@@ -50,6 +50,8 @@ fn main() {
     focus.open("dialog",vec![target("close")],"",true).unwrap();
     assert!(focus.route("root").blocked); assert_eq!(focus.request_close().unwrap().id,"dialog");
     focus.close("dialog").unwrap(); assert_eq!(focus.focused(),"open");
+    let mut form=tuivory::forms::Form::new(vec![tuivory::forms::FormField{id:"name".into(),kind:"text".into(),required:true,..Default::default()}]).unwrap();
+    assert_eq!(form.handle("submit","").kind,"invalid");form.handle("insert","External");assert_eq!(form.handle("submit","").kind,"submit");
     let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), branch: true, ..Default::default() }]).unwrap();
     let mut state = tuivory::tree::TreeState::default();
     assert!(matches!(tree.handle(&mut state, tuivory::tree::TreeAction::Right, 4), Some(tuivory::tree::TreeEvent::Expand(_))));

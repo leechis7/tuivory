@@ -63,6 +63,11 @@ jobs:
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-workspace" --lang ko
           python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-workspace" --lang en
           python3 tools/smoke_workspace.py "$RUNNER_TEMP/tuivory-workspace"
+      - name: Check public catalog widgets
+        run: |
+          go build -C go -o "$RUNNER_TEMP/tuivory-catalog" ./examples/catalog
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --lang ko
+          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --lang en
       - name: Check public focus and nested popup example
         run: |
           go build -C go -o "$RUNNER_TEMP/tuivory-focus" ./examples/focus
@@ -127,6 +132,11 @@ jobs:
           python3 tools/smoke_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --lang ko
           python3 tools/smoke_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --lang en
           python3 tools/snapshot_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --output "$RUNNER_TEMP/tuivory-focus-images"
+      - name: Check public catalog widgets and references
+        run: |
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --output "$RUNNER_TEMP/catalog-images"
       - name: Verify adapter from an external packaged dependency
         run: python3 tools/check_rust_module.py --ratatui
   static-centos74:
@@ -155,6 +165,7 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-tree" ./examples/tree
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-workspace" ./examples/workspace
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-focus" ./examples/focus
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-catalog" ./examples/catalog
       - name: Export static external application checks
         run: |
           python3 tools/check_go_module.py --static-output "$RUNNER_TEMP/go-host"
@@ -170,6 +181,8 @@ jobs:
             --binary rust-workspace="$CARGO_TARGET_DIR/x86_64-unknown-linux-musl/release/examples/workspace" \
             --binary go-focus="$RUNNER_TEMP/go-focus" \
             --binary rust-focus="$CARGO_TARGET_DIR/x86_64-unknown-linux-musl/release/examples/focus" \
+            --binary go-catalog="$RUNNER_TEMP/go-catalog" \
+            --binary rust-catalog="$CARGO_TARGET_DIR/x86_64-unknown-linux-musl/release/examples/catalog" \
             --consumer go-host="$RUNNER_TEMP/go-host" \
             --consumer rust-host="$RUNNER_TEMP/rust-host"
       - name: Print guest evidence

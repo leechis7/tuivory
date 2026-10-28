@@ -46,6 +46,10 @@ func TestIsolatedModule(t *testing.T) {
     if err:=focus.Open("dialog",[]tuivory.FocusTarget{{ID:"close"}},"",true); err!=nil { t.Fatal(err) }
     if !focus.Route("root").Blocked || focus.RequestClose().ID!="dialog" { t.Fatal("popup scope") }
     if err:=focus.Close("dialog");err!=nil || focus.Focused()!="open" { t.Fatal("focus restore") }
+    form, formErr := tuivory.NewForm([]tuivory.FormField{{ID:"name",Kind:"text",Required:true}})
+    if formErr!=nil || form.Handle("submit","").Kind!="invalid" { t.Fatal("external form") }
+    form.Handle("insert","External")
+    if form.Handle("submit","").Kind!="submit" { t.Fatal("external submit") }
     theme, err := tuivory.New("dark", "256")
     if err != nil { t.Fatal(err) }
     if theme.Styles.Profile() != "256" { t.Fatal("profile missing") }

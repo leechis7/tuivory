@@ -32,7 +32,7 @@ pub fn cell_text(text: &str, width: usize) -> String {
     result.push('~');
     result
 }
-fn tail_cells(text: &str, width: usize) -> String {
+pub(crate) fn tail_cells(text: &str, width: usize) -> String {
     let text = clean(text);
     if cells(&text) <= width {
         return text;

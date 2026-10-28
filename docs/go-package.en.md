@@ -132,3 +132,5 @@ Tuivory does not introduce required shared libraries into host applications. Bui
 ## Shared control states and focus
 
 Unreleased public APIs `ControlState.Visual`, `ControlStyle`, `NewFocusStack` provide state appearance, stable-ID navigation, nested popup routing and restoration. See the [Go/Rust contract and examples](focus.en.md). Hosts connect actual widgets, data, business actions and terminal lifecycle.
+
+[TVR-9: Inputs and forms](forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.

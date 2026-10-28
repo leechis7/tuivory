@@ -111,3 +111,5 @@ make build-rust
 ## 공통 컨트롤 상태와 포커스
 
 미배포 `interaction::{ControlState, FocusTarget, FocusStack}`과 Ratatui `Styles::control`을 제공합니다. [공통 계약·한영 예제](../docs/focus.md)를 참조하고 루트에서 `make run-focus-rust ARGS="--lang ko"`로 실행합니다. 이 API는 기존 rust/v0.1.0 태그에는 없습니다.
+
+[TVR-9: 입력·폼](../docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 태그 미배포 dev 소스입니다.
