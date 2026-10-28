@@ -127,3 +127,54 @@ impl Widget for GridWidget<'_> {
         .render(area, buf);
     }
 }
+
+pub struct NoticeWidget<'a> {
+    pub model: &'a crate::feedback::NoticeQueue,
+    pub styles: &'a Styles,
+    pub focused: bool,
+    pub now: u64,
+}
+impl Widget for NoticeWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = self
+            .model
+            .layout(area.width.into(), area.height.into(), self.now);
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: self.focused,
+        }
+        .render(area, buf);
+    }
+}
+pub struct ProgressWidget<'a> {
+    pub model: &'a crate::feedback::Progress,
+    pub styles: &'a Styles,
+    pub frame: u64,
+}
+impl Widget for ProgressWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = self.model.layout(area.width.into(), self.frame);
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: false,
+        }
+        .render(area, buf);
+    }
+}
+pub struct DataStateWidget<'a> {
+    pub model: &'a crate::feedback::DataState,
+    pub styles: &'a Styles,
+}
+impl Widget for DataStateWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = self.model.layout(area.width.into());
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: false,
+        }
+        .render(area, buf);
+    }
+}

@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-12: [Notices, progress and data states](docs/feedback.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; dev integration only.
+
 - TVR-11: [Tables and data grid](docs/grid.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; dev integration only.
 
 - TVR-10: [Lists, menus and search selection](docs/collections.en.md). Shared Go/Rust models, renderers, executable hosts, validation and bilingual documentation/references; dev integration only.

@@ -262,3 +262,57 @@ func NewGridView(model *Grid, palette Palette, onEvent func(GridEvent)) (*RowsVi
 	v.Pointer = func(line ComponentLine, x int) { emit(model.Click(line.ID, line.Value, x, width, height)) }
 	return v, nil
 }
+
+func NewNoticeView(queue *NoticeQueue, palette Palette, now func() uint64, onEvent func(NoticeEvent)) (*RowsView, error) {
+	height := 1
+	clock := func() uint64 {
+		if now != nil {
+			return now()
+		}
+		return 0
+	}
+	v, e := NewRowsView(func(w, h int) []ComponentLine { height = h; return queue.Layout(w, h, clock()) }, palette)
+	if e != nil {
+		return nil, e
+	}
+	v.Key = func(key *tcell.EventKey) {
+		action := NavigationKey(key)
+		if key.Key() == tcell.KeyDelete || key.Key() == tcell.KeyEscape {
+			action = "dismiss"
+		}
+		event := queue.Handle(action, clock(), height)
+		if onEvent != nil && event.Kind != "" {
+			onEvent(event)
+		}
+	}
+	v.Click = func(line ComponentLine) {
+		if line.ID != "" {
+			queue.Focused = line.ID
+		}
+	}
+	return v, nil
+}
+func NewProgressView(progress *Progress, palette Palette, frame func() uint64, onEvent func(NoticeEvent)) (*RowsView, error) {
+	v, e := NewRowsView(func(w, h int) []ComponentLine {
+		tick := uint64(0)
+		if frame != nil {
+			tick = frame()
+		}
+		return progress.Layout(w, tick)
+	}, palette)
+	if e != nil {
+		return nil, e
+	}
+	v.Key = func(key *tcell.EventKey) {
+		if key.Key() == tcell.KeyEscape || key.Key() == tcell.KeyRune && key.Rune() == 'c' {
+			event := progress.RequestCancel()
+			if onEvent != nil && event.Kind != "" {
+				onEvent(event)
+			}
+		}
+	}
+	return v, nil
+}
+func NewDataStateView(state *DataState, palette Palette) (*RowsView, error) {
+	return NewRowsView(func(w, h int) []ComponentLine { return state.Layout(w) }, palette)
+}

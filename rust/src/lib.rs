@@ -14,6 +14,7 @@
 
 pub mod collections;
 pub mod components;
+pub mod feedback;
 pub mod forms;
 pub mod grid;
 pub mod interaction;

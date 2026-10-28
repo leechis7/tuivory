@@ -38,6 +38,11 @@ try:
   send(b'\x1b[20~');assert 'sort:' in visible(),visible()
   send(b'\x1b[6~');send(b'\x1b[F');assert 'row-99999' in visible(),visible()
   send(b'\x1b[<0;7;4M\x1b[<0;7;4m');assert 'sort:' in visible(),visible()
+ if args.mode=='feedback':
+  send(b'\r');assert 'action: error / retry' in visible(),visible()
+  send(b't');assert '[!]' in visible() and 'expired:' in visible(),visible()
+  send(b'c');assert 'cancel: load' in visible(),visible()
+  send(b'\x1b[3~');assert 'dismiss: error' in visible(),visible()
  for height,width in ((16,40),(36,120)):
   fcntl.ioctl(master,termios.TIOCSWINSZ,struct.pack('HHHH',height,width,0,0));os.killpg(p.pid,signal.SIGWINCH);drain(.25)
  send(b'\x11');p.wait(timeout=3);assert p.returncode==0 and b'\x1b[?1049l' in captured
