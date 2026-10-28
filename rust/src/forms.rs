@@ -442,7 +442,7 @@ impl Form {
             .collect()
     }
 }
-fn edit_window(value: &str, cursor: usize, width: usize, focused: bool) -> String {
+pub(crate) fn edit_window(value: &str, cursor: usize, width: usize, focused: bool) -> String {
     if !focused {
         return cell_text(value, width);
     }

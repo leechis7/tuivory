@@ -12,6 +12,7 @@
 //! # Ok::<(), tuivory::Error>(())
 //! ```
 
+pub mod collections;
 pub mod components;
 pub mod forms;
 pub mod interaction;

@@ -26,7 +26,7 @@ func main() {
 		}
 		return ko
 	}
-	if *mode != "forms" {
+	if *mode != "forms" && *mode != "collections" {
 		log.Fatal("unknown component")
 	}
 	options := []ui.FormOption{{ID: "fast", Label: text("빠르게", "Fast")}, {ID: "old", Label: text("사용 불가", "Unavailable"), Disabled: true}, {ID: "safe", Label: text("안전하게", "Safe")}}
@@ -58,9 +58,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if *mode == "collections" {
+		picker, _ := ui.NewSearchPicker([]ui.ListItem{{ID: "group", Label: text("언어", "Languages"), Separator: true}, {ID: "go", Label: "Go", Secondary: text("공통 공개 모듈", "Shared public module"), Icon: "◆", ASCIIIcon: "*", Shortcut: "G"}, {ID: "old", Label: text("비활성 항목", "Disabled item"), Disabled: true}, {ID: "rust", Label: "Rust", Secondary: text("공통 공개 crate", "Shared public crate"), Icon: "◆", ASCIIIcon: "*", Shortcut: "R"}})
+		picker.List.Empty = text("결과 없음", "No results")
+		picker.Handle("open", "", 1)
+		view, err = ui.NewSearchPickerView(picker, palette, *ascii, func(e ui.ListEvent) { footer.SetText(e.Kind + ": " + e.ID + " " + e.Query) })
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	panel, _ := ui.NewPanelView(view, palette)
 	panel.ASCII = *ascii
-	panel.SetTitle(text("입력·폼", "Inputs and forms"))
+	panel.SetTitle(*mode)
 	root := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 1, 0, false).AddItem(panel, 0, 1, true).AddItem(footer, 1, 0, false)
 	app.SetInputCapture(func(e *tcell.EventKey) *tcell.EventKey {
 		if e.Key() == tcell.KeyCtrlQ {

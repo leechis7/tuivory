@@ -113,3 +113,5 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.e
 Unreleased `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `Styles::control` are available. See the [shared contract and localized examples](../docs/focus.en.md); run `make run-focus-rust ARGS="--lang en"` from the root. These APIs are absent from existing rust/v0.1.0 tags.
 
 [TVR-9: Inputs and forms](../docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.
+
+[TVR-10: Lists, menus and search selection](../docs/collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; unreleased dev source.

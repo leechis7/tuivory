@@ -50,6 +50,9 @@ func TestIsolatedModule(t *testing.T) {
     if formErr!=nil || form.Handle("submit","").Kind!="invalid" { t.Fatal("external form") }
     form.Handle("insert","External")
     if form.Handle("submit","").Kind!="submit" { t.Fatal("external submit") }
+    picker, pickerErr := tuivory.NewSearchPicker([]tuivory.ListItem{{ID:"rust",Label:"Rust"}})
+    if pickerErr!=nil { t.Fatal(pickerErr) };picker.Handle("open","",4);picker.Handle("insert","Rust",4)
+    if picker.Handle("activate","",4).ID!="rust" { t.Fatal("external picker") }
     theme, err := tuivory.New("dark", "256")
     if err != nil { t.Fatal(err) }
     if theme.Styles.Profile() != "256" { t.Fatal("profile missing") }

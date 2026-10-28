@@ -27,6 +27,11 @@ try:
   send(b'\t\t');send(b'bad');assert 'Tuivory|' in visible() and 'Tuivorybad' not in visible(),visible()
   send(b'\t ');send(b'\t');send(b'\x1b[C');send(b'\t');send(b'\r');send(b'\x1b[B');send(b'\r');send(b'\t\r');assert 'submit:' in visible(),visible()
   send(b'\x1b');assert 'cancel:' in visible(),visible()
+ if args.mode=='collections':
+  send(b'Rust');assert 'Rust|' in visible() and 'Go [' not in visible(),visible()
+  send(b'\r');assert 'change: rust' in visible(),visible()
+  send(b'\r');send(b'Go');send(b'\x1b');assert 'v Rust' in visible(),visible()
+  send(b'\r');send(b'NoSuchItem');assert ('No results' in visible() or '결과없음' in visible().replace(' ','')),visible()
  for height,width in ((16,40),(36,120)):
   fcntl.ioctl(master,termios.TIOCSWINSZ,struct.pack('HHHH',height,width,0,0));os.killpg(p.pid,signal.SIGWINCH);drain(.25)
  send(b'\x11');p.wait(timeout=3);assert p.returncode==0 and b'\x1b[?1049l' in captured

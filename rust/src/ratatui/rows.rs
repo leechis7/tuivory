@@ -51,3 +51,42 @@ impl Widget for FormWidget<'_> {
         .render(area, buf);
     }
 }
+
+pub struct ListWidget<'a> {
+    pub model: &'a crate::collections::ListModel,
+    pub styles: &'a Styles,
+    pub focused: bool,
+    pub ascii: bool,
+}
+impl Widget for ListWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = self
+            .model
+            .layout(area.width.into(), area.height.into(), self.ascii);
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: self.focused,
+        }
+        .render(area, buf);
+    }
+}
+pub struct SearchPickerWidget<'a> {
+    pub model: &'a crate::collections::SearchPicker,
+    pub styles: &'a Styles,
+    pub focused: bool,
+    pub ascii: bool,
+}
+impl Widget for SearchPickerWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let rows = self
+            .model
+            .layout(area.width.into(), area.height.into(), self.ascii);
+        RowsWidget {
+            rows: &rows,
+            styles: self.styles,
+            focused: self.focused,
+        }
+        .render(area, buf);
+    }
+}
