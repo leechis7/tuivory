@@ -28,3 +28,7 @@ TVR-8–13 public APIs/examples are complete in the dev integration sequence. Hi
 ## TVR-17 grid configuration (unreleased)
 
 [Shared options/presets](grid.en.md) extend the existing Grid with Go/Rust ranges, original-value copy, numbering, columns, density, status, stale-response protection and identical comparison data. [Local validation](grid-validation.en.md) is separate from GitHub CI/tags and actual LazyOra integration.
+
+## TVR-7 boundary follow-up
+
+Update documentation/examples under the existing TVR-7 epic using the [boundary](component-boundary.en.md) and [current audit](component-audit.en.md). Hosts own screens, global focus/keys and business bindings. Record nested menus as an unimplemented candidate; creating/implementing a new issue is outside this work. Tab overflow and shortcut-help already exist. This update is included in this local commit; unpublished on GitHub, separate from local TVR-17 commit e34b824 and published v0.2.0.

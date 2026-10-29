@@ -84,3 +84,5 @@ make run-focus-rust ARGS="--lang en --ascii"
 입력 편집기·폼 검증 엔진·완성 Dialog 위젯·비동기 작업·단말 이벤트 루프는 이번 기반에 포함하지 않습니다. 호스트는 실제 위젯 포커스와 레이어 배치·클리핑·가시성·업무 동작을 연결합니다. 예제는 기존 공개 패널을 재사용하는 호스트 구현이며 실제 LazyOra/LazyBeaver 통합은 별도 검증입니다. [정적 배포 조건](static-build.md)
 
 Go 팝업의 한글·CJK·이모지 경계 보호는 [WideSafeScreen·DimRegion](overlay-drawing.md)을 사용합니다. 포커스 모델과 별개인 그리기 API입니다.
+
+앱이 스코프의 항목·순서와 컴포넌트 사이 이동을 정합니다. FocusStack은 전달받은 스코프 안에서 탐색·차단·복귀를 계산하는 도구이며 앱 전역 Tab 정책을 소유하지 않습니다. [책임 범위와 다른 호스트 구성 예제](component-boundary.md).

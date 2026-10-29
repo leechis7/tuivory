@@ -2,6 +2,8 @@
 
 [한국어 (default)](README.md) · **English**
 
+The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
+
 Implementation code lives inside each language directory. This directory indexes examples and a shared static layout.
 
 | Language | Example | Available scope |
@@ -45,3 +47,5 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.e
 See [overlay drawing](../docs/overlay-drawing.en.md) for Go popup/external-card usage. Existing playground popups/Choice and the focus example PanelView use the shared repair.
 
 [TVR-17 grid comparison](../docs/grid.en.md): `make run-catalog-go ARGS="--mode grid --grid-sample --grid-preset data --lang en"`. Use `run-catalog-rust` for Rust or `--grid-preset simple` for the simple presentation. Both use the same five rows and row 2 name selection. TVR-17 is unreleased source.
+
+[Host composition](../docs/component-boundary.en.md): pass `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x` to the existing workspace. Both default and alternative hosts use the same public Go/Rust components; new host options are unreleased source.

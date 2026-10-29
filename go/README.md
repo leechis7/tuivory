@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
+
 제품 버전은 루트 `VERSION`의 **0.2.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.2.0`으로 배포합니다. [릴리스 안내](../docs/release-0.2.0.md).
 
 Go 모듈과 모든 Go 구현은 이 디렉터리에 있습니다. 모듈 경로는 `github.com/leechis7/tuivory/go`, 패키지 이름은 `tuivory`이며 한 번만 import합니다.

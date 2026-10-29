@@ -26,3 +26,5 @@ make run-catalog-rust ARGS="--mode collections --lang en"
 실제 Rust TestBackend 120×36 참조이며 Go 캡처나 실제 서버/SSH 단말 결과가 아닙니다. `tools/snapshot_catalog.py BINARY --mode collections`로 한영 6장을 생성합니다.
 
 [Backlog](components-backlog.md) · [Static distribution](static-build.md)
+
+현재 메뉴 지원은 ListModel 기반 평면 항목·구분선·비활성·선택/실행 요청입니다. 중첩 메뉴의 열림 경로·하위 진입/복귀·계층 팝업 배치 전용 API는 미제공이며 후속 후보입니다. 메뉴 내용·업무 명령·팝업을 화면 어디에 여는지는 앱이 정합니다. [책임 범위](component-boundary.md).

@@ -20,3 +20,5 @@
 - Python, TypeScript and JavaScript support are user-authorized exceptions. Deliver normal Python/npm packages and examples using their language runtimes. Static linking, standalone executables, static ELF checks and CentOS validation are not required. Document supported runtimes/versions/dependencies and verify installation/import/execution in clean external environments. [Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) · [TypeScript/JavaScript TVR-16](https://leechis7.atlassian.net/browse/TVR-16)
 
 - After user approval, publish and merge each component stage into `dev` only. Update `main`, tags and Releases only after all work is complete and a separate release instruction is given. Do not automatically synchronize `main` and `dev` during stage publication.
+
+- Tuivory is a TUI component library. Provide reusable controls, internal interaction/drawing and configurable layout tools; hosts own whole screens, cross-component focus order, global keys, menu/help content and business bindings. Normal host composition is not an incomplete migration defect. [Boundary](docs/component-boundary.en.md)

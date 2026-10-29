@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-7: clarify component-library/application responsibilities and actual support; demonstrate host-selected layout/focus order/quit keys with the same Go/Rust components. Record nested menus as an unimplemented follow-up candidate.
+
 - TVR-17: extend the existing Go/Rust grid with presentation/input options, simple/data presets, range copy, stale-response protection, public catalog comparisons and bilingual documentation/images.
 
 - Treat Python/TypeScript/JavaScript support as normal runtime-based packages without mandatory static distribution, standalone executables or CentOS checks; align work rules, contribution/distribution guides and TVR-15/16 scope.

@@ -2,17 +2,16 @@
 
 [한국어 (default)](README.md) · **English**
 
-Status: draft. Tuivory provides reusable terminal UI styles. This specification provides shared guidance for consistent themes, color profiles, and component states across packages. It and the [shared tokens](tokens/README.en.md) are language-independent; they declare neither a stable product version nor an external standard.
+Status: draft. Tuivory provides reusable TUI components and styles. This specification provides shared guidance for consistent themes, color profiles, and component states across packages. It and the [shared tokens](tokens/README.en.md) are language-independent; they declare neither a stable product version nor an external standard.
 
 ## Specification scope
 
-| Area | Shared specification | Language adapter/application responsibility |
-| --- | --- | --- |
-| Color | Semantic roles, foreground/background pairs, explicit profiles | Framework conversion and terminal detection |
-| Theme | Shared roles, dark/light/blackwhite reference candidates | User-theme loading and whole-screen reapplication |
-| State | Focus, selection, edited, error, disabled meanings | Widget composition order and contrast on actual surfaces |
-| Layout | Terminal cells, Korean width, small windows | Measurement, scrolling, and layers in each framework |
-| Input | Tab between areas, modal focus trapping/restoration | Key conversion, application keymaps and actions |
+| Area | Shared components/specification | Language adapter | Host responsibility |
+| --- | --- | --- | --- |
+| Color/theme | Semantic roles, foreground/background, profiles | Framework color conversion | Theme/profile choice, terminal detection, reapplication wiring |
+| State | Focus/selection/edited/error/disabled composition | Widget rendering and state wiring | Originals, business state and action eligibility |
+| Layout | Cell width, minimum sizes, splitting/padding inside an assigned area | Framework areas, scrolling and layers | Screen layout, order, visibility and initial sizes |
+| Input | Navigation inside controls/defined scopes, modal blocking/restoration | Convert framework events into component actions | Scope order, cross-component focus and global keys/commands |
 
 Use [principles](../docs/principles.en.md), [component patterns](../docs/patterns.en.md), and [terminal profiles](../docs/terminal-profiles.en.md) as the shared baseline rather than duplicating their specifications.
 
@@ -45,3 +44,5 @@ New widget adapters need framework-specific checks for theme round trips, focus/
 At either horizontal overlay/shadow edge, replace intersected wide graphemes with spaces while retaining outside styles. Hosts repaint backgrounds; regressions inspect buffers after presentation. [Go implementation and validation scope](../docs/overlay-drawing.en.md).
 
 [TVR-17 grid options, priority and original-value/host boundaries](../docs/grid.en.md): simple/data presets on one Go/Rust core; unreleased source.
+
+Follow the [component/application boundary](../docs/component-boundary.en.md). Example screens/keymaps are host choices, not a mandatory application framework.

@@ -8,6 +8,7 @@
 
 | 문서 | 내용 |
 | --- | --- |
+| [컴포넌트와 앱의 책임](component-boundary.md) | 화면 조합·배치·포커스·전역 명령의 경계와 예제 |
 | [프로젝트 소개](../README.md) | 제공 범위·설치·빠른 시작 |
 | [설치·사용 안내](installation.md) | 현재 모듈·CLI·토큰 식별자와 배포/소스 구분 |
 | [Rust 패키지](../rust/README.md) | Git 배포 crate·공통 토큰·스타일·Ratatui 어댑터·외부 사용 |

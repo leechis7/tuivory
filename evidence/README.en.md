@@ -42,3 +42,5 @@ Oracle data types, workers, and database test infrastructure are not copied here
 [0.2.0 release preparation validation](release-0.2.0.en.md): candidate assets, versions/checksums, static builds, external installation and native/legacy-kernel execution.
 
 [TVR-17 grid local validation](../docs/grid-validation.en.md) · [static artifacts, CentOS and source hashes](grid-options-results.json). Working source validated before this local commit; unpublished on GitHub; actual LazyOra integration remains separate.
+
+[TVR-7 boundary validation](component-boundary.en.md): support audit, host composition choices, eight bilingual PTYs, static ELF, default CentOS execution and unchanged default references. Included in this local commit; unpublished on GitHub work.

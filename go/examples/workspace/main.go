@@ -8,12 +8,16 @@ import (
 	ui "github.com/leechis7/tuivory/go"
 	"github.com/rivo/tview"
 	"log"
+	"strings"
 )
 
 func main() {
 	lang := flag.String("lang", "ko", "ko or en")
 	theme := flag.String("theme", "dark", "theme")
 	profile := flag.String("colors", "256", "8,16,256,truecolor")
+	layout := flag.String("layout", "columns", "host layout: columns/rows")
+	focusOrder := flag.String("focus-order", "tabs,tree,content", "host Tab order: permutation of tabs,tree,content")
+	quitKey := flag.String("quit-key", "ctrl-q", "host quit shortcut: ctrl-q/ctrl-x")
 	ascii := flag.Bool("ascii", false, "ordinary ASCII borders/icons")
 	flag.Parse()
 	if *lang != "ko" && *lang != "en" {
@@ -24,6 +28,30 @@ func main() {
 			return en
 		}
 		return ko
+	}
+	// These choices belong to this example app, not the component package.
+	if *layout != "columns" && *layout != "rows" {
+		log.Fatal("--layout requires columns or rows")
+	}
+	if *quitKey != "ctrl-q" && *quitKey != "ctrl-x" {
+		log.Fatal("--quit-key requires ctrl-q or ctrl-x")
+	}
+	order := strings.Split(*focusOrder, ",")
+	seen := map[string]bool{}
+	for _, name := range order {
+		if (name != "tabs" && name != "tree" && name != "content") || seen[name] {
+			log.Fatal("--focus-order requires tabs,tree,content exactly once")
+		}
+		seen[name] = true
+	}
+	if len(order) != 3 {
+		log.Fatal("--focus-order requires tabs,tree,content exactly once")
+	}
+	quit := tcell.KeyCtrlQ
+	quitLabel := "Ctrl+Q"
+	if *quitKey == "ctrl-x" {
+		quit = tcell.KeyCtrlX
+		quitLabel = "Ctrl+X"
 	}
 	doc, _ := ui.CandidateTokens()
 	palette := func() ui.Palette {
@@ -57,6 +85,11 @@ func main() {
 	columns := &ui.SplitState{Preferred: 32}
 	rows := &ui.SplitState{Preferred: 8}
 	split, _ := ui.NewSplitView(left, right, columns, ui.SplitSpec{FirstMin: 20, SecondMin: 24}, palette())
+	if *layout == "rows" {
+		split.Rows = true
+		split.State = rows
+		split.Spec = ui.SplitSpec{FirstMin: 4, SecondMin: 4}
+	}
 	path, _ := ui.NewBreadcrumbView([]ui.PathItem{{ID: "root", Label: text("작업 공간", "Workspace")}, {ID: "project", Label: "Tuivory"}, {ID: "folder", Label: text("공통 컴포넌트 예제", "Shared component examples")}, {ID: "current", Label: text("현재 문서.md", "Current document.md")}}, palette())
 	status, _ := ui.NewStatusView(nil, palette())
 	header := tview.NewTextView().SetDynamicColors(false)
@@ -84,7 +117,7 @@ func main() {
 		if e := status.SetItems([]ui.StatusItem{{ID: "message", Text: message, Role: "info", Priority: 100}, {ID: "changed", Text: text("변경 표시 * / 닫기 x", "Edited * / close x"), Role: "edited", Priority: 20}, {ID: "help", Text: "F1 Help", Role: "hint", Priority: 1}}); e != nil {
 			log.Fatal(e)
 		}
-		hints.SetText(text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · Ctrl+Q 종료", "Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · Ctrl+Q quit")).SetTextColor(p["hint"].FG).SetBackgroundColor(p["surface"].BG)
+		hints.SetText(text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · "+quitLabel+" 종료", "Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · "+quitLabel+" quit")).SetTextColor(p["hint"].FG).SetBackgroundColor(p["surface"].BG)
 	}
 	tabView.OnEvent = func(event ui.TabEvent) {
 		message = fmt.Sprintf("%s: %s", event.Kind, event.ID)
@@ -112,7 +145,10 @@ func main() {
 		refresh()
 	}
 	root := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 1, 0, false).AddItem(path, 1, 0, false).AddItem(tabView, 1, 0, true).AddItem(split, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
-	focus := []tview.Primitive{tabView, treeView, content}
+	// The host supplies screen composition, cross-component focus, and global keys.
+	controls := map[string]tview.Primitive{"tabs": tabView, "tree": treeView, "content": content}
+	focus := []tview.Primitive{controls[order[0]], controls[order[1]], controls[order[2]]}
+	split.ActiveSecond = focus[0] == content
 	cycle := func(value *string, values []string) {
 		for i, s := range values {
 			if *value == s {
@@ -126,7 +162,7 @@ func main() {
 			return nil
 		}
 		switch e.Key() {
-		case tcell.KeyCtrlQ:
+		case quit:
 			app.Stop()
 			return nil
 		case tcell.KeyTab, tcell.KeyBacktab:
@@ -141,8 +177,8 @@ func main() {
 				delta = 2
 			}
 			next := (current + delta) % 3
-			if next != 0 {
-				split.ActiveSecond = next == 2
+			if focus[next] != tabView {
+				split.ActiveSecond = focus[next] == content
 			}
 			app.SetFocus(focus[next])
 			return nil
@@ -187,7 +223,7 @@ func main() {
 	})
 	tabs.Reconcile(tabState)
 	refresh()
-	if e := app.SetRoot(root, true).SetFocus(tabView).EnableMouse(true).Run(); e != nil {
+	if e := app.SetRoot(root, true).SetFocus(focus[0]).EnableMouse(true).Run(); e != nil {
 		log.Fatal(e)
 	}
 }

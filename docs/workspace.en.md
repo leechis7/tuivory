@@ -38,7 +38,7 @@ Roles use candidate-token names directly. Prefixes warning/error `!`, edited `*`
 
 ## Imports and examples
 
-Go external projects install `github.com/leechis7/tuivory/go@v0.1.0` or use a replace directive for a local checkout. All APIs use the single `github.com/leechis7/tuivory/go` import. Resolve the candidate palette with `CandidateTokens → Palette → Resolve` and pass it to views. This does not claim equality with the complete LazyOra-derived Go styler.
+Go external projects install `github.com/leechis7/tuivory/go@v0.2.0` or use a replace directive for a local checkout. All APIs use the single `github.com/leechis7/tuivory/go` import. Resolve the candidate palette with `CandidateTokens → Palette → Resolve` and pass it to views. This does not claim equality with the complete LazyOra-derived Go styler.
 
 ```go
 tabs, err := tuivory.NewTabs([]tuivory.TabItem{
@@ -95,3 +95,7 @@ python3 tools/smoke_workspace.py /path/to/rust-workspace
 Local checks include bilingual PTY startup/exit/restoration and an English integrated input scenario: edited-close guard, keys, divider dragging, and narrow/expanded reflow. Distinguish these from GitHub CI results, remote terminals, and actual LazyOra/LazyBeaver integration. The epic stays open as requested; implementation is distributed in v0.1.0.
 
 Go `PanelView` automatically uses the [shared wide-glyph repair](overlay-drawing.en.md). External cards and shadows use the public wrapper and DimRegion.
+
+## Host-selected layout, focus and keys
+
+Pass `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x` to compose the same public components under different host policy. Defaults remain columns, tabs,tree,content and ctrl-q. Initial focus goes to the first item; Tab/Shift+Tab follows the supplied order. These are example-host CLI options, not library-global configuration or a required whole-screen standard. New host options are unreleased source. [Boundary, localized references and commands](component-boundary.en.md).

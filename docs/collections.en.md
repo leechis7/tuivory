@@ -26,3 +26,5 @@ Hosts own data, business actions, clocks and terminal lifecycle. Public models e
 Actual Rust TestBackend 120×36 reference, not a Go capture or physical/SSH terminal result. Generate six localized references with `tools/snapshot_catalog.py BINARY --mode collections`.
 
 [Backlog](components-backlog.en.md) · [Static distribution](static-build.en.md)
+
+Current menu support is ListModel-based flat items, separators, disabled state and select/activate requests. Dedicated nested open paths, child entry/return and cascading-popup layout are absent and remain candidates for follow-up work. Hosts choose menu content/business commands and where popups appear. [Boundary](component-boundary.en.md).

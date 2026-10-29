@@ -2,7 +2,27 @@
 
 [한국어 (default)](component-audit.md) · **English**
 
-Audited local source on 2026-10-27. TVR-5 baseline commit `b67a4cb` is included in the v0.1.0 release history. This audit distinguishes the starting point from all TVR-7 local implementation results. The epic remains open as requested; this does not claim remote verification or actual application integration.
+Re-audited on 2026-10-29, distinguishing published v0.2.0 from local TVR-17 commit `e34b824`. This boundary/host-option update is included in this local commit; unpublished on GitHub; keep the epic open. Current scope below takes precedence; the 2026-10-27 table is historical. [Boundary](component-boundary.en.md).
+
+## Current support and host responsibilities
+
+| Area | Public Go / Rust support | Missing capability or host responsibility |
+| --- | --- | --- |
+| Inputs/forms | Form models/renderers, editing/choice, required values and submit requests | Connection/settings screens, business validation and saving |
+| Tree | NewTree/TreeState/NewTreeView / tree::Tree/TreeState/TreeWidget | Real data, loading and item execution |
+| Menu/search | NewList/NewSearchPicker / collections::ListModel/SearchPicker, flat items/filtering/selection requests | No dedicated nested-menu model/child entry/return/cascading-popup API. Hosts own content and remote candidates |
+| Tabs | Tabs/TabState/NewTabView / components::Tabs/TabState/TabsWidget, overflow/edited/close requests | SQL/session ownership, document storage and close approval |
+| Panels/splits | NewPanelView/NewSplitView / Styles::panel/split_rects, geometry inside assigned areas | Screen placement/axis/initial sizes/visibility/responsive composition |
+| Focus/popups | FocusStack navigation/blocking/restoration within host-defined scopes | Cross-component order, scope registration, terminal/event wiring |
+| Status/path/help | StatusLine/Breadcrumbs/Help and language renderers | Contextual items, command/key assignment, whole help screens/contents |
+| Grid | Published v0.2.0 Grid/GridSource/basic rendering; TVR-17 options/ranges/status exist only in a local commit | Queries, business editing, transactions, real clipboard/exports |
+| Themes/validation | Shared tokens/semantic styles, state preservation, cell width/static-distribution checks | Actual host/customer-terminal checks remain separate; no claim of full Go extracted-styler/Rust candidate-palette parity |
+
+Nested menus are a confirmed gap, not an automatic implementation obligation or newly created issue. Confirm requirements before creating a separate TVR implementation issue. Tab overflow and shortcut-help rendering already exist and should not be duplicated. [Different host policy on existing components](component-boundary.en.md).
+
+## Starting-point record — 2026-10-27
+
+Historical comparison of TVR-5 baseline `b67a4cb` with the initial TVR-7 implementation.
 
 | Area | Go at start | Rust at start | Result and remaining boundary |
 | --- | --- | --- | --- |

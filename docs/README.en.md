@@ -8,6 +8,7 @@ Documentation follows the current repository implementation. The current Go vers
 
 | Document | Contents |
 | --- | --- |
+| [Component/application boundary](component-boundary.en.md) | Screen composition, layout, focus, global commands and examples |
 | [Project overview](../README.en.md) | Scope, installation, quick start |
 | [Installation and usage](installation.en.md) | Current module, CLI, token identifiers; published version versus source |
 | [Rust package](../rust/README.en.md) | Git-distributed crate, tokens, styles, Ratatui adapter, external usage |

@@ -2,7 +2,7 @@
 
 [한국어 (default)](architecture.md) · **English**
 
-Tuivory provides terminal UI styles for use across languages. Shared design and validation specifications are independent of each language implementation and package. Go source, go.mod, and go.sum stay out of the repository root.
+Tuivory provides reusable TUI components and styles across languages. Shared design and validation specifications are independent of each language implementation and package. Go source, go.mod, and go.sum stay out of the repository root.
 
 ```text
 tuivory/
@@ -19,7 +19,7 @@ tuivory/
 └── evidence/     Validation records
 ```
 
-Go provides tview style adapters. Rust provides a Git-distributed shared-token/framework-independent core and optional Ratatui 0.30.2 adapter. The core requires Rust 1.85+; the adapter and interactive example require 1.88+. The adapter computes colors, styles, and panel borders; the example host owns the terminal, events, inputs, and widget state. See the [Rust example](rust-playground.en.md). Other language directories provide token reading or reference examples and state their current limits. They are not required to call Go.
+Go and Rust provide shared component models, tokens/styles and tview/Ratatui renderers. Rust core requires 1.85+, while the Ratatui adapter/interactive examples require 1.88+. Models calculate internal state, selection, scrolling and requests. Hosts connect terminals, event loops, screen composition, global focus and business actions. [Boundary](component-boundary.en.md). Other languages currently provide token-reading/reference examples, with missing UI-package scope stated in their READMEs; they are not required to call Go.
 
 ## Shared data and distribution assets
 
@@ -46,7 +46,7 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-The submodule path is `github.com/leechis7/tuivory/go`, package `tuivory`. Implementation details stay in `go/internal/`. The host owns the screen, events, terminal capability detection, and database state.
+The submodule path is `github.com/leechis7/tuivory/go`, package `tuivory`. Public component APIs live in the `go/` package sources; extracted styles/assets and other private implementation live in `go/internal/`. The host owns the screen, events, terminal capability detection, and database state.
 
 The first Go release is `v0.0.1`, tagged `go/v0.0.1`. [Go guide](go-package.en.md) · [Installation and usage](installation.en.md)
 
@@ -65,3 +65,5 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) do
 ## Distribution boundary
 
 Go, Rust and future executables are distributed statically; libraries must not add mandatory native dependencies that prevent hosts from linking statically. Shared assets are embedded in each module. Distinguish interpreter-based references from standalone distributions. [Static distribution policy and checks](static-build.en.md)
+
+Workspace examples allow host-selected split axis, focus order and quit keys. [Composition examples](component-boundary.en.md#same-components-different-host-policy).

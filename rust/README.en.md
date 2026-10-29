@@ -2,9 +2,11 @@
 
 [한국어 (default)](README.md) · **English**
 
+The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
+
 Crate version **0.2.0** matches root `VERSION`. Use Git tag `rust/v0.2.0`. [Release guide](../docs/release-0.2.0.en.md).
 
-TVR-5 provides a shared candidate-token/style core, optional Ratatui adapter, and database-free interactive example. The default core requires Rust 1.85+ (verified with 1.85.1); the Ratatui 0.30.2 adapter and Crossterm 0.29 example require Rust 1.88+ (verified with 1.88.0). The core and adapter do not depend on Go, terminal I/O, or databases.
+The package provides shared component models, candidate-token/style core, optional Ratatui renderers and database-free interactive examples. The default core requires Rust 1.85+ (verified with 1.85.1); the Ratatui 0.30.2 adapter and Crossterm 0.29 example require Rust 1.88+ (verified with 1.88.0). The core and adapter do not depend on Go, terminal I/O, or databases.
 
 ## Usage
 

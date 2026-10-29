@@ -84,3 +84,5 @@ These are actual Rust example TestBackend references at 120×32, not Go captures
 This foundation does not provide an input editor, validation engine, complete Dialog widget, asynchronous operation or terminal event loop. The host connects actual widget focus, layer layout/clipping/visibility and business actions. Examples reuse public panels as host implementations; LazyOra/LazyBeaver integration remains separate. [Static distribution requirements](static-build.en.md)
 
 Use [WideSafeScreen and DimRegion](overlay-drawing.en.md) for Go popup edges crossing CJK/emoji. These drawing APIs are separate from focus models.
+
+Hosts define scope contents/order and cross-component traversal. FocusStack calculates navigation, blocking and restoration within supplied scopes; it does not own the global application Tab policy. [Boundary and alternative host composition](component-boundary.en.md).

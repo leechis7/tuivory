@@ -21,3 +21,5 @@
 - Python·TypeScript·JavaScript 지원은 사용자 지정 예외다. 각 언어의 런타임을 사용하는 일반 Python/npm 패키지와 실행 예제로 제공하며, 정적 링크·독립 실행파일·ELF 정적 검사·CentOS 검증을 필수로 요구하지 않는다. 지원 런타임·버전·의존성을 문서화하고 깨끗한 외부 환경에서 설치·import·실행을 검증한다. [Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) · [TypeScript·JavaScript TVR-16](https://leechis7.atlassian.net/browse/TVR-16)
 
 - 컴포넌트 단계별 게시·병합은 사용자 승인 후 `dev`까지만 진행한다. 전체 작업 완료 후 별도 릴리스 지시가 있을 때 `main` 반영·태그·Release를 진행한다. 단계 게시 중 `main`과 `dev`를 자동 동기화하지 않는다.
+
+- Tuivory는 TUI 컴포넌트 라이브러리다. 공통 컨트롤·내부 조작·그리기·설정 가능한 배치 도구를 제공하고, 앱 화면 전체·컴포넌트 사이 포커스 순서·전역 키·메뉴/도움말 내용·업무 연결은 적용 앱이 결정한다. 앱의 정상적인 화면 조합 코드를 미이관 결함으로 취급하지 않는다. [책임 범위](docs/component-boundary.md)
