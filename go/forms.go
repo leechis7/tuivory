@@ -354,19 +354,27 @@ func (f *Form) Layout(width, height int) []ComponentLine {
 		if focused {
 			prefix = "> "
 		}
-		rows = append(rows, ComponentLine{ID: field.ID, Text: prefix + field.Label + required + " " + v.Markers, Role: v.Role, Focused: focused})
+		markers := v.Markers
+		if field.State.Disabled {
+			markers = strings.TrimPrefix(markers, "-")
+		}
+		rows = append(rows, ComponentLine{ID: field.ID, Text: prefix + field.Label + required + " " + markers, Role: v.Role, Focused: focused})
 		if focused {
 			anchor = len(rows) - 1
 		}
 		value := field.Value
 		switch field.Kind {
 		case "text", "textarea":
+			valueRole := "field"
+			if field.State.Disabled {
+				valueRole = "disabled"
+			}
 			position := 0
 			for _, line := range strings.Split(value, "\n") {
 				count := len(clusters(line))
 				caret := focused && field.Cursor >= position && field.Cursor <= position+count
 				display := editDisplay(line, field.Cursor-position, max(0, width-2), caret)
-				rows = append(rows, ComponentLine{ID: field.ID, Text: "  " + display, Role: "field"})
+				rows = append(rows, ComponentLine{ID: field.ID, Text: "  " + display, Role: valueRole})
 				position += count + 1
 			}
 		case "checkbox":
@@ -386,7 +394,7 @@ func (f *Form) Layout(width, height int) []ComponentLine {
 					mark = "(*) "
 				}
 				role := v.Role
-				if o.Disabled {
+				if o.Disabled || field.State.Disabled {
 					role = "disabled"
 				}
 				if field.Kind == "select" && !field.Open && o.ID != field.Choice {
@@ -395,7 +403,11 @@ func (f *Form) Layout(width, height int) []ComponentLine {
 				rows = append(rows, ComponentLine{ID: field.ID, Text: "  " + mark + o.Label, Role: role, Value: o.ID})
 			}
 		case "button":
-			rows = append(rows, ComponentLine{ID: field.ID, Text: "  [ " + field.Label + " ]", Role: "button", Focused: focused})
+			valueRole := "button"
+			if field.State.Disabled {
+				valueRole = "disabled"
+			}
+			rows = append(rows, ComponentLine{ID: field.ID, Text: "  [ " + field.Label + " ]", Role: valueRole, Focused: focused})
 		}
 		if field.Error != "" {
 			rows = append(rows, ComponentLine{ID: field.ID, Text: "! " + field.Error, Role: "error"})
@@ -415,6 +427,21 @@ func (f *Form) Layout(width, height int) []ComponentLine {
 
 // Click commits an enabled option, or activates a button/check/select. Text clicks focus only.
 func (f *Form) Click(id, option string) FormEvent {
+	for _, field := range f.fields {
+		if field.ID == id {
+			if field.State.Disabled {
+				return FormEvent{}
+			}
+			if option != "" {
+				for _, o := range field.Options {
+					if o.ID == option && o.Disabled {
+						return FormEvent{}
+					}
+				}
+			}
+			break
+		}
+	}
 	if f.Focused() != id && !f.Focus(id) {
 		return FormEvent{}
 	}

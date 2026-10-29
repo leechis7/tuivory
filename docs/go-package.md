@@ -131,3 +131,5 @@ Tuivory는 적용 앱에 필수 공유 라이브러리 의존성을 추가하지
 [TVR-13: 배치·밀도·부가 컴포넌트](layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
 `WideSafeScreen(screen)`으로 카드 전체 Draw를 감싸고, 그림자는 `DimRegion(screen, CellRect{...})`으로 그립니다. 좌우 경계 보정·Show 이후 검사는 [오버레이 그리기](overlay-drawing.md)를 보세요. 0.2.0 태그에 포함한 API입니다.
+
+0.4.0의 TextOnSurface / Styles::text_on_surface 및 ControlStyleOnSurface / Styles::control_on_surface로 평문을 실제 바탕에 연결하고 대비를 보정합니다. 원본 토큰과 raw 스타일은 유지하며 명시적 상태/사용자 배경은 보존합니다. [한영 표면 디자인 가이드](../design/surfaces.md).

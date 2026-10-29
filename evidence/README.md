@@ -46,3 +46,15 @@ ANSI 팔레트(참조/사용자 변경/미확인), 굵게 설정:
 [TVR-7 책임 범위 정정 검증](component-boundary.md): 현재 지원 점검표·호스트 구성 선택·한영 PTY 8개·정적 ELF·CentOS 기본 실행·기존 화면 동일성. 로컬 커밋에 포함하며 GitHub에는 미게시 작업입니다.
 
 [TVR-7 공통 메뉴 검증](menu.md): 공유 계층 탐색·호출 문맥·12팔레트·물리 출력·한영 PTY·외부 import·정적 ELF·CentOS. 메뉴 작업은 미커밋·미게시입니다.
+
+[TVR-7 단일선 메뉴 후속 검증](menu-single-border.md): 메뉴만 포커스 장식을 제거한 Go·Rust 출력·PTY와 한영 이미지.
+
+[TVR-7 영역 이중선·메뉴 단일선 검증](focus-borders.md): Go/Rust 활성/비활성 테두리와 실제 출력·한영 화면.
+
+[TVR-7 컴포넌트 배경 조사](../docs/background-audit.md) · [결과 JSON](background-audit-results.json): Go/Rust 전수 셀 비교·16역할/12팔레트·예제 문맥·의도한 차이 분류.
+
+[TVR-7 배경 수정 검증](background-fix.md): 전수 비교·표면/대비 API·명시적 상태 배경 보존·한영 디자인 가이드와 실제 이미지.
+
+[비활성 상태와 12팔레트 비교](../docs/disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.
+
+[TVR-7 비활성 색상 후속 검증](../docs/disabled-states.md) · [결과 JSON](disabled-colors-results.json): 일반 접두사 제거, 12팔레트 회색/Dim·입력 차단·104개 한영 참조.

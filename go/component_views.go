@@ -81,7 +81,7 @@ func (v *TabView) Draw(screen tcell.Screen) {
 		if cell.Disabled {
 			role = "disabled"
 		}
-		st := v.palette[role].Style()
+		st := disabledCue(v.palette, role, v.palette[role].Style())
 		if cell.Focused && v.HasFocus() {
 			st = v.palette["selection"].Style().Underline(true)
 		}
@@ -135,8 +135,10 @@ func (v *TabView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func
 		if a != tview.MouseLeftClick {
 			return false, nil
 		}
-		focus(v)
 		event := v.tabs.Click(v.state, x-left, w)
+		if event.Kind != "" {
+			focus(v)
+		}
 		if event.Kind != "" && v.OnEvent != nil {
 			v.OnEvent(event)
 		}
@@ -181,6 +183,10 @@ func (v *PanelView) Draw(screen tcell.Screen) {
 	x, y, w, h := v.GetRect()
 	fillComponent(screen, x, y, w, h, v.palette["surface"].Style())
 	focused := v.HasFocus()
+	// A menu uses its current item and open state instead of panel focus decoration.
+	if _, menu := v.Child.(*MenuView); menu {
+		focused = false
+	}
 	border := v.palette["hint"].Style()
 	if focused {
 		border = v.palette["focus.border"].Style().Bold(true)
@@ -449,7 +455,7 @@ func drawLineRuns(screen tcell.Screen, x, y, w, h int, runs []LineRun, palette P
 		return
 	}
 	for _, run := range runs {
-		drawTreeText(screen, x+run.Start, y, max(0, w-run.Start), 0, run.Text, palette[run.Role].Style())
+		drawTreeText(screen, x+run.Start, y, max(0, w-run.Start), 0, run.Text, componentStyle(palette, run.Role))
 	}
 }
 func (v *BreadcrumbView) Draw(screen tcell.Screen) {

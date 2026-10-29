@@ -74,9 +74,11 @@ let event = menu.open("edit", "editor");
 
 `HandleBar / handle_bar`의 previous/next/left/right/first/last는 메뉴 바 포커스, activate/down/mnemonic은 open_request입니다. `BarLayout / bar_layout`은 셀 위치와 양끝 넘침 상태, `BarClick / bar_click`은 항목 열기/넘침 탐색 요청을 제공합니다. 실제 입력 포커스·전역 F10/Alt 연결은 앱 책임이며 `MenuKey`는 내부 방향키/Enter/Esc/mnemonic만 변환합니다.
 
-주 텍스트·보조 설명·단축키·하위 표시를 셀 폭 안에 배치합니다. 긴 제목은 `~`로 줄이고 단축키에 쓰는 폭을 제한합니다. 포커스 `>`, 비활성 `-`, 뒤로 `<`, 하위 `›`(ASCII `>`)와 구분선 `─`(ASCII `-`)을 사용합니다. 아이콘은 ASCII 대체가 없으면 `*`로 표시합니다. ASCII 옵션이 앱의 한국어 라벨/원문을 영문으로 바꾸지는 않습니다. 제어 문자는 표시에서 공백으로 바꾸고 태그처럼 보이는 문구도 리터럴입니다. 범용 surface/selection/disabled/header/hint 역할을 재사용합니다.
+주 텍스트·보조 설명·단축키·하위 표시를 셀 폭 안에 배치합니다. 긴 제목은 `~`로 줄이고 단축키에 쓰는 폭을 제한합니다. 포커스 `>`, 뒤로 `<`, 하위 `›`(ASCII `>`)와 구분선 `─`(ASCII `-`)을 사용합니다. 아이콘은 ASCII 대체가 없으면 `*`로 표시합니다. ASCII 옵션이 앱의 한국어 라벨/원문을 영문으로 바꾸지는 않습니다. 제어 문자는 표시에서 공백으로 바꾸고 태그처럼 보이는 문구도 리터럴입니다. 범용 surface/selection/disabled/header/hint 역할을 재사용합니다.
 
 ## 팝업·앱 경계
+
+메뉴 팝업은 항상 단일선 테두리를 사용하며 제목에 별도 포커스 표시를 붙이지 않습니다. 현재 항목은 선택 배경과 `>`, 메뉴 바는 열린 메뉴의 활성 표시로 구분합니다. 입력 포커스 유무로 메뉴에 밑줄을 추가하지 않습니다. 입력 라우팅·배경 차단·닫은 뒤 호출 위치 복귀는 유지합니다. 이 표시 변경은 0.3.0 이후 미배포 소스에 적용하며 기존 태그/자산은 바꾸지 않습니다.
 
 `ContentSize / content_size`는 테두리/여백을 제외한 내용 선호 크기입니다. `MenuPlacement / menu_placement(anchor, viewport, width, height)`는 호스트가 정한 앵커 아래에 배치하고 부족하면 위로 옮겨 뷰포트 안으로 제한합니다. 메뉴는 화면 전체·배경·DB 상태를 소유하지 않습니다.
 
@@ -85,3 +87,9 @@ Go는 `NewPanelView(menuView, palette)`로 감싸고 계산한 사각형에 그�
 앱은 메뉴가 열린 동안 배경 키/붙여넣기·마우스를 차단하고, 바깥 클릭의 닫기 정책과 호출 패널 복귀를 연결해야 합니다. 예제는 같은 클릭을 배경 작업으로 다시 전달하지 않습니다. 테마/색상/문자 표시를 바꿀 때 메뉴 객체와 원문을 유지합니다. 자동 그룹 임계값·화면별 명령·실제 업무 동작을 공통 코어에 넣지 않습니다. [책임 범위](component-boundary.md).
 
 [검증 기록](../evidence/menu.md) · [공유 탐색 시나리오](../design/menu-cases.json)
+
+[단일선 메뉴 후속 검증](../evidence/menu-single-border.md)
+
+0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
+
+비활성 메뉴·메뉴 바는 색상/명암으로 구분하며 별도 비활성 접두사를 붙이지 않습니다. 체크·라디오 선택 표식은 유지합니다.

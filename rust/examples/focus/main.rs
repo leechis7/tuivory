@@ -162,7 +162,7 @@ impl App {
                     "Control and popup example / Name"
                 )
             ))
-            .style(self.styles.role("body").unwrap()),
+            .style(self.styles.text_on_surface("body", "surface").unwrap()),
             line(0),
         );
         f.render_widget(
@@ -198,9 +198,17 @@ impl App {
                 let focused = active && self.stack.focused() == item.id;
                 let visual = item.state.visual();
                 let cursor = if focused { "> " } else { "  " };
-                let s = format!("{cursor}{:<6}{}", visual.markers, label(&item.id, self.en));
+                let s = format!(
+                    "{cursor}{:<6}{}",
+                    visual.markers.trim_start_matches('-'),
+                    label(&item.id, self.en)
+                );
                 f.render_widget(
-                    Paragraph::new(s).style(self.styles.control(item.state, focused).unwrap()),
+                    Paragraph::new(s).style(
+                        self.styles
+                            .control_on_surface(item.state, focused, "surface")
+                            .unwrap(),
+                    ),
                     Rect::new(inner.x, inner.y + index as u16, inner.width, 1),
                 );
             }

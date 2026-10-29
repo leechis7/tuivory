@@ -280,7 +280,10 @@ impl Badge {
         let v = self.state.visual();
         ComponentLine {
             id: self.id.clone(),
-            text: cell_text(&format!("{}{text}", v.markers), width),
+            text: cell_text(
+                &format!("{}{text}", v.markers.trim_start_matches('-')),
+                width,
+            ),
             role: v.role.into(),
             ..Default::default()
         }
@@ -296,7 +299,7 @@ pub struct Chip {
 impl Chip {
     pub fn line(&self, width: usize) -> ComponentLine {
         let v = self.state.visual();
-        let prefix = format!("{}[", v.markers);
+        let prefix = format!("{}[", v.markers.trim_start_matches('-'));
         let suffix = if self.removable { "] x" } else { "]" };
         ComponentLine {
             id: self.id.clone(),

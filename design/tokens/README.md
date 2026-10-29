@@ -32,3 +32,5 @@ python3 tools/export_tokens.py --check
 ```
 
 공통 원본은 이 디렉터리의 JSON이며 Go 소스는 두지 않습니다. 생성 도구는 같은 내용을 `go/internal/tokens/candidate.json`과 `rust/src/data/candidate.json`에도 기록합니다. 이 생성 복사본은 Go·Rust 패키지의 독립 배포와 내장을 위한 것이며 수동 편집하지 않습니다. `--check`는 원본 CSV·공통 JSON·Go·Rust 배포 사본이 모두 같은지 확인합니다. Go·Rust 프로젝트는 저장소의 다른 디렉터리 없이도 사용할 수 있고 Python·JavaScript는 공통 원본을 직접 읽습니다.
+
+원본 역할의 배경과 실제 컴포넌트 바탕은 구분합니다. 평문에 raw 역할의 배경을 그대로 덮지 않으며, 실제 표면 위 전경 대비도 확인합니다. 입력·선택·수정·사용자 배경은 보존합니다. [표면 규칙](../surfaces.md).

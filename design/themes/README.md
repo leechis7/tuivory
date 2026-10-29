@@ -22,4 +22,8 @@ python3 tools/check_palette.py design/themes/lazyora-candidate.csv
 
 일반 텍스트 4.5:1, 포커스 경계 3:1은 내부 설계 참고 목표입니다. CSV에서는 역할별 target을 명시하며, 검사 통과가 화면 전체의 접근성 인증을 의미하지 않습니다. 레이어 합성·커서·문자 폭·Dim·반전·동작은 별도 확인해야 합니다.
 
-[공통 JSON 토큰 초안](../tokens/README.md)은 이 CSV에서 생성하며 Go·Python·Node.js·Rust가 함께 읽습니다. Go에는 토큰 로더와 tcell 스타일 어댑터, Rust에는 코어와 선택적 Ratatui 어댑터가 있습니다. DTCG 확장과 완성 위젯 SDK는 아직 제공하지 않습니다. CSV와 초안 JSON을 향후 API 호환성 보장으로 해석하지 마세요.
+[공통 JSON 토큰 초안](../tokens/README.md)은 이 CSV에서 생성하며 Go·Python·Node.js·Rust가 함께 읽습니다. Go에는 토큰 로더와 tcell 스타일 어댑터, Rust에는 코어와 선택적 Ratatui 어댑터가 있습니다. DTCG 확장 호환성은 아직 제공하지 않습니다. 실제 컴포넌트 지원 범위는 [컴포넌트 목록](../../docs/README.md)을 참고하세요. CSV와 초안 JSON을 향후 API 호환성 보장으로 해석하지 마세요.
+
+원본 역할의 배경과 실제 컴포넌트 바탕은 구분합니다. 평문에 raw 역할의 배경을 그대로 덮지 않으며, 실제 표면 위 전경 대비도 확인합니다. 입력·선택·수정·사용자 배경은 보존합니다. [표면 규칙](../surfaces.md).
+
+비활성 역할은 활성 글자와 구분하기 위해 참조 대비 하한 2.0:1을 사용합니다. light-16 회색/회색 표면은 약 2.17:1이며 활성 글자의 4.5:1 기준과 구분합니다. 8색의 Dim은 CSV RGB 계산에 포함되지 않고 출력 속성과 [비교 화면](../../docs/disabled-states.md)에서 별도로 검증합니다.

@@ -169,6 +169,7 @@ func TestMenuPhysicalOutputAndLocalKeys(t *testing.T) {
 				s.Put(34, 2, "한", tcell.StyleDefault)
 				s.Show()
 				v.SetRect(3, 1, 32, 8)
+				v.Focus(func(tview.Primitive) {})
 				v.Draw(s)
 				s.Show()
 				outputCell(t, s, 0, 2, "Q")
@@ -236,5 +237,53 @@ func TestMenuEmptyDepthAndCountLimits(t *testing.T) {
 	many = append(many, ui.MenuItem{ID: "item-10000"})
 	if _, e := ui.NewMenu(many); e == nil {
 		t.Fatal("count limit")
+	}
+}
+
+func TestMenuPopupSingleBorderPreservesInputFocus(t *testing.T) {
+	items, _ := menuFixture(t)
+	for _, theme := range []string{"dark", "light", "blackwhite"} {
+		for _, profile := range []string{"8", "16", "256", "truecolor"} {
+			for _, ascii := range []bool{false, true} {
+				m, _ := ui.NewMenu(items)
+				m.Open("file", "editor")
+				doc, _ := ui.CandidateTokens()
+				raw, _ := doc.Palette(theme, profile)
+				p, _ := ui.Resolve(raw)
+				view, _ := ui.NewMenuView(m, p, ascii, nil)
+				panel, _ := ui.NewPanelView(view, p)
+				panel.ASCII = ascii
+				panel.SetTitle("Menu")
+				panel.SetRect(3, 1, 32, 8)
+				s := drawingScreen(t)
+				s.SetSize(40, 12)
+				for _, focused := range []bool{false, true} {
+					if focused {
+						view.Focus(func(tview.Primitive) {})
+					} else {
+						view.Blur()
+					}
+					panel.Draw(s)
+					s.Show()
+					corner := "┌"
+					if ascii {
+						corner = "+"
+					}
+					if style := outputCell(t, s, 3, 1, corner); style != p["hint"].Style() {
+						t.Fatal("menu border has focus decoration", theme, profile, focused)
+					}
+					outputCell(t, s, 4, 1, "M")
+					if style := outputCell(t, s, 5, 3, ">"); style != p["selection"].Style() {
+						t.Fatal("selected item must not need focus styling", theme, profile, focused)
+					}
+					if panel.HasFocus() != focused {
+						t.Fatal("visual change lost input focus")
+					}
+				}
+				if e := m.Handle("mnemonic", "n", 4); e.Kind != "activate" || e.ReturnID != "editor" {
+					t.Fatal("caller restoration lost", e)
+				}
+			}
+		}
 	}
 }

@@ -1,0 +1,61 @@
+name: Validate release assets
+run-name: Validate release ${{ inputs.tag }}
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        required: true
+        type: string
+      source_sha:
+        description: Expected source commit
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  linux-x86_64:
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      EXPECTED_SHA: ${{ inputs.source_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download release archives and verify checksums
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/release"
+          cd "$RUNNER_TEMP/release"
+          sha256sum --check SHA256SUMS
+      - name: Verify source commit and unpack archives
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, tarfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'release'
+          manifest=json.loads((root/'RELEASE-MANIFEST.json').read_text())
+          assert manifest['source_commit']==os.environ['EXPECTED_SHA']
+          for archive in root.glob('*.tar.gz'):
+              with tarfile.open(archive) as source:
+                  source.extractall(root/'unpacked', filter='data')
+          PY
+      - name: Verify all static ELF binaries
+        run: |
+          for arch in arm64 x86_64; do
+            for lang in go rust; do
+              for binary in "$RUNNER_TEMP/release/unpacked/tuivory-$lang-"*-linux-"$arch"/bin/"$lang"/*; do
+                python3 tools/check_static_elf.py --arch "$arch" "$binary"
+              done
+            done
+          done
+      - name: Run downloaded x86_64 executables in Korean and English
+        run: |
+          for lang in go rust; do
+            for ui in ko en; do
+              for directory in "$RUNNER_TEMP/release/unpacked/tuivory-$lang-"*-linux-x86_64; do
+                python3 tools/smoke_playground.py "$directory/bin/$lang/tuivory-linux-x86_64" --lang "$ui" --resize
+                python3 tools/smoke_catalog.py "$directory/bin/$lang/tuivory-catalog-linux-x86_64" --lang "$ui"
+                python3 tools/smoke_menu.py "$directory/bin/$lang/tuivory-menu-linux-x86_64" --lang "$ui"
+              done
+            done
+          done

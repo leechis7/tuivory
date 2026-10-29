@@ -1,6 +1,10 @@
 package style
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"github.com/gdamore/tcell/v2"
+	"github.com/leechis7/tuivory/go/internal/tokens"
+	"sync"
+)
 
 func (s Styles) FieldStyle() tcell.Style {
 	return tcell.StyleDefault.Foreground(s.FieldText).Background(s.Field)
@@ -12,8 +16,28 @@ func (s Styles) ButtonStyle() tcell.Style {
 	return tcell.StyleDefault.Foreground(s.FieldText).Background(s.Button)
 }
 func (s Styles) ButtonFocusStyle() tcell.Style { return s.SelectionStyle().Underline(true) }
+
+var disabledDefaults = sync.OnceValue(func() map[string]Palette {
+	out := map[string]Palette{}
+	if doc, err := tokens.Candidate(); err == nil {
+		for name, source := range doc.Palettes {
+			if p, err := Resolve(source); err == nil {
+				out[name] = p
+			}
+		}
+	}
+	return out
+})
+
 func (s Styles) DisabledStyle() tcell.Style {
-	return tcell.StyleDefault.Foreground(s.Disabled).Background(s.Surface)
+	fg := s.Disabled
+	if p, ok := disabledDefaults()[s.theme+"-"+s.profile]; ok {
+		profile := map[string]colorProfile{"8": profileANSI8, "16": profileANSI16, "256": profile256, "truecolor": profileRGB}[s.profile]
+		if s.Disabled == resolve(s.theme, profile).Disabled {
+			fg = p["disabled"].FG
+		}
+	}
+	return tcell.StyleDefault.Foreground(fg).Background(s.Surface).Dim(fg == s.Text)
 }
 func (s Styles) EditedStyle() tcell.Style {
 	return tcell.StyleDefault.Foreground(s.EditedFG).Background(s.Edited)

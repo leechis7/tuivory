@@ -28,3 +28,9 @@ make run-catalog-rust ARGS="--mode collections --lang en"
 [Backlog](components-backlog.md) · [Static distribution](static-build.md)
 
 v0.2.0의 메뉴는 ListModel 기반 평면 목록입니다. 새 [공통 메뉴](menus.md)는 미배포 소스에서 계층 그룹·뒤로가기·메뉴 바·팝업 배치·호출 패널 복귀 요청을 제공합니다. 기존 목록·검색 선택 API는 유지하고 메뉴 내용·원격 후보·업무 명령은 앱이 정합니다.
+
+0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
+
+## 비활성 상태
+
+일반 항목에는 비활성 `[-]`·`-` 표식을 자동으로 붙이지 않습니다. 체크박스·라디오·체크 메뉴의 선택 표식은 유지합니다. 비활성 라벨·값·버튼·알림 액션은 `disabled` 역할로 그리며, 활성 배경을 제거하고 전경 명암을 낮춥니다. 16색 이상은 회색, 8색은 `Dim`을 사용합니다. 클릭·마우스 포커스·키보드 실행은 차단하며 비활성 옵션 클릭으로 부모 포커스도 이동하지 않습니다. [12팔레트 비교와 제약](disabled-states.md).

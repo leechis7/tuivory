@@ -59,6 +59,9 @@ func (u *UI) apply() {
 		u.name.SetLabel(u.text("이름     ", "Name     "))
 	}
 	viewStyle(u.disabled, p["disabled"])
+	if disabledStyle, err := tuivory.TextOnSurface(p, "disabled", "surface"); err == nil {
+		u.disabled.SetTextStyle(disabledStyle)
+	}
 	u.check.SetLabelStyle(p["surface"].Style()).SetCheckedStyle(p["field"].Style()).SetUncheckedStyle(p["field"].Style()).SetActivatedStyle(p["selection"].Style())
 	u.check.SetCheckedString(tview.Escape("[x]")).SetUncheckedString(tview.Escape("[ ]"))
 	for i, view := range u.states {
@@ -150,7 +153,7 @@ func (u *UI) borders() {
 		card.SetBorderStyle(styler.Styles.BorderStyle(card.HasFocus(), card.GetBackgroundColor())).SetTitleColor(p["surface"].FG)
 	}
 	for _, box := range []*tview.Box{u.nav.Box, u.tokens.Box, u.guide.Box} {
-		box.SetBorderStyle(p["surface"].Style()).SetTitleColor(p["body"].FG)
+		box.SetBorderStyle(styler.Styles.BorderStyle(box.HasFocus(), box.GetBackgroundColor())).SetTitleColor(p["body"].FG)
 	}
 	if u.popup != nil {
 		u.popup.card.SetBorderStyle(p["focus.border"].Style()).SetTitleColor(p["surface"].FG)

@@ -146,3 +146,5 @@ Version 0.2.0 public APIs `ControlState.Visual`, `ControlStyle`, `NewFocusStack`
 [TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 Wrap the entire card Draw with `WideSafeScreen(screen)` and draw shadows with `DimRegion(screen, CellRect{...})`. See [overlay drawing](overlay-drawing.en.md) for both-edge repairs and post-Show tests. These APIs are included in v0.2.0.
+
+Version 0.4.0 TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface / Styles::control_on_surface bind plain text to its real surface and correct contrast. Preserve original tokens/raw styles and explicit state/custom backgrounds. [Bilingual surface design guide](../design/surfaces.en.md).

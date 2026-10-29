@@ -190,13 +190,7 @@ impl Tabs {
             let active = item.id == state.active;
             let focused = item.id == state.focused;
             let (left, right) = if active { ("[", "]") } else { (" ", " ") };
-            let mark = if item.disabled {
-                "-"
-            } else if focused {
-                ">"
-            } else {
-                " "
-            };
+            let mark = if focused { ">" } else { " " };
             let suffix = format!(
                 "{}{}",
                 if item.edited { " *" } else { "" },

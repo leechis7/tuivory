@@ -215,7 +215,7 @@ func TestWorkspaceViewsAllPalettesAndResizeEvents(t *testing.T) {
 			status.Draw(screen)
 			_, _, st, _ := screen.GetContent(0, 18)
 			fg, bg, _ := st.Decompose()
-			if fg != p["error"].FG || bg != p["error"].BG {
+			if fg != p["error"].FG || bg != p["surface"].BG {
 				t.Fatal(st)
 			}
 			for _, v := range []tview.Primitive{view, panel, split, crumbs, status} {

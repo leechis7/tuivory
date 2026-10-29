@@ -15,6 +15,8 @@ func (s Styler) Text(view *tview.TextView, surface style.Surface, role style.Tex
 
 func (s Styler) DropDown(field *tview.DropDown) {
 	p := s.Styles
+	s.Box(field.Box, p.Surface, p.Text)
+	field.SetLabelStyle(p.TextStyle(style.Panel, style.Body))
 	normal := p.DropDownStyle()
 	field.SetFieldStyle(normal).SetFocusedStyle(p.SelectionStyle().Underline(true)).
 		SetListStyles(normal, p.SelectionStyle()).SetPrefixStyle(normal)

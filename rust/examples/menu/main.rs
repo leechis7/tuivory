@@ -152,7 +152,7 @@ impl App {
                     "Components and host actions"
                 )
             ))
-            .style(self.styles.role("body").unwrap()),
+            .style(self.styles.text_on_surface("body", "surface").unwrap()),
             Rect::new(0, 0, width, u16::from(height > 0)),
         );
         if height > 1 {
@@ -200,10 +200,11 @@ impl App {
             .unwrap();
         let inner = block.inner(self.preview);
         f.render_widget(block, self.preview);
-        f.render_widget(Paragraph::new(tr(self.en,"앱이 선택한 내용·명령·화면 배치\n메뉴 항목은 실제 파일·DB·클립보드를 변경하지 않습니다.","Host-owned content, commands and screen layout\nMenu items do not change files, databases or clipboard.")).style(self.styles.role("body").unwrap()),inner);
+        f.render_widget(Paragraph::new(tr(self.en,"앱이 선택한 내용·명령·화면 배치\n메뉴 항목은 실제 파일·DB·클립보드를 변경하지 않습니다.","Host-owned content, commands and screen layout\nMenu items do not change files, databases or clipboard.")).style(self.styles.text_on_surface("body", "surface").unwrap()),inner);
         if height >= 2 {
             f.render_widget(
-                Paragraph::new(self.status.clone()).style(self.styles.role("body").unwrap()),
+                Paragraph::new(self.status.clone())
+                    .style(self.styles.text_on_surface("body", "surface").unwrap()),
                 Rect::new(0, height - 2, width, 1),
             );
             f.render_widget(Paragraph::new(tr(self.en,"F10 메뉴 · Shift+F10 문맥 · Alt+F/E/V · F2 테마 F3 색상 F4 ASCII F5 사용 가능 상태 · Tab 영역 · Ctrl+Q 종료","F10 menu / Shift+F10 context / Alt+F/E/V / F2 theme F3 colors F4 ASCII F5 eligibility / Tab panel / Ctrl+Q quit")).style(self.styles.role("hint").unwrap()),Rect::new(0,height-1,width,1));
@@ -247,7 +248,7 @@ impl App {
             };
             self.inner = self
                 .styles
-                .panel(&title, true, 1, self.ascii)
+                .panel(&title, false, 1, self.ascii)
                 .unwrap()
                 .inner(self.popup);
             f.render_widget(

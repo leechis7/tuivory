@@ -9,6 +9,7 @@ import (
 	"github.com/rivo/tview"
 	"github.com/rivo/uniseg"
 	"log"
+	"strings"
 )
 
 func targets(level int) []ui.FocusTarget {
@@ -70,12 +71,12 @@ func (l *lines) Draw(screen tcell.Screen) {
 			break
 		}
 		v := item.State.Visual()
-		style, _ := ui.ControlStyle(l.palette, item.State, l.active && l.focused == item.ID)
+		style, _ := ui.ControlStyleOnSurface(l.palette, item.State, l.active && l.focused == item.ID, "surface")
 		cursor := "  "
 		if l.active && l.focused == item.ID {
 			cursor = "> "
 		}
-		write(screen, x, y+index, w, cursor+fmt.Sprintf("%-6s", v.Markers)+label(item.ID, l.en), style)
+		write(screen, x, y+index, w, cursor+fmt.Sprintf("%-6s", strings.TrimPrefix(v.Markers, "-"))+label(item.ID, l.en), style)
 	}
 }
 func (l *lines) HasFocus() bool { return l.active }

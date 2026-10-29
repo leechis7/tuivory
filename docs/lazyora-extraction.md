@@ -58,3 +58,5 @@ python3 tools/capture_lazyora_matrix.py /path/to/lazyora
 ```
 
 구문 스타일 계산은 stock tcell에서 사용할 수 있습니다. stock tview의 TextArea에는 LazyOra 포크의 `SetTextStyleFunc`가 없으므로 Tuivory는 그 훅을 복제하지 않습니다. 실제 LazyOra import 전환 시 기존 호스트 lexer와 훅에서 Tuivory의 `SyntaxStyle`을 호출하는 구조로 연결합니다. 템플릿에서 구문 강조 렌더링까지 제공한다고 표현하지 않습니다.
+
+비활성 표시 보완 이후 Go DisabledStyle()은 공통 disabled 전경·Dim 정책을 적용합니다. 기존 추출 Disabled 필드와 원본 비교 JSON은 과거 색상을 보존하며, 새 어댑터는 별도 12팔레트 출력 회귀로 검증합니다. 사용자 지정 Disabled 색상은 보존합니다. [현재 규칙](disabled-states.md).

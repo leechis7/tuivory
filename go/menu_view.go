@@ -36,6 +36,8 @@ func MenuKey(e *tcell.EventKey) (string, string) {
 	return "", ""
 }
 
+// MenuView uses selection cues without separate focus decoration.
+// NewPanelView renders a directly wrapped MenuView with a single border.
 type MenuView struct {
 	*RowsView
 	ASCII bool
@@ -46,6 +48,9 @@ func NewMenuView(model *Menu, palette Palette, ascii bool, onEvent func(MenuEven
 	v := &MenuView{ASCII: ascii}
 	rows, e := NewRowsView(func(w, h int) []ComponentLine { height = h; return model.Layout(w, h, v.ASCII) }, palette)
 	v.RowsView = rows
+	if rows != nil {
+		rows.hideFocus = true
+	}
 	if e != nil {
 		return nil, e
 	}
@@ -73,6 +78,9 @@ func NewMenuView(model *Menu, palette Palette, ascii bool, onEvent func(MenuEven
 			at := y - top
 			if at >= 0 && at < len(v.visible) {
 				line := v.visible[at]
+				if line.Role == "disabled" {
+					return true, nil
+				}
 				if a == tview.MouseMove {
 					model.Focus(line.ID)
 				} else {
@@ -110,6 +118,7 @@ func NewMenuBarView(model *Menu, palette Palette, onEvent func(MenuEvent)) (*Row
 	if e != nil {
 		return nil, e
 	}
+	v.hideFocus = true
 	emit := func(e MenuEvent) {
 		if onEvent != nil && e.Kind != "" {
 			onEvent(e)
@@ -137,9 +146,12 @@ func NewMenuBarView(model *Menu, palette Palette, onEvent func(MenuEvent)) (*Row
 		if a != tview.MouseLeftClick {
 			return false, nil
 		}
-		focus(v)
 		left, _, w, _ := v.GetInnerRect()
-		emit(model.BarClick(x-left, w))
+		event := model.BarClick(x-left, w)
+		if event.Kind != "" {
+			focus(v)
+			emit(event)
+		}
 		return true, nil
 	}
 

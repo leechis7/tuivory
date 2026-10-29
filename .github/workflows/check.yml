@@ -50,8 +50,8 @@ jobs:
         run: go build -C go -o "$RUNNER_TEMP/tuivory" ./cmd/tuivory
       - name: Check actual PTY startup and exit
         run: |
-          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang ko
-          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang en
+          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang ko --resize
+          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang en --resize
       - name: Check public Tree example terminal lifecycle
         run: |
           go build -C go -o "$RUNNER_TEMP/tuivory-tree" ./examples/tree

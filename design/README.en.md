@@ -48,3 +48,7 @@ At either horizontal overlay/shadow edge, replace intersected wide graphemes wit
 Follow the [component/application boundary](../docs/component-boundary.en.md). Example screens/keymaps are host choices, not a mandatory application framework.
 
 [Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.
+
+[Surface/text background rules](surfaces.en.md): actual-surface plain text, explicit state backgrounds, contrast correction and binding APIs.
+
+[Disabled states across twelve palettes](../docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.

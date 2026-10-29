@@ -22,4 +22,8 @@ The checker validates required columns, duplicate roles, color ranges, reference
 
 Targets of 4.5:1 for regular text and 3:1 for focus borders are internal design references. CSV rows specify their own target. Passing does not certify whole-screen accessibility; layers, cursor, glyph width, Dim, reverse video, and behavior require separate checks.
 
-The [shared JSON draft](../tokens/README.en.md) is generated from this CSV and read by Go/Python/Node.js/Rust. Go has a token loader and tcell style adapter; Rust has a core and optional Ratatui adapter. DTCG extensions and a complete widget SDK are not provided. CSV and draft JSON do not imply future API compatibility guarantees.
+The [shared JSON draft](../tokens/README.en.md) is generated from this CSV and read by Go/Python/Node.js/Rust. Go has a token loader and tcell style adapter; Rust has a core and optional Ratatui adapter. DTCG extension compatibility is not provided. See the [component catalog](../../docs/README.en.md) for current component support. CSV and draft JSON do not imply future API compatibility guarantees.
+
+Distinguish raw role backgrounds from actual component surfaces. Bind plain text to its real surface and check foreground contrast there; preserve explicit field/selection/edit/custom backgrounds. [Surface rules](../surfaces.en.md).
+
+Disabled roles use a 2.0:1 reference contrast floor to remain visibly muted. Light-16 gray on the gray surface is about 2.17:1, separate from the 4.5:1 active-text target. Eight-color Dim is outside the CSV RGB calculation; validate its output attribute and [comparison view](../../docs/disabled-states.en.md) separately.
