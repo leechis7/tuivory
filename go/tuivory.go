@@ -1,6 +1,8 @@
-// Package tuivory provides reusable terminal UI styles through a single import.
-// Create a Styler with New, apply it to existing widgets, and reapply a new
-// Styler when the theme changes. TUIVORY owns no terminal, application, or data.
+// Package tuivory provides reusable TUI components and styles through one import.
+// Component models and renderers manage internal interaction and presentation.
+// Hosts compose screens and supply scope order, global keys, data and actions.
+// New creates a Styler for existing widgets; shared components also accept the
+// candidate palette. Hosts retain terminal lifecycle and business I/O.
 package tuivory
 
 import (

@@ -2,9 +2,11 @@
 
 [한국어 (default)](README.md) · **English**
 
+The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
+
 Crate version **0.2.0** matches root `VERSION`. Use Git tag `rust/v0.2.0`. [Release guide](../docs/release-0.2.0.en.md).
 
-TVR-5 provides a shared candidate-token/style core, optional Ratatui adapter, and database-free interactive example. The default core requires Rust 1.85+ (verified with 1.85.1); the Ratatui 0.30.2 adapter and Crossterm 0.29 example require Rust 1.88+ (verified with 1.88.0). The core and adapter do not depend on Go, terminal I/O, or databases.
+The package provides shared component models, candidate-token/style core, optional Ratatui renderers and database-free interactive examples. The default core requires Rust 1.85+ (verified with 1.85.1); the Ratatui 0.30.2 adapter and Crossterm 0.29 example require Rust 1.88+ (verified with 1.88.0). The core and adapter do not depend on Go, terminal I/O, or databases.
 
 ## Usage
 
@@ -104,7 +106,7 @@ Cargo version 0.2.0 retains `publish = false` for Git distribution. It is not pu
 
 ## Shared Tree
 
-`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}` works without a framework on Rust 1.85+. Optional `tuivory::ratatui::TreeWidget` requires Rust 1.88+. It shares stable-ID expansion, selection, scroll, and event contracts with Go and renders icons, secondary text, counts, and Unicode/ASCII alternatives. [Tree guide](../docs/tree.en.md) · [Support audit](../docs/component-audit.en.md). Run `make run-tree-rust ARGS="--lang en"` from the root. These TVR-7 changes are included in `rust/v0.2.0`.
+`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}` works without a framework on Rust 1.85+. Optional `tuivory::ratatui::TreeWidget` requires Rust 1.88+. It shares stable-ID expansion, selection, scroll, and event handling rules with Go and renders icons, secondary text, counts, and Unicode/ASCII alternatives. [Tree guide](../docs/tree.en.md) · [Support audit](../docs/component-audit.en.md). Run `make run-tree-rust ARGS="--lang en"` from the root. These TVR-7 changes are included in `rust/v0.2.0`.
 
 ## Shared workspace components
 
@@ -112,7 +114,7 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.e
 
 ## Shared control states and focus
 
-Version 0.2.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `Styles::control` are available. See the [shared contract and localized examples](../docs/focus.en.md); run `make run-focus-rust ARGS="--lang en"` from the root. These APIs are included in rust/v0.2.0.
+Version 0.2.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui `Styles::control` are available. See the [shared specification and localized examples](../docs/focus.en.md); run `make run-focus-rust ARGS="--lang en"` from the root. These APIs are included in rust/v0.2.0.
 
 [TVR-9: Inputs and forms](../docs/forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
@@ -123,3 +125,7 @@ Version 0.2.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui
 [TVR-12: Notices, progress and data states](../docs/feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 [TVR-13: Layout, density and supporting components](../docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
+
+[TVR-17 grid options](../docs/grid.en.md): simple/data presets, ranges, column configuration, status, response generations and a five-row comparison. Unreleased source.
+
+[Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.

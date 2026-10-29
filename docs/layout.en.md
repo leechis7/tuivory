@@ -30,3 +30,5 @@ Hosts own data, business actions, clocks and terminal lifecycle. Public models e
 Actual Rust TestBackend 120×36 reference, not a Go capture or physical/SSH terminal result. Generate six localized references with `tools/snapshot_catalog.py BINARY --mode layout`.
 
 [Backlog](components-backlog.en.md) · [Static distribution](static-build.en.md)
+
+Stack/Drawer are geometry tools for host-supplied areas/items/minimum sizes. They do not mandate application-wide panel order, hiding priorities or screen breakpoints. Help renders supplied shortcut descriptions; hosts own whole help screens, contents and global command registration. [Boundary](component-boundary.en.md).

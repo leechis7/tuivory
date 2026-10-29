@@ -40,6 +40,8 @@ func main() {
 	theme := flag.String("theme", "dark", "theme")
 	colors := flag.String("colors", "256", "color profile")
 	ascii := flag.Bool("ascii", false, "ASCII borders")
+	gridPreset := flag.String("grid-preset", "simple", "simple/data")
+	gridSample := flag.Bool("grid-sample", false, "five-row grid comparison")
 	mode := flag.String("mode", "forms", "component")
 	densityFlag := flag.String("density", "auto", "auto/compact/comfortable")
 	flag.Parse()
@@ -95,6 +97,24 @@ func main() {
 	}
 	if *mode == "grid" {
 		grid, _ := ui.NewGrid([]ui.GridColumn{{ID: "name", Label: text("이름", "Name"), Width: 28, Editable: true}, {ID: "value", Label: text("값", "Value"), Width: 16, Editable: true}, {ID: "state", Label: text("상태", "State"), Width: 16}}, demoRows{count: 100000, en: *lang == "en"})
+		if *gridSample {
+			grid = sampleGrid(text)
+		}
+		gridOptions, e := ui.GridPreset(*gridPreset)
+		if e != nil {
+			log.Fatal(e)
+		}
+		gridOptions.ASCII = *ascii
+		if *densityFlag != "auto" {
+			gridOptions, e = gridOptions.WithDensity(*densityFlag)
+			if e != nil {
+				log.Fatal(e)
+			}
+		}
+		if e = grid.SetOptions(gridOptions); e != nil {
+			log.Fatal(e)
+		}
+		configureGrid(grid, text)
 		grid.Empty = text("결과 없음", "No results")
 		view, err = ui.NewGridView(grid, palette, func(e ui.GridEvent) { footer.SetText(e.Kind + ": " + e.RowID + " / " + e.ColumnID) })
 		if err != nil {

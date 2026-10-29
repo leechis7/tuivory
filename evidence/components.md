@@ -12,7 +12,7 @@
 | TVR-12 | Notice/Progress/DataState: 중요/액션 알림 유지·큐 포화·요청 불변성·호스트 시각·진행률/취소·높이 1 우선순위 |
 | TVR-13 | Spacing/Stack/Badge/Chip/Help: 공유 JSON·0~240셀 비겹침/경계·좁은 화면/선호 복원·0/99+·읽기 전용 제거·키 충돌/우선순위 |
 
-Go race/vet, Rust 전체 기능·rustdoc·fmt·clippy, 공통 토큰/계약·문서 링크·Shell 검사를 사용합니다. 기본 코어 CI는 Rust 1.85.1, UI는 1.88.0입니다. 외부 검사는 go/만 복제하거나 독립 Cargo 패키지를 설치해 공개 API·렌더링과 정적 x86_64 호스트를 확인합니다.
+Go race/vet, Rust 전체 기능·rustdoc·fmt·clippy, 공통 토큰/명세·문서 링크·Shell 검사를 사용합니다. 기본 코어 CI는 Rust 1.85.1, UI는 1.88.0입니다. 외부 검사는 go/만 복제하거나 독립 Cargo 패키지를 설치해 공개 API·렌더링과 정적 x86_64 호스트를 확인합니다.
 
 ```sh
 make test check test-rust-ui check-rust-ui

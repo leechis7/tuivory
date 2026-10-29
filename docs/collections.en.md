@@ -26,3 +26,5 @@ Hosts own data, business actions, clocks and terminal lifecycle. Public models e
 Actual Rust TestBackend 120×36 reference, not a Go capture or physical/SSH terminal result. Generate six localized references with `tools/snapshot_catalog.py BINARY --mode collections`.
 
 [Backlog](components-backlog.en.md) · [Static distribution](static-build.en.md)
+
+Published v0.2.0 menus use flat ListModel items. New [shared menus](menus.en.md) provide hierarchical groups/back navigation, a menu bar, popup geometry and caller-restoration requests in unreleased source. Existing list/search APIs remain unchanged; hosts choose content, remote candidates and business commands.

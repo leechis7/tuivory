@@ -8,6 +8,7 @@
 
 | 문서 | 내용 |
 | --- | --- |
+| [컴포넌트와 앱의 책임](component-boundary.md) | 화면 조합·배치·포커스·전역 명령의 경계와 예제 |
 | [프로젝트 소개](../README.md) | 제공 범위·설치·빠른 시작 |
 | [설치·사용 안내](installation.md) | 현재 모듈·CLI·토큰 식별자와 배포/소스 구분 |
 | [Rust 패키지](../rust/README.md) | Git 배포 crate·공통 토큰·스타일·Ratatui 어댑터·외부 사용 |
@@ -17,10 +18,10 @@
 | [Go 사용법](go-package.md) | 공개 API·역할·상태·테마 재적용 |
 | [견본](playground.md) | 한국어·영어 실행·키 조작·이미지 생성 |
 | [저장소 구조](architecture.md) | 언어별 경계·공통 데이터·내장 자산 |
-| [공통 명세](../design/README.md) | 언어 독립 설계 계약 |
+| [공통 명세](../design/README.md) | 언어 독립 설계 명세 |
 | [토큰](../design/tokens/README.md) · [테마](../design/themes/README.md) | JSON·스키마·CSV와 검증 범위 |
 | [설계 원칙](principles.md) | 의미·프로필·상태·입력·셀·검증 |
-| [컴포넌트 패턴](patterns.md) | 위젯별 상태와 조작 계약 |
+| [컴포넌트 패턴](patterns.md) | 위젯별 상태와 조작 규칙 |
 | [단말 프로필](terminal-profiles.md) | 색상 능력·ANSI·표현 제한 |
 | [추출 출처](lazyora-extraction.md) · [Go 범위](go-style-coverage.md) | 원본 해시·API 대응·동등성 근거 |
 | [언어별 예제](../examples/README.md) | Go·Rust·Python·JavaScript·Shell의 실제 제공 범위 |
@@ -50,3 +51,5 @@
 [TVR-13: 배치·밀도·부가 컴포넌트](layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
 [두 칸 문자·오버레이 그리기](overlay-drawing.md): Go 공개 화면 래퍼·그림자·Show 이후 출력 회귀.
+
+[공통 메뉴](menus.md): Menu·메뉴 바·계층 복귀·팝업·호스트 문맥·한영 예제. 미배포 소스.

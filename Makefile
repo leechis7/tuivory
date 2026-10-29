@@ -60,3 +60,9 @@ run-catalog-go:
 	go -C go run ./examples/catalog $(ARGS)
 run-catalog-rust:
 	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example catalog -- $(ARGS)
+
+.PHONY: run-menu-go run-menu-rust
+run-menu-go:
+	go -C go run ./examples/menu $(ARGS)
+run-menu-rust:
+	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example menu -- $(ARGS)

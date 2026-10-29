@@ -1,3 +1,4 @@
+mod grid_demo;
 #[path = "../playground/snapshot.rs"]
 mod snapshot;
 use crossterm::{
@@ -192,6 +193,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut colors = ColorProfile::Indexed256;
     let mut output = None;
     let mut mode = "forms".to_owned();
+    let mut grid_preset = "simple".to_string();
+    let mut grid_sample = false;
     let mut density = tuivory::layout::Density::Auto;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -207,6 +210,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--theme" => theme = args.next().ok_or("missing theme")?.parse()?,
             "--colors" => colors = args.next().ok_or("missing colors")?.parse()?,
             "--snapshot" => output = Some(args.next().ok_or("missing output")?),
+            "--grid-preset" => grid_preset = args.next().ok_or("missing grid preset")?,
+            "--grid-sample" => grid_sample = true,
             "--density" => density = args.next().ok_or("missing density")?.parse()?,
             "--mode" => {
                 mode = args.next().ok_or("missing mode")?;
@@ -247,6 +252,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         ],
         Box::new(DemoRows { count: 100000, en }),
     )?;
+    if grid_sample {
+        grid = grid_demo::sample(en);
+    }
+    let mut grid_options = tuivory::grid::grid_preset(&grid_preset)?;
+    grid_options.ascii = ascii;
+    grid_options = match density {
+        tuivory::layout::Density::Compact => grid_options.with_density("compact")?,
+        tuivory::layout::Density::Comfortable => grid_options.with_density("comfortable")?,
+        _ => grid_options,
+    };
+    grid.set_options(grid_options)?;
+    grid_demo::configure(&mut grid, en);
     grid.empty = text(en, "결과 없음", "No results");
     let mut queue = NoticeQueue::new(8)?;
     queue.push(Notice {
@@ -536,12 +553,35 @@ fn main() -> Result<(), Box<dyn Error>> {
                         KeyCode::F(7) => "widen",
                         KeyCode::F(8) => "narrow",
                         KeyCode::F(9) => "sort",
+                        KeyCode::F(10) => "range_mode",
+                        KeyCode::F(11) => "autofit",
+                        KeyCode::F(12) => "details",
+                        KeyCode::Esc => "cancel",
                         KeyCode::Char(' ') => "select",
                         KeyCode::Char('c') if k.modifiers.contains(KeyModifiers::CONTROL) => "copy",
                         _ => "",
                     };
-                    let e = if k.code == KeyCode::F(5) {
-                        grid.request_filter("sample")
+                    let action = if k.modifiers.contains(KeyModifiers::SHIFT) {
+                        match k.code {
+                            KeyCode::Up => "extend_up",
+                            KeyCode::Down => "extend_down",
+                            KeyCode::Left => "extend_left",
+                            KeyCode::Right => "extend_right",
+                            _ => action,
+                        }
+                    } else if k.modifiers.contains(KeyModifiers::ALT) {
+                        match k.code {
+                            KeyCode::Left => "cell_pan_left",
+                            KeyCode::Right => "cell_pan_right",
+                            _ => action,
+                        }
+                    } else {
+                        action
+                    };
+                    let e = if grid.options().disable_keyboard {
+                        tuivory::grid::GridEvent::default()
+                    } else if k.code == KeyCode::F(5) {
+                        grid.request_filter(&grid.status.filter)
                     } else {
                         grid.handle(action, body.height.into())
                     };
@@ -577,6 +617,52 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 } else {
                     key(&mut form, k.code)
+                }
+            }
+            Event::Mouse(m)
+                if mode == "grid"
+                    && (body.contains((m.column, m.row).into()) || grid.pointer_captured()) =>
+            {
+                let action = match m.kind {
+                    MouseEventKind::Down(MouseButton::Left) => "down",
+                    MouseEventKind::Drag(MouseButton::Left) => "move",
+                    MouseEventKind::Up(MouseButton::Left) => "up",
+                    MouseEventKind::ScrollUp => "wheel_up",
+                    MouseEventKind::ScrollDown => "wheel_down",
+                    MouseEventKind::ScrollLeft => "wheel_left",
+                    MouseEventKind::ScrollRight => "wheel_right",
+                    _ => "",
+                };
+                // Header activation occurs on down in the host; body down starts selection/drag.
+                let geo = grid.geometry(body.width.into(), body.height.into());
+                let local_x = isize::try_from(m.column).unwrap() - isize::try_from(body.x).unwrap();
+                let local_y = isize::try_from(m.row).unwrap() - isize::try_from(body.y).unwrap();
+                let mut e = grid.pointer(
+                    action,
+                    local_x,
+                    local_y,
+                    body.width.into(),
+                    body.height.into(),
+                    m.modifiers.contains(KeyModifiers::SHIFT),
+                );
+                if action == "down"
+                    && local_y >= 0
+                    && (local_y as usize) < geo.header_rows
+                    && e.kind != "resize_start"
+                {
+                    e = grid.pointer(
+                        "click",
+                        local_x,
+                        local_y,
+                        body.width.into(),
+                        body.height.into(),
+                        false,
+                    );
+                }
+                FormEvent {
+                    kind: e.kind,
+                    id: format!("{} / {}", e.row_id, e.column_id),
+                    ..Default::default()
                 }
             }
             Event::Mouse(m)

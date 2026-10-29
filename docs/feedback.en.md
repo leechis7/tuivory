@@ -2,7 +2,7 @@
 
 [한국어 (default)](feedback.md) · **English**
 
-Public Go types: `NoticeQueue`, `Progress`, `DataState` with corresponding views; Rust `feedback` models and Ratatui widgets provide the same contract.
+Public Go types: `NoticeQueue`, `Progress`, `DataState` with corresponding views; Rust `feedback` models and Ratatui widgets provide the same behavior.
 
 Notices carry IDs, text/detail, info/success/warning/error severity, priority, absolute expiry and actions. Duplicate IDs explicitly update; invalid severity/action IDs fail. Sort by severity/priority, report omitted items and preserve the highest-priority notice in a one-line viewport. Error/persistent/actionable notices never auto-expire or get evicted for capacity. Hosts handle full-queue errors.
 

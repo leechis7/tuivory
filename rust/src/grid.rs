@@ -5,6 +5,10 @@ use crate::{
     interaction::ControlState,
 };
 use std::collections::BTreeMap;
+mod options;
+mod pointer;
+mod presentation;
+pub use options::*;
 #[derive(Clone, Debug, Default)]
 pub struct GridColumn {
     pub id: String,
@@ -76,6 +80,21 @@ pub struct Grid {
     left: usize,
     pub whole_row: bool,
     pub empty: String,
+    options: GridOptions,
+    last_width: std::cell::Cell<usize>,
+    column_options: BTreeMap<String, GridColumnOptions>,
+    cell_info: Option<options::CellInfo>,
+    selection: GridRange,
+    range_mode: bool,
+    revision: std::cell::Cell<u64>,
+    applied_revision: u64,
+    cell_pan: BTreeMap<String, usize>,
+    pub labels: BTreeMap<String, String>,
+    pub status: GridDataStatus,
+    drag_column: String,
+    drag_x: isize,
+    drag_width: usize,
+    drag_anchor: GridRange,
 }
 #[derive(Clone, Debug)]
 pub struct GridSpan {
@@ -110,6 +129,21 @@ impl Grid {
             left: 0,
             whole_row: false,
             empty: "(empty)".into(),
+            options: GridOptions::default(),
+            last_width: std::cell::Cell::new(0),
+            column_options: BTreeMap::new(),
+            cell_info: None,
+            selection: GridRange::default(),
+            range_mode: false,
+            revision: options::revision_cell(),
+            applied_revision: 0,
+            cell_pan: BTreeMap::new(),
+            labels: BTreeMap::new(),
+            status: GridDataStatus::default(),
+            drag_column: String::new(),
+            drag_x: 0,
+            drag_width: 0,
+            drag_anchor: GridRange::default(),
         };
         g.reconcile();
         Ok(g)
@@ -129,6 +163,9 @@ impl Grid {
             self.selected_column.clear()
         }
         self.source = source;
+        if self.range_bounds().is_none() {
+            self.selection = GridRange::default();
+        }
         self.reconcile()
     }
     fn reconcile(&mut self) {
@@ -185,16 +222,24 @@ impl Grid {
         true
     }
     pub fn resize_column(&mut self, id: &str, width: usize) -> bool {
-        if !(1..=4096).contains(&width) {
+        let (lo, hi) = options::bounds(&self.column_options(id));
+        if width < lo || width > hi {
             return false;
         }
         let Some(col) = self.columns.iter_mut().find(|c| c.id == id) else {
             return false;
         };
         col.width = width;
+        let mut opts = self.column_options(id);
+        if opts.auto_fit || opts.expand > 0 {
+            opts.auto_fit = false;
+            opts.expand = 0;
+            self.column_options.insert(id.into(), opts);
+        }
         true
     }
     pub fn request_filter(&self, query: &str) -> GridEvent {
+        self.next_request();
         GridEvent {
             kind: "filter".into(),
             text: query.into(),
@@ -206,12 +251,16 @@ impl Grid {
         if self.columns.is_empty() {
             return GridEvent::default();
         }
+        if let Some(e) = self.extra_action(action, height) {
+            return e;
+        }
         let mut event = GridEvent {
             row_id: self.row_id.clone(),
             column_id: self.column_id.clone(),
             ..Default::default()
         };
         if action == "sort" {
+            self.next_request();
             let same = self.sort_column == self.column_id;
             self.sort_column = self.column_id.clone();
             self.sort_direction = if same && self.sort_direction == "asc" {
@@ -244,7 +293,15 @@ impl Grid {
                 return event;
             }
             "activate" => {
-                if self.columns[self.column].editable && row.state.visual().editable {
+                if !self.options.disable_editing
+                    && self.columns[self.column].editable
+                    && options::combine(
+                        row.state,
+                        self.info(&row, &self.columns[self.column]).state,
+                    )
+                    .visual()
+                    .editable
+                {
                     event.kind = "edit".into();
                     event.text = row.cells.get(&self.column_id).cloned().unwrap_or_default()
                 }
@@ -258,6 +315,7 @@ impl Grid {
             }
             "row_mode" => {
                 self.whole_row = !self.whole_row;
+                self.range_mode = false;
                 return GridEvent {
                     kind: "mode".into(),
                     ..Default::default()
@@ -269,9 +327,9 @@ impl Grid {
             "down" => self.row = (self.row + 1).min(self.source.len() - 1),
             "first" => self.row = 0,
             "last" => self.row = self.source.len() - 1,
-            "page_up" => self.row = self.row.saturating_sub(height.saturating_sub(2).max(1)),
+            "page_up" => self.row = self.row.saturating_sub(self.page_rows(height)),
             "page_down" => {
-                self.row = (self.row + height.saturating_sub(2).max(1)).min(self.source.len() - 1)
+                self.row = (self.row + self.page_rows(height)).min(self.source.len() - 1)
             }
             "widen" => {
                 let id = self.column_id.clone();
@@ -305,131 +363,25 @@ impl Grid {
             }
         }
         self.reconcile();
+        if self.last_width.get() > 0 {
+            let geo = self.geometry(self.last_width.get(), height);
+            self.top = geo.top;
+            self.left = geo.left;
+        }
+        if self.range_mode && !self.whole_row && !self.row_id.is_empty() {
+            let mut r = self.selection.clone();
+            if r.anchor_row.is_empty() {
+                r.anchor_row = event.row_id.clone();
+                r.anchor_column = event.column_id.clone();
+            }
+            r.end_row = self.row_id.clone();
+            r.end_column = self.column_id.clone();
+            self.select_range(r);
+        }
         event.kind = "focus".into();
         event.row_id = self.row_id.clone();
         event.column_id = self.column_id.clone();
         event
-    }
-    fn spans(&self, width: usize) -> Vec<GridSpan> {
-        let mut left = self.left.min(self.column);
-        let capacity = width.saturating_sub(3);
-        while left < self.column {
-            let used: usize = self.columns[left..=self.column]
-                .iter()
-                .map(|c| c.width + 1)
-                .sum();
-            if used <= capacity {
-                break;
-            }
-            left += 1
-        }
-        let mut out = vec![];
-        let mut x = 3;
-        for col in self.columns.iter().skip(left) {
-            if x >= width {
-                break;
-            }
-            let w = col.width.min(width - x);
-            out.push(GridSpan {
-                id: col.id.clone(),
-                start: x,
-                width: w,
-            });
-            x += w + 1
-        }
-        out
-    }
-    pub fn layout(&self, width: usize, height: usize) -> Vec<ComponentLine> {
-        if width == 0 || height == 0 || self.columns.is_empty() {
-            return vec![];
-        }
-        let spans = self.spans(width);
-        let mut header = ComponentLine {
-            role: "header".into(),
-            value: "@header".into(),
-            ..Default::default()
-        };
-        for span in &spans {
-            let mut label = self
-                .columns
-                .iter()
-                .find(|c| c.id == span.id)
-                .map(|c| c.label.clone())
-                .unwrap_or_default();
-            if span.id == self.sort_column {
-                label.push_str(&format!(" {}", self.sort_direction))
-            }
-            header.spans.push(ComponentSpan {
-                start: span.start,
-                width: span.width,
-                text: if span.id == self.column_id {
-                    format!("> {label}")
-                } else {
-                    label
-                },
-                role: "header".into(),
-                focused: span.id == self.column_id,
-            });
-        }
-        let mut out = vec![header];
-        if self.source.is_empty() {
-            if height > 1 {
-                out.push(ComponentLine {
-                    text: crate::components::cell_text(&self.empty, width),
-                    role: "hint".into(),
-                    ..Default::default()
-                })
-            }
-            return out;
-        }
-        let mut top = self.top.min(self.row);
-        if self.row >= top + height.saturating_sub(1).max(1) {
-            top = self.row - height.saturating_sub(1).max(1) + 1
-        }
-        top = top.min(
-            self.source
-                .len()
-                .saturating_sub(height.saturating_sub(1).max(1)),
-        );
-        for index in top..self.source.len() {
-            if out.len() >= height {
-                break;
-            }
-            let record = self.source.row(index);
-            let visual = record.state.visual();
-            let mut line = ComponentLine {
-                id: record.id.clone(),
-                text: format!(
-                    "{}{}",
-                    if record.id == self.row_id { "> " } else { "  " },
-                    visual.markers
-                ),
-                role: visual.role.into(),
-                focused: record.id == self.row_id,
-                ..Default::default()
-            };
-            for span in &spans {
-                let mut state = record.state;
-                if record.id == self.selected_row
-                    && (self.whole_row || span.id == self.selected_column)
-                {
-                    state.selected = true
-                }
-                line.spans.push(ComponentSpan {
-                    start: span.start,
-                    width: span.width,
-                    text: format!(
-                        "{}{}",
-                        if state.selected { "> " } else { "" },
-                        record.cells.get(&span.id).cloned().unwrap_or_default()
-                    ),
-                    role: state.visual().role.into(),
-                    focused: record.id == self.row_id && span.id == self.column_id,
-                })
-            }
-            out.push(line)
-        }
-        out
     }
     pub fn click(
         &mut self,
@@ -439,9 +391,12 @@ impl Grid {
         width: usize,
         height: usize,
     ) -> GridEvent {
-        for span in self.spans(width) {
+        for span in self.geometry(width, height).columns {
             if x >= span.start && x < span.start + span.width {
                 if kind == "@header" {
+                    if self.options.disable_header_sort {
+                        return GridEvent::default();
+                    }
                     if let Some(col) = self.columns.iter().position(|c| c.id == span.id) {
                         self.column = col
                     }

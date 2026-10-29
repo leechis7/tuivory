@@ -1,18 +1,20 @@
-# Tuivory — terminal UI styles
+# Tuivory — TUI component library
 
 [한국어 (default)](README.md) · **English**
 
 **0.2.0**: shared components, static executables and overlay repairs. [Release guide](docs/release-0.2.0.en.md).
 
-**Tuivory** (TUI + ivory) provides reusable terminal UI styles, with shared design rules and data for implementations in multiple languages. Korean is the primary documentation language; this English guide covers installation, usage, and the current scope.
+**Tuivory** (TUI + ivory) provides reusable TUI components and styles, with shared design rules and data for implementations in multiple languages. Korean is the primary documentation language; this English guide covers installation, usage, and the current scope.
 
-The Go package provides working style APIs and integration with tview widgets. The Rust crate provides framework-independent candidate token validation and style values, an optional Ratatui adapter, and a Korean/English interactive playground. Python and JavaScript currently provide token reading examples, and Shell provides an ANSI reference example. Their UI style packages are planned work.
+Go and Rust provide shared component models, styles and tview/Ratatui renderers. Hosts compose screens and choose cross-component focus order, global keys, data and business actions. Tuivory provides internal control interaction and configurable presentation/layout tools. [Component/application boundary](docs/component-boundary.en.md) · [Current support audit](docs/component-audit.en.md).
+
+Python and JavaScript currently provide token-reading examples; their UI packages are planned. Shell provides an ANSI reference example.
 
 | Directory | Contents |
 | --- | --- |
 | [design/](design/README.en.md) | Shared specifications, themes, JSON tokens and schemas, CSV reference data |
-| [go/](go/README.en.md) | Go module, style implementation, interactive playground, starter example |
-| [rust/](rust/README.en.md) | Rust crate, candidate tokens/styles, optional Ratatui adapter, bilingual interactive playground |
+| [go/](go/README.en.md) | Go module, shared component models/tview renderers, styles and examples |
+| [rust/](rust/README.en.md) | Rust crate, shared component models/tokens, optional Ratatui renderers and bilingual examples |
 | [python/](python/README.en.md) | Python token reading example |
 | [javascript/](javascript/README.en.md) | Node.js token reading example |
 | [shell/](shell/README.en.md) | ANSI reference output |
@@ -87,7 +89,7 @@ The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example requi
 
 ## Shared Tree
 
-Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction contract. Included in `go/v0.2.0` and `rust/v0.2.0`. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
+Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction rules. Included in `go/v0.2.0` and `rust/v0.2.0`. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
 
 ```sh
 make run-tree-go ARGS="--lang en"
@@ -140,3 +142,7 @@ Distributed executables for Go, Rust and future languages must require no separa
 [TVR-13: Layout, density and supporting components](docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 Go popup/shadow wide-glyph protection: [shared drawing API](docs/overlay-drawing.en.md).
+
+[TVR-17 grid configuration](docs/grid.en.md): simple/data presets, ranges, column options, status and stale-response protection on the same Go/Rust grid. Unreleased source.
+
+[Shared menus](docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.

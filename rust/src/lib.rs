@@ -1,5 +1,7 @@
-//! Framework-independent Tuivory tokens and styles. No terminal, application,
-//! filesystem, or database I/O is performed by this library.
+//! Reusable TUI component models, tokens and styles, with optional renderers.
+//! Hosts own screen composition, cross-component focus order, global keymaps,
+//! data/actions and terminal lifecycle. This library performs no terminal,
+//! filesystem or database I/O.
 //!
 //! The candidate palette is shared reference data, not the LazyOra-derived
 //! palette exposed by the Go widget styler.
@@ -19,6 +21,7 @@ pub mod forms;
 pub mod grid;
 pub mod interaction;
 pub mod layout;
+pub mod menu;
 mod tokens;
 pub mod tree;
 mod types;

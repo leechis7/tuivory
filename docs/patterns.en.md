@@ -2,13 +2,13 @@
 
 [한국어 (default)](patterns.md) · **English**
 
-These are draft shared design contracts. Adapters implement framework-specific key events and focus. See the [static layout example](../examples/components.txt).
+These are draft shared design specifications. Adapters implement framework-specific key events and focus. See the [static layout example](../examples/components.txt).
 
-| Component | Base state | Focus and selection | Input contract |
+| Component | Base state | Focus and selection | Input handling rules |
 | --- | --- | --- | --- |
 | Input | Distinct label/input surface, visible value/cursor | Indicate editing position and label/border | Tab navigation; editing keys follow host keymap |
 | Choice | Expansion marker `v` or `▾` | Distinguish value from open-list selection | Define open/move/confirm/cancel |
-| Button | Readable foreground/background, consistent appearance | Focus and default action are separate | Arrows within group; Enter/Space per host contract |
+| Button | Readable foreground/background, consistent appearance | Focus and default action are separate | Arrows within group; Enter/Space per host interaction rules |
 | List/tree | Items, hierarchy, expansion | Independent selection and input focus | Internal arrow navigation, documented confirmation |
 | Tab | Identify current document/area | Active tab differs from focus | Define navigate/activate/close |
 | Table/grid | Separate header and body | Compose current cell/range/edited state | Separate select/copy/edit |
@@ -28,12 +28,14 @@ Example spacing is two cells horizontally and one row vertically within cards, o
 
 ## Per-pattern records
 
-Record problem → roles/states → keyboard/mouse contract → limited-terminal fallback → validation scenes → known exceptions. Do not combine computed contrast and actual terminal observations into one pass marker.
+Record problem → roles/states → keyboard/mouse interaction rules → limited-terminal fallback → validation scenes → known exceptions. Do not combine computed contrast and actual terminal observations into one pass marker.
 
 ## Shared Tree implementation
 
-The tree contract above is implemented for Go/tview and Rust/Ratatui in the [Tree API](tree.en.md). Selection and input focus remain independent; hosts connect data, activation, and loading. Tabs, split panels, status, and breadcrumbs are implemented in the [shared workspace](workspace.en.md).
+The tree specification above is implemented for Go/tview and Rust/Ratatui in the [Tree API](tree.en.md). Selection and input focus remain independent; hosts connect data, activation, and loading. Tabs, split panels, status, and breadcrumbs are implemented in the [shared workspace](workspace.en.md).
 
 ## Common state and focus implementation
 
-[TVR-8](focus.en.md) provides public Go/Rust state composition, ID navigation, nested modal input routing, close requests and focus restoration. Complete inputs/forms/Dialogs follow later; distinguish example-local behavior from public foundation APIs.
+[TVR-8](focus.en.md) provides public Go/Rust state composition, ID navigation, nested modal input routing, close requests and focus restoration. Inputs/forms are provided in 0.2.0; hosts compose complete application Dialog screens; distinguish example-local behavior from public foundation APIs.
+
+The table describes design patterns, not a claim that every pattern is implemented. Published v0.2.0 menus are flat lists; new [hierarchical menus](menus.en.md) are unreleased source. Inputs/forms are available in 0.2.0, while hosts compose complete Dialog/business screens. [Current support audit](component-audit.en.md) · [Responsibility boundary](component-boundary.en.md).

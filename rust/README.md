@@ -2,9 +2,11 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
+
 crate 버전은 **0.2.0**이며 루트 `VERSION`과 일치합니다. `rust/v0.2.0` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.2.0.md).
 
-TVR-5의 공통 후보 토큰·스타일 코어, 선택적 Ratatui 어댑터와 DB 없는 대화형 예제를 제공합니다. 기본 코어는 Rust 1.85 이상(1.85.1 검증), Ratatui 0.30.2 어댑터와 Crossterm 0.29 예제는 Rust 1.88 이상(1.88.0 검증)입니다. 코어와 어댑터는 Go 코드·단말 I/O·DB에 의존하지 않습니다.
+공통 컴포넌트 모델·후보 토큰·스타일 코어, 선택적 Ratatui 렌더러와 DB 없는 대화형 예제를 제공합니다. 기본 코어는 Rust 1.85 이상(1.85.1 검증), Ratatui 0.30.2 어댑터와 Crossterm 0.29 예제는 Rust 1.88 이상(1.88.0 검증)입니다. 코어와 어댑터는 Go 코드·단말 I/O·DB에 의존하지 않습니다.
 
 ## 사용
 
@@ -104,7 +106,7 @@ make build-rust
 
 ## 공통 Tree
 
-`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}`는 Rust 1.85 이상에서 프레임워크 없이 사용합니다. 선택적 `tuivory::ratatui::TreeWidget`은 Rust 1.88 이상입니다. Go와 같은 안정 ID·펼침·선택·스크롤·이벤트 계약이며 아이콘·보조 설명·개수·Unicode/ASCII를 렌더링합니다. [Tree 사용법](../docs/tree.md) · [지원 범위 점검](../docs/component-audit.md). 루트에서 `make run-tree-rust ARGS="--lang ko"`로 실행합니다. 이 TVR-7 변경은 `rust/v0.2.0`에 포함합니다.
+`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}`는 Rust 1.85 이상에서 프레임워크 없이 사용합니다. 선택적 `tuivory::ratatui::TreeWidget`은 Rust 1.88 이상입니다. Go와 같은 안정 ID·펼침·선택·스크롤·이벤트 처리 규칙을 따르며 아이콘·보조 설명·개수·Unicode/ASCII를 렌더링합니다. [Tree 사용법](../docs/tree.md) · [지원 범위 점검](../docs/component-audit.md). 루트에서 `make run-tree-rust ARGS="--lang ko"`로 실행합니다. 이 TVR-7 변경은 `rust/v0.2.0`에 포함합니다.
 
 ## 공통 워크스페이스 컴포넌트
 
@@ -112,7 +114,7 @@ make build-rust
 
 ## 공통 컨트롤 상태와 포커스
 
-0.2.0의 `interaction::{ControlState, FocusTarget, FocusStack}`과 Ratatui `Styles::control`을 제공합니다. [공통 계약·한영 예제](../docs/focus.md)를 참조하고 루트에서 `make run-focus-rust ARGS="--lang ko"`로 실행합니다. 이 API는 rust/v0.2.0에 포함합니다.
+0.2.0의 `interaction::{ControlState, FocusTarget, FocusStack}`과 Ratatui `Styles::control`을 제공합니다. [공통 명세·한영 예제](../docs/focus.md)를 참조하고 루트에서 `make run-focus-rust ARGS="--lang ko"`로 실행합니다. 이 API는 rust/v0.2.0에 포함합니다.
 
 [TVR-9: 입력·폼](../docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
@@ -123,3 +125,7 @@ make build-rust
 [TVR-12: 알림·진행·데이터 상태](../docs/feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
 [TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
+
+[TVR-17 그리드 옵션](../docs/grid.md): simple/data 프리셋·범위·열 구성·상태줄·응답 세대 검사와 5행 비교 예제. 미배포 소스입니다.
+
+[공통 메뉴](../docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 기존 v0.2.0 태그에는 없는 미배포 소스입니다.

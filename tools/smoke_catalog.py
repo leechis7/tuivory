@@ -3,11 +3,11 @@
 import argparse,fcntl,os,pty,select,signal,struct,subprocess,termios,time
 from pathlib import Path
 from smoke_focus import Screen
-parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('binary',type=Path);parser.add_argument('--mode',default='forms');parser.add_argument('--lang',choices=['ko','en'],default='en');parser.add_argument('--ascii',action='store_true');args=parser.parse_args()
+parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('binary',type=Path);parser.add_argument('--mode',default='forms');parser.add_argument('--lang',choices=['ko','en'],default='en');parser.add_argument('--ascii',action='store_true');parser.add_argument('--grid-preset',choices=['simple','data']);args=parser.parse_args()
 master,slave=pty.openpty();fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',36,120,0,0))
 def terminal():
  os.setsid();fcntl.ioctl(0,termios.TIOCSCTTY,0)
-p=subprocess.Popen([str(args.binary.resolve()),'--mode',args.mode,'--lang',args.lang]+(['--ascii'] if args.ascii else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave);screen=Screen();captured=bytearray();reports=0
+p=subprocess.Popen([str(args.binary.resolve()),'--mode',args.mode,'--lang',args.lang]+(['--ascii'] if args.ascii else [])+(['--grid-preset',args.grid_preset] if args.grid_preset else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave);screen=Screen();captured=bytearray();reports=0
 def drain(seconds=.25):
  global reports
  end=time.monotonic()+seconds
@@ -35,9 +35,12 @@ try:
  if args.mode=='grid':
   send(b'\x1b[B');send(b'\r');assert 'edit: row-2' in visible(),visible()
   send(b' ');send(b'\x03');assert 'copy: row-2' in visible(),visible()
-  send(b'\x1b[20~');assert 'sort:' in visible(),visible()
+  send(b'\x1b[21~');send(b'\x1b[1;2C');assert 'select:' in visible(),visible()
+  send(b'\x03');assert 'copy: row-2' in visible(),visible()
+  send(b'\x1b[24~');assert 'details: row-2' in visible(),visible()
+  send(b'\x1b');send(b'\x1b[20~');assert 'sort:' in visible(),visible()
   send(b'\x1b[6~');send(b'\x1b[F');assert 'row-99999' in visible(),visible()
-  send(b'\x1b[<0;7;4M\x1b[<0;7;4m');assert 'sort:' in visible(),visible()
+  send(b'\x1b[<0;16;4M\x1b[<0;16;4m');assert 'sort:' in visible(),visible()
  if args.mode=='feedback':
   send(b'\r');assert 'action: error / retry' in visible(),visible()
   send(b't');assert '[!]' in visible() and 'expired:' in visible(),visible()
