@@ -17,10 +17,12 @@ use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
 mod components;
 mod menu;
 mod rows;
+mod surface;
 pub use menu::{MenuBarWidget, MenuPopupWidget, MenuWidget};
 pub use rows::{
     BadgeWidget, ChipWidget, DataStateWidget, FormWidget, GridWidget, HelpWidget, ListWidget,
-    NoticeWidget, ProgressWidget, RowsWidget, SearchPickerWidget, StackRects, stack_rects,
+    NoticeWidget, ProgressWidget, RawRowsWidget, RowsWidget, SearchPickerWidget, StackRects,
+    stack_rects,
 };
 mod tree;
 use ::ratatui::{
@@ -139,7 +141,7 @@ impl Styles {
         if name == "grid.current-row" {
             style.bold = true;
         }
-        Ok(Style::from(style))
+        Ok(self.disabled_cue(name, Style::from(style)))
     }
 
     /// Create a panel border without modifying the host's focus callbacks.

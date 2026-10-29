@@ -46,3 +46,15 @@ Oracle data types, workers, and database test infrastructure are not copied here
 [TVR-7 boundary validation](component-boundary.en.md): support audit, host composition choices, eight bilingual PTYs, static ELF, default CentOS execution and unchanged default references. Included in this local commit; unpublished on GitHub work.
 
 [TVR-7 shared menu validation](menu.en.md): common hierarchical navigation/caller context, twelve palettes, physical output, bilingual PTYs, isolated imports, static ELF and CentOS. Menu work is uncommitted/unpublished.
+
+[TVR-7 single-border menu follow-up](menu-single-border.en.md): Go/Rust output, PTYs and localized images for menu-only removal of separate focus decoration.
+
+[TVR-7 double area / single menu borders](focus-borders.en.md): Go/Rust active/inactive frames, physical output and localized references.
+
+[TVR-7 component background audit](../docs/background-audit.en.md) · [results JSON](background-audit-results.json): Go/Rust cell comparisons, 16 roles/12 palettes, host context and intentional differences.
+
+[TVR-7 background fix evidence](background-fix.en.md): matrix comparison, surface/contrast APIs, explicit state backgrounds, bilingual design rules and live references.
+
+[Disabled states across twelve palettes](../docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
+
+[TVR-7 disabled-color follow-up](../docs/disabled-states.en.md) · [results JSON](disabled-colors-results.json): no ordinary disabled prefixes, twelve-palette gray/Dim and input exclusions, 104 localized references.

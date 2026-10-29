@@ -298,9 +298,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "7",
+        "foreground": "8",
         "background": "0",
-        "referenceForeground": "#c0c0c0",
+        "referenceForeground": "#808080",
         "referenceBackground": "#000000",
         "fontWeight": "none"
       },
@@ -412,9 +412,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "0",
+        "foreground": "8",
         "background": "7",
-        "referenceForeground": "#000000",
+        "referenceForeground": "#808080",
         "referenceBackground": "#c0c0c0",
         "fontWeight": "none"
       },
@@ -526,9 +526,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "250",
+        "foreground": "245",
         "background": "237",
-        "referenceForeground": "#bcbcbc",
+        "referenceForeground": "#8a8a8a",
         "referenceBackground": "#3a3a3a",
         "fontWeight": "none"
       },
@@ -640,9 +640,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "239",
+        "foreground": "244",
         "background": "254",
-        "referenceForeground": "#4e4e4e",
+        "referenceForeground": "#808080",
         "referenceBackground": "#e4e4e4",
         "fontWeight": "none"
       },
@@ -754,9 +754,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "#b3bfce",
+        "foreground": "#929292",
         "background": "#3b4252",
-        "referenceForeground": "#b3bfce",
+        "referenceForeground": "#929292",
         "referenceBackground": "#3b4252",
         "fontWeight": "none"
       },
@@ -868,9 +868,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "#485869",
+        "foreground": "#808080",
         "background": "#e4eaf0",
-        "referenceForeground": "#485869",
+        "referenceForeground": "#808080",
         "referenceBackground": "#e4eaf0",
         "fontWeight": "none"
       },
@@ -1096,9 +1096,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "7",
+        "foreground": "8",
         "background": "0",
-        "referenceForeground": "#c0c0c0",
+        "referenceForeground": "#808080",
         "referenceBackground": "#000000",
         "fontWeight": "none"
       },
@@ -1210,9 +1210,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "7",
+        "foreground": "244",
         "background": "0",
-        "referenceForeground": "#c0c0c0",
+        "referenceForeground": "#808080",
         "referenceBackground": "#000000",
         "fontWeight": "none"
       },
@@ -1324,9 +1324,9 @@
         "fontWeight": "none"
       },
       "disabled": {
-        "foreground": "7",
+        "foreground": "#808080",
         "background": "0",
-        "referenceForeground": "#c0c0c0",
+        "referenceForeground": "#808080",
         "referenceBackground": "#000000",
         "fontWeight": "none"
       },

@@ -32,3 +32,5 @@ python3 tools/export_tokens.py --check
 ```
 
 Shared JSON stays here; Go source does not. The exporter writes identical content to `go/internal/tokens/candidate.json` and `rust/src/data/candidate.json` for independent distribution and embedding. Do not edit that generated copy manually. `--check` compares CSV, shared JSON, and the Go/Rust copies. Go/Rust projects need no other repository directories; Python and JavaScript read the shared source directly.
+
+Distinguish raw role backgrounds from actual component surfaces. Bind plain text to its real surface and check foreground contrast there; preserve explicit field/selection/edit/custom backgrounds. [Surface rules](../surfaces.en.md).

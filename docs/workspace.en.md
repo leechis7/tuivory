@@ -99,3 +99,7 @@ Go `PanelView` automatically uses the [shared wide-glyph repair](overlay-drawing
 ## Host-selected layout, focus and keys
 
 Pass `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x` to compose the same public components under different host policy. Defaults remain columns, tabs,tree,content and ctrl-q. Initial focus goes to the first item; Tab/Shift+Tab follows the supplied order. These are example-host CLI options, not library-global configuration or a required whole-screen standard. New host options are unreleased source. [Boundary, localized references and commands](component-boundary.en.md).
+
+Focus border rules: framed explorer trees/lists, input/editor areas, data grids and normal dialogs use double borders while receiving input and single borders when inactive. Do not add borders to individual unframed fields, buttons or tabs. Menus retain single borders with selection/open-state cues. Go playground cards/dialogs use tview’s existing double focus borders; 0.4.0 also aligns explorer/token/help focus colors. Rust shared panels already support double borders. [Validation](../evidence/focus-borders.en.md).
+
+In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).

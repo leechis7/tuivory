@@ -10,13 +10,16 @@ import (
 // RowsView renders literal, cell-clipped semantic lines and delegates actions.
 type RowsView struct {
 	*tview.Box
-	Rows    func(int, int) []ComponentLine
-	Key     func(*tcell.EventKey)
-	Click   func(ComponentLine)
-	Pointer func(ComponentLine, int)
-	palette Palette
-	visible []ComponentLine
-	Mouse   func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
+	Rows      func(int, int) []ComponentLine
+	Key       func(*tcell.EventKey)
+	Click     func(ComponentLine)
+	Pointer   func(ComponentLine, int)
+	palette   Palette
+	visible   []ComponentLine
+	hideFocus bool
+	// PreserveBackgrounds keeps explicit row/span backgrounds for grid or custom composition.
+	PreserveBackgrounds bool
+	Mouse               func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
 }
 
 func NewRowsView(rows func(int, int) []ComponentLine, palette Palette) (*RowsView, error) {
@@ -42,7 +45,11 @@ func (v *RowsView) Draw(screen tcell.Screen) {
 		if strings.HasPrefix(line.Role, "grid.") {
 			fillComponent(screen, x, y+i, w, 1, pair.Style())
 		}
-		drawTreeText(screen, x, y+i, w, 0, line.Text, pair.Style().Underline(line.Focused && v.HasFocus()))
+		style := disabledCue(v.palette, line.Role, pair.Style())
+		if !v.PreserveBackgrounds {
+			style = componentStyle(v.palette, line.Role)
+		}
+		drawTreeText(screen, x, y+i, w, 0, line.Text, style.Underline(line.Focused && !v.hideFocus && v.HasFocus()))
 		for _, span := range line.Spans {
 			start := max(0, min(w, span.Start))
 			width := min(max(0, span.Width), w-start)
@@ -50,7 +57,11 @@ func (v *RowsView) Draw(screen tcell.Screen) {
 			if !ok {
 				panic("component: missing span role " + span.Role)
 			}
-			style := pair.Style().Underline(span.Focused && v.HasFocus())
+			style := disabledCue(v.palette, span.Role, pair.Style())
+			if !v.PreserveBackgrounds {
+				style = componentStyle(v.palette, span.Role)
+			}
+			style = style.Underline(span.Focused && !v.hideFocus && v.HasFocus())
 			fillComponent(screen, x+start, y+i, width, 1, style)
 			drawTreeText(screen, x+start, y+i, width, 0, span.Text, style)
 		}
@@ -75,6 +86,16 @@ func (v *RowsView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, fun
 		_, top, _, _ := v.GetInnerRect()
 		row := y - top
 		if row >= 0 && row < len(v.visible) && (v.Click != nil || v.Pointer != nil) {
+			line := v.visible[row]
+			if line.Role == "disabled" {
+				return true, v
+			}
+			left, _, _, _ := v.GetInnerRect()
+			for _, span := range line.Spans {
+				if span.Role == "disabled" && x-left >= span.Start && x-left < span.Start+span.Width {
+					return true, v
+				}
+			}
 			focus(v)
 			if v.Pointer != nil {
 				left, _, _, _ := v.GetInnerRect()
@@ -282,6 +303,9 @@ func GridKey(e *tcell.EventKey) string {
 func NewGridView(model *Grid, palette Palette, onEvent func(GridEvent)) (*RowsView, error) {
 	width, height := 1, 1
 	v, e := NewRowsView(func(w, h int) []ComponentLine { width, height = w, h; return model.Layout(w, h) }, palette)
+	if v != nil {
+		v.PreserveBackgrounds = true
+	}
 	if e != nil {
 		return nil, e
 	}

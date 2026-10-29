@@ -166,9 +166,6 @@ func tabText(item TabItem, width int, active, focused bool) string {
 	if focused {
 		mark = ">"
 	}
-	if item.Disabled {
-		mark = "-"
-	}
 	suffix := ""
 	if item.Edited {
 		suffix += " *"

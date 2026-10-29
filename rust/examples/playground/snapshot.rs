@@ -119,11 +119,16 @@ pub fn write(path: &Path, buffer: &Buffer) -> std::io::Result<()> {
             };
             write!(
                 svg,
-                r#"<text x="{}" y="{}" fill="{}" font-weight="{}">{}</text>"#,
+                r#"<text x="{}" y="{}" fill="{}" font-weight="{}" opacity="{}">{}</text>"#,
                 x * 10,
                 y * 22 + 18,
                 color(cell.fg),
                 bold,
+                if cell.modifier.contains(Modifier::DIM) {
+                    "0.45"
+                } else {
+                    "1"
+                },
                 escape(cell.symbol())
             )
             .unwrap();

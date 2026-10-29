@@ -74,9 +74,11 @@ Context roots do not open other main menus through left/right. Child levels incl
 
 `HandleBar / handle_bar` previous/next/left/right/first/last moves bar focus; activate/down/mnemonic emits open_request. `BarLayout / bar_layout` supplies cell ranges and overflow ends; `BarClick / bar_click` requests opening or overflow navigation. Hosts own actual input focus/global F10/Alt wiring. `MenuKey` translates only component-local arrows/Enter/Esc/mnemonics.
 
-Primary/secondary text, shortcuts and child indicators fit terminal cells. Long labels use `~`; shortcut width is limited. Cues include focus `>`, disabled `-`, Back `<`, child `›` (ASCII `>`), separator `─` (ASCII `-`), and `*` when an icon lacks an ASCII alternative. ASCII mode does not translate Korean labels/original data. Control characters display as spaces; tag-looking text remains literal. Styles reuse surface/selection/disabled/header/hint roles.
+Primary/secondary text, shortcuts and child indicators fit terminal cells. Long labels use `~`; shortcut width is limited. Cues include focus `>`, Back `<`, child `›` (ASCII `>`), separator `─` (ASCII `-`), and `*` when an icon lacks an ASCII alternative. ASCII mode does not translate Korean labels/original data. Control characters display as spaces; tag-looking text remains literal. Styles reuse surface/selection/disabled/header/hint roles.
 
 ## Popup and host boundary
+
+Menu popups always use a single border and no separate focus marker in the title. The current item uses selection background and `>`; the bar marks the open menu as active. Input focus does not add menu underlining. Input routing, background blocking and caller restoration remain. This visual change applies to 0.4.0; existing tags/assets are unchanged.
 
 `ContentSize / content_size` excludes border/padding. `MenuPlacement / menu_placement(anchor, viewport, width, height)` places below the host-chosen anchor, moves above when needed and clamps inside the viewport. Menus do not own screens, backdrops or DB state.
 
@@ -85,3 +87,9 @@ Go wraps `NewPanelView(menuView, palette)` and draws the computed rectangle. Cha
 Hosts must block background key/paste/mouse events while open, choose outside-click dismissal and restore the caller. The example does not forward the same click into background work. Keep the menu object/original values across theme/profile/character changes. Automatic grouping thresholds, contextual commands and real business operations stay out of the core. [Boundary](component-boundary.en.md).
 
 [Validation](../evidence/menu.en.md) · [Shared navigation scenarios](../design/menu-cases.json)
+
+[Single-border menu follow-up validation](../evidence/menu-single-border.en.md)
+
+In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
+
+Disabled menus and menu bars use color/brightness without an extra disabled prefix. Check/radio selection indicators remain.

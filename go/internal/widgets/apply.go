@@ -62,8 +62,10 @@ func (s Styler) Apply(roles Roles, roots ...tview.Primitive) {
 			}
 		case *Choice:
 			s.Choice(w)
+			w.SetLabelStyle(s.Styles.TextStyle(surface, style.Body))
 		case *tview.DropDown:
 			s.DropDown(w)
+			w.SetLabelStyle(s.Styles.TextStyle(surface, style.Body))
 		case *tview.InputField:
 			s.Input(w)
 			w.SetLabelStyle(s.Styles.TextStyle(surface, style.Body))

@@ -6,7 +6,7 @@ dark-8,field,0,7,#000000,#c0c0c0,11.542,4.5,none
 dark-8,selection,7,4,#c0c0c0,#000080,8.799,4.5,none
 dark-8,button,0,7,#000000,#c0c0c0,11.542,4.5,none
 dark-8,button.focus,7,4,#c0c0c0,#000080,8.799,4.5,none
-dark-8,disabled,7,0,#c0c0c0,#000000,11.542,4.5,none
+dark-8,disabled,7,0,#c0c0c0,#000000,11.542,2.0,none
 dark-8,edited,0,3,#000000,#808000,5.006,4.5,none
 dark-8,header,7,0,#c0c0c0,#000000,11.542,4.5,none
 dark-8,editor,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -22,7 +22,7 @@ light-8,field,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-8,selection,7,4,#c0c0c0,#000080,8.799,4.5,none
 light-8,button,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-8,button.focus,7,4,#c0c0c0,#000080,8.799,4.5,none
-light-8,disabled,0,7,#000000,#c0c0c0,11.542,4.5,none
+light-8,disabled,0,7,#000000,#c0c0c0,11.542,2.0,none
 light-8,edited,0,3,#000000,#808000,5.006,4.5,none
 light-8,header,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-8,editor,0,7,#000000,#c0c0c0,11.542,4.5,none
@@ -38,7 +38,7 @@ dark-16,field,0,7,#000000,#c0c0c0,11.542,4.5,none
 dark-16,selection,15,4,#ffffff,#000080,16.01,4.5,none
 dark-16,button,0,7,#000000,#c0c0c0,11.542,4.5,none
 dark-16,button.focus,15,4,#ffffff,#000080,16.01,4.5,none
-dark-16,disabled,7,0,#c0c0c0,#000000,11.542,4.5,none
+dark-16,disabled,8,0,#808080,#000000,5.317,2.0,none
 dark-16,edited,0,3,#000000,#808000,5.006,4.5,none
 dark-16,header,7,0,#c0c0c0,#000000,11.542,4.5,none
 dark-16,editor,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -54,7 +54,7 @@ light-16,field,0,15,#000000,#ffffff,21.0,4.5,none
 light-16,selection,15,4,#ffffff,#000080,16.01,4.5,none
 light-16,button,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-16,button.focus,15,4,#ffffff,#000080,16.01,4.5,none
-light-16,disabled,0,7,#000000,#c0c0c0,11.542,4.5,none
+light-16,disabled,8,7,#808080,#c0c0c0,2.171,2.0,none
 light-16,edited,0,3,#000000,#808000,5.006,4.5,none
 light-16,header,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-16,editor,0,15,#000000,#ffffff,21.0,4.5,none
@@ -70,7 +70,7 @@ dark-256,field,235,254,#262626,#e4e4e4,11.902,4.5,none
 dark-256,selection,255,24,#eeeeee,#005f87,6.06,4.5,none
 dark-256,button,235,153,#262626,#afd7ff,10.08,4.5,none
 dark-256,button.focus,255,24,#eeeeee,#005f87,6.06,4.5,none
-dark-256,disabled,250,237,#bcbcbc,#3a3a3a,5.989,4.5,none
+dark-256,disabled,245,237,#8a8a8a,#3a3a3a,3.295,2.0,none
 dark-256,edited,0,180,#000000,#d7af87,10.371,4.5,none
 dark-256,header,252,237,#d0d0d0,#3a3a3a,7.375,4.5,none
 dark-256,editor,252,236,#d0d0d0,#303030,8.557,4.5,none
@@ -86,7 +86,7 @@ light-256,field,235,231,#262626,#ffffff,15.134,4.5,none
 light-256,selection,231,24,#ffffff,#005f87,7.031,4.5,none
 light-256,button,235,153,#262626,#afd7ff,10.08,4.5,none
 light-256,button.focus,231,24,#ffffff,#005f87,7.031,4.5,none
-light-256,disabled,239,254,#4e4e4e,#e4e4e4,6.545,4.5,none
+light-256,disabled,244,254,#808080,#e4e4e4,3.106,2.0,none
 light-256,edited,0,180,#000000,#d7af87,10.371,4.5,none
 light-256,header,235,254,#262626,#e4e4e4,11.902,4.5,none
 light-256,editor,235,231,#262626,#ffffff,15.134,4.5,none
@@ -102,7 +102,7 @@ dark-truecolor,field,#202a36,#eceff4,#202a36,#eceff4,12.601,4.5,none
 dark-truecolor,selection,#ffffff,#005f87,#ffffff,#005f87,7.031,4.5,none
 dark-truecolor,button,#202a36,#bbd4e5,#202a36,#bbd4e5,9.449,4.5,none
 dark-truecolor,button.focus,#ffffff,#005f87,#ffffff,#005f87,7.031,4.5,none
-dark-truecolor,disabled,#b3bfce,#3b4252,#b3bfce,#3b4252,5.395,4.5,none
+dark-truecolor,disabled,#929292,#3b4252,#929292,#3b4252,3.234,2.0,none
 dark-truecolor,edited,#202a36,#d7af87,#202a36,#d7af87,7.173,4.5,none
 dark-truecolor,header,#eceff4,#3b4252,#eceff4,#3b4252,8.73,4.5,none
 dark-truecolor,editor,#eceff4,#2e3440,#eceff4,#2e3440,10.836,4.5,none
@@ -118,7 +118,7 @@ light-truecolor,field,#202a36,#ffffff,#202a36,#ffffff,14.524,4.5,none
 light-truecolor,selection,#ffffff,#005f87,#ffffff,#005f87,7.031,4.5,none
 light-truecolor,button,#202a36,#bbd4e5,#202a36,#bbd4e5,9.449,4.5,none
 light-truecolor,button.focus,#ffffff,#005f87,#ffffff,#005f87,7.031,4.5,none
-light-truecolor,disabled,#485869,#e4eaf0,#485869,#e4eaf0,6.026,4.5,none
+light-truecolor,disabled,#808080,#e4eaf0,#808080,#e4eaf0,3.259,2.0,none
 light-truecolor,edited,#202a36,#d7af87,#202a36,#d7af87,7.173,4.5,none
 light-truecolor,header,#202a36,#e4eaf0,#202a36,#e4eaf0,11.983,4.5,none
 light-truecolor,editor,#202a36,#ffffff,#202a36,#ffffff,14.524,4.5,none
@@ -134,7 +134,7 @@ blackwhite-8,field,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-8,selection,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-8,button,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-8,button.focus,0,7,#000000,#c0c0c0,11.542,4.5,none
-blackwhite-8,disabled,7,0,#c0c0c0,#000000,11.542,4.5,none
+blackwhite-8,disabled,7,0,#c0c0c0,#000000,11.542,2.0,none
 blackwhite-8,edited,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-8,header,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-8,editor,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -150,7 +150,7 @@ blackwhite-16,field,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-16,selection,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-16,button,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-16,button.focus,0,7,#000000,#c0c0c0,11.542,4.5,none
-blackwhite-16,disabled,7,0,#c0c0c0,#000000,11.542,4.5,none
+blackwhite-16,disabled,8,0,#808080,#000000,5.317,2.0,none
 blackwhite-16,edited,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-16,header,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-16,editor,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -166,7 +166,7 @@ blackwhite-256,field,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-256,selection,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-256,button,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-256,button.focus,0,7,#000000,#c0c0c0,11.542,4.5,none
-blackwhite-256,disabled,7,0,#c0c0c0,#000000,11.542,4.5,none
+blackwhite-256,disabled,244,0,#808080,#000000,5.317,2.0,none
 blackwhite-256,edited,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-256,header,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-256,editor,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -182,7 +182,7 @@ blackwhite-truecolor,field,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-truecolor,selection,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-truecolor,button,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-truecolor,button.focus,0,7,#000000,#c0c0c0,11.542,4.5,none
-blackwhite-truecolor,disabled,7,0,#c0c0c0,#000000,11.542,4.5,none
+blackwhite-truecolor,disabled,#808080,0,#808080,#000000,5.317,2.0,none
 blackwhite-truecolor,edited,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-truecolor,header,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-truecolor,editor,7,0,#c0c0c0,#000000,11.542,4.5,none

@@ -1,0 +1,57 @@
+{
+  "issue": "TVR-7",
+  "base_commit": "dabab8b8d9b23e9c641231b5358301e3fbb45431",
+  "branch": "codex/TVR-7-menu-single-border",
+  "state": "uncommitted, unpublished follow-up after 0.3.0",
+  "checks": {
+    "go": "full race/vet passed, physical Show checks for menu single borders and preserved input focus",
+    "rust": "five menu tests, all-features/all-targets clippy and fmt passed",
+    "palettes": 12,
+    "character_modes": [
+      "Unicode",
+      "ASCII"
+    ],
+    "pty": {
+      "result": "passed",
+      "count": 8,
+      "cases": [
+        "PASS go-ko-unicode",
+        "PASS rust-ko-unicode",
+        "PASS rust-ko-ascii",
+        "PASS go-ko-ascii",
+        "PASS rust-en-unicode",
+        "PASS go-en-unicode",
+        "PASS rust-en-ascii",
+        "PASS go-en-ascii"
+      ]
+    },
+    "images": 10
+  },
+  "not_run": [
+    "CentOS (user instruction)",
+    "remote CI",
+    "publication/release",
+    "actual LazyOra/LazyBeaver integration"
+  ],
+  "source_sha256": {
+    "go/component_views.go": "e15cbcc1ca2aa3587c486e630084cf7d358354f495b3a2422c000e4d7ef14a3f",
+    "go/menu_view.go": "5498e4d2c7d3b93e1ea47ed2c95a3a4c6c170c8249b303d46d450308391631c5",
+    "go/rows_view.go": "83aa1c7edbe9c289c9c571cf1fb593f016de339b6d95ef3ba6398270994271cf",
+    "go/menu_test.go": "a95382a72da9043ad1b9215bc4de800d0074157758e13191bbdf7f5222e9c956",
+    "rust/src/ratatui/menu.rs": "adfdad4f76144b7e372803e3a9ab68f1a86223252318de0083a5e8924aa62280",
+    "rust/examples/menu/main.rs": "fd6e888b9e0ee664237353a12fdde3d3738ae5af9a89a780c2ee967f3b46ddd5",
+    "rust/tests/menu.rs": "cfebeda0a53fce31e68dff2217e7ce2d1c26e27552550e6a6beb376391c1236b"
+  },
+  "images_sha256": {
+    "docs/images/menu-ascii-en.svg": "7934821cb654c86ec8d1e5c30ed7fe8c014c722dd5693f87294854d952d3bbab",
+    "docs/images/menu-ascii.svg": "95db371a6db3b9a51513190b582f7bd46eea551291d2783af3f9a5178f90dc22",
+    "docs/images/menu-blackwhite-en.svg": "ded7ae79166f018842f70e8bc02257ccd6b03d833ba8e048123d8ae56fcc8644",
+    "docs/images/menu-blackwhite.svg": "c6cda73953c9c25b92efea84b0cbef9d8464c772d01d89000dead10f79502350",
+    "docs/images/menu-dark-en.svg": "8f425d2fe425b2a613424488d00fa61ba78c9191ff07d5c2ed40c69b57b652df",
+    "docs/images/menu-dark.svg": "8953302e1f893ce25b406f3fe2a1263622b9a81287b7b2e78045e014ce8a8dd7",
+    "docs/images/menu-light-en.svg": "1c663211b18d5ace54f71aa715a01703b52f46c03fc3e2b72f6e77fd085f0b6a",
+    "docs/images/menu-light.svg": "4d980b146623302d35409bbc4f81d3ccba08edd5a39a34c2c90e0aae2e706b84",
+    "docs/images/menu-nested-en.svg": "ea8960217d29651930f289e4780501c762a6ab1f2823dcceab5f72d4cbad827b",
+    "docs/images/menu-nested.svg": "916d996d8dcad6ddea889bd1c2550e45866dd81bed2f36909fc7105b0646b57f"
+  }
+}

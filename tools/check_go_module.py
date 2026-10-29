@@ -78,6 +78,11 @@ func TestIsolatedModule(t *testing.T) {
     if _, err := tuivory.Resolve(palette); err != nil { t.Fatal(err) }
     colors, _ := tuivory.Resolve(palette)
     if _,err:=tuivory.ControlStyle(colors,controlState,true);err!=nil { t.Fatal(err) }
+    surfaceText, surfaceErr := tuivory.TextOnSurface(colors,"success","surface")
+    fg,bg,_ := surfaceText.Decompose()
+    if surfaceErr!=nil || fg!=colors["surface"].FG || bg!=colors["surface"].BG {t.Fatal("external surface style/contrast")}
+    selectedStyle,_:=tuivory.ControlStyleOnSurface(colors,tuivory.ControlState{Selected:true},true,"surface")
+    _,selectedBG,_:=selectedStyle.Decompose();if selectedBG!=colors["selection"].BG{t.Fatal("explicit background lost")}
     tree, err := tuivory.NewTree([]tuivory.TreeNode{{ID:"root",Name:"External"},{ID:"child",Parent:"root",Name:"Child"}})
     if err != nil { t.Fatal(err) }
     state := &tuivory.TreeState{}

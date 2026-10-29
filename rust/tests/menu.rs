@@ -240,14 +240,44 @@ fn twelve_palettes_and_overlay_output() {
                 assert_eq!(Some(active.fg), selection.fg);
                 assert_eq!(Some(active.bg), selection.bg);
                 assert!(
-                    active
+                    !active
                         .modifier
                         .contains(ratatui::style::Modifier::UNDERLINED)
+                );
+                assert_eq!(
+                    terminal.backend().buffer()[(3, 1)].symbol(),
+                    if ascii { "+" } else { "┌" }
                 );
                 let title = (3..35)
                     .map(|x| terminal.backend().buffer()[(x, 1)].symbol())
                     .collect::<String>();
                 assert_eq!(title.matches("Menu").count(), 1, "{title}");
+                assert!(
+                    !title.contains('>'),
+                    "menu title must not show focus: {title}"
+                );
+                let focused_buffer = terminal.backend().buffer().clone();
+                terminal
+                    .draw(|f| {
+                        f.render_widget(Paragraph::new("界".repeat(20)), Rect::new(0, 2, 40, 1));
+                        f.render_widget(
+                            MenuPopupWidget {
+                                model: &mut m,
+                                styles: &styles,
+                                title: "Menu",
+                                padding: 1,
+                                ascii,
+                                focused: false,
+                            },
+                            Rect::new(3, 1, 32, 8),
+                        );
+                    })
+                    .unwrap();
+                assert_eq!(
+                    terminal.backend().buffer(),
+                    &focused_buffer,
+                    "menu visuals must not depend on input focus"
+                );
                 assert_eq!(m.return_id(), "origin");
                 assert_eq!(m.focused_id(), "new");
             }

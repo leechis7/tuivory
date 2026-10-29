@@ -46,6 +46,22 @@ func writeSnapshots(t *testing.T, dir, lang string) {
 	if err := writeSVG(filepath.Join(dir, "playground-popup"+suffix+".svg"), terminal); err != nil {
 		t.Fatal(err)
 	}
+	ui.closePopup()
+	ui.app.SetFocus(ui.nav)
+	drawUI(ui, terminal)
+	if err := writeSVG(filepath.Join(dir, "playground-explorer"+suffix+".svg"), terminal); err != nil {
+		t.Fatal(err)
+	}
+	ui.app.SetFocus(ui.grid)
+	drawUI(ui, terminal)
+	if err := writeSVG(filepath.Join(dir, "playground-grid"+suffix+".svg"), terminal); err != nil {
+		t.Fatal(err)
+	}
+	ui.openEdit(1)
+	drawUI(ui, terminal)
+	if err := writeSVG(filepath.Join(dir, "playground-edit"+suffix+".svg"), terminal); err != nil {
+		t.Fatal(err)
+	}
 }
 func writeSVG(path string, screen tcell.Screen) error {
 	w, h := screen.Size()

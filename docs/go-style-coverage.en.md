@@ -38,3 +38,5 @@ The new shared component API is documented in the [Go/Rust Tree guide](tree.en.m
 ## Shared workspace components
 
 The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+
+The 0.4.0 fix binds direct DropDown/Choice panel boxes/labels and Apply host surfaces. Preserve extracted palette/style-calculation comparisons, distinguishing these composition corrections. [Surface design rules](../design/surfaces.en.md).

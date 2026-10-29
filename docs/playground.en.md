@@ -77,3 +77,13 @@ The snapshot test generates both languages; English filenames end in `-en`. Stat
 The playground uses the [Go styles extracted from LazyOra](lazyora-extraction.en.md). Shared JSON supplies role ordering and cross-language examples; candidate CSV data is distinct from the extracted palette. The playground does not include a SQL editor, database features, or a general widget SDK.
 
 Go playground popups/choices use [TVR-14 shared drawing](overlay-drawing.en.md), with actual card/list output regressions after Show.
+
+## Focused area borders
+
+Explorer/input/list/grid/token/help areas and normal dialogs use double borders while receiving input, reverting to single borders when focus moves. Preserve input/selection/scroll state; menus retain single borders. Go cards/dialogs already inherit tview double focus borders; 0.4.0 aligns explorer/token/help focus colors.
+
+[Explorer](images/playground-explorer-en.svg) · [Grid](images/playground-grid-en.svg) · [Editing dialog](images/playground-edit-en.svg)
+
+These localized references are actual Go SimulationScreen widget output. Rust shared panels use the same double-border rule. [Rules and validation](../evidence/focus-borders.en.md).
+
+Resize reflow runs through the UI update queue, avoiding page/focus changes while the draw lock is held. Use `python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang en --resize` to verify actual PTY resize and exit. CI runs this regression for both UI languages.

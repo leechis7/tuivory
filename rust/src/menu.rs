@@ -531,14 +531,7 @@ impl Menu {
                 } else {
                     "surface"
                 };
-                let mut prefix = if focused {
-                    "> "
-                } else if i.disabled {
-                    "- "
-                } else {
-                    "  "
-                }
-                .to_string();
+                let mut prefix = if focused { "> " } else { "  " }.to_string();
                 let icon = if ascii {
                     if i.ascii_icon.is_empty() && !i.icon.is_empty() {
                         "*"

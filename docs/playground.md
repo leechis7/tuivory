@@ -82,3 +82,13 @@ TUIVORY_SNAPSHOT_DIR="$PWD/docs/images" go -C go test ./internal/playground -run
 견본의 색상은 [LazyOra 실제 스타일에서 추출한 Go 패키지](lazyora-extraction.md)를 사용합니다. 공통 JSON은 역할 표시 순서와 교차 언어 데이터 예제에 사용하며, CSV 후보는 실제 추출 팔레트와 구분합니다. SQL 편집기·DB 기능·범용 위젯 SDK를 포함하지 않습니다.
 
 Go 견본 팝업·선택박스는 [TVR-14 공통 그리기](overlay-drawing.md)를 사용합니다. 실제 카드/목록의 Show 이후 출력 회귀를 검사합니다.
+
+## 포커스 영역 테두리
+
+탐색·입력 카드·목록·그리드·색상 토큰·도움말·일반 팝업은 현재 조작 중인 영역에 이중선을 표시합니다. 포커스가 이동하면 단일선으로 돌아갑니다. 입력/선택/스크롤 상태는 유지하며 메뉴는 단일선 예외입니다. Go 카드·팝업의 이중선은 tview 기본 동작이고, 0.4.0 소스에서 탐색·토큰·도움말의 포커스 색상을 보완합니다.
+
+[탐색 영역](images/playground-explorer.svg) · [그리드](images/playground-grid.svg) · [편집 팝업](images/playground-edit.svg)
+
+위 한영 화면은 실제 Go 위젯의 SimulationScreen 출력입니다. Rust도 공통 패널의 같은 이중선 규칙을 사용합니다. [공통 규칙과 검증](../evidence/focus-borders.md).
+
+크기 변경은 UI 갱신 큐에서 처리해 그리기 잠금 안에서 페이지/포커스를 재설정하지 않습니다. `python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang ko --resize`로 실제 터미널 리사이즈 후 종료까지 확인합니다. CI도 한영 견본에 같은 회귀를 실행합니다.

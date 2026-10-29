@@ -16,6 +16,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('binary', type=Path)
     parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
+    parser.add_argument('--resize', action='store_true', help='exercise resize and redraw before exit')
     args = parser.parse_args()
     master, slave = pty.openpty()
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', 36, 120, 0, 0))
@@ -53,6 +54,12 @@ def main():
         drain(1)
         if process.poll() is not None:
             raise RuntimeError('TUIVORY exited before input: ' + captured.decode(errors='replace')[-250:])
+        if args.resize:
+            for height, width in ((28, 90), (36, 120)):
+                fcntl.ioctl(master, termios.TIOCSWINSZ, struct.pack('HHHH', height, width, 0, 0))
+                drain(.6)
+                if process.poll() is not None:
+                    raise RuntimeError('process exited during resize')
         os.write(master, b'\x11')  # One Ctrl+Q; keep draining output while it exits.
         drain(2)
         process.wait(timeout=3)

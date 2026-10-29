@@ -186,7 +186,7 @@ impl ListModel {
                 rows.push(ComponentLine {
                     id: item.id.clone(),
                     text: format!("    {}", item.secondary),
-                    role: "hint".into(),
+                    role: if item.disabled { "disabled" } else { "hint" }.into(),
                     value: item.id.clone(),
                     spans: vec![],
                     ..Default::default()

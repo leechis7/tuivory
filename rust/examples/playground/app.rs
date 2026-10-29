@@ -658,7 +658,10 @@ impl App {
                 ),
             ),
         ] {
-            f.render_widget(Paragraph::new(text).style(self.role(role)), action_rows[i]);
+            f.render_widget(
+                Paragraph::new(text).style(self.styles.text_on_surface(role, "surface").unwrap()),
+                action_rows[i],
+            );
         }
         let buttons = Layout::horizontal([Constraint::Ratio(1, 3); 3]).split(action_rows[5]);
         for (i, focus, label) in [

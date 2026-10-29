@@ -1,0 +1,46 @@
+{
+  "issue": "TVR-7",
+  "base_commit": "dabab8b8d9b23e9c641231b5358301e3fbb45431",
+  "branch": "codex/TVR-7-menu-single-border",
+  "state": "uncommitted/unpublished follow-up after 0.3.0",
+  "checks": {
+    "go": "full race/vet passed, physical output at corners/edges and focus color for seven areas and three normal popup types in 12 palettes",
+    "rust": "ratatui/components/menu tests passed, Unicode/ASCII active/inactive shared panels and menu exception",
+    "native_pty": "Go Korean/English VT-parsed actual PTY: exactly one double focus frame, explorer/cards/pages/help/edit/preview, theme/profile/resize, caller restoration and exit; permanent --resize lifecycle regression passed both languages",
+    "ci_configuration": "Go playground ko/en commands include --resize; remote CI not run",
+    "images": 14
+  },
+  "fixed": "Real Go resize deadlock: BeforeDraw reflow -> Pages.HidePage -> Application.SetFocus lock reentry. Queue layout/page/focus changes onto UI updates outside draw lock.",
+  "menu_evidence": "menu-single-border-results.json",
+  "not_run": [
+    "commit/publication/release",
+    "remote CI",
+    "CentOS (user instruction)",
+    "actual application integration"
+  ],
+  "source_sha256": {
+    "go/internal/playground/style.go": "bde6e5e1f15492c3700cda6e500b3f9cd97e4ab14e5e4be725589e7cddf4b6b5",
+    "go/internal/playground/ui.go": "6b412b10b859b616c4688147109bfa7f79a4dd8b10b7427ca9f849051d46f771",
+    "go/internal/playground/ui_test.go": "7cc12fac6b36289838f11c7bec4dc976eb821c4c84da9410ac20161d29dcdd46",
+    "go/internal/playground/snapshot_test.go": "3eb1fc3eab9ceab224077de5e57845ec785af6fbe087931979f7ab27d8f7dca2",
+    "rust/tests/ratatui.rs": "11e200815450ec802feb05344283ae1066cb911440d3bf7c91bda668392e52bc",
+    "tools/smoke_playground.py": "9dd1616aacb470224ea49ff59c5c90af99089e3a9385c4a3e39f9e83c3f12c05",
+    ".github/workflows/check.yml": "f73d75e1e5f1bb315bfede4c8cb7307d0c8919e50c7304a6cdb1da782ee0a372"
+  },
+  "images_sha256": {
+    "docs/images/playground-blackwhite-en.svg": "08b58f5399c0d060f5847b8267fcba7a4125906592ac6fbcc5d500202d429e7d",
+    "docs/images/playground-blackwhite.svg": "6fa84505df1a9a962594dbb9ea3c58f204c6bb78d7274d367bef39f033d9bc07",
+    "docs/images/playground-dark-en.svg": "266d236479ac7b5b84572a5eefa275fe54c3421a14a0f7fb243f7d3797444d0f",
+    "docs/images/playground-dark.svg": "a4b9357cfdd33d2ce185ecb477b6aca97cbd70f2873a1e7c18d437a6e66e72ef",
+    "docs/images/playground-edit-en.svg": "79b94bfa22b2192e4ea6c27107fddbaa7f6944001920b585fc8697a66e6e2dcb",
+    "docs/images/playground-edit.svg": "670946da8f3e4ccd16072fd8fb5e44525b4fa5d06a012e3eb51d5c76fb19d461",
+    "docs/images/playground-explorer-en.svg": "14d728d74133d8b77153ff52c82320af119f6521056faa38cc594256ad52afa7",
+    "docs/images/playground-explorer.svg": "0844763906290b47f6711a7f6abd974443be5f36fb1b810fa92c1aeb7fb2932b",
+    "docs/images/playground-grid-en.svg": "8b66774d9221b4b24a4dfe3ddcc55f560a7e9d15046fea5f98f07dfdbc380c8f",
+    "docs/images/playground-grid.svg": "1f57058957cb2918070bf2235022dfa3d7af06d5ee24086008197749fc2ad65e",
+    "docs/images/playground-light-en.svg": "dbd552c101713de1e60b66b78f8c791b26b2608441fea9795b2864c2ebd63d43",
+    "docs/images/playground-light.svg": "8086ddd43bec6ec5407687658d879a0c4020bf57d46d2f89b492b2787bc68cb2",
+    "docs/images/playground-popup-en.svg": "1bcb38e84232a9f3cf56588a6107efe3a056b54cc86db44abad7ba151150cf58",
+    "docs/images/playground-popup.svg": "caf4f284dbf988109c07ea57b51d564c6ad6934ae41d468f1551ee94ebe606ef"
+  }
+}

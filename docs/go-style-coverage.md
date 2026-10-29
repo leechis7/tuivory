@@ -38,3 +38,5 @@ make -C go test
 ## 공통 워크스페이스 컴포넌트
 
 [탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+
+0.4.0 수정은 직접 DropDown/Choice의 panel 바탕·라벨과 Apply의 호스트 표면 연결을 보완합니다. 원본 팔레트/스타일 계산의 추출 대조는 유지하며 이 문맥 보정과 구분합니다. [표면 디자인 규칙](../design/surfaces.md).

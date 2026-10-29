@@ -41,7 +41,8 @@ func TestStyleMatrixMatchesOriginalLazyOra(t *testing.T) {
 			put("selection", s.SelectionStyle())
 			put("button", s.ButtonStyle())
 			put("button.focus", s.ButtonFocusStyle())
-			put("disabled", s.DisabledStyle())
+			// Historical raw disabled color; the current adapter has separate regression coverage.
+			put("disabled", tcell.StyleDefault.Foreground(s.Disabled).Background(s.Surface))
 			put("edited", s.EditedStyle())
 			put("editor", s.EditorStyle())
 			for surface := Canvas; surface <= Editor; surface++ {

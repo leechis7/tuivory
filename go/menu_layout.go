@@ -74,8 +74,6 @@ func (m *Menu) Layout(width, height int, ascii bool) []ComponentLine {
 		prefix := "  "
 		if focused {
 			prefix = "> "
-		} else if i.Disabled {
-			prefix = "- "
 		}
 		icon := i.Icon
 		if ascii {

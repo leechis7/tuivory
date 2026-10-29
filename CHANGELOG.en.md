@@ -2,7 +2,18 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
-## Unreleased
+## 0.4.0 — 2026-10-30
+
+- TVR-7: do not automatically prefix ordinary disabled items with `[-]` or `-`. Keep checkbox, radio, and check-menu selection indicators. Disabled labels, values, buttons, and notice actions use the disabled role with muted foregrounds and no active background. Use gray at 16 colors or higher and `Dim` at 8 colors. Block pointer activation/focus and keyboard execution; clicking a disabled option must not move parent focus. [Twelve-palette comparison and limits](docs/disabled-states.en.md).
+
+
+- TVR-7: fix plain-text background leakage across Go/Rust rows, paths/status, notifications/progress/data states and labels; bind real surfaces with contrast correction. Preserve explicit state/grid/custom backgrounds, align direct Go choice helpers and hosts, and synchronize bilingual design rules/docs/live references.
+
+- TVR-7: fix the Go playground resize deadlock caused by page/focus changes under the draw lock; queue reflow on the UI loop and add bilingual PTY resize/exit CI regression.
+
+- TVR-7: align Go explorer/token/help focus border colors with cards; verify double active/single inactive borders across explorer/editor/grid/dialog areas, preserving the single-border menu exception. Add bilingual live references and physical output regressions.
+
+- TVR-7: use single menu popup borders without separate title/item focus decoration. Preserve selection/open-menu cues, input blocking and caller restoration.
 
 ## 0.3.0 — 2026-10-29
 

@@ -58,3 +58,5 @@ python3 tools/capture_lazyora_matrix.py /path/to/lazyora
 ```
 
 Syntax style calculations work with stock tcell. Stock tview TextArea lacks the LazyOra fork's `SetTextStyleFunc`, so Tuivory does not reproduce that hook. Actual LazyOra integration calls Tuivory's `SyntaxStyle` from the host lexer and hooks. The template does not claim complete syntax-highlighted rendering.
+
+Following the disabled-state refinement, Go DisabledStyle() applies the shared disabled foreground/Dim policy. The extracted Disabled field and original comparison JSON retain historical colors; separate twelve-palette output tests validate the new adapter. Explicit custom Disabled colors remain intact. [Current rules](disabled-states.en.md).

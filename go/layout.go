@@ -218,7 +218,7 @@ func (b Badge) Line(width int) ComponentLine {
 		label += " [" + count + "]"
 	}
 	v := b.State.Visual()
-	return ComponentLine{ID: b.ID, Text: CellText(v.Markers+label, width), Role: v.Role}
+	return ComponentLine{ID: b.ID, Text: CellText(strings.TrimPrefix(v.Markers, "-")+label, width), Role: v.Role}
 }
 
 type Chip struct {
@@ -229,7 +229,7 @@ type Chip struct {
 
 func (c Chip) Line(width int) ComponentLine {
 	v := c.State.Visual()
-	prefix := v.Markers + "["
+	prefix := strings.TrimPrefix(v.Markers, "-") + "["
 	suffix := "]"
 	if c.Removable {
 		suffix += " x"

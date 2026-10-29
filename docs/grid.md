@@ -99,3 +99,5 @@ grid.set_cell_info(|_, column| GridCellInfo {
 `StatusItems / status_items`는 공개 `StatusView`(Go), `status_line + LineWidget`(Rust)과 조합할 수 있습니다. position/column/selection/sort/filter/loading/more/meta/error 항목을 선택하며 우선순위는 오류100, 로딩80, 추가50, 선택40, 위치30, 열20, 메타15, 정렬/필터10입니다. 좁으면 기존 상태줄 규칙대로 생략·개수 표시합니다. Metadata는 전역 메타와 현재 셀 메타를 합칩니다. Labels 맵으로 문구를 번역합니다.
 
 [검증 기록](grid-validation.md) · [정적 배포](static-build.md) · [출처 LazyOra v0.11.2](https://github.com/leechis7/lazyora/blob/98a2f47e8621838101d5db781232a699dba382f3/internal/ui/grid.go). 외형·조작 원칙을 참고했으며 DB·Oracle 구현은 포함하지 않습니다.
+
+NewGridView는 RowsView.PreserveBackgrounds를 켜며 Rust GridWidget도 같은 보존 경로를 사용합니다. 직접 그리드 행을 그릴 때는 RowsWidget.preserve_backgrounds()를 사용합니다. simple/data 배경 옵션과 사용자 grid.* 역할은 그대로 유지합니다. 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.

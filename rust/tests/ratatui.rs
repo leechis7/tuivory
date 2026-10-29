@@ -56,6 +56,63 @@ fn semantic_roles_render_in_all_twelve_palettes() {
                 .draw(|f| f.render_widget(styles.block("Panel", true).unwrap(), f.area()))
                 .unwrap();
             assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "╔");
+            for focused in [false, true] {
+                for ascii in [false, true] {
+                    terminal
+                        .draw(|f| {
+                            f.render_widget(
+                                styles.panel("Area", focused, 0, ascii).unwrap(),
+                                f.area(),
+                            )
+                        })
+                        .unwrap();
+                    let b = terminal.backend().buffer();
+                    assert_eq!(
+                        b[(0, 0)].symbol(),
+                        if ascii {
+                            "+"
+                        } else if focused {
+                            "╔"
+                        } else {
+                            "┌"
+                        }
+                    );
+                    assert_eq!(
+                        b[(31, 2)].symbol(),
+                        if ascii {
+                            "+"
+                        } else if focused {
+                            "╝"
+                        } else {
+                            "┘"
+                        }
+                    );
+                    assert_eq!(
+                        b[(0, 1)].symbol(),
+                        if ascii {
+                            "|"
+                        } else if focused {
+                            "║"
+                        } else {
+                            "│"
+                        }
+                    );
+                    assert_eq!(
+                        b[(1, 2)].symbol(),
+                        if ascii {
+                            "-"
+                        } else if focused {
+                            "═"
+                        } else {
+                            "─"
+                        }
+                    );
+                    let border = styles
+                        .role(if focused { "focus.border" } else { "hint" })
+                        .unwrap();
+                    assert_eq!(Some(b[(0, 0)].fg), border.fg);
+                }
+            }
         }
     }
 }

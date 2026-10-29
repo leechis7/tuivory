@@ -325,6 +325,11 @@ impl Form {
         }
     }
     pub fn click(&mut self, id: &str, option: &str) -> FormEvent {
+        if self.fields.iter().find(|f| f.id == id).is_some_and(|f| {
+            f.state.disabled || f.options.iter().any(|o| o.id == option && o.disabled)
+        }) {
+            return FormEvent::default();
+        }
         if self.focused() != id && !self.focus(id) {
             return FormEvent::default();
         }
@@ -380,7 +385,11 @@ impl Form {
                     if focused { "> " } else { "  " },
                     field.label,
                     if field.required { " *" } else { "" },
-                    v.markers
+                    if field.state.disabled {
+                        v.markers.trim_start_matches('-')
+                    } else {
+                        &v.markers
+                    }
                 ),
                 v.role,
                 focused,
@@ -399,7 +408,16 @@ impl Form {
                             width.saturating_sub(2),
                             caret,
                         );
-                        add(format!("  {value}"), "field", false, "");
+                        add(
+                            format!("  {value}"),
+                            if field.state.disabled {
+                                "disabled"
+                            } else {
+                                "field"
+                            },
+                            false,
+                            "",
+                        );
                         position += count + 1
                     }
                 }
@@ -425,13 +443,26 @@ impl Form {
                                 if option.id == *current { "*" } else { " " },
                                 option.label
                             ),
-                            if option.disabled { "disabled" } else { v.role },
+                            if option.disabled || field.state.disabled {
+                                "disabled"
+                            } else {
+                                v.role
+                            },
                             false,
                             &option.id,
                         )
                     }
                 }
-                "button" => add(format!("  [ {} ]", field.label), "button", focused, ""),
+                "button" => add(
+                    format!("  [ {} ]", field.label),
+                    if field.state.disabled {
+                        "disabled"
+                    } else {
+                        "button"
+                    },
+                    focused,
+                    "",
+                ),
                 _ => (),
             }
             if !field.error.is_empty() {
