@@ -25,7 +25,7 @@ The current release is v0.2.0. The [support audit](component-audit.en.md) distin
 
 - **Focus**: `FocusStack` navigates host-supplied orders/scopes. It does not determine the application's overall Tab order or replace tview/Ratatui event loops. [API](focus.en.md)
 - **Tabs**: separate active/focused state, long titles/overflow, edited/closable indicators and requests already exist. This does not imply SQL/session ownership. [API](workspace.en.md)
-- **Menus**: `ListModel` currently provides flat items, separators, disabled state and select/activate requests. Nested-menu open paths, child entry/return and cascading-popup layout have no dedicated public API. Tree support does not establish nested-menu completeness. [Scope](collections.en.md)
+- **Menus**: v0.2.0 uses flat `ListModel` items. The unreleased [Menu API](menus.en.md) adds hierarchical groups/entry/return, a menu bar, single-popup geometry and original-context return requests. Hosts choose groups, eligibility and actual commands.
 - **Help**: `Help` prioritizes supplied shortcut descriptions. Whole help screens/contents/global key registration belong to hosts. [API](layout.en.md)
 - **Grid**: TVR-17 options/presets extend the same shared Grid. Hosts connect DB operations, transactions and actual exports. [Unreleased API](grid.en.md)
 
@@ -53,6 +53,6 @@ English reference from Rust TestBackend at 120×32. This is not a Go/SSH capture
 
 ## Follow-up capabilities
 
-Nested menus are a **candidate generic extension**. Record the current gap, confirm an actual requirement, then define shared models/input/popup boundaries and Go/Rust validation in a separate TVR issue. This documentation/example correction does not claim implementation or automatic issue creation. Reimplementing existing tab overflow or shortcut-help rendering is also outside this work.
+A subsequent user request adds nested menus through [shared Menu](menus.en.md). This is unreleased source, separate from flat-list support in v0.2.0. App-specific automatic grouping, taxonomy, SQL/sessions and complete help screens remain host-owned. Adding generic capabilities does not require migrating entire application screens.
 
 [Work/validation evidence](../evidence/component-boundary.en.md) · [Example usage](workspace.en.md)

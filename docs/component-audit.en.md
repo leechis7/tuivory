@@ -10,7 +10,7 @@ Re-audited on 2026-10-29, distinguishing published v0.2.0 from local TVR-17 comm
 | --- | --- | --- |
 | Inputs/forms | Form models/renderers, editing/choice, required values and submit requests | Connection/settings screens, business validation and saving |
 | Tree | NewTree/TreeState/NewTreeView / tree::Tree/TreeState/TreeWidget | Real data, loading and item execution |
-| Menu/search | NewList/NewSearchPicker / collections::ListModel/SearchPicker, flat items/filtering/selection requests | No dedicated nested-menu model/child entry/return/cascading-popup API. Hosts own content and remote candidates |
+| Menu/search | NewList/NewSearchPicker / collections::ListModel/SearchPicker, flat items/filtering/selection requests | v0.2.0 is flat. Unreleased Menu/NewMenuView and menu::Menu/MenuPopupWidget add hierarchy/back/bar/single-popup support. Hosts own content/remote candidates |
 | Tabs | Tabs/TabState/NewTabView / components::Tabs/TabState/TabsWidget, overflow/edited/close requests | SQL/session ownership, document storage and close approval |
 | Panels/splits | NewPanelView/NewSplitView / Styles::panel/split_rects, geometry inside assigned areas | Screen placement/axis/initial sizes/visibility/responsive composition |
 | Focus/popups | FocusStack navigation/blocking/restoration within host-defined scopes | Cross-component order, scope registration, terminal/event wiring |
@@ -18,7 +18,7 @@ Re-audited on 2026-10-29, distinguishing published v0.2.0 from local TVR-17 comm
 | Grid | Published v0.2.0 Grid/GridSource/basic rendering; TVR-17 options/ranges/status exist only in a local commit | Queries, business editing, transactions, real clipboard/exports |
 | Themes/validation | Shared tokens/semantic styles, state preservation, cell width/static-distribution checks | Actual host/customer-terminal checks remain separate; no claim of full Go extracted-styler/Rust candidate-palette parity |
 
-Nested menus are a confirmed gap, not an automatic implementation obligation or newly created issue. Confirm requirements before creating a separate TVR implementation issue. Tab overflow and shortcut-help rendering already exist and should not be duplicated. [Different host policy on existing components](component-boundary.en.md).
+After the boundary audit, the user requested [shared Menu improvements](menus.en.md) under existing TVR-7. Distinguish released 0.2.0 from the new implementation; command taxonomy/execution remains host-owned. Tab overflow and shortcut-help rendering already exist and should not be duplicated. [Different host policy on existing components](component-boundary.en.md).
 
 ## Starting-point record — 2026-10-27
 
@@ -63,3 +63,7 @@ Public Go/Rust [forms](forms.en.md), [lists/menus/search](collections.en.md), [v
 ## TVR-17 grid configuration (unreleased)
 
 [Shared options/presets](grid.en.md) extend the existing Grid with Go/Rust ranges, original-value copy, numbering, columns, density, status, stale-response protection and identical comparison data. [Local validation](grid-validation.en.md) is separate from GitHub CI/tags and actual LazyOra integration.
+
+## TVR-7 shared menus (unreleased)
+
+[Menu APIs](menus.en.md) add Go/Rust hierarchy, bar/back navigation, separators/disabled/shortcuts, popup placement and original-context requests. This addresses the audited gap after the user’s subsequent instruction without transferring host screen/business ownership. [Validation](../evidence/menu.en.md).

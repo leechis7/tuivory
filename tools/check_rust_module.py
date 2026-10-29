@@ -58,6 +58,7 @@ fn main() {
     grid.set_cell_info(|_,_|tuivory::grid::GridCellInfo{display:"formatted".into(),has_display:true,metadata:"TEXT".into(),..Default::default()});
     assert!(grid.select_range(tuivory::grid::GridRange{anchor_row:"row".into(),end_row:"row".into(),anchor_column:"name".into(),end_column:"name".into()}));assert_eq!(grid.handle("copy_range",4).text,"External");
     grid.request_filter("old");let old=grid.revision();grid.request_filter("new");assert!(!grid.apply_source(old,Box::new(tuivory::grid::MemoryRows::new(vec![]).unwrap())));
+    let mut menu=tuivory::menu::Menu::new(vec![tuivory::menu::MenuItem{id:"root".into(),label:"Root".into(),..Default::default()},tuivory::menu::MenuItem{id:"copy".into(),parent:"root".into(),label:"Copy".into(),mnemonic:"c".into(),..Default::default()}]).unwrap();menu.open("root","editor");let event=menu.handle("mnemonic","c",4).unwrap();assert_eq!(event.kind,"activate");assert_eq!(event.return_id,"editor");menu.open("root","editor");
     let mut notices=tuivory::feedback::NoticeQueue::new(2).unwrap();notices.push(tuivory::feedback::Notice{id:"err".into(),severity:"error".into(),expires_at:1,..Default::default()}).unwrap();assert_eq!(notices.visible(100).len(),1);let progress=tuivory::feedback::Progress{id:"load".into(),status:"loading".into(),cancellable:true,..Default::default()};assert_eq!(progress.request_cancel().kind,"cancel");
     let spacing=tuivory::layout::SpacingTokens::for_width(tuivory::layout::Density::Auto,40);assert_eq!(spacing.padding,0);let layout=tuivory::layout::stack_layout(&[tuivory::layout::StackItem{id:"main".into(),min:10,preferred:20,weight:1}],30,1).unwrap();assert_eq!(layout.slots[0].size,30);assert_eq!(tuivory::layout::Chip{id:"filter".into(),removable:true,..Default::default()}.request_remove().kind,"remove");
     let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), branch: true, ..Default::default() }]).unwrap();
@@ -98,6 +99,8 @@ fn main() {
     terminal.draw(|f| f.render_stateful_widget(tuivory::ratatui::TabsWidget::new(&tabs, &styles).unwrap(),f.area(),&mut tab_state)).unwrap();
     terminal.draw(|f| f.render_widget(tuivory::ratatui::GridWidget{model:&grid,styles:&styles,focused:true},f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(grid.geometry(24,4).gutter as u16-1,0)].symbol(),"│");
+    let mut menu_terminal=ratatui::Terminal::new(ratatui::backend::TestBackend::new(40,10)).unwrap();
+    menu_terminal.draw(|f|f.render_widget(tuivory::ratatui::MenuPopupWidget{model:&mut menu,styles:&styles,title:"Menu",ascii:true,focused:true,padding:1},f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),"+");assert_eq!(menu_terminal.backend().buffer()[(2,2)].symbol(),">");
     let runs = tuivory::components::status_line(&[tuivory::components::StatusItem { id: "e".into(), text: "Failure".into(),role: "error".into(),priority:10 }],24).runs;
     terminal.draw(|f| f.render_widget(tuivory::ratatui::LineWidget::new(runs.clone(),&styles).unwrap(),f.area())).unwrap();
     terminal.draw(|f| f.render_widget(styles.panel("External",true,1,true).unwrap(),f.area())).unwrap();

@@ -127,3 +127,5 @@ Version 0.2.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui
 [TVR-13: Layout, density and supporting components](../docs/layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 [TVR-17 grid options](../docs/grid.en.md): simple/data presets, ranges, column configuration, status, response generations and a five-row comparison. Unreleased source.
+
+[Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.

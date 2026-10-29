@@ -144,3 +144,5 @@ Distributed executables for Go, Rust and future languages must require no separa
 Go popup/shadow wide-glyph protection: [shared drawing API](docs/overlay-drawing.en.md).
 
 [TVR-17 grid configuration](docs/grid.en.md): simple/data presets, ranges, column options, status and stale-response protection on the same Go/Rust grid. Unreleased source.
+
+[Shared menus](docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.

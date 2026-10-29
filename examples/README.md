@@ -51,3 +51,5 @@ Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](../docs/ov
 [TVR-17 그리드 비교](../docs/grid.md): `make run-catalog-go ARGS="--mode grid --grid-sample --grid-preset data --lang ko"`. Rust는 `run-catalog-rust`, 간결 구성은 `--grid-preset simple`을 사용합니다. 같은 5행 데이터와 2번 행 이름 선택입니다. TVR-17은 미배포 소스입니다.
 
 [호스트 구성 예제](../docs/component-boundary.md): 기존 workspace에 `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x`를 주어 앱이 선택하는 배치·포커스·전역 키를 확인합니다. 기본 화면과 새 구성은 같은 Go/Rust 공개 컴포넌트를 사용하며 새 호스트 옵션은 미배포 소스입니다.
+
+[공통 메뉴](../docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 기존 v0.2.0 태그에는 없는 미배포 소스입니다.

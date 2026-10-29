@@ -27,4 +27,4 @@ Actual Rust TestBackend 120×36 reference, not a Go capture or physical/SSH term
 
 [Backlog](components-backlog.en.md) · [Static distribution](static-build.en.md)
 
-Current menu support is ListModel-based flat items, separators, disabled state and select/activate requests. Dedicated nested open paths, child entry/return and cascading-popup layout are absent and remain candidates for follow-up work. Hosts choose menu content/business commands and where popups appear. [Boundary](component-boundary.en.md).
+Published v0.2.0 menus use flat ListModel items. New [shared menus](menus.en.md) provide hierarchical groups/back navigation, a menu bar, popup geometry and caller-restoration requests in unreleased source. Existing list/search APIs remain unchanged; hosts choose content, remote candidates and business commands.

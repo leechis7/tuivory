@@ -47,3 +47,8 @@ required-features = ["playground"]
 name = "catalog"
 path = "examples/catalog/main.rs"
 required-features = ["playground"]
+
+[[example]]
+name = "menu"
+path = "examples/menu/main.rs"
+required-features = ["playground"]

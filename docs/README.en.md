@@ -51,3 +51,5 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 [TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 [Wide glyphs and overlay drawing](overlay-drawing.en.md): public Go screen wrapper, shadows and output regressions after Show.
+
+[Shared menus](menus.en.md): Menu/bar/hierarchical return/popup/host context and bilingual examples. Unreleased source.

@@ -32,3 +32,7 @@ TVR-8–13 public APIs/examples are complete in the dev integration sequence. Hi
 ## TVR-7 boundary follow-up
 
 Update documentation/examples under the existing TVR-7 epic using the [boundary](component-boundary.en.md) and [current audit](component-audit.en.md). Hosts own screens, global focus/keys and business bindings. Record nested menus as an unimplemented candidate; creating/implementing a new issue is outside this work. Tab overflow and shortcut-help already exist. This update is included in this local commit; unpublished on GitHub, separate from local TVR-17 commit e34b824 and published v0.2.0.
+
+## TVR-7 menu improvement
+
+The user’s subsequent instruction implements [shared menus](menus.en.md) under the existing epic, following the earlier candidate record; no new issue number was created. The library owns hierarchy/back/bar/presentation/internal interaction; hosts own taxonomy/global keys/command execution. Menu source remains uncommitted/unpublished.

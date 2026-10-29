@@ -1,0 +1,111 @@
+{
+  "issue": "TVR-7",
+  "date": "2026-10-29",
+  "base_commit": "50bf212",
+  "branch": "codex/TVR-7-menus",
+  "state": "uncommitted/unpublished menu implementation",
+  "reference": {
+    "repository": "leechis7/lazyora",
+    "commit": "98a2f47e8621838101d5db781232a699dba382f3",
+    "files": [
+      "internal/ui/menu.go",
+      "internal/ui/menu_groups.go"
+    ]
+  },
+  "checks": {
+    "go": "full race/vet plus final menu boundary/style tests passed",
+    "rust": "1.85.1 core; 1.88.0 all-features/targets/doctests/fmt/clippy and final menu tests passed",
+    "shared_scenarios": "menu-cases.json; three-level/back/root/context/mnemonic/caller",
+    "palettes": 12,
+    "character_modes": [
+      "Unicode",
+      "ASCII"
+    ],
+    "pty": {
+      "count": 8,
+      "result": "passed",
+      "ui_languages": [
+        "ko",
+        "en"
+      ],
+      "features": [
+        "nested/back/root navigation",
+        "caller restoration and typing",
+        "paste/background blocking",
+        "dynamic eligibility",
+        "mouse/bar/outside clicks",
+        "theme/profile/ASCII",
+        "resize and terminal restore"
+      ]
+    },
+    "external_imports": "isolated Go module and packaged Rust crate; native execution/rendering and static x86_64 hosts passed",
+    "images": 10,
+    "static_elf": "four menu examples plus two external hosts; no PT_INTERP/DT_NEEDED",
+    "tools": "shared tokens/fixtures, seven Python tests, Markdown links and diff checks"
+  },
+  "centos74": {
+    "image": "centos@sha256:78b63c089c40a2ca0d85db9125fb3193c6ff74814bba5f894c803e5ae02a4035",
+    "kernel": "3.10.0-693.el7.x86_64",
+    "kernel_sha256": "8ede7f8d3c8f5e72f1a84713ad59b7b39211ea1af8887389cb50a189df937c6f",
+    "glibc": "2.17-196.el7.x86_64",
+    "result": "passed",
+    "languages": [
+      "ko",
+      "en"
+    ],
+    "binaries_sha256": {
+      "go-menu": "35c0e27c73589fc54253150f8fd0af4029bac945e25e872b2ebc02d8bab81681",
+      "rust-menu": "84470f8678caeacce9c15dec26265a4c79da36be775632741eb89064186caa40",
+      "go-menu-host": "65e2be65b4dd0dfa32eb25113aabf9b80f15a528cb7b41a74df8713daf81bab8",
+      "rust-menu-host": "3be9db0e2c53946f6e127b27ad65b65006e99b274115b33f2f018fbfa2272c85"
+    }
+  },
+  "centos_scope": "Example startup/exit with menus initially closed; external menu API/rendering hosts. Hierarchical interaction tested on native ARM64 PTYs.",
+  "not_run": [
+    "remote CI",
+    "new public tag installation",
+    "actual LazyOra/LazyBeaver integration",
+    "customer SSH/physical terminal/font verification"
+  ],
+  "source_sha256": {
+    "design/menu-cases.json": "32dae841848a15d8c2563d8789d0e1a63930458a318dfaca6c924b7b9123389e",
+    "go/examples/menu/main.go": "fc4b36ef7dc30ac3ee546d178201a34cf07854ff86ceada8375717dc06f86da8",
+    "go/menu.go": "fa4f5d244e1bbc6e2df72c70ba2a748f9bd850fce49d1ec6958de267539f0c6a",
+    "go/menu_layout.go": "04e4fac02f91638744d449fe9221f2a070909e3fec6c4f32ec020b3929bd992c",
+    "go/menu_test.go": "3ae889e764cb4fd240eff8c819005f8268e53f2b3b2e72e810b79294e62cb074",
+    "go/menu_view.go": "f6e8497b6344400579500dfb39a74ae35a45c63ac8477612f7f81676787bb64f",
+    "rust/Cargo.toml": "0ca73465a974b03e8882bfb4a815beb09fbb51a9492a541208c092fcc3cb7a49",
+    "rust/examples/menu/main.rs": "8ca9f1418e3dabd79126c5651c796bc5b6a781b13c8c1032d6deb4f2755e2af2",
+    "rust/src/lib.rs": "93ab1cc3e4d13cf4920f04f24a1c86c57b07134ca53b47ff2a79dbbc6f5eb691",
+    "rust/src/menu.rs": "cd638eb5f596fccab1d402ab30194cf99de5cd9c44bef7056dd0abc2120c2374",
+    "rust/src/ratatui/menu.rs": "630acb9bd06df8f5cbb6b820fe1d3fbb60b14890051eb8e8db279645f4f0da6c",
+    "rust/src/ratatui.rs": "0e52c024f7cf640df3172f476ff193dcda2fc0300bfb6519c5137eca0410a2f1",
+    "rust/tests/menu.rs": "47446949c6ada4bfc4227b6bb728f49646ac6534587505c78d1bff29ebdb244c",
+    "tools/build_rust.py": "2f028ff6d95c477ea3e9ec1c10eaa36040cb599b75604ae71fc7bada9cb51f17",
+    "tools/check_go_module.py": "d59127a0452290f94007b9dd330cb9d4f8c1237b5fd10d31658a34bb6ea83fec",
+    "tools/check_rust_module.py": "00d25bde2ec04fbfc8a4663dbee7ab38f0b0cb4387e3edbc866c021b61a3914a",
+    "tools/export_tree_cases.py": "9b1f83dd41ac67fb3856c069385729f47ca1c353cebf619e3823da576e7396ca",
+    "tools/smoke_menu.py": "9e54c7a000963a68a94a15f4d86b41aa4c60f5c362945fbc563cee5f345fa51b",
+    "tools/snapshot_menu.py": "841d39fdb85ba0cc61dd38fb6adc8de8429553b60e5fc45725aaaef35dba6bba"
+  },
+  "images_sha256": {
+    "docs/images/menu-ascii-en.svg": "7355faf1d421fff172e995cc935afd9102abe03561516784a3b559d6986f3595",
+    "docs/images/menu-ascii.svg": "c44d495e32bd929a9613a97493b9d58873effdd3dcc816f50c4c99a4d5acaa92",
+    "docs/images/menu-blackwhite-en.svg": "93144bfa160e4f5a0d24759ff3416b9240e6a1e644f35552c498a8677cb5df73",
+    "docs/images/menu-blackwhite.svg": "3f11cd003b99cb1c44c4bf93ee66b65b4096f1ea2a2d3c987617117536be78cf",
+    "docs/images/menu-dark-en.svg": "fde40a7b1a5d4adba076a669e75a9414d7d295801b2090538e54eab3cd81b7a8",
+    "docs/images/menu-dark.svg": "a8c75de153a5c65999ce81e2db65809269150e7816ba019d83f4dd852cfcdcd6",
+    "docs/images/menu-light-en.svg": "9905127aa10f6f353c11862eb357c41eda8f1776b97e00948ab9ebdb72e3a955",
+    "docs/images/menu-light.svg": "ef158c366cb6884d30ded8b9803fcccb4076e787b055e72a0bc35160e2f1ef17",
+    "docs/images/menu-nested-en.svg": "f99c0cd1583e2123110363f3370d613789dba021c68db3a56bc44f01be9aa936",
+    "docs/images/menu-nested.svg": "9339eb5c6d7d92f9949616111c2dede4b2b33b9580809725cf6cff15d2e326ce"
+  },
+  "artifacts_sha256": {
+    "bin/go/menu-linux-arm64": "a6e667cbabc80ce1bb807b0ea5e9a08c44f7aee6c19db61e0d68363f37b2ab12",
+    "bin/go/menu-linux-x86_64": "35c0e27c73589fc54253150f8fd0af4029bac945e25e872b2ebc02d8bab81681",
+    "bin/rust/menu-linux-arm64": "2d6ae9f5162feae4c33c5401891ab64399fd19ef9bbdfc98e096926ae27000eb",
+    "bin/rust/menu-linux-x86_64": "84470f8678caeacce9c15dec26265a4c79da36be775632741eb89064186caa40",
+    "bin/validation/go-menu-host-linux-x86_64": "65e2be65b4dd0dfa32eb25113aabf9b80f15a528cb7b41a74df8713daf81bab8",
+    "bin/validation/rust-menu-host-linux-x86_64": "3be9db0e2c53946f6e127b27ad65b65006e99b274115b33f2f018fbfa2272c85"
+  }
+}

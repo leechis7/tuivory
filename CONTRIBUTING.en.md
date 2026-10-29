@@ -69,7 +69,7 @@ Workspace specifications originate in `design/components-cases.json`. Regenerate
 
 ## Static distribution requirements
 
-Preserve static distribution and host linking for Go, Rust and future languages without an explicit exception. Distinguish build dependencies from external runtimes, and check static Linux ELF files plus execution on the target kernel. Current Shell sources are interpreter-based references; standalone Shell executables must meet the same static requirements. See [static builds, external hosts and CentOS checks](docs/static-build.en.md).
+Preserve static distribution and host linking for Go, Rust and future languages without an explicit exception. Distinguish build dependencies from external runtimes, and check static Linux ELF files plus execution in available local/CI environments. Per user instruction, do not run CentOS validation. Current Shell sources are interpreter-based references; standalone Shell executables must meet the same static requirements. See [static builds, external hosts and historical CentOS records](docs/static-build.en.md).
 
 Python, TypeScript and JavaScript are user-authorized exceptions delivered as normal packages using their runtimes. Static distribution, standalone executables, static ELF checks and CentOS validation are not required. Document supported runtimes/dependencies and verify installation/import/types/examples in clean external environments. Plain JavaScript users must not need a TypeScript compiler.
 

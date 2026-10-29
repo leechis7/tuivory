@@ -1,0 +1,31 @@
+{
+ "items": [
+  {"id":"file","label":"File","mnemonic":"f"},
+  {"id":"new","parent":"file","label":"New 한글😀é","mnemonic":"n","shortcut":"Ctrl+N"},
+  {"id":"line","parent":"file","separator":true},
+  {"id":"off","parent":"file","label":"Unavailable","disabled":true},
+  {"id":"recent","parent":"file","label":"Recent","mnemonic":"r"},
+  {"id":"a","parent":"recent","label":"Example A","mnemonic":"a"},
+  {"id":"deep","parent":"recent","label":"More","mnemonic":"m"},
+  {"id":"b","parent":"deep","label":"Example B","mnemonic":"b"},
+  {"id":"edit","label":"Edit","mnemonic":"e"},
+  {"id":"copy","parent":"edit","label":"Copy","shortcut":"Ctrl+C"}
+ ],
+ "scenarios":[
+  {"root":"file","caller":"editor","steps":[
+   {"action":"next","event":"focus","id":"recent","focus":"recent","path":["file"]},
+   {"action":"activate","event":"open","id":"recent","focus":"a","path":["file","recent"]},
+   {"action":"next","event":"focus","id":"deep","focus":"deep","path":["file","recent"]},
+   {"action":"right","event":"open","id":"deep","focus":"b","path":["file","recent","deep"]},
+   {"action":"cancel","event":"back","id":"recent","focus":"deep","path":["file","recent"]},
+   {"action":"left","event":"back","id":"file","focus":"recent","path":["file"]},
+   {"action":"left","event":"open","id":"edit","focus":"copy","path":["edit"]},
+   {"action":"activate","event":"activate","id":"copy","closed":true}
+  ]},
+  {"root":"","caller":"preview","steps":[
+   {"action":"mnemonic","value":"F","event":"open","id":"file","focus":"new","path":["file"]},
+   {"action":"cancel","event":"back","id":"","focus":"file","path":[]},
+   {"action":"cancel","event":"close","id":"","closed":true}
+  ]}
+ ]
+}

@@ -15,7 +15,9 @@
 
 use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
 mod components;
+mod menu;
 mod rows;
+pub use menu::{MenuBarWidget, MenuPopupWidget, MenuWidget};
 pub use rows::{
     BadgeWidget, ChipWidget, DataStateWidget, FormWidget, GridWidget, HelpWidget, ListWidget,
     NoticeWidget, ProgressWidget, RowsWidget, SearchPickerWidget, StackRects, stack_rects,

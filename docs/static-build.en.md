@@ -2,6 +2,8 @@
 
 [한국어 (default)](static-build.md) · **English**
 
+Per the user instruction on 2026-10-29, CentOS validation is no longer performed, including the CI VM job. Static distribution requirements, ELF inspection and execution checks in available environments remain. The CentOS commands and previous results below are historical reproduction records, not current required procedures.
+
 Static executables are included in **0.2.0**; existing 0.1.0 assets are preserved. [Assets, installation and validation](release-0.2.0.en.md).
 
 Distributed executables for Go, Rust and future languages without an explicit exception must run without a dynamic loader, shared libraries or a separately installed language runtime. Those packages must not introduce mandatory native dependencies that prevent static host linking. Build-time Go modules and Rust crates are allowed; shared tokens are embedded so runtime data files are unnecessary. The OS kernel and terminal are part of the execution environment.
@@ -37,7 +39,7 @@ python3 tools/check_rust_module.py --ratatui --static-output /tmp/tuivory-rust-c
 
 External host checks use the standalone Go module and packaged Rust crate without the repository's shared design directory. They check public APIs and rendering, then export static x86_64 executables.
 
-## Legacy kernel validation
+## Historical CentOS kernel validation (no longer performed)
 
 Docker exports a root filesystem from a pinned official CentOS 7.4.1708 AMD64 image. QEMU boots the actual CentOS 7.4 `3.10.0-693.el7.x86_64` kernel. A container sharing a modern host kernel alone does not establish kernel compatibility. The guest glibc is `2.17-196.el7`. The VM runs without networking, KVM or host binfmt registration.
 

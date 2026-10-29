@@ -60,6 +60,8 @@ func TestIsolatedModule(t *testing.T) {
     grid.SetCellInfo(func(r tuivory.GridRecord,c tuivory.GridColumn)tuivory.GridCellInfo{return tuivory.GridCellInfo{Display:"formatted",HasDisplay:true,Metadata:"TEXT"}})
     if !grid.SelectRange(tuivory.GridRange{AnchorRow:"row",EndRow:"row",AnchorColumn:"name",EndColumn:"name"})||grid.Handle("copy_range",4).Text!="External" {t.Fatal("external options/raw range")}
     grid.RequestFilter("old");oldRevision:=grid.Revision();grid.RequestFilter("new");if grid.ApplySource(oldRevision,gridRows){t.Fatal("stale source")}
+    menu,menuErr:=tuivory.NewMenu([]tuivory.MenuItem{{ID:"root",Label:"Root"},{ID:"copy",Parent:"root",Label:"Copy",Mnemonic:"c",Icon:"◇",ASCIIIcon:"*"}});if menuErr!=nil{t.Fatal(menuErr)}
+    menu.Open("root","editor");if e:=menu.Handle("mnemonic","c",4);e.Kind!="activate"||e.ReturnID!="editor"{t.Fatal("external menu caller")};menu.Open("root","editor")
     notices,_:=tuivory.NewNoticeQueue(2);_ = notices.Push(tuivory.Notice{ID:"err",Severity:"error",ExpiresAt:1})
     if len(notices.Visible(100))!=1 { t.Fatal("external notice lifetime") }
     operation:=tuivory.Progress{ID:"load",Status:"loading",Cancellable:true};if operation.RequestCancel().Kind!="cancel"{t.Fatal("external cancel")}
@@ -123,6 +125,8 @@ func TestIsolatedModule(t *testing.T) {
     status, err := tuivory.NewStatusView([]tuivory.StatusItem{{ID:"e",Text:"Failure",Role:"error",Priority:10}},colors)
     if err != nil { t.Fatal(err) }
     status.SetRect(0,0,20,1); status.Draw(screen)
+    menuView,menuErr:=tuivory.NewMenuView(menu,colors,true,nil);if menuErr!=nil{t.Fatal(menuErr)};popup,menuErr:=tuivory.NewPanelView(menuView,colors);if menuErr!=nil{t.Fatal(menuErr)};popup.ASCII=true;popup.SetRect(0,0,30,6);popup.Draw(screen);screen.Show();physical,cols,_=screen.GetContents();if string(physical[0].Bytes)!="+"||string(physical[2*cols+2].Bytes)!=">"{t.Fatal("external menu physical output")}
+    if _,err:=tuivory.NewMenuBarView(menu,colors,nil);err!=nil{t.Fatal(err)}
 }
 ''')
         subprocess.run(['go', 'test', '-mod=mod', './...'], cwd=consumer, env=env, check=True)

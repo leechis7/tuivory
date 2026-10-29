@@ -27,4 +27,4 @@ make run-catalog-rust ARGS="--mode collections --lang en"
 
 [Backlog](components-backlog.md) · [Static distribution](static-build.md)
 
-현재 메뉴 지원은 ListModel 기반 평면 항목·구분선·비활성·선택/실행 요청입니다. 중첩 메뉴의 열림 경로·하위 진입/복귀·계층 팝업 배치 전용 API는 미제공이며 후속 후보입니다. 메뉴 내용·업무 명령·팝업을 화면 어디에 여는지는 앱이 정합니다. [책임 범위](component-boundary.md).
+v0.2.0의 메뉴는 ListModel 기반 평면 목록입니다. 새 [공통 메뉴](menus.md)는 미배포 소스에서 계층 그룹·뒤로가기·메뉴 바·팝업 배치·호출 패널 복귀 요청을 제공합니다. 기존 목록·검색 선택 API는 유지하고 메뉴 내용·원격 후보·업무 명령은 앱이 정합니다.

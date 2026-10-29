@@ -38,4 +38,4 @@ The tree specification above is implemented for Go/tview and Rust/Ratatui in the
 
 [TVR-8](focus.en.md) provides public Go/Rust state composition, ID navigation, nested modal input routing, close requests and focus restoration. Inputs/forms are provided in 0.2.0; hosts compose complete application Dialog screens; distinguish example-local behavior from public foundation APIs.
 
-The table describes design patterns, not a claim that every pattern is implemented. Menus currently use flat lists; dedicated nested-menu APIs are absent. Inputs/forms are available in 0.2.0, while hosts compose complete Dialog/business screens. [Current support audit](component-audit.en.md) · [Responsibility boundary](component-boundary.en.md).
+The table describes design patterns, not a claim that every pattern is implemented. Published v0.2.0 menus are flat lists; new [hierarchical menus](menus.en.md) are unreleased source. Inputs/forms are available in 0.2.0, while hosts compose complete Dialog/business screens. [Current support audit](component-audit.en.md) · [Responsibility boundary](component-boundary.en.md).

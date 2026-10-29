@@ -46,3 +46,5 @@ At either horizontal overlay/shadow edge, replace intersected wide graphemes wit
 [TVR-17 grid options, priority and original-value/host boundaries](../docs/grid.en.md): simple/data presets on one Go/Rust core; unreleased source.
 
 Follow the [component/application boundary](../docs/component-boundary.en.md). Example screens/keymaps are host choices, not a mandatory application framework.
+
+[Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.

@@ -19,7 +19,7 @@ The root is language-neutral: shared specifications/tokens live in design/, impl
 
 1. Support real host integration using the responsibility/support matrix. Distinguish the original Go-derived styles from the shared candidate palette.
 2. After approved TVR-17 publication/release, validate actual LazyOra integration. Record implementation, local checks, publication and actual integration separately.
-3. Nested menus are a confirmed gap and a candidate for a separate TVR issue after requirements are confirmed. Do not duplicate existing tab overflow or shortcut-help rendering.
+3. Following the user’s request, [hierarchical menus](menus.en.md) are implemented under TVR-7; distinguish unreleased source from published 0.2.0 and deliver after validation/approval. Do not duplicate existing tab overflow or shortcut-help rendering.
 4. Expand [TVR-15 Python](https://leechis7.atlassian.net/browse/TVR-15) and [TVR-16 TypeScript/JavaScript](https://leechis7.atlassian.net/browse/TVR-16) as normal runtime-based packages. Per the user's exception, static linking, standalone executables and CentOS validation are not mandatory.
 5. Collect actual LazyOra/LazyBeaver and customer-terminal evidence for Go/Rust. Keep SQL, sessions, persistence and business workflows out of the common core.
 

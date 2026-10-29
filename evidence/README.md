@@ -44,3 +44,5 @@ ANSI 팔레트(참조/사용자 변경/미확인), 굵게 설정:
 [TVR-17 그리드 로컬 검증](../docs/grid-validation.md) · [정적 산출물·CentOS·소스 해시](grid-options-results.json). 로컬 커밋 전 작업 소스의 검증이며 GitHub에는 미게시입니다.  실제 LazyOra 적용은 별도입니다.
 
 [TVR-7 책임 범위 정정 검증](component-boundary.md): 현재 지원 점검표·호스트 구성 선택·한영 PTY 8개·정적 ELF·CentOS 기본 실행·기존 화면 동일성. 로컬 커밋에 포함하며 GitHub에는 미게시 작업입니다.
+
+[TVR-7 공통 메뉴 검증](menu.md): 공유 계층 탐색·호출 문맥·12팔레트·물리 출력·한영 PTY·외부 import·정적 ELF·CentOS. 메뉴 작업은 미커밋·미게시입니다.
