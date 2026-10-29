@@ -1,18 +1,21 @@
-# Tuivory — 터미널 UI 스타일 패키지
+# Tuivory — TUI 컴포넌트 라이브러리
 
 **한국어 (기본)** · [English](README.en.md)
 
-**0.2.0**: 공통 컴포넌트·정적 실행파일·오버레이 수정. [릴리스 안내](docs/release-0.2.0.md).
+**0.3.0**: 공통 메뉴·그리드 옵션·정적 실행파일. [릴리스 안내](docs/release-0.3.0.md).
 
-Tuivory (TUI + ivory) provides reusable terminal UI styles across languages. Shared design data lives in `design/`; each language implementation has its own directory and packaging.
+Tuivory (TUI + ivory) provides reusable TUI components and styles across languages. Shared design data lives in `design/`; each language implementation has its own directory and packaging.
 
-**Tuivory(투이보리)**는 Go·Rust·Python·JavaScript·Shell에서 일관된 터미널 UI를 만들기 위한 스타일 패키지 프로젝트입니다. 저장소 루트는 특정 언어에 종속하지 않습니다. 공통 테마·색상 프로필·상태 규칙은 `design/`에서 관리하고 실제 적용 코드는 언어별로 구현합니다.
+**Tuivory(투이보리)**는 Go·Rust·Python·JavaScript·Shell에서 일관된 터미널 UI를 만들기 위한 TUI 컴포넌트 라이브러리입니다. 저장소 루트는 특정 언어에 종속하지 않습니다. 공통 테마·색상 프로필·상태 규칙은 `design/`에서 관리하고 실제 적용 코드는 언어별로 구현합니다.
+
+
+앱은 화면 구성·컴포넌트 사이 포커스 순서·전역 키·데이터와 업무 동작을 결정합니다. Tuivory는 컨트롤 내부 조작과 설정 가능한 표시·배치 도구를 제공합니다. [컴포넌트와 앱의 책임](docs/component-boundary.md) · [현재 지원 점검표](docs/component-audit.md).
 
 | 경로 | 역할 | 현재 제공 범위 |
 | --- | --- | --- |
 | [design/](design/README.md) | 언어 독립 규칙·토큰·테마 후보 | 공통 명세, JSON·스키마, CSV 참조 데이터 |
-| [go/](go/README.md) | Go 모듈·스타일 구현·견본 | 실제 스타일 API, tview 적용, 상태 보존·원본 비교 검사 |
-| [rust/](rust/README.md) | Rust crate·토큰·스타일 코어 | 프레임워크 독립 값·JSON 검증·선택적 Ratatui 어댑터·한영 대화형 견본 |
+| [go/](go/README.md) | Go 모듈·스타일 구현·견본 | 공통 컴포넌트 모델·tview 렌더러·스타일 API·원본 비교 검사 |
+| [rust/](rust/README.md) | Rust crate·토큰·스타일 코어 | 공통 컴포넌트 모델·토큰·선택적 Ratatui 렌더러·한영 예제 |
 | [python/](python/README.md) | Python 구현 영역 | 공통 토큰 읽기 예제. UI 패키지 미구현 |
 | [javascript/](javascript/README.md) | JavaScript 구현 영역 | Node.js 토큰 읽기 예제. UI 패키지 미구현 |
 | [shell/](shell/README.md) | Shell 구현 영역 | ANSI 참조 출력. 재사용 스타일 함수 패키지 미구현 |
@@ -32,10 +35,10 @@ theme.Form(form)
 theme.Button(button)
 ```
 
-현재 배포 버전은 **0.2.0**입니다. Go 모듈 태그는 `go/v0.2.0`, Rust Git 태그는 `rust/v0.2.0`이며 공통 UI와 한영 견본·문서를 포함합니다. [릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.2.0)에서 Linux ARM64/x86_64 정적 견본·카탈로그와 소스 패키지를 받습니다.
+현재 배포 버전은 **0.3.0**입니다. Go 모듈 태그는 `go/v0.3.0`, Rust Git 태그는 `rust/v0.3.0`이며 공통 UI와 한영 견본·문서를 포함합니다. [릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.3.0)에서 Linux ARM64/x86_64 정적 견본·카탈로그와 소스 패키지를 받습니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.2.0
+go get github.com/leechis7/tuivory/go@v0.3.0
 ```
 
 [Go 사용법](docs/go-package.md) · [설치·사용 안내](docs/installation.md) · [문서 목록](docs/README.md)
@@ -59,7 +62,7 @@ make build
 
 ## Rust 사용
 
-Rust 1.85 이상에서 `rust/v0.2.0` Git 태그 또는 로컬 `rust/` path 의존성으로 사용하는 crate를 제공합니다. [Rust 사용법](rust/README.md)에 설치·API·범위를 설명합니다. 공통 후보 토큰 기준이며 Go의 실제 위젯 스타일 전체를 이식한 것은 아닙니다.
+Rust 1.85 이상에서 `rust/v0.3.0` Git 태그 또는 로컬 `rust/` path 의존성으로 사용하는 crate를 제공합니다. [Rust 사용법](rust/README.md)에 설치·API·범위를 설명합니다. 공통 후보 토큰 기준이며 Go의 실제 위젯 스타일 전체를 이식한 것은 아닙니다.
 
 ```sh
 cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256
@@ -72,7 +75,7 @@ python3 tools/check_rust_module.py
 
 ## 공통 Tree
 
-Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 계약을 사용합니다. Go `go/v0.2.0`과 Rust `rust/v0.2.0`에 포함합니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
+Go/tview와 Rust/Ratatui에서 사용할 안정 ID·펼침·선택·스크롤 모델과 공개 Tree 렌더러를 추가했습니다. 같은 후보 팔레트와 조작 규칙을 사용합니다. Go `go/v0.3.0`과 Rust `rust/v0.3.0`에 포함합니다. [지원 범위 점검](docs/component-audit.md) · [Tree API·한영 예제](docs/tree.md)
 
 ```sh
 make run-tree-go ARGS="--lang ko"
@@ -98,7 +101,7 @@ LazyOra는 첫 적용 대상이며 앱·DB 내부 구현은 공통 코어에 넣
 
 ## 공통 워크스페이스 컴포넌트
 
-[탭·패널·분할선·상태 표시줄·경로 사용법](docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.2.0`과 Rust `rust/v0.2.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+[탭·패널·분할선·상태 표시줄·경로 사용법](docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.3.0`과 Rust `rust/v0.3.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
 
 ## 정적 배포와 CentOS 7.4
 
@@ -119,3 +122,7 @@ Go·Rust와 향후 언어의 배포 실행파일은 별도 런타임·공유 라
 [TVR-13: 배치·밀도·부가 컴포넌트](docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
 Go 팝업·그림자의 두 칸 문자 경계 보호: [공통 그리기 API](docs/overlay-drawing.md).
+
+[TVR-17 그리드 구성](docs/grid.md): 같은 Go/Rust 그리드의 simple/data 프리셋·범위 선택·열 옵션·상태줄·지연 응답 검사. 미배포 소스입니다.
+
+[공통 메뉴](docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 0.3.0에 포함합니다.

@@ -15,7 +15,9 @@
 
 use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
 mod components;
+mod menu;
 mod rows;
+pub use menu::{MenuBarWidget, MenuPopupWidget, MenuWidget};
 pub use rows::{
     BadgeWidget, ChipWidget, DataStateWidget, FormWidget, GridWidget, HelpWidget, ListWidget,
     NoticeWidget, ProgressWidget, RowsWidget, SearchPickerWidget, StackRects, stack_rects,
@@ -72,7 +74,7 @@ impl Styles {
             style
         })
     }
-    /// A padded panel using the same focus and ordinary-font fallback contract.
+    /// A padded panel using the same focus and ordinary-font fallback rules.
     pub fn panel<'a>(
         &self,
         title: &'a str,
@@ -113,7 +115,31 @@ impl Styles {
 
     /// Resolve a semantic role without replacing ANSI indices with RGB values.
     pub fn role(&self, name: &str) -> Result<Style, Error> {
-        self.palette.style(name).map(Style::from)
+        let alias = match name {
+            "grid.active" | "grid.range" => "selection",
+            "grid.edited" => "edited",
+            "grid.header-active" | "grid.status" => "header",
+            "grid.gutter" | "grid.divider" | "grid.null" | "grid.readonly" | "grid.loading" => {
+                "hint"
+            }
+            "grid.base" | "grid.stripe" | "grid.current-row" => "body",
+            _ => name,
+        };
+        let mut style = self.palette.style(alias)?;
+        let bg = match name {
+            "grid.stripe" => Some("editor"),
+            "grid.current-row" => Some("body"),
+            "grid.base" | "grid.gutter" | "grid.divider" | "grid.null" | "grid.readonly"
+            | "grid.loading" => Some("surface"),
+            _ => None,
+        };
+        if let Some(role) = bg {
+            style.background = self.palette.style(role)?.background;
+        }
+        if name == "grid.current-row" {
+            style.bold = true;
+        }
+        Ok(Style::from(style))
     }
 
     /// Create a panel border without modifying the host's focus callbacks.

@@ -37,7 +37,7 @@ def main():
                '--release', '--target', target, '--target-dir', str(directory), '--features', 'playground']
     command += ['--examples'] if args.examples else ['--example', 'playground']
     subprocess.run(command, env=env, check=True)
-    names = ('playground', 'tree', 'workspace', 'focus', 'catalog', 'tokens') if args.examples else ('playground',)
+    names = ('playground', 'tree', 'workspace', 'focus', 'catalog', 'tokens', 'menu') if args.examples else ('playground',)
     for name in names:
         inspect(directory / target / 'release/examples' / name, args.arch)
     destination = ROOT / 'bin/rust' / f'tuivory-linux-{args.arch}'

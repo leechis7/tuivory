@@ -15,7 +15,7 @@ Registered under TVR-7 with user approval following the 2026-10-28 MUI review. R
 
 Finish implementation, bilingual documentation/images and validation for each stage, report results and request explicit commit/publication approval for that stage. Earlier publication approval does not cover later stages. Do not start another feature branch before finishing the current stage's commit/publication; keep TVR-7 open.
 
-Shared models provide state/event/presentation contracts. Hosts connect validation, search, DB/business actions, clocks, external I/O and terminal lifecycle. Verify static linking, Go/Rust parity, bilingual examples, Unicode/ASCII, color profiles and narrow layouts throughout. Reuse framework behavior and add shared adapters/composition where needed.
+Shared models provide state/event/presentation specifications. Hosts connect validation, search, DB/business actions, clocks, external I/O and terminal lifecycle. Verify static linking, Go/Rust parity, bilingual examples, Unicode/ASCII, color profiles and narrow layouts throughout. Reuse framework behavior and add shared adapters/composition where needed.
 
 References: [MUI components](https://mui.com/material-ui/all-components/), [TextField](https://mui.com/material-ui/react-text-field/), [Dialog](https://mui.com/material-ui/react-dialog/), [MUI X Data Grid](https://mui.com/x/react-data-grid/), [theming](https://mui.com/material-ui/customization/theming/). Adapt web pixels/DOM/shadows/animation to terminal cells/focus/keyboard behavior. Evaluate command palettes as search+list+popup composition; defer image/custom-icon-font dependencies.
 
@@ -24,3 +24,15 @@ Approved stage publication/merges target `dev` only. After all work is complete,
 On 2026-10-28 the user explicitly authorized TVR-9 through TVR-13 implementation, commits, publication and individual dev merges in order without further approval prompts. Report each checkpoint; main/tags/Releases still require a separate instruction.
 
 TVR-8–13 public APIs/examples are complete in the dev integration sequence. Historical initial checkpoints above do not imply pending implementation. Main/tags/releases remain separate; application/SSH integration and other languages remain follow-up work.
+
+## TVR-17 grid configuration (0.3.0)
+
+[Shared options/presets](grid.en.md) extend the existing Grid with Go/Rust ranges, original-value copy, numbering, columns, density, status, stale-response protection and identical comparison data. [Local validation](grid-validation.en.md) is separate from GitHub CI/tags and actual LazyOra integration.
+
+## TVR-7 boundary follow-up
+
+Update documentation/examples under the existing TVR-7 epic using the [boundary](component-boundary.en.md) and [current audit](component-audit.en.md). Hosts own screens, global focus/keys and business bindings. Record nested menus as an unimplemented candidate; creating/implementing a new issue is outside this work. Tab overflow and shortcut-help already exist. This correction was committed as 50bf212 and integrated into dev in PR #16; included in 0.3.0 alongside subsequent menus and grid options.
+
+## TVR-7 menu improvement
+
+The user’s subsequent instruction implements [shared menus](menus.en.md) under the existing epic, following the earlier candidate record; no new issue number was created. The library owns hierarchy/back/bar/presentation/internal interaction; hosts own taxonomy/global keys/command execution. Menus were committed as 27e6019 and integrated into dev in PR #16; included in 0.3.0.

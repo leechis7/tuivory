@@ -16,16 +16,18 @@ type RowsView struct {
 	Pointer func(ComponentLine, int)
 	palette Palette
 	visible []ComponentLine
+	Mouse   func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
 }
 
 func NewRowsView(rows func(int, int) []ComponentLine, palette Palette) (*RowsView, error) {
-	p, e := componentPalette(palette, "surface", "body", "hint", "field", "button", "error", "selection", "disabled", "edited", "header", "info", "success", "warning")
+	p, e := componentPalette(GridPalette(palette), "surface", "body", "hint", "field", "button", "error", "selection", "disabled", "edited", "header", "info", "success", "warning")
 	if e != nil {
 		return nil, e
 	}
 	return &RowsView{Box: tview.NewBox(), Rows: rows, palette: p}, nil
 }
 func (v *RowsView) Draw(screen tcell.Screen) {
+	screen = WideSafeScreen(screen)
 	x, y, w, h := v.GetInnerRect()
 	fillComponent(screen, x, y, w, h, v.palette["surface"].Style())
 	v.visible = v.Rows(w, h)
@@ -36,6 +38,9 @@ func (v *RowsView) Draw(screen tcell.Screen) {
 		pair, ok := v.palette[line.Role]
 		if !ok {
 			panic("component: missing row role " + line.Role)
+		}
+		if strings.HasPrefix(line.Role, "grid.") {
+			fillComponent(screen, x, y+i, w, 1, pair.Style())
 		}
 		drawTreeText(screen, x, y+i, w, 0, line.Text, pair.Style().Underline(line.Focused && v.HasFocus()))
 		for _, span := range line.Spans {
@@ -60,6 +65,9 @@ func (v *RowsView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
 }
 func (v *RowsView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive) {
 	return v.WrapMouseHandler(func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
+		if v.Mouse != nil {
+			return v.Mouse(a, e, focus)
+		}
 		x, y := e.Position()
 		if a != tview.MouseLeftClick || !v.InRect(x, y) {
 			return false, nil
@@ -217,6 +225,34 @@ func NewSearchPickerView(model *SearchPicker, palette Palette, ascii bool, onEve
 }
 
 func GridKey(e *tcell.EventKey) string {
+	if e.Modifiers()&tcell.ModAlt != 0 {
+		if e.Key() == tcell.KeyLeft {
+			return "cell_pan_left"
+		}
+		if e.Key() == tcell.KeyRight {
+			return "cell_pan_right"
+		}
+	}
+	if e.Modifiers()&tcell.ModShift != 0 {
+		switch e.Key() {
+		case tcell.KeyLeft:
+			return "extend_left"
+		case tcell.KeyRight:
+			return "extend_right"
+		case tcell.KeyUp:
+			return "extend_up"
+		case tcell.KeyDown:
+			return "extend_down"
+		}
+	}
+	switch e.Key() {
+	case tcell.KeyF10:
+		return "range_mode"
+	case tcell.KeyF11:
+		return "autofit"
+	case tcell.KeyF12:
+		return "details"
+	}
 	switch e.Key() {
 	case tcell.KeyLeft:
 		return "left"
@@ -255,13 +291,59 @@ func NewGridView(model *Grid, palette Palette, onEvent func(GridEvent)) (*RowsVi
 		}
 	}
 	v.Key = func(e *tcell.EventKey) {
+		if model.options.DisableKeyboard {
+			return
+		}
 		if e.Key() == tcell.KeyF5 {
-			emit(model.RequestFilter("sample"))
+			emit(model.RequestFilter(model.Status.Filter))
 		} else {
 			emit(model.Handle(GridKey(e), height))
 		}
 	}
 	v.Pointer = func(line ComponentLine, x int) { emit(model.Click(line.ID, line.Value, x, width, height)) }
+	v.Mouse = func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
+		if model.options.DisableMouse {
+			return false, nil
+		}
+		x, y := e.Position()
+		left, top, w, h := v.GetInnerRect()
+		action := ""
+		switch a {
+		case tview.MouseLeftDown:
+			action = "down"
+		case tview.MouseLeftUp:
+			action = "up"
+		case tview.MouseMove:
+			action = "move"
+		case tview.MouseLeftClick:
+			action = "click"
+		case tview.MouseLeftDoubleClick:
+			action = "double"
+		case tview.MouseScrollUp:
+			action = "wheel_up"
+		case tview.MouseScrollDown:
+			action = "wheel_down"
+		case tview.MouseScrollLeft:
+			action = "wheel_left"
+		case tview.MouseScrollRight:
+			action = "wheel_right"
+		}
+		if action == "" || (action == "move" && model.dragColumn == "" && model.dragAnchor.AnchorRow == "") {
+			return false, nil
+		}
+		if !v.InRect(x, y) && model.dragColumn == "" && model.dragAnchor.AnchorRow == "" {
+			return false, nil
+		}
+		if action != "up" {
+			focus(v)
+		}
+		emit(model.Pointer(action, x-left, y-top, w, h, e.Modifiers()&tcell.ModShift != 0))
+		if model.dragColumn != "" || model.dragAnchor.AnchorRow != "" {
+			return true, v
+		}
+		return true, nil
+	}
+
 	return v, nil
 }
 
@@ -349,7 +431,7 @@ func NewHelpView(help *Help, palette Palette) (*RowsView, error) {
 	return NewRowsView(help.Layout, palette)
 }
 func (v *RowsView) SetPalette(palette Palette) error {
-	copy, e := componentPalette(palette, "surface", "body", "hint", "field", "button", "error", "selection", "disabled", "edited", "header", "info", "success", "warning")
+	copy, e := componentPalette(GridPalette(palette), "surface", "body", "hint", "field", "button", "error", "selection", "disabled", "edited", "header", "info", "success", "warning")
 	if e != nil {
 		return e
 	}

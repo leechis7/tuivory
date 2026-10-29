@@ -2,11 +2,17 @@
 
 [한국어 (default)](static-build.md) · **English**
 
+Current release: **0.3.0**. [Assets and validation](release-0.3.0.en.md). The 0.2.0/CentOS details below are historical.
+
+Per the user instruction on 2026-10-29, CentOS validation is no longer performed, including the CI VM job. Static distribution requirements, ELF inspection and execution checks in available environments remain. The CentOS commands and previous results below are historical reproduction records, not current required procedures.
+
 Static executables are included in **0.2.0**; existing 0.1.0 assets are preserved. [Assets, installation and validation](release-0.2.0.en.md).
 
-Distributed executables for Go, Rust and future languages must run without a dynamic loader, shared libraries or a separately installed language runtime. Tuivory packages must not introduce mandatory native dependencies that prevent host applications from linking statically. Build-time Go modules and Rust crates are allowed; shared tokens are embedded so runtime data files are unnecessary. The OS kernel and terminal are part of the execution environment.
+Distributed executables for Go, Rust and future languages without an explicit exception must run without a dynamic loader, shared libraries or a separately installed language runtime. Those packages must not introduce mandatory native dependencies that prevent static host linking. Build-time Go modules and Rust crates are allowed; shared tokens are embedded so runtime data files are unnecessary. The OS kernel and terminal are part of the execution environment.
 
-Current Python, JavaScript and Shell sources are reference examples requiring their respective interpreters. Any future standalone executable distribution must meet the same static distribution requirements.
+Python, TypeScript and JavaScript support are user-authorized exceptions. Normal Python/npm packages and source examples use their language runtimes; static distribution, standalone executables, static ELF checks and CentOS validation are not required. Document supported runtimes/versions/dependencies and verify installation/import/execution in clean external environments. [Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) · [TypeScript/JavaScript TVR-16](https://leechis7.atlassian.net/browse/TVR-16).
+
+Shell currently provides interpreter-based references. Any future independent Shell executable must follow the default static-distribution requirements. The build/ELF/CentOS commands below target static Go/Rust distribution.
 
 ## Build
 
@@ -35,7 +41,7 @@ python3 tools/check_rust_module.py --ratatui --static-output /tmp/tuivory-rust-c
 
 External host checks use the standalone Go module and packaged Rust crate without the repository's shared design directory. They check public APIs and rendering, then export static x86_64 executables.
 
-## Legacy kernel validation
+## Historical CentOS kernel validation (no longer performed)
 
 Docker exports a root filesystem from a pinned official CentOS 7.4.1708 AMD64 image. QEMU boots the actual CentOS 7.4 `3.10.0-693.el7.x86_64` kernel. A container sharing a modern host kernel alone does not establish kernel compatibility. The guest glibc is `2.17-196.el7`. The VM runs without networking, KVM or host binfmt registration.
 

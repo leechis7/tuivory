@@ -8,8 +8,10 @@
 
 - 규칙: 문제 → 적용 대상 → 규칙 → 예외 → 검증 방법 → 출처.
 - 테마: 역할별 전경/배경, 단말 프로필, 속성, 참조 팔레트와 실제 확인 범위.
-- 패턴: 기본/포커스/선택/비활성/변경/오류의 상태 조합과 키보드/마우스 계약.
+- 패턴: 기본/포커스/선택/비활성/변경/오류의 상태 조합과 키보드·마우스 조작 규칙.
 - 어댑터: 앱 데이터·DB·입력 I/O 소유권을 공통 스타일 계산에 넣지 않기.
+
+문서에서 공통 설계·데이터·API 정의는 **명세**, 조작·입력 처리·탐색·상태 동작은 **규칙**으로 표현합니다. 영어판은 문맥에 맞춰 **specification**과 **rules**를 사용합니다. 단어만 일괄 치환하지 않고 문장을 자연스럽게 다듬습니다.
 
 견본 TUI는 Go 1.24 이상이 필요합니다. Go 변경 시 `make -C go test`와 `make -C go check`, `python3 tools/check_go_module.py`를 실행합니다. Go 소스·모듈 설정은 go/ 안에 두고 공통 디자인 원본은 design/에서 관리합니다. 기본 로컬 빌드는 `make build`로 Linux ARM64 하나를 `bin/go/tuivory-linux-arm64`에 생성합니다. 견본 실행파일은 `bin/<언어>/` 아래에 OS·아키텍처가 포함된 이름으로 둡니다.
 
@@ -37,14 +39,16 @@ sh -n shell/examples/terminal-colors.sh
 
 ## 공통 Tree 변경
 
-`design/tree-navigation.json`이 동작 계약의 원본입니다. 수정 후 `python3 tools/export_tree_cases.py`로 Go/Rust 테스트 사본을 함께 갱신하고 양쪽 테스트·외부 import·한영 PTY를 실행합니다. `make check`는 사본 일치도 확인합니다. [점검표](docs/component-audit.md)와 [Tree API](docs/tree.md)를 현행화합니다.
+`design/tree-navigation.json`이 동작 규칙의 원본입니다. 수정 후 `python3 tools/export_tree_cases.py`로 Go/Rust 테스트 사본을 함께 갱신하고 양쪽 테스트·외부 import·한영 PTY를 실행합니다. `make check`는 사본 일치도 확인합니다. [점검표](docs/component-audit.md)와 [Tree API](docs/tree.md)를 현행화합니다.
 
-공통 워크스페이스의 계약 원본은 `design/components-cases.json`입니다. 같은 생성 도구로 두 모듈의 사본을 갱신하고 [워크스페이스 안내](docs/workspace.md)의 외부 import·한영 PTY·통합 입력 검사와 이미지를 함께 확인합니다.
+공통 워크스페이스의 명세 원본은 `design/components-cases.json`입니다. 같은 생성 도구로 두 모듈의 사본을 갱신하고 [워크스페이스 안내](docs/workspace.md)의 외부 import·한영 PTY·통합 입력 검사와 이미지를 함께 확인합니다.
 
 ## 정적 배포 조건
 
-새 언어·기능·의존성을 추가할 때 배포 실행파일과 적용 앱의 정적 링크 조건을 유지합니다. 빌드 의존성과 실행 시 필요한 외부 런타임을 구분하고 Linux 산출물의 ELF 검사와 대상 커널 실행을 검증합니다. 현재 Python·JavaScript·Shell은 인터프리터 기반 참조 소스입니다. [빌드·외부 앱·CentOS 검증 명령](docs/static-build.md)을 따릅니다.
+Go·Rust와 별도 예외가 없는 후속 언어는 배포 실행파일과 적용 앱의 정적 링크 조건을 유지합니다. 빌드 의존성과 실행 시 필요한 외부 런타임을 구분하고 Linux 정적 산출물의 ELF 검사와 사용 가능한 로컬·CI 환경의 실행을 검증합니다. 사용자 지시에 따라 CentOS 검증은 수행하지 않습니다. Shell은 현재 인터프리터 기반 참조 소스이며 독립 실행파일을 제공하면 같은 정적 조건을 따릅니다. [정적 빌드·외부 앱 검증과 과거 CentOS 기록](docs/static-build.md)을 참고하세요.
+
+사용자 지정 예외인 Python·TypeScript·JavaScript는 해당 런타임을 사용하는 일반 패키지로 제공합니다. 정적 배포·독립 실행파일·ELF 정적 검사·CentOS 검증 대신, 지원 런타임과 의존성을 명시하고 깨끗한 외부 환경에서 설치·import·타입·예제 실행을 검증합니다. JavaScript 사용자는 TypeScript 컴파일러를 설치하지 않아도 사용할 수 있어야 합니다.
 
 ## 단계별 컴포넌트 작업
 
-TVR-8~13은 [백로그 순서](docs/components-backlog.md)로 진행합니다. 상태·포커스 변경 시 공통 `design/interaction-cases.json`과 양 모듈 사본을 `tools/export_tree_cases.py`로 동기화하고 Go/Rust 계약·12팔레트·외부 import·정적 링크·한영 PTY를 확인합니다. 새 예제의 PTY 검사는 `python3 tools/smoke_focus.py BINARY --lang ko|en`, 참조 이미지는 `python3 tools/snapshot_focus.py RUST_BINARY`입니다. 단계별 결과를 보고하고 해당 변경의 커밋·게시 승인을 받습니다.
+TVR-8~13은 [백로그 순서](docs/components-backlog.md)로 진행합니다. 상태·포커스 변경 시 공통 `design/interaction-cases.json`과 양 모듈 사본을 `tools/export_tree_cases.py`로 동기화하고 Go/Rust 명세·12팔레트·외부 import·정적 링크·한영 PTY를 확인합니다. 새 예제의 PTY 검사는 `python3 tools/smoke_focus.py BINARY --lang ko|en`, 참조 이미지는 `python3 tools/snapshot_focus.py RUST_BINARY`입니다. 단계별 결과를 보고하고 해당 변경의 커밋·게시 승인을 받습니다.

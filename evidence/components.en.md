@@ -12,7 +12,7 @@ This records local validation methods and boundaries. Track each stage's PR/fina
 | TVR-12 | Notices/progress/data states: critical/action persistence, full queues, request immutability, host clocks, progress/cancel limits and one-row priority |
 | TVR-13 | Spacing/stacks/badges/chips/help: shared defaults, widths 0–240/non-overlap/bounds/preferences, zero/99+, removal guards, shortcut conflicts/priorities |
 
-Use Go race/vet, Rust all-feature tests/rustdoc/fmt/clippy and shared token/contract/document/Shell checks. Core CI uses Rust 1.85.1; UI uses 1.88.0. External checks isolate go/ or a packaged Cargo crate, validate APIs/rendering and export static x86_64 hosts.
+Use Go race/vet, Rust all-feature tests/rustdoc/fmt/clippy and shared token/specification/document/Shell checks. Core CI uses Rust 1.85.1; UI uses 1.88.0. External checks isolate go/ or a packaged Cargo crate, validate APIs/rendering and export static x86_64 hosts.
 
 ```sh
 make test check test-rust-ui check-rust-ui

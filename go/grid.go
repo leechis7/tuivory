@@ -75,6 +75,19 @@ type Grid struct {
 	Row, Column, Top, Left                                                  int
 	WholeRow                                                                bool
 	Empty                                                                   string
+	options                                                                 GridOptions
+	columnOptions                                                           map[string]GridColumnOptions
+	cellInfo                                                                func(GridRecord, GridColumn) GridCellInfo
+	selection                                                               GridRange
+	rangeMode                                                               bool
+	revision, appliedRevision                                               uint64
+	cellPan                                                                 map[string]int
+	Labels                                                                  map[string]string
+	Status                                                                  GridDataStatus
+	lastWidth, lastHeight                                                   int
+	dragColumn                                                              string
+	dragX, dragWidth                                                        int
+	dragAnchor                                                              GridRange
 }
 
 func NewGrid(columns []GridColumn, source GridSource) (*Grid, error) {
@@ -110,6 +123,9 @@ func (g *Grid) SetSource(source GridSource) {
 	if source.IndexOf(g.SelectedRow) < 0 {
 		g.SelectedRow = ""
 		g.SelectedColumn = ""
+	}
+	if _, _, _, _, ok := g.rangeBounds(); !ok {
+		g.selection = GridRange{}
 	}
 	g.reconcile()
 }
@@ -174,17 +190,33 @@ func (g *Grid) ResizeColumn(id string, width int) bool {
 	}
 	for i := range g.columns {
 		if g.columns[i].ID == id {
+			lo, hi := columnBounds(g.columnOptions[id])
+			if width < lo || width > hi {
+				return false
+			}
 			g.columns[i].Width = width
+			opts := g.columnOptions[id]
+			if opts.AutoFit || opts.Expand > 0 {
+				opts.AutoFit = false
+				opts.Expand = 0
+				g.columnOptions[id] = opts
+			}
 			return true
 		}
 	}
 	return false
 }
-func (g *Grid) RequestFilter(query string) GridEvent { return GridEvent{Kind: "filter", Text: query} }
+func (g *Grid) RequestFilter(query string) GridEvent {
+	g.nextRequest()
+	return GridEvent{Kind: "filter", Text: query}
+}
 func (g *Grid) Handle(action string, height int) GridEvent {
 	g.reconcile()
 	if len(g.columns) == 0 {
 		return GridEvent{}
+	}
+	if event, handled := g.extraAction(action, height); handled {
+		return event
 	}
 	event := GridEvent{RowID: g.RowID, ColumnID: g.ColumnID}
 	row := GridRecord{}
@@ -209,12 +241,13 @@ func (g *Grid) Handle(action string, height int) GridEvent {
 		}
 		return event
 	case "activate":
-		if g.columns[g.Column].Editable && row.State.Visual().Editable {
+		if !g.options.DisableEditing && g.columns[g.Column].Editable && combineGridState(row.State, g.info(row, g.columns[g.Column]).State).Visual().Editable {
 			event.Kind = "edit"
 			event.Text = row.Cells[g.ColumnID]
 		}
 		return event
 	case "sort":
+		g.nextRequest()
 		same := g.SortColumn == g.ColumnID
 		g.SortColumn = g.ColumnID
 		if same && g.SortDirection == "asc" {
@@ -232,6 +265,7 @@ func (g *Grid) Handle(action string, height int) GridEvent {
 		return event
 	case "row_mode":
 		g.WholeRow = !g.WholeRow
+		g.rangeMode = false
 		return GridEvent{Kind: "mode"}
 	case "left":
 		g.Column = max(0, g.Column-1)
@@ -246,9 +280,9 @@ func (g *Grid) Handle(action string, height int) GridEvent {
 	case "last":
 		g.Row = g.source.Len() - 1
 	case "page_up":
-		g.Row = max(0, g.Row-max(1, height-2))
+		g.Row = max(0, g.Row-g.pageRows(height))
 	case "page_down":
-		g.Row = min(g.source.Len()-1, g.Row+max(1, height-2))
+		g.Row = min(g.source.Len()-1, g.Row+g.pageRows(height))
 	case "widen":
 		g.ResizeColumn(g.ColumnID, min(4096, g.columns[g.Column].Width+1))
 	case "narrow":
@@ -271,6 +305,21 @@ func (g *Grid) Handle(action string, height int) GridEvent {
 		}
 	}
 	g.reconcile()
+	if g.lastWidth > 0 {
+		geo := g.window(g.lastWidth, height).geometry
+		g.Top = geo.Top
+		g.Left = geo.Left
+	}
+	if g.rangeMode && !g.WholeRow && g.RowID != "" {
+		r := g.selection
+		if r.AnchorRow == "" {
+			r.AnchorRow = event.RowID
+			r.AnchorColumn = event.ColumnID
+		}
+		r.EndRow = g.RowID
+		r.EndColumn = g.ColumnID
+		g.SelectRange(r)
+	}
 	event.Kind = "focus"
 	event.RowID = g.RowID
 	event.ColumnID = g.ColumnID
@@ -282,90 +331,13 @@ type GridSpan struct {
 	Start, Width int
 }
 
-func (g *Grid) spans(width int) []GridSpan {
-	left := min(g.Left, g.Column)
-	capacity := max(0, width-3)
-	for left < g.Column {
-		used := 0
-		for c := left; c <= g.Column; c++ {
-			used += g.columns[c].Width + 1
-		}
-		if used <= capacity {
-			break
-		}
-		left++
-	}
-	out := []GridSpan{}
-	x := 3
-	for col := left; col < len(g.columns) && x < width; col++ {
-		w := min(g.columns[col].Width, width-x)
-		out = append(out, GridSpan{ID: g.columns[col].ID, Start: x, Width: w})
-		x += w + 1
-	}
-	return out
-}
-func (g *Grid) Layout(width, height int) []ComponentLine {
-	g.reconcile()
-	if width <= 0 || height <= 0 || len(g.columns) == 0 {
-		return nil
-	}
-	spans := g.spans(width)
-	header := ComponentLine{Role: "header", Value: "@header"}
-	for _, s := range spans {
-		label := ""
-		for _, c := range g.columns {
-			if c.ID == s.ID {
-				label = c.Label
-			}
-		}
-		if s.ID == g.SortColumn {
-			label += " " + g.SortDirection
-		}
-		header.Spans = append(header.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: func() string {
-			if s.ID == g.ColumnID {
-				return "> " + label
-			}
-			return label
-		}(), Role: "header", Focused: s.ID == g.ColumnID})
-	}
-	out := []ComponentLine{header}
-	if g.source.Len() == 0 {
-		return append(out, ComponentLine{Text: CellText(g.Empty, width), Role: "hint"})[:min(height, 2)]
-	}
-	top := min(g.Top, g.Row)
-	if g.Row >= top+max(1, height-1) {
-		top = g.Row - max(1, height-1) + 1
-	}
-	top = max(0, min(top, max(0, g.source.Len()-max(1, height-1))))
-	for n := top; n < g.source.Len() && len(out) < height; n++ {
-		r := g.source.Row(n)
-		v := r.State.Visual()
-		marker := "  "
-		if r.ID == g.RowID {
-			marker = "> "
-		}
-		line := ComponentLine{ID: r.ID, Text: marker + v.Markers, Role: v.Role, Focused: r.ID == g.RowID}
-		for _, s := range spans {
-			state := r.State
-			if r.ID == g.SelectedRow && (g.WholeRow || s.ID == g.SelectedColumn) {
-				state.Selected = true
-			}
-			role := state.Visual().Role
-			line.Spans = append(line.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: func() string {
-				if state.Selected {
-					return "> " + r.Cells[s.ID]
-				}
-				return r.Cells[s.ID]
-			}(), Role: role, Focused: r.ID == g.RowID && s.ID == g.ColumnID})
-		}
-		out = append(out, line)
-	}
-	return out
-}
 func (g *Grid) Click(rowID, kind string, x, width, height int) GridEvent {
-	for _, s := range g.spans(width) {
+	for _, s := range g.Geometry(width, height).Columns {
 		if x >= s.Start && x < s.Start+s.Width {
 			if kind == "@header" {
+				if g.options.DisableHeaderSort {
+					return GridEvent{}
+				}
 				for i, c := range g.columns {
 					if c.ID == s.ID {
 						g.Column = i
@@ -379,4 +351,11 @@ func (g *Grid) Click(rowID, kind string, x, width, height int) GridEvent {
 		}
 	}
 	return GridEvent{}
+}
+
+func (g *Grid) pageRows(height int) int {
+	if g.options.RowSpacing > 0 || g.options.HorizontalLines {
+		return max(1, g.Geometry(max(1, g.lastWidth), height).BodyRows)
+	}
+	return max(1, height-2)
 }

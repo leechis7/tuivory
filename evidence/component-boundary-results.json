@@ -1,0 +1,70 @@
+{
+  "issue": "TVR-7",
+  "date": "2026-10-29",
+  "base_commit": "e34b824",
+  "branch": "codex/TVR-7-component-boundary",
+  "state": "boundary and example update included in this local commit; unpublished on GitHub",
+  "public_component_api_changes": false,
+  "pty": {
+    "languages": [
+      "Go",
+      "Rust"
+    ],
+    "policies": [
+      "default",
+      "alternate"
+    ],
+    "ui_languages": [
+      "ko",
+      "en"
+    ],
+    "scenarios": 8,
+    "result": "passed",
+    "invalid_policy_cases": 5
+  },
+  "default_reference_files_identical": [
+    "workspace-ascii-en.svg",
+    "workspace-ascii.svg",
+    "workspace-blackwhite-en.svg",
+    "workspace-blackwhite.svg",
+    "workspace-dark-en.svg",
+    "workspace-dark.svg",
+    "workspace-light-en.svg",
+    "workspace-light.svg"
+  ],
+  "centos74": {
+    "image": "centos@sha256:78b63c089c40a2ca0d85db9125fb3193c6ff74814bba5f894c803e5ae02a4035",
+    "kernel": "3.10.0-693.el7.x86_64",
+    "kernel_sha256": "8ede7f8d3c8f5e72f1a84713ad59b7b39211ea1af8887389cb50a189df937c6f",
+    "glibc": "2.17-196.el7.x86_64",
+    "result": "passed",
+    "languages": [
+      "ko",
+      "en"
+    ],
+    "binaries_sha256": {
+      "go-workspace": "f16780260c29bd420ad95a2fe0d0f4b72773d238c478859212e4628cf8a3f62a",
+      "rust-workspace": "9be6fb982b93e7be47ff1bbd2fb9c125d24f6bae3309789b64f5b7460e544831"
+    }
+  },
+  "centos_scope": "default workspace startup/exit only; alternative-policy interactions validated on native ARM64 PTYs",
+  "source_sha256": {
+    "go/examples/workspace/main.go": "83772ab629d1f69e4455ef55d69058f5efd442e34dc3b94908f141a4edbf15f2",
+    "rust/examples/workspace/main.rs": "6fd2de23ee9ac1fa5204f9eb859ea3d6577340bf8036089bc5f79270a2d59fe5",
+    "tools/smoke_workspace.py": "7210e7339c42104e7887b1adab96dd2ad2ca308b67f0d85647bf64df3ce67942",
+    "tools/snapshot_workspace.py": "845de7820c6769e184a525ee1c6cb0feefcf3954862f4922dd0d82c4b0e840f9",
+    "go/tuivory.go": "5c783a2e836f857dc25ce302a23793e6a6fabb51565e500a0c26ca25f0b53b28",
+    "rust/src/lib.rs": "4e252089e2e95ed8685ac232a5ca21cc1078770989a00d92359da60b1a607b9e",
+    "rust/Cargo.toml": "9d777c22972ac9f6790b1ab954f6af5c31466507dfd90cbcb1aa9d7dac083652"
+  },
+  "new_reference_sha256": {
+    "docs/images/workspace-host.svg": "7cad63b10e207d3ef81bdecbd9d458905efd71c9004ae2e94f6639765ac2274b",
+    "docs/images/workspace-host-en.svg": "356c23d103b580c02100f1cee08f58e15e0cf9615e6a9e3318a3d62ae602d5b5"
+  },
+  "static_sha256": {
+    "bin/go/workspace-linux-arm64": "d2321e3d4b1e205b6a83a7f65edae03810feec64e9d070ef25679996d47448a0",
+    "bin/go/workspace-linux-x86_64": "f16780260c29bd420ad95a2fe0d0f4b72773d238c478859212e4628cf8a3f62a",
+    "bin/rust/workspace-linux-arm64": "7059f3d02f397b40e09f9a24528b750c8e4daefcdc06519ec2b98a3a41eca23f",
+    "bin/rust/workspace-linux-x86_64": "9be6fb982b93e7be47ff1bbd2fb9c125d24f6bae3309789b64f5b7460e544831"
+  }
+}

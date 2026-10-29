@@ -40,6 +40,8 @@ struct App {
     tree_state: TreeState,
     path: Vec<PathItem>,
     focus: usize,
+    focus_order: [usize; 3],
+    quit_key: char,
     active_second: bool,
     rows: bool,
     column: SplitState,
@@ -250,7 +252,12 @@ impl App {
             .unwrap(),
             layout[4],
         );
-        frame.render_widget(Paragraph::new(self.text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · Ctrl+Q 종료","Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · Ctrl+Q quit")).style(self.styles.role("hint").unwrap()),layout[5]);
+        let quit_label = if self.quit_key == 'x' {
+            "Ctrl+X"
+        } else {
+            "Ctrl+Q"
+        };
+        frame.render_widget(Paragraph::new(self.text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · Ctrl+Q 종료","Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · Ctrl+Q quit").replace("Ctrl+Q",quit_label)).style(self.styles.role("hint").unwrap()),layout[5]);
     }
 }
 struct Session;
@@ -270,6 +277,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut ascii = false;
     let mut theme = Theme::Dark;
     let mut profile = ColorProfile::Indexed256;
+    // App-owned policy; no change to the public component models is needed.
+    let mut rows = false;
+    let mut focus_order = [0, 1, 2];
+    let mut quit_key = 'q';
     let mut snapshot = None;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -284,10 +295,40 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--theme" => theme = args.next().ok_or("missing theme")?.parse()?,
             "--colors" => profile = args.next().ok_or("missing colors")?.parse()?,
             "--ascii" => ascii = true,
+            "--layout" => {
+                rows = match args.next().as_deref() {
+                    Some("columns") => false,
+                    Some("rows") => true,
+                    _ => return Err("--layout requires columns or rows".into()),
+                }
+            }
+            "--quit-key" => {
+                quit_key = match args.next().as_deref() {
+                    Some("ctrl-q") => 'q',
+                    Some("ctrl-x") => 'x',
+                    _ => return Err("--quit-key requires ctrl-q or ctrl-x".into()),
+                }
+            }
+            "--focus-order" => {
+                let value = args.next().ok_or("missing focus order")?;
+                let order = value
+                    .split(',')
+                    .map(|s| match s {
+                        "tabs" => Ok(0),
+                        "tree" => Ok(1),
+                        "content" => Ok(2),
+                        _ => Err("--focus-order requires tabs,tree,content exactly once"),
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                if order.len() != 3 || (0..3).any(|n| !order.contains(&n)) {
+                    return Err("--focus-order requires tabs,tree,content exactly once".into());
+                }
+                focus_order.copy_from_slice(&order);
+            }
             "--snapshot" => snapshot = Some(args.next().ok_or("missing file")?),
             "--help" => {
                 println!(
-                    "TUIVORY Workspace: --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot FILE.svg"
+                    "TUIVORY Workspace: --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --snapshot FILE.svg"
                 );
                 return Ok(());
             }
@@ -417,9 +458,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             ..Default::default()
         },
         path,
-        focus: 0,
-        active_second: false,
-        rows: false,
+        focus: focus_order[0],
+        focus_order,
+        quit_key,
+        active_second: focus_order[0] == 2,
+        rows,
         column: SplitState { preferred: 32 },
         row: SplitState { preferred: 8 },
         message: text(
@@ -460,7 +503,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         match event::read()? {
             Event::Key(key) if matches!(key.kind, KeyEventKind::Press | KeyEventKind::Repeat) => {
-                if key.code == KeyCode::Char('q') && key.modifiers.contains(KeyModifiers::CONTROL) {
+                if key.code == KeyCode::Char(app.quit_key)
+                    && key.modifiers.contains(KeyModifiers::CONTROL)
+                {
                     break;
                 }
                 if key.modifiers.contains(KeyModifiers::CONTROL) {
@@ -482,7 +527,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         continue;
                     }
                 }
-                match key.code{KeyCode::Tab|KeyCode::BackTab=>{app.focus=(app.focus+if key.code==KeyCode::Tab{1}else{2})%3;if app.focus!=0{app.active_second=app.focus==2}},
+                match key.code{KeyCode::Tab|KeyCode::BackTab=>{let at=app.focus_order.iter().position(|f|*f==app.focus).unwrap_or(0);app.focus=app.focus_order[(at+if key.code==KeyCode::Tab{1}else{2})%3];if app.focus!=0{app.active_second=app.focus==2}},
                 KeyCode::F(1)=>app.message=app.text("탭: ←/→·Enter·x / 트리: 방향키·Space·Enter / Ctrl+방향키 크기 조절","Tabs: Left/Right, Enter, x / Tree: arrows, Space, Enter / Ctrl+arrows resize").into(),
                 KeyCode::F(2)=>{app.theme=match app.theme{Theme::Dark=>Theme::Light,Theme::Light=>Theme::Blackwhite,Theme::Blackwhite=>Theme::Dark};app.styles=Styles::new(app.theme,app.profile)?},
                 KeyCode::F(3)=>{app.profile=match app.profile{ColorProfile::Ansi8=>ColorProfile::Ansi16,ColorProfile::Ansi16=>ColorProfile::Indexed256,ColorProfile::Indexed256=>ColorProfile::Truecolor,ColorProfile::Truecolor=>ColorProfile::Ansi8};app.styles=Styles::new(app.theme,app.profile)?},

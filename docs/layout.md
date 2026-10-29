@@ -30,3 +30,5 @@ make run-catalog-rust ARGS="--mode layout --lang en"
 실제 Rust TestBackend 120×36 참조이며 Go 캡처나 실제 서버/SSH 단말 결과가 아닙니다. `tools/snapshot_catalog.py BINARY --mode layout`로 한영 6장을 생성합니다.
 
 [Backlog](components-backlog.md) · [Static distribution](static-build.md)
+
+Stack/Drawer는 호스트가 지정한 영역·항목·최소 크기에 대한 배치 도구입니다. 앱 전체의 패널 순서·숨김 우선순위·화면별 breakpoint를 강제하지 않습니다. Help는 제공된 단축키 설명의 표시이며 도움말 화면 전체·목차·전역 명령 등록은 앱 책임입니다. [책임 범위](component-boundary.md).

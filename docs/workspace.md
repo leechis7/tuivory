@@ -2,11 +2,11 @@
 
 **한국어 (기본)** · [English](workspace.en.md)
 
-TVR-7의 [Tree](tree.md)에 이어 Go/tview와 Rust/Ratatui의 공통 워크스페이스 컴포넌트를 제공합니다. 앱은 데이터·포커스·실행·닫기 승인과 단말 I/O를 소유합니다. DB 조회·SQL 실행·JDBC는 포함하지 않습니다. v0.1.0에 포함하며 GitHub CI·실제 앱 적용은 작업 기록에서 구분합니다.
+TVR-7의 [Tree](tree.md)에 이어 Go/tview와 Rust/Ratatui의 공통 워크스페이스 컴포넌트를 제공합니다. 앱은 데이터·포커스·실행·닫기 승인과 단말 I/O를 소유합니다. DB 조회·SQL 실행·JDBC는 포함하지 않습니다. 기존 컴포넌트는 v0.1.0부터 제공하며 현재 배포는 v0.2.0입니다. GitHub CI·실제 앱 적용은 작업 기록에서 구분합니다.
 
 ## 탭
 
-| 계약 | 동작 |
+| 항목 | 동작 |
 | --- | --- |
 | 데이터 | 안정된 고유 ID·제목·변경됨·닫기 가능·비활성. 빈/중복 ID는 오류 |
 | 상태 | 활성 ID, 탐색 포커스 ID, 첫 표시 인덱스를 분리 |
@@ -38,7 +38,7 @@ Go `NewSplitView(first, second, state, spec, palette)`는 열/행 배치·마우
 
 ## import와 예제
 
-Go는 `go get github.com/leechis7/tuivory/go@v0.1.0`으로 설치하거나 로컬 체크아웃의 `go/`를 replace로 지정합니다. `github.com/leechis7/tuivory/go` 하나로 새 API를 사용하며, 후보 토큰을 `CandidateTokens → Palette → Resolve`로 해석해 뷰에 전달합니다. 기존 LazyOra 추출 스타일 전체와 같은 데이터라는 의미는 아닙니다.
+Go는 `go get github.com/leechis7/tuivory/go@v0.2.0`으로 설치하거나 로컬 체크아웃의 `go/`를 replace로 지정합니다. `github.com/leechis7/tuivory/go` 하나로 새 API를 사용하며, 후보 토큰을 `CandidateTokens → Palette → Resolve`로 해석해 뷰에 전달합니다. 기존 LazyOra 추출 스타일 전체와 같은 데이터라는 의미는 아닙니다.
 
 ```go
 tabs, err := tuivory.NewTabs([]tuivory.TabItem{
@@ -81,7 +81,7 @@ make run-workspace-rust ARGS="--lang en --ascii"
 
 ## 검증 범위
 
-공통 `design/components-cases.json`은 탭 탐색/닫기/넘침, 경로 생략, 상태 우선순위·생략 결과를 Go/Rust에서 동일하게 검사합니다. `tools/export_tree_cases.py`는 이 파일과 Tree 계약의 테스트 사본을 함께 생성합니다. 별도로 12팔레트 렌더링·포커스 구분·닫기 요청의 데이터 보존·작은 화면 후 분할 선호 복원·드래그·클릭·0 크기 영역·외부 프로젝트 import/렌더링을 확인합니다.
+공통 `design/components-cases.json`은 탭 탐색/닫기/넘침, 경로 생략, 상태 우선순위·생략 결과를 Go/Rust에서 동일하게 검사합니다. `tools/export_tree_cases.py`는 이 파일과 Tree 명세의 테스트 사본을 함께 생성합니다. 별도로 12팔레트 렌더링·포커스 구분·닫기 요청의 데이터 보존·작은 화면 후 분할 선호 복원·드래그·클릭·0 크기 영역·외부 프로젝트 import/렌더링을 확인합니다.
 
 ```sh
 make test check
@@ -92,6 +92,10 @@ python3 tools/smoke_workspace.py /path/to/go-workspace
 python3 tools/smoke_workspace.py /path/to/rust-workspace
 ```
 
-로컬 검증은 한영 PTY 시작·종료·화면 복원과 영문 통합 시나리오(변경 문서 닫기 보류, 키 입력, 분할 드래그, 화면 축소·복귀)를 포함합니다. 로컬 검증과 GitHub CI 결과·실제 원격 단말·LazyOra/LazyBeaver 적용을 구분합니다. 에픽은 요청대로 열어두며 구현은 v0.1.0으로 배포합니다.
+로컬 검증은 한영 PTY 시작·종료·화면 복원과 영문 통합 시나리오(변경 문서 닫기 보류, 키 입력, 분할 드래그, 화면 축소·복귀)를 포함합니다. 로컬 검증과 GitHub CI 결과·실제 원격 단말·LazyOra/LazyBeaver 적용을 구분합니다. 에픽은 요청대로 열어두며 기존 컴포넌트는 v0.1.0부터 제공하고 v0.2.0에도 포함합니다. 이번 호스트 CLI 옵션은 미배포입니다.
 
 Go `PanelView`는 [공통 두 칸 문자 보정](overlay-drawing.md)을 자동 적용합니다. 외부 카드와 그림자는 공개 화면 래퍼·DimRegion으로 연결합니다.
+
+## 앱이 선택하는 배치·포커스·키
+
+예제에 `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x`를 주면 같은 공개 컴포넌트를 다른 정책으로 조합합니다. 기본은 columns·tabs,tree,content·ctrl-q입니다. 첫 항목이 초기 포커스를 받고 Tab/Shift+Tab은 지정 순서를 따릅니다. 설정은 라이브러리 전역 옵션이 아닌 예제 호스트의 CLI이며 화면 전체의 표준을 강제하지 않습니다. 새 호스트 옵션은 미배포 소스입니다. [책임 범위·한영 화면·재현 명령](component-boundary.md).

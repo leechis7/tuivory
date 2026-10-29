@@ -1,9 +1,9 @@
 [package]
 name = "tuivory"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.85"
-description = "Framework-independent terminal UI design tokens and styles"
+description = "Reusable TUI component models, design tokens, styles and optional renderers"
 license = "AGPL-3.0-only"
 repository = "https://github.com/leechis7/tuivory"
 readme = "README.en.md"
@@ -46,4 +46,9 @@ required-features = ["playground"]
 [[example]]
 name = "catalog"
 path = "examples/catalog/main.rs"
+required-features = ["playground"]
+
+[[example]]
+name = "menu"
+path = "examples/menu/main.rs"
 required-features = ["playground"]

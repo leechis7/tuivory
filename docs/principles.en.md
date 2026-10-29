@@ -55,7 +55,7 @@ Use reference targets of 4.5:1 for regular text and 3:1 for focus borders, with 
 
 Validation: distinguish palette calculations, composed widget captures, and terminal observations. Do not count decorative lines and disabled items under one contrast total presented as a bug count.
 
-## 5. Define component input contracts
+## 5. Define component input handling rules
 
 Tab/Shift+Tab moves between areas; arrows navigate within lists/groups by default. Application keymaps extend this; product-specific function keys are not a shared standard.
 
@@ -64,7 +64,7 @@ Tab/Shift+Tab moves between areas; arrows navigate within lists/groups by defaul
 - Lists/trees/tabs expose selection and keyboard position and document confirmation timing.
 - Menu separators are not selectable; define submenu entry/return and top-level movement.
 - Modals cycle focus internally, block background input, and restore caller focus. Outside clicks do not confirm.
-- Cancellation first handles the current step, such as an open dropdown or active input. Undo follows the application's state contract.
+- Cancellation first handles the current step, such as an open dropdown or active input. Undo follows the application's state handling rules.
 
 Validation: essential actions work using only the keyboard. Mouse selection/confirmation semantics agree with keyboard behavior where mouse is supported.
 
@@ -96,7 +96,7 @@ Status: proposal / reference palette checked / application capture checked / rea
 Problem: selection appears identical to the input target
 Rule: keep selection state and focus indication independent
 Applies to: lists, tabs, grids
-Exception: explain input contracts where input is itself selectable
+Exception: explain input handling rules where input is itself selectable
 Validation: select, move elsewhere, identify selection/focus in monochrome
 Evidence: official sources + application case/capture + observed terminal information
 ```

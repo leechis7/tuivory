@@ -1,0 +1,52 @@
+{
+  "issue": "TVR-17",
+  "date": "2026-10-29",
+  "source_branch": "codex/TVR-17-grid-options",
+  "source_base_commit": "c1a9b9a",
+  "publication": "validated working source included in this local commit; no push, CI, tag or Release for TVR-17",
+  "checks": {
+    "go": "full race suite plus final grid race and vet passed",
+    "rust": "1.85.1 core; 1.88.0 all features/targets/doctests/fmt/clippy passed",
+    "external": "isolated Go module and packaged Rust crate, native execution and static x86_64 hosts passed",
+    "pty": "Go and Rust; Korean Unicode and English ASCII data presets passed",
+    "images": "14 localized Rust TestBackend SVGs",
+    "elf": "Go CGO-free and Rust musl ARM64/x86_64; no PT_INTERP or DT_NEEDED",
+    "tools": "7 Python tests; shared tokens/fixtures and Markdown links passed"
+  },
+  "centos74": {
+    "image": "centos@sha256:78b63c089c40a2ca0d85db9125fb3193c6ff74814bba5f894c803e5ae02a4035",
+    "kernel": "3.10.0-693.el7.x86_64",
+    "kernel_sha256": "8ede7f8d3c8f5e72f1a84713ad59b7b39211ea1af8887389cb50a189df937c6f",
+    "glibc": "2.17-196.el7.x86_64",
+    "result": "passed",
+    "languages": [
+      "ko",
+      "en"
+    ],
+    "binaries_sha256": {
+      "go": "8dce7e66b9acc854d8a166bca3fd2a4c5bf88dadb5e8fd951598dd4618d63eb1",
+      "rust": "fbd2ba66e985a3b36051e1d111893198a05511afd4867a417f2dd8c84896985a",
+      "go-grid-host": "542cb4a9c009914d84bb7e679990ef6f9f925a8a94035b89eb66056b327aa738",
+      "rust-grid-host": "f1b10686b37329735deae6a81fb5642f62c5366d8f0100ba659b1cf39a180bf1"
+    }
+  },
+  "implementation_sha256": {
+    "go/examples/catalog/grid.go": "4876e46347b896fb7443897e6fbe20317f37174afd48df06c2c83d79998583e3",
+    "go/examples/catalog/main.go": "4a94306145ea36968a21c6aee657f8e1720a79151cd2a4091cacbdd32d9e8836",
+    "go/grid.go": "a64eb61e40419476bf7c05d7dffa1dd22c05ac946b8c36b749c88f59e8b4fc0f",
+    "go/grid_options.go": "db89a5cb9455f223538570b9a0768c70be5532ac09fe1fd6dd1c7e32aa441d3f",
+    "go/grid_options_test.go": "2b7aa83de81675b75c4e84871dcbb9e575ad7eee97d0df67a9008658dfb1befe",
+    "go/grid_pointer.go": "64c74c13db85316301d8ea9d35e272474fca8f2169cbf4a19274d5c198da9b6f",
+    "go/grid_presentation.go": "e81a049f33f28a06c6faa1be014f29b3368bc3d35e6e9f61b7be45eedcbb0f51",
+    "go/grid_test.go": "6bfd50c3892c3948ad5333f892f13b0c81d13ca30ab4e832f560784b0bc21c95",
+    "go/rows_view.go": "afdda68eaf0fd91b39e3019c3c9d763b7377ccdd97d61497aa41851f10de8e2e",
+    "rust/examples/catalog/grid_demo.rs": "935e21e5a0897babb041c194d433612a7e2d4dcd692161f7066db50b7d10fbda",
+    "rust/examples/catalog/main.rs": "52dd56e6b0e2934acfd3f9b2c92f03566ba557737c02755d7ee28c9610ee9bbd",
+    "rust/src/grid/options.rs": "5e67a7908268d147c0b83a0547e30b4b408cd3711ee48c627b851a0e0e425cf2",
+    "rust/src/grid/pointer.rs": "6c3c958008d760be82101f1c42e868b0660476e15597e02b0fc6b4d2f35aed29",
+    "rust/src/grid/presentation.rs": "b327af4b752e84f055662c17113ef9faea83f349e14b5fe3da0d724b03698c82",
+    "rust/src/grid.rs": "59b18ad0b8757ef35d8882035495be021020706b90bd74a7ef801a8be1af30bb",
+    "rust/src/ratatui/rows.rs": "e80935d3a33403d9a188f1dc349eb8d9a0785e1ef03ab0c80f6e798270780115",
+    "rust/src/ratatui.rs": "27e26c18bd278f4f8b87e1c61eaa49b4805cd1bb0bbef8013cf81d05842e1e94"
+  }
+}

@@ -33,10 +33,16 @@ ANSI 팔레트(참조/사용자 변경/미확인), 굵게 설정:
 
 ## 공통 상태·포커스·팝업
 
-[TVR-8 검증](focus.md): 공통 계약·12팔레트·한영 PTY·외부 정적 앱·CentOS 7.4·한영 참조 이미지. 게시 전 로컬 검증 근거이며 원격 게시·CI 결과는 TVR-8 댓글에 따로 기록합니다.
+[TVR-8 검증](focus.md): 공통 명세·12팔레트·한영 PTY·외부 정적 앱·CentOS 7.4·한영 참조 이미지. 게시 전 로컬 검증 근거이며 원격 게시·CI 결과는 TVR-8 댓글에 따로 기록합니다.
 
 [TVR-9~13 전체 컴포넌트 검증](components.md): 공개 API·행 소스·요청/수명·배치 경계·한영 PTY와 정적 외부 앱.
 
 [TVR-14 오버레이 경계 검증](overlay-drawing.md): Go 공통 API·실제 위젯·Show 이후 출력·외부 정적 import·PTY 결과와 한계.
 
 [0.2.0 릴리스 준비 검증](release-0.2.0.md): 후보 자산·버전·체크섬·정적 빌드·외부 설치·native/구형 커널 실행.
+
+[TVR-17 그리드 로컬 검증](../docs/grid-validation.md) · [정적 산출물·CentOS·소스 해시](grid-options-results.json). 로컬 커밋 전 작업 소스의 검증이며 GitHub에는 미게시입니다.  실제 LazyOra 적용은 별도입니다.
+
+[TVR-7 책임 범위 정정 검증](component-boundary.md): 현재 지원 점검표·호스트 구성 선택·한영 PTY 8개·정적 ELF·CentOS 기본 실행·기존 화면 동일성. 로컬 커밋에 포함하며 GitHub에는 미게시 작업입니다.
+
+[TVR-7 공통 메뉴 검증](menu.md): 공유 계층 탐색·호출 문맥·12팔레트·물리 출력·한영 PTY·외부 import·정적 ELF·CentOS. 메뉴 작업은 미커밋·미게시입니다.

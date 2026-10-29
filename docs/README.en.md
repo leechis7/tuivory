@@ -2,12 +2,13 @@
 
 [한국어 (default)](README.md) · **English**
 
-Current product version is **0.2.0**. [Changes, installation and release assets](release-0.2.0.en.md).
+Current product version is **0.3.0**. [Changes, installation and release assets](release-0.3.0.en.md).
 
-Documentation follows the current repository implementation. The current Go version is `v0.2.0`; Rust is distributed through Git tag `rust/v0.2.0`. New documentation, edits, and feature changes update related Korean and English documents together.
+Documentation follows the current repository implementation. The current Go version is `v0.3.0`; Rust is distributed through Git tag `rust/v0.3.0`. New documentation, edits, and feature changes update related Korean and English documents together.
 
 | Document | Contents |
 | --- | --- |
+| [Component/application boundary](component-boundary.en.md) | Screen composition, layout, focus, global commands and examples |
 | [Project overview](../README.en.md) | Scope, installation, quick start |
 | [Installation and usage](installation.en.md) | Current module, CLI, token identifiers; published version versus source |
 | [Rust package](../rust/README.en.md) | Git-distributed crate, tokens, styles, Ratatui adapter, external usage |
@@ -17,10 +18,10 @@ Documentation follows the current repository implementation. The current Go vers
 | [Go usage](go-package.en.md) | Public API, roles, states, theme reapplication |
 | [Playground](playground.en.md) | Korean/English execution, controls, image generation |
 | [Architecture](architecture.en.md) | Language boundaries, shared data, embedded assets |
-| [Shared specification](../design/README.en.md) | Language-independent design contracts |
+| [Shared specification](../design/README.en.md) | Language-independent design specifications |
 | [Tokens](../design/tokens/README.en.md) · [Themes](../design/themes/README.en.md) | JSON, schema, CSV, validation scope |
 | [Principles](principles.en.md) | Meaning, profiles, state, input, cells, validation |
-| [Component patterns](patterns.en.md) | Widget states and input contracts |
+| [Component patterns](patterns.en.md) | Widget states and input handling rules |
 | [Terminal profiles](terminal-profiles.en.md) | Color capabilities, ANSI, rendering limits |
 | [Extraction sources](lazyora-extraction.en.md) · [Go coverage](go-style-coverage.en.md) | Source hashes, API mapping, parity evidence |
 | [Language examples](../examples/README.en.md) | Actual Go/Rust/Python/JavaScript/Shell support |
@@ -50,3 +51,5 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 [TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
 
 [Wide glyphs and overlay drawing](overlay-drawing.en.md): public Go screen wrapper, shadows and output regressions after Show.
+
+[Shared menus](menus.en.md): Menu/bar/hierarchical return/popup/host context and bilingual examples. Unreleased source.

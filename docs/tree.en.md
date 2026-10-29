@@ -4,7 +4,7 @@
 
 Public components for Go/tview and Rust/Ratatui share candidate colors, state, and interaction principles. Added as TVR-7's first implementation after the [support audit](component-audit.en.md). Existing `Styler.Tree` continues to style stock tview nodes; the new `TreeView` is a separate API.
 
-## Data, state, and event contract
+## Data, state, and event specification
 
 - Nodes provide stable unique IDs, parent IDs (empty for roots), primary/secondary text, Unicode/ASCII icons, optional counts, and unloaded-branch flags. Parents must precede children. Empty/duplicate IDs, missing parents, self-reference, and depths beyond 128 are rejected. Zero counts differ from omitted counts.
 - Data is separate from selected ID, expanded-ID set, and vertical/horizontal scroll. The host owns state and replaces only the palette on theme/profile changes. Input focus belongs to the framework/host.
