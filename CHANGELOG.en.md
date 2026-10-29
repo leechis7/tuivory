@@ -4,11 +4,13 @@
 
 ## Unreleased
 
+## 0.3.0 — 2026-10-29
+
 - Stop CentOS validation per user instruction and remove the CI VM stage. Preserve static distribution, ELF inspection and normal execution checks; retain previous results as history.
 
 - TVR-7: add Go/Rust Menu/bar/popup, hierarchical entry/return, disabled/shortcut cues and original caller requests informed by LazyOra. Hosts retain commands/global keys; include shared navigation fixtures, bilingual hosts/docs/references and rendering/PTY/external-import checks.
 
-- TVR-7: clarify component-library/application responsibilities and actual support; demonstrate host-selected layout/focus order/quit keys with the same Go/Rust components. Record nested menus as an unimplemented follow-up candidate.
+- TVR-7: clarify component-library/application responsibilities and actual support; demonstrate host-selected layout/focus order/quit keys with the same Go/Rust components. Provide nested menus through the shared Menu in this release.
 
 - TVR-17: extend the existing Go/Rust grid with presentation/input options, simple/data presets, range copy, stale-response protection, public catalog comparisons and bilingual documentation/images.
 

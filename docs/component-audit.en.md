@@ -2,7 +2,7 @@
 
 [한국어 (default)](component-audit.md) · **English**
 
-Re-audited on 2026-10-29, distinguishing published v0.2.0 from local TVR-17 commit `e34b824`. This boundary/host-option update is included in this local commit; unpublished on GitHub; keep the epic open. Current scope below takes precedence; the 2026-10-27 table is historical. [Boundary](component-boundary.en.md).
+Re-audited on 2026-10-29, distinguishing published v0.2.0 from local TVR-17 commit `e34b824`. Boundary corrections, grid options and shared menus are integrated into dev and included in 0.3.0; keep the epic open. Current scope below takes precedence; the 2026-10-27 table is historical. [Boundary](component-boundary.en.md).
 
 ## Current support and host responsibilities
 
@@ -10,12 +10,12 @@ Re-audited on 2026-10-29, distinguishing published v0.2.0 from local TVR-17 comm
 | --- | --- | --- |
 | Inputs/forms | Form models/renderers, editing/choice, required values and submit requests | Connection/settings screens, business validation and saving |
 | Tree | NewTree/TreeState/NewTreeView / tree::Tree/TreeState/TreeWidget | Real data, loading and item execution |
-| Menu/search | NewList/NewSearchPicker / collections::ListModel/SearchPicker, flat items/filtering/selection requests | v0.2.0 is flat. Unreleased Menu/NewMenuView and menu::Menu/MenuPopupWidget add hierarchy/back/bar/single-popup support. Hosts own content/remote candidates |
+| Menu/search | NewList/NewSearchPicker / collections::ListModel/SearchPicker, flat items/filtering/selection requests | v0.2.0 is flat. 0.3.0 Menu/NewMenuView and menu::Menu/MenuPopupWidget add hierarchy/back/bar/single-popup support. Hosts own content/remote candidates |
 | Tabs | Tabs/TabState/NewTabView / components::Tabs/TabState/TabsWidget, overflow/edited/close requests | SQL/session ownership, document storage and close approval |
 | Panels/splits | NewPanelView/NewSplitView / Styles::panel/split_rects, geometry inside assigned areas | Screen placement/axis/initial sizes/visibility/responsive composition |
 | Focus/popups | FocusStack navigation/blocking/restoration within host-defined scopes | Cross-component order, scope registration, terminal/event wiring |
 | Status/path/help | StatusLine/Breadcrumbs/Help and language renderers | Contextual items, command/key assignment, whole help screens/contents |
-| Grid | Published v0.2.0 Grid/GridSource/basic rendering; TVR-17 options/ranges/status exist only in a local commit | Queries, business editing, transactions, real clipboard/exports |
+| Grid | Published v0.2.0 Grid/GridSource/basic rendering; TVR-17 options/ranges/status are included in 0.3.0 | Queries, business editing, transactions, real clipboard/exports |
 | Themes/validation | Shared tokens/semantic styles, state preservation, cell width/static-distribution checks | Actual host/customer-terminal checks remain separate; no claim of full Go extracted-styler/Rust candidate-palette parity |
 
 After the boundary audit, the user requested [shared Menu improvements](menus.en.md) under existing TVR-7. Distinguish released 0.2.0 from the new implementation; command taxonomy/execution remains host-owned. Tab overflow and shortcut-help rendering already exist and should not be duplicated. [Different host policy on existing components](component-boundary.en.md).
@@ -60,10 +60,10 @@ Registered [TVR-8–13](components-backlog.en.md) under TVR-7. The first [state/
 
 Public Go/Rust [forms](forms.en.md), [lists/menus/search](collections.en.md), [virtual grids](grid.en.md), [notices/progress/data states](feedback.en.md), [spacing/geometry/badges/chips/help](layout.en.md) are implemented with localized catalog hosts and tests. Sort/filter/edit/copy, validation, clocks and business actions remain host-owned. Accordion/Drawer/Stepper reuse existing state and panel composition. All stages integrated through dev and are included in v0.2.0.
 
-## TVR-17 grid configuration (unreleased)
+## TVR-17 grid configuration (0.3.0)
 
 [Shared options/presets](grid.en.md) extend the existing Grid with Go/Rust ranges, original-value copy, numbering, columns, density, status, stale-response protection and identical comparison data. [Local validation](grid-validation.en.md) is separate from GitHub CI/tags and actual LazyOra integration.
 
-## TVR-7 shared menus (unreleased)
+## TVR-7 shared menus (0.3.0)
 
 [Menu APIs](menus.en.md) add Go/Rust hierarchy, bar/back navigation, separators/disabled/shortcuts, popup placement and original-context requests. This addresses the audited gap after the user’s subsequent instruction without transferring host screen/business ownership. [Validation](../evidence/menu.en.md).

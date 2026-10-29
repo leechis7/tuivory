@@ -2,9 +2,9 @@
 
 [한국어 (default)](README.md) · **English**
 
-Current product version is **0.2.0**. [Changes, installation and release assets](release-0.2.0.en.md).
+Current product version is **0.3.0**. [Changes, installation and release assets](release-0.3.0.en.md).
 
-Documentation follows the current repository implementation. The current Go version is `v0.2.0`; Rust is distributed through Git tag `rust/v0.2.0`. New documentation, edits, and feature changes update related Korean and English documents together.
+Documentation follows the current repository implementation. The current Go version is `v0.3.0`; Rust is distributed through Git tag `rust/v0.3.0`. New documentation, edits, and feature changes update related Korean and English documents together.
 
 | Document | Contents |
 | --- | --- |

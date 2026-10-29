@@ -2,6 +2,8 @@
 
 [한국어 (default)](static-build.md) · **English**
 
+Current release: **0.3.0**. [Assets and validation](release-0.3.0.en.md). The 0.2.0/CentOS details below are historical.
+
 Per the user instruction on 2026-10-29, CentOS validation is no longer performed, including the CI VM job. Static distribution requirements, ELF inspection and execution checks in available environments remain. The CentOS commands and previous results below are historical reproduction records, not current required procedures.
 
 Static executables are included in **0.2.0**; existing 0.1.0 assets are preserved. [Assets, installation and validation](release-0.2.0.en.md).

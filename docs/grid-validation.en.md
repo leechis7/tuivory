@@ -2,6 +2,8 @@
 
 [한국어 (default)](grid-validation.md) · **English**
 
+Publication update: integrated into dev in PR #16; included in 0.3.0. The local checks below are historical pre-commit evidence; current release validation is documented in [the release guide](release-0.3.0.en.md).
+
 Validated against `codex/TVR-17-grid-options` working source on 2026-10-29. Prior documentation changes were committed as `c1a9b9a`; TVR-17 was uncommitted during validation and is included in this local commit; it remains unpublished on GitHub. TVR-17 is absent from the v0.2.0 tags/Release. These local checks are separate from remote CI, actual LazyOra/DB integration and SSH/SecureCRT/MobaXterm validation.
 
 ## Coverage

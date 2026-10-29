@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](grid.en.md)
 
-TVR-11의 Go `Grid / GridSource / NewGridView`와 Rust `grid::Grid / GridSource / GridWidget`에 TVR-17 구성 옵션을 추가합니다. 별도 고급 그리드 없이 같은 모델·입력·렌더러를 사용합니다. **TVR-17은 아직 미배포 소스이며 v0.2.0 태그에 없습니다.** 실제 LazyOra 연결·DB 편집 통합도 별도 작업입니다.
+TVR-11의 Go `Grid / GridSource / NewGridView`와 Rust `grid::Grid / GridSource / GridWidget`에 TVR-17 구성 옵션을 추가합니다. 별도 고급 그리드 없이 같은 모델·입력·렌더러를 사용합니다. **TVR-17은 0.3.0에 포함하며 v0.2.0 태그에 없습니다.** 실제 LazyOra 연결·DB 편집 통합도 별도 작업입니다.
 
 ## 실행과 비교
 

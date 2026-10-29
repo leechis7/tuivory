@@ -25,14 +25,14 @@ On 2026-10-28 the user explicitly authorized TVR-9 through TVR-13 implementation
 
 TVR-8–13 public APIs/examples are complete in the dev integration sequence. Historical initial checkpoints above do not imply pending implementation. Main/tags/releases remain separate; application/SSH integration and other languages remain follow-up work.
 
-## TVR-17 grid configuration (unreleased)
+## TVR-17 grid configuration (0.3.0)
 
 [Shared options/presets](grid.en.md) extend the existing Grid with Go/Rust ranges, original-value copy, numbering, columns, density, status, stale-response protection and identical comparison data. [Local validation](grid-validation.en.md) is separate from GitHub CI/tags and actual LazyOra integration.
 
 ## TVR-7 boundary follow-up
 
-Update documentation/examples under the existing TVR-7 epic using the [boundary](component-boundary.en.md) and [current audit](component-audit.en.md). Hosts own screens, global focus/keys and business bindings. Record nested menus as an unimplemented candidate; creating/implementing a new issue is outside this work. Tab overflow and shortcut-help already exist. This update is included in this local commit; unpublished on GitHub, separate from local TVR-17 commit e34b824 and published v0.2.0.
+Update documentation/examples under the existing TVR-7 epic using the [boundary](component-boundary.en.md) and [current audit](component-audit.en.md). Hosts own screens, global focus/keys and business bindings. Record nested menus as an unimplemented candidate; creating/implementing a new issue is outside this work. Tab overflow and shortcut-help already exist. This correction was committed as 50bf212 and integrated into dev in PR #16; included in 0.3.0 alongside subsequent menus and grid options.
 
 ## TVR-7 menu improvement
 
-The user’s subsequent instruction implements [shared menus](menus.en.md) under the existing epic, following the earlier candidate record; no new issue number was created. The library owns hierarchy/back/bar/presentation/internal interaction; hosts own taxonomy/global keys/command execution. Menu source remains uncommitted/unpublished.
+The user’s subsequent instruction implements [shared menus](menus.en.md) under the existing epic, following the earlier candidate record; no new issue number was created. The library owns hierarchy/back/bar/presentation/internal interaction; hosts own taxonomy/global keys/command execution. Menus were committed as 27e6019 and integrated into dev in PR #16; included in 0.3.0.
