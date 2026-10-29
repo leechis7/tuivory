@@ -56,6 +56,6 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 
 [Component background audit](background-audit.en.md): 948 actual renderings distinguish plain-text surface leakage from intentional field/selection/edit backgrounds.
 
-[Surface/text background design guide](../design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Unreleased follow-up after 0.4.0.
+[Surface/text background design guide](../design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.4.0.
 
 [Disabled states across twelve palettes](disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.

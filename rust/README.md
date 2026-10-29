@@ -126,12 +126,12 @@ make build-rust
 
 [TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-17 그리드 옵션](../docs/grid.md): simple/data 프리셋·범위·열 구성·상태줄·응답 세대 검사와 5행 비교 예제. 미배포 소스입니다.
+[TVR-17 그리드 옵션](../docs/grid.md): simple/data 프리셋·범위·열 구성·상태줄·응답 세대 검사와 5행 비교 예제. 0.4.0에 포함합니다.
 
 [공통 메뉴](../docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 0.4.0에 포함합니다.
 
-후속 미배포 소스의 메뉴는 단일선 테두리와 항목 선택·열린 메뉴 표시를 사용합니다. 입력 차단·호출 위치 복귀는 유지합니다. [메뉴 표시 규칙](../docs/menus.md).
+0.4.0의 메뉴는 단일선 테두리와 항목 선택·열린 메뉴 표시를 사용합니다. 입력 차단·호출 위치 복귀는 유지합니다. [메뉴 표시 규칙](../docs/menus.md).
 
-후속 미배포 소스의 TextOnSurface / Styles::text_on_surface 및 ControlStyleOnSurface / Styles::control_on_surface로 평문을 실제 바탕에 연결하고 대비를 보정합니다. 원본 토큰과 raw 스타일은 유지하며 명시적 상태/사용자 배경은 보존합니다. [한영 표면 디자인 가이드](../design/surfaces.md).
+0.4.0의 TextOnSurface / Styles::text_on_surface 및 ControlStyleOnSurface / Styles::control_on_surface로 평문을 실제 바탕에 연결하고 대비를 보정합니다. 원본 토큰과 raw 스타일은 유지하며 명시적 상태/사용자 배경은 보존합니다. [한영 표면 디자인 가이드](../design/surfaces.md).
 
 [비활성 상태와 12팔레트 비교](../docs/disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.

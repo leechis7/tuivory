@@ -147,6 +147,6 @@ Go popup/shadow wide-glyph protection: [shared drawing API](docs/overlay-drawing
 
 [Shared menus](docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Included in 0.4.0.
 
-[Surface/text background design guide](design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Unreleased follow-up after 0.4.0.
+[Surface/text background design guide](design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.4.0.
 
 [Disabled states across twelve palettes](docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.

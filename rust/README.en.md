@@ -130,8 +130,8 @@ Version 0.4.0 `interaction::{ControlState, FocusTarget, FocusStack}` and Ratatui
 
 [Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Included in 0.4.0.
 
-In subsequent unreleased source, menus use single borders and current-item/open-menu cues. Input blocking and caller restoration remain. [Menu presentation rules](../docs/menus.en.md).
+In 0.4.0, menus use single borders and current-item/open-menu cues. Input blocking and caller restoration remain. [Menu presentation rules](../docs/menus.en.md).
 
-Subsequent unreleased TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface / Styles::control_on_surface bind plain text to its real surface and correct contrast. Preserve original tokens/raw styles and explicit state/custom backgrounds. [Bilingual surface design guide](../design/surfaces.en.md).
+Version 0.4.0 TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface / Styles::control_on_surface bind plain text to its real surface and correct contrast. Preserve original tokens/raw styles and explicit state/custom backgrounds. [Bilingual surface design guide](../design/surfaces.en.md).
 
 [Disabled states across twelve palettes](../docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
