@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](grid-validation.en.md)
 
+게시 상태 갱신: PR #16으로 dev에 통합했으며 0.3.0에 포함합니다. 아래 로컬 검증은 커밋 전 과거 기록이며 현재 릴리스 검증은 [릴리스 안내](release-0.3.0.md)를 따릅니다.
+
 2026-10-29, `codex/TVR-17-grid-options` 작업 소스 기준입니다. 선행 문서 변경은 `c1a9b9a`로 커밋했으며 TVR-17은 검증 당시 미커밋 소스였으며 이 로컬 커밋에 포함합니다. GitHub에는 미게시입니다. v0.2.0 태그/Release에는 TVR-17이 없습니다. 원격 CI·LazyOra 실제 연결·실제 DB 편집·SSH/SecureCRT/MobaXterm 확인과 아래 로컬 검증을 구분합니다.
 
 ## 검사 범위

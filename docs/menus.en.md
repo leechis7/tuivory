@@ -2,7 +2,7 @@
 
 [한국어 (default)](menus.md) · **English**
 
-Go `Menu / NewMenuView / NewMenuBarView` and Rust `menu::Menu / MenuWidget / MenuBarWidget / MenuPopupWidget` provide flat/hierarchical menus. **Unreleased working source, absent from existing v0.2.0 tags.** Existing `ListModel / SearchPicker` APIs remain unchanged.
+Go `Menu / NewMenuView / NewMenuBarView` and Rust `menu::Menu / MenuWidget / MenuBarWidget / MenuPopupWidget` provide flat/hierarchical menus. **Included in 0.3.0; absent from existing v0.2.0 tags.** Existing `ListModel / SearchPicker` APIs remain unchanged.
 
 References: [LazyOra v0.11.2 pinned menu](https://github.com/leechis7/lazyora/blob/98a2f47e8621838101d5db781232a699dba382f3/internal/ui/menu.go) and [groups/back navigation](https://github.com/leechis7/lazyora/blob/98a2f47e8621838101d5db781232a699dba382f3/internal/ui/menu_groups.go). Adopt a single-popup drill-down/back flow, restored parent selection, separators/disabled/shortcut cues, original caller preservation and drawing only the assigned popup area. No command-ID taxonomy, automatic grouping threshold, SQL/Oracle or transaction implementation was imported.
 

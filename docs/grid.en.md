@@ -2,7 +2,7 @@
 
 [한국어 (default)](grid.md) · **English**
 
-TVR-17 adds configuration to TVR-11's Go `Grid / GridSource / NewGridView` and Rust `grid::Grid / GridSource / GridWidget`. One model, input core and renderer serve both simple and richer configurations. **TVR-17 is unreleased source, absent from the v0.2.0 tags.** Actual LazyOra integration and DB editing remain separate work.
+TVR-17 adds configuration to TVR-11's Go `Grid / GridSource / NewGridView` and Rust `grid::Grid / GridSource / GridWidget`. One model, input core and renderer serve both simple and richer configurations. **TVR-17 is included in 0.3.0 and absent from the v0.2.0 tags.** Actual LazyOra integration and DB editing remain separate work.
 
 ## Run and compare
 

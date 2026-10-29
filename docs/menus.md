@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](menus.en.md)
 
-Go `Menu / NewMenuView / NewMenuBarView`와 Rust `menu::Menu / MenuWidget / MenuBarWidget / MenuPopupWidget`으로 평면·계층 메뉴를 제공합니다. **미배포 작업 소스이며 기존 v0.2.0 태그에는 없습니다.** 기존 `ListModel / SearchPicker`는 그대로 유지합니다.
+Go `Menu / NewMenuView / NewMenuBarView`와 Rust `menu::Menu / MenuWidget / MenuBarWidget / MenuPopupWidget`으로 평면·계층 메뉴를 제공합니다. **0.3.0에 포함하며 기존 v0.2.0 태그에는 없습니다.** 기존 `ListModel / SearchPicker`는 그대로 유지합니다.
 
 [LazyOra v0.11.2의 고정 커밋](https://github.com/leechis7/lazyora/blob/98a2f47e8621838101d5db781232a699dba382f3/internal/ui/menu.go)과 [그룹/뒤로가기](https://github.com/leechis7/lazyora/blob/98a2f47e8621838101d5db781232a699dba382f3/internal/ui/menu_groups.go)를 참고했습니다. 한 팝업 안에서 하위 그룹으로 진입하고 부모의 선택 위치로 돌아오는 흐름, 구분선·비활성·단축키 표시·원래 패널 보존·팝업 영역만 그리는 원칙을 적용합니다. LazyOra 명령 ID 분류·자동 그룹 임계값·SQL/Oracle/트랜잭션 구현을 가져오지 않았습니다.
 
