@@ -9,6 +9,7 @@ pub struct MenuWidget<'a> {
     pub model: &'a mut Menu,
     pub styles: &'a Styles,
     pub ascii: bool,
+    /// Retained for compatibility; menus use selection/open state, not focus decoration.
     pub focused: bool,
 }
 impl Widget for MenuWidget<'_> {
@@ -19,7 +20,7 @@ impl Widget for MenuWidget<'_> {
         RowsWidget {
             rows: &rows,
             styles: self.styles,
-            focused: self.focused,
+            focused: false,
         }
         .render(area, buf);
     }
@@ -27,6 +28,7 @@ impl Widget for MenuWidget<'_> {
 pub struct MenuBarWidget<'a> {
     pub model: &'a mut Menu,
     pub styles: &'a Styles,
+    /// Retained for compatibility; menus use selection/open state, not focus decoration.
     pub focused: bool,
 }
 impl Widget for MenuBarWidget<'_> {
@@ -63,7 +65,7 @@ impl Widget for MenuBarWidget<'_> {
         RowsWidget {
             rows: &[line],
             styles: self.styles,
-            focused: self.focused,
+            focused: false,
         }
         .render(Rect { height: 1, ..area }, buf);
     }
@@ -75,6 +77,7 @@ pub struct MenuPopupWidget<'a> {
     pub styles: &'a Styles,
     pub title: &'a str,
     pub ascii: bool,
+    /// Retained for compatibility; menus use selection/open state, not focus decoration.
     pub focused: bool,
     pub padding: u16,
 }
@@ -90,35 +93,18 @@ impl Widget for MenuPopupWidget<'_> {
             focused: false,
         }
         .render(area, buf);
-        let clean_title = crate::components::clean(self.title);
-        let title = if self.focused {
-            format!("> {clean_title}")
-        } else {
-            clean_title
-        };
-        // Build the title once; Styles::panel's focused title is additive.
-        let mut block = self
+        let title = crate::components::clean(self.title);
+        let block = self
             .styles
             .panel(&title, false, self.padding, self.ascii)
             .expect("menu panel roles");
-        if self.focused {
-            if !self.ascii {
-                block = block.border_type(ratatui::widgets::BorderType::Double);
-            }
-            block = block.border_style(
-                self.styles
-                    .role("focus.border")
-                    .expect("menu focus role")
-                    .add_modifier(ratatui::style::Modifier::BOLD),
-            );
-        }
         let inner = block.inner(area);
         block.render(area, buf);
         MenuWidget {
             model: self.model,
             styles: self.styles,
             ascii: self.ascii,
-            focused: self.focused,
+            focused: false,
         }
         .render(inner, buf);
     }

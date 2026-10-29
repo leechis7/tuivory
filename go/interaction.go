@@ -51,14 +51,14 @@ func (s ControlState) Visual() ControlVisual {
 }
 
 // ControlStyle resolves shared roles without replacing the host's data or focus.
-// Draw Visual().Markers separately; color is not the sole state indication.
+// Markers are low-level state metadata; built-in views omit disabled prefixes.
 func ControlStyle(palette Palette, state ControlState, focused bool) (tcell.Style, error) {
 	v := state.Visual()
 	pair, ok := palette[v.Role]
 	if !ok {
 		return tcell.StyleDefault, fmt.Errorf("missing control role %q", v.Role)
 	}
-	return pair.Style().Underline(focused && v.Focusable), nil
+	return disabledCue(palette, v.Role, pair.Style()).Underline(focused && v.Focusable), nil
 }
 
 type FocusTarget struct {

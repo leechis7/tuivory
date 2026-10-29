@@ -98,4 +98,8 @@ Go `PanelView`는 [공통 두 칸 문자 보정](overlay-drawing.md)을 자동 �
 
 ## 앱이 선택하는 배치·포커스·키
 
-예제에 `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x`를 주면 같은 공개 컴포넌트를 다른 정책으로 조합합니다. 기본은 columns·tabs,tree,content·ctrl-q입니다. 첫 항목이 초기 포커스를 받고 Tab/Shift+Tab은 지정 순서를 따릅니다. 설정은 라이브러리 전역 옵션이 아닌 예제 호스트의 CLI이며 화면 전체의 표준을 강제하지 않습니다. 새 호스트 옵션은 미배포 소스입니다. [책임 범위·한영 화면·재현 명령](component-boundary.md).
+예제에 `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x`를 주면 같은 공개 컴포넌트를 다른 정책으로 조합합니다. 기본은 columns·tabs,tree,content·ctrl-q입니다. 첫 항목이 초기 포커스를 받고 Tab/Shift+Tab은 지정 순서를 따릅니다. 설정은 라이브러리 전역 옵션이 아닌 예제 호스트의 CLI이며 화면 전체의 표준을 강제하지 않습니다. 새 호스트 옵션은 0.4.0에 포함합니다. [책임 범위·한영 화면·재현 명령](component-boundary.md).
+
+포커스 테두리 규칙: 탐색 트리/목록·입력/편집 영역·데이터 그리드·일반 팝업처럼 내용을 감싼 영역은 현재 조작 중일 때 이중선, 비활성일 때 단일선을 사용합니다. 테두리를 갖지 않는 개별 입력칸·버튼·탭에 테두리를 추가하지 않습니다. 메뉴는 선택/열림 표시만으로 충분하므로 단일선을 유지합니다. Go 견본의 카드·팝업은 tview 기본 이중선을 사용하며, 0.3.0 이후 미배포 소스에서 탐색·토큰·도움말의 포커스 색상 갱신도 맞춥니다. Rust 공통 패널은 이미 이중선을 지원합니다. [실제 검증](../evidence/focus-borders.md).
+
+0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.

@@ -156,7 +156,11 @@ func (m *ListModel) Layout(width, height int, ascii bool) []ComponentLine {
 		}
 		rows = append(rows, ComponentLine{ID: i.ID, Text: mark + icon + i.Label + shortcut, Role: role, Focused: i.ID == m.Focused, Value: i.ID})
 		if i.Secondary != "" {
-			rows = append(rows, ComponentLine{ID: i.ID, Text: "    " + i.Secondary, Role: "hint", Value: i.ID})
+			secondaryRole := "hint"
+			if i.Disabled {
+				secondaryRole = "disabled"
+			}
+			rows = append(rows, ComponentLine{ID: i.ID, Text: "    " + i.Secondary, Role: secondaryRole, Value: i.ID})
 		}
 	}
 	if len(rows) == 0 {

@@ -61,6 +61,11 @@ fn demo(en: bool) -> Form {
         read_only: true,
         ..Default::default()
     };
+    let mut locked = field("locked", "text", "비활성 입력", "Disabled input");
+    locked.value = "Tuivory".into();
+    locked.state.disabled = true;
+    let mut save = field("save", "button", "저장 불가", "Save unavailable");
+    save.state.disabled = true;
     let mut agree = field("agree", "checkbox", "동의", "Agree");
     agree.required = true;
     let mut radio = field("radio", "radio", "방식", "Method");
@@ -74,7 +79,7 @@ fn demo(en: bool) -> Form {
     let mut cancel = field("cancel", "button", "취소", "Cancel");
     cancel.action = "cancel".into();
     Form::new(vec![
-        name, notes, read, agree, radio, select, submit, cancel,
+        name, notes, read, locked, save, agree, radio, select, submit, cancel,
     ])
     .unwrap()
 }
@@ -391,10 +396,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 *body,
             );
         } else if mode == "grid" {
-            let rows = grid.layout(body.width.into(), body.height.into());
             f.render_widget(
-                RowsWidget {
-                    rows: &rows,
+                tuivory::ratatui::GridWidget {
+                    model: grid,
                     styles,
                     focused: true,
                 },

@@ -109,7 +109,7 @@ impl Widget for LineWidget<'_> {
                 area.y,
                 &run.text,
                 usize::from(area.width) - run.start,
-                self.styles.role(&run.role).unwrap(),
+                self.styles.component_role(&run.role).unwrap(),
             );
         }
     }

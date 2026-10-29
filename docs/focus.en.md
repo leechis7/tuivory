@@ -86,3 +86,7 @@ This foundation does not provide an input editor, validation engine, complete Di
 Use [WideSafeScreen and DimRegion](overlay-drawing.en.md) for Go popup edges crossing CJK/emoji. These drawing APIs are separate from focus models.
 
 Hosts define scope contents/order and cross-component traversal. FocusStack calculates navigation, blocking and restoration within supplied scopes; it does not own the global application Tab policy. [Boundary and alternative host composition](component-boundary.en.md).
+
+In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
+
+The `-` in Visual().Markers is existing low-level state metadata. Default components and examples do not render it as an ordinary disabled prefix. Checkbox/radio selection indicators remain separate.

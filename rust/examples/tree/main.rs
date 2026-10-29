@@ -63,7 +63,7 @@ impl App {
             self.status
         );
         frame.render_widget(
-            Paragraph::new(title).style(self.styles.role("body").unwrap()),
+            Paragraph::new(title).style(self.styles.text_on_surface("body", "surface").unwrap()),
             layout[0],
         );
         let block = self
@@ -78,11 +78,11 @@ impl App {
         frame.render_stateful_widget(widget, self.inner, &mut self.state);
         let button = self.text("포커스 비교: Enter", "Focus comparison: Enter");
         frame.render_widget(
-            Paragraph::new(button).style(
-                self.styles
-                    .role(if self.focused { "body" } else { "selection" })
-                    .unwrap(),
-            ),
+            Paragraph::new(button).style(if self.focused {
+                self.styles.text_on_surface("body", "surface").unwrap()
+            } else {
+                self.styles.role("selection").unwrap()
+            }),
             layout[2],
         );
         let help=self.text("방향키 탐색 · Space 펼침 · Enter 실행 · Alt+←/→ 가로 이동\nTab 포커스 · F2 테마 · F3 색상 · F4 ASCII · Ctrl+Q 종료","Arrows navigate · Space expand · Enter activate · Alt+Left/Right pan\nTab focus · F2 theme · F3 colors · F4 ASCII · Ctrl+Q quit");

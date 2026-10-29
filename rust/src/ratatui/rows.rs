@@ -7,8 +7,13 @@ pub struct RowsWidget<'a> {
     pub styles: &'a Styles,
     pub focused: bool,
 }
-impl Widget for RowsWidget<'_> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
+/// Explicit background preservation for grids or custom row composition.
+pub struct RawRowsWidget<'a>(RowsWidget<'a>);
+impl<'a> RowsWidget<'a> {
+    pub fn preserve_backgrounds(self) -> RawRowsWidget<'a> {
+        RawRowsWidget(self)
+    }
+    fn render_rows(self, area: Rect, buf: &mut Buffer, preserve: bool) {
         let base = self.styles.role("surface").expect("surface role");
         // Repair pre-existing wide glyphs intersecting either horizontal edge.
         let bounds = buf.area;
@@ -32,10 +37,12 @@ impl Widget for RowsWidget<'_> {
             }
         }
         for (i, row) in self.rows.iter().take(usize::from(area.height)).enumerate() {
-            let mut style = self
-                .styles
-                .role(&row.role)
-                .expect("validated semantic row role");
+            let mut style = if preserve {
+                self.styles.role(&row.role)
+            } else {
+                self.styles.component_role(&row.role)
+            }
+            .expect("validated semantic row role");
             if row.focused && self.focused {
                 style = style.add_modifier(Modifier::UNDERLINED)
             }
@@ -54,7 +61,12 @@ impl Widget for RowsWidget<'_> {
             for span in &row.spans {
                 let start = span.start.min(usize::from(area.width));
                 let width = span.width.min(usize::from(area.width) - start);
-                let mut style = self.styles.role(&span.role).expect("span role");
+                let mut style = if preserve {
+                    self.styles.role(&span.role)
+                } else {
+                    self.styles.component_role(&span.role)
+                }
+                .expect("span role");
                 if span.focused && self.focused {
                     style = style.add_modifier(Modifier::UNDERLINED)
                 }
@@ -72,6 +84,16 @@ impl Widget for RowsWidget<'_> {
                 );
             }
         }
+    }
+}
+impl Widget for RowsWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        self.render_rows(area, buf, false)
+    }
+}
+impl Widget for RawRowsWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        self.0.render_rows(area, buf, true)
     }
 }
 pub struct FormWidget<'a> {
@@ -145,6 +167,7 @@ impl Widget for GridWidget<'_> {
             styles: self.styles,
             focused: self.focused,
         }
+        .preserve_backgrounds()
         .render(area, buf);
     }
 }

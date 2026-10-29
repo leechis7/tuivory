@@ -2,9 +2,9 @@
 
 [한국어 (default)](README.md) · **English**
 
-Current product version is **0.3.0**. [Changes, installation and release assets](release-0.3.0.en.md).
+Current product version is **0.4.0**. [Changes, installation and release assets](release-0.4.0.en.md).
 
-Documentation follows the current repository implementation. The current Go version is `v0.3.0`; Rust is distributed through Git tag `rust/v0.3.0`. New documentation, edits, and feature changes update related Korean and English documents together.
+Documentation follows the current repository implementation. The current Go version is `v0.4.0`; Rust is distributed through Git tag `rust/v0.4.0`. New documentation, edits, and feature changes update related Korean and English documents together.
 
 | Document | Contents |
 | --- | --- |
@@ -53,3 +53,9 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 [Wide glyphs and overlay drawing](overlay-drawing.en.md): public Go screen wrapper, shadows and output regressions after Show.
 
 [Shared menus](menus.en.md): Menu/bar/hierarchical return/popup/host context and bilingual examples. Unreleased source.
+
+[Component background audit](background-audit.en.md): 948 actual renderings distinguish plain-text surface leakage from intentional field/selection/edit backgrounds.
+
+[Surface/text background design guide](../design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.4.0.
+
+[Disabled states across twelve palettes](disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.

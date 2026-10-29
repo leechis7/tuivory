@@ -144,7 +144,7 @@ impl App {
                 self.profile.as_str(),
                 self.text("이름·보조 설명·개수", "Name · Secondary · Count")
             ))
-            .style(self.styles.role("body").unwrap()),
+            .style(self.styles.text_on_surface("body", "surface").unwrap()),
             layout[0],
         );
         frame.render_widget(
@@ -195,7 +195,7 @@ impl App {
             let content=format!("{}: {}\n\n{}\n\n{}\n\n{}",self.text("활성 탭","Active tab"),self.tab.active,self.text("DB 없는 공통 컴포넌트 견본","Database-free shared component example"),self.text("탭에서 방향키는 포커스만 옮기고 Enter는 활성화합니다.\n수정된 문서의 닫기 요청은 앱이 보류합니다.","Tab arrows move focus; Enter activates.\nThe host retains edited documents on close requests."),self.text("Ctrl+방향키 또는 분할선 드래그로 크기를 조절하세요.\n좁은 화면에서는 마지막으로 선택한 패널만 보입니다.\n테마 변경 후에도 트리·탭·분할 상태를 유지합니다.","Resize with Ctrl+arrows or drag the divider.\nNarrow screens show the last selected panel.\nTree, tab, and split state survive theme changes."));
             frame.render_widget(
                 Paragraph::new(content)
-                    .style(self.styles.role("body").unwrap())
+                    .style(self.styles.text_on_surface("body", "surface").unwrap())
                     .scroll((self.content_scroll, 0)),
                 self.content_inner,
             );

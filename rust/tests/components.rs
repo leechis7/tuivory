@@ -243,7 +243,7 @@ fn twelve_palette_widgets_geometry_and_literal_text() {
             let cell = &terminal.backend().buffer()[(layout.cells[1].start as u16, 0)];
             assert!(cell.modifier.contains(Modifier::UNDERLINED));
             assert_eq!(terminal.backend().buffer()[(0, 2)].symbol(), "+");
-            let style = styles.role("error").unwrap();
+            let style = styles.text_on_surface("error", "surface").unwrap();
             assert_eq!(terminal.backend().buffer()[(0, 15)].fg, style.fg.unwrap());
             assert_eq!(terminal.backend().buffer()[(0, 15)].bg, style.bg.unwrap());
             for rows in [false, true] {

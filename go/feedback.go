@@ -184,10 +184,16 @@ func (q *NoticeQueue) Layout(width, height int, now uint64) []ComponentLine {
 		if n.Detail != "" {
 			value += " / " + n.Detail
 		}
+		spans := []ComponentSpan{}
 		for _, a := range n.Actions {
-			value += " [" + a.Label + "]"
+			prefix := ""
+			part := " " + prefix + "[" + a.Label + "]"
+			if a.Disabled {
+				spans = append(spans, ComponentSpan{Start: gridTextWidth(value), Width: gridTextWidth(part), Text: part, Role: "disabled"})
+			}
+			value += part
 		}
-		out = append(out, ComponentLine{ID: n.ID, Text: CellText(value, width), Role: n.Severity, Focused: n.ID == q.Focused})
+		out = append(out, ComponentLine{ID: n.ID, Text: CellText(value, width), Role: n.Severity, Focused: n.ID == q.Focused, Spans: spans})
 	}
 	if len(items) > limit && height > len(out) {
 		out = append(out, ComponentLine{Text: CellText(fmt.Sprintf("+%d", len(items)-limit), width), Role: "hint"})

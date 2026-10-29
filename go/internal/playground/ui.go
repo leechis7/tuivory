@@ -36,6 +36,7 @@ type UI struct {
 	invalid                                       bool
 	popup                                         *popup
 	smallMode                                     bool
+	reflowQueued                                  bool
 	lastWidth, lastHeight                         int
 }
 
@@ -110,7 +111,17 @@ func New(app *tview.Application, terminal tcell.Screen, options Options) (*UI, e
 	u.root = newFlex().SetDirection(tview.FlexRow).AddItem(u.header, 1, 0, false).AddItem(controls, 1, 0, false).AddItem(u.body, 0, 1, true).AddItem(u.status, 1, 0, false).AddItem(u.footer, 1, 0, false)
 	u.small = tview.NewTextView().SetText(u.text("TUIVORY\n\n터미널을 80열 × 24행 이상으로 넓혀 주세요.\nCtrl+Q 종료", "TUIVORY\n\nResize the terminal to at least 80 columns × 24 rows.\nCtrl+Q Quit")).SetTextAlign(tview.AlignCenter)
 	u.layers.AddPage("main", u.root, true, true).AddPage("small", u.small, true, false)
-	u.app.SetRoot(u.layers, true).SetInputCapture(u.key).SetBeforeDrawFunc(func(_ tcell.Screen) bool { u.reflow(); u.borders(); return false })
+	u.app.SetRoot(u.layers, true).SetInputCapture(u.key).SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		width, height := screen.Size()
+		// Drawing holds Application's lock. Page visibility changes can delegate
+		// focus back to SetFocus, so perform reflow in the UI update queue instead.
+		if (width != u.lastWidth || height != u.lastHeight) && !u.reflowQueued {
+			u.reflowQueued = true
+			go u.app.QueueUpdateDraw(func() { u.reflowQueued = false; u.reflow(); u.borders() })
+		}
+		u.borders()
+		return false
+	})
 	u.app.SetFocus(u.name)
 	u.apply()
 	u.reflow()

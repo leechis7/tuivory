@@ -87,7 +87,10 @@ fn main() {
 }
 '''
         if args.ratatui:
-            source = source.replace('    let doc =', '''    let styles = tuivory::ratatui::Styles::new(Theme::Dark, ColorProfile::Ansi8).unwrap();
+            source = source.replace('    let doc =', '''    let light=tuivory::ratatui::Styles::new(Theme::Light,ColorProfile::Ansi16).unwrap();
+    let bound=light.text_on_surface("success","surface").unwrap();
+    assert_eq!(bound.fg,light.role("surface").unwrap().fg);assert_eq!(bound.bg,light.role("surface").unwrap().bg);
+    let styles = tuivory::ratatui::Styles::new(Theme::Dark, ColorProfile::Ansi8).unwrap();
     assert!(styles.control(control_state,true).unwrap().add_modifier.contains(ratatui::style::Modifier::UNDERLINED));
     let mut terminal = ratatui::Terminal::new(ratatui::backend::TestBackend::new(24, 4)).unwrap();
     terminal.draw(|f| f.render_widget(styles.block("External", true).unwrap(), f.area())).unwrap();

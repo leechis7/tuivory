@@ -43,8 +43,12 @@ New widget adapters need framework-specific checks for theme round trips, focus/
 
 At either horizontal overlay/shadow edge, replace intersected wide graphemes with spaces while retaining outside styles. Hosts repaint backgrounds; regressions inspect buffers after presentation. [Go implementation and validation scope](../docs/overlay-drawing.en.md).
 
-[TVR-17 grid options, priority and original-value/host boundaries](../docs/grid.en.md): simple/data presets on one Go/Rust core; unreleased source.
+[TVR-17 grid options, priority and original-value/host boundaries](../docs/grid.en.md): simple/data presets on one Go/Rust core; included in 0.4.0.
 
 Follow the [component/application boundary](../docs/component-boundary.en.md). Example screens/keymaps are host choices, not a mandatory application framework.
 
-[Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.
+[Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Included in 0.4.0, absent from v0.2.0 tags.
+
+[Surface/text background rules](surfaces.en.md): actual-surface plain text, explicit state backgrounds, contrast correction and binding APIs.
+
+[Disabled states across twelve palettes](../docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.

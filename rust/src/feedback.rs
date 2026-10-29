@@ -1,5 +1,9 @@
 //! Notices and progress accept host clocks; they spawn no timer/event loop.
-use crate::{Error, components::cell_text, forms::ComponentLine};
+use crate::{
+    Error,
+    components::cell_text,
+    forms::{ComponentLine, ComponentSpan},
+};
 #[derive(Clone, Debug, Default)]
 pub struct NoticeAction {
     pub id: String,
@@ -206,14 +210,26 @@ impl NoticeQueue {
             if !n.detail.is_empty() {
                 value.push_str(&format!(" / {}", n.detail))
             }
+            let mut spans = vec![];
             for a in &n.actions {
-                value.push_str(&format!(" [{}]", a.label))
+                let part = format!(" [{}]", a.label);
+                if a.disabled {
+                    spans.push(ComponentSpan {
+                        start: crate::components::cells(&crate::components::clean(&value)),
+                        width: crate::components::cells(&crate::components::clean(&part)),
+                        text: part.clone(),
+                        role: "disabled".into(),
+                        ..Default::default()
+                    });
+                }
+                value.push_str(&part)
             }
             out.push(ComponentLine {
                 id: n.id.clone(),
                 text: cell_text(&value, width),
                 role: n.severity.clone(),
                 focused: n.id == self.focused,
+                spans,
                 ..Default::default()
             })
         }

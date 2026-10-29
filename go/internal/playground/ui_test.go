@@ -7,6 +7,7 @@ import (
 	"unicode"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/leechis7/tuivory/go"
 	"github.com/rivo/tview"
 )
 
@@ -236,12 +237,90 @@ func TestRenderedTextContrastAcrossProfiles(t *testing.T) {
 						if low > high {
 							low, high = high, low
 						}
-						if ratio := (high + .05) / (low + .05); ratio < 4.5 {
+						target := 4.5
+						if fg == ui.palette["disabled"].FG && bg == ui.palette["surface"].BG {
+							target = 2.0
+						}
+						if ratio := (high + .05) / (low + .05); ratio < target {
 							t.Fatalf("text contrast %.2f at %s/%s page%d %d,%d %q", ratio, theme, profile, page, x, y, r)
 						}
 					}
 				}
 			}
+		}
+	}
+}
+
+// Inspect physical output after Show, including every corner and both edge directions.
+func TestAllPlaygroundAreasUseFocusBorders(t *testing.T) {
+	for _, theme := range themeNames {
+		for _, profile := range profileNames[1:] {
+			t.Run(theme+"/"+profile, func(t *testing.T) {
+				ui, screen := testUIOptions(t, Options{Theme: theme, Colors: profile, Mouse: true})
+				styler, _ := tuivory.New(theme, profile)
+				check := func(frame tview.Primitive, focused bool) {
+					t.Helper()
+					x, y, w, h := frame.GetRect()
+					cells, cols, _ := screen.GetContents()
+					corners := []rune{'┌', '┐', '└', '┘', '─', '│'}
+					if focused {
+						corners = []rune{'╔', '╗', '╚', '╝', '═', '║'}
+					}
+					points := [][3]int{{x, y, 0}, {x + w - 1, y, 1}, {x, y + h - 1, 2}, {x + w - 1, y + h - 1, 3}, {x + 1, y + h - 1, 4}, {x, y + 1, 5}}
+					for _, at := range points {
+						c := cells[at[1]*cols+at[0]]
+						want := string(corners[at[2]])
+						if string(c.Runes) != want || string(c.Bytes) != want {
+							t.Fatalf("focused=%t point=%v got=%q/%q want=%q", focused, at, c.Runes, c.Bytes, want)
+						}
+					}
+				}
+				scenes := []struct {
+					page          int
+					target, frame tview.Primitive
+				}{
+					{0, ui.name, ui.cards[0]}, {0, ui.buttons[0], ui.cards[1]}, {0, ui.list, ui.cards[2]}, {0, ui.grid, ui.cards[3]},
+					{0, ui.nav, ui.nav}, {1, ui.tokens, ui.tokens}, {2, ui.guide, ui.guide},
+				}
+				for _, scene := range scenes {
+					ui.nav.SetCurrentItem(scene.page)
+					ui.showPage(scene.page)
+					ui.app.SetFocus(scene.target)
+					drawUI(ui, screen)
+					check(scene.frame, true)
+					if box, ok := scene.frame.(interface{ GetBackgroundColor() tcell.Color }); ok {
+						x, y, _, _ := scene.frame.GetRect()
+						_, _, got, _ := screen.GetContent(x, y)
+						fg, _, _ := got.Decompose()
+						want, _, _ := styler.Styles.BorderStyle(true, box.GetBackgroundColor()).Decompose()
+						if fg != want {
+							t.Fatal("focused border color differs", scene.page)
+						}
+					}
+					if scene.target == ui.nav {
+						ui.app.SetFocus(ui.name)
+					} else {
+						ui.app.SetFocus(ui.nav)
+					}
+					drawUI(ui, screen)
+					check(scene.frame, false)
+				}
+				ui.nav.SetCurrentItem(0)
+				ui.showPage(0)
+				ui.app.SetFocus(ui.name)
+				for _, open := range []func(){ui.openHelp, ui.openPreview, func() { ui.openEdit(1) }} {
+					previous := ui.app.GetFocus()
+					open()
+					drawUI(ui, screen)
+					check(ui.popup.card, true)
+					ui.closePopup()
+					drawUI(ui, screen)
+					if ui.app.GetFocus() != previous {
+						t.Fatal("popup lost original focus")
+					}
+					check(ui.cards[0], true)
+				}
+			})
 		}
 	}
 }
