@@ -17,6 +17,7 @@ use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
 mod components;
 mod menu;
 mod rows;
+mod shadow;
 mod surface;
 pub use menu::{MenuBarWidget, MenuPopupWidget, MenuWidget};
 pub use rows::{
@@ -24,6 +25,7 @@ pub use rows::{
     NoticeWidget, ProgressWidget, RawRowsWidget, RowsWidget, SearchPickerWidget, StackRects,
     stack_rects,
 };
+pub use shadow::ShadowWidget;
 mod tree;
 use ::ratatui::{
     style::{Color, Modifier, Style},

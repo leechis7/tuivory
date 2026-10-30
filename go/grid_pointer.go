@@ -55,7 +55,7 @@ func (g *Grid) Pointer(action string, x, y, width, height int, extend bool) Grid
 			}
 		}
 		if action == "click" || action == "double" {
-			return g.Click("", "@header", x, width, height)
+			return g.click("", "@header", x, width, height)
 		}
 		return GridEvent{}
 	}

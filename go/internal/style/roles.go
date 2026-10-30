@@ -90,6 +90,9 @@ func (s Styles) TabStyle(active bool) tcell.Style {
 	return s.ButtonStyle()
 }
 
+// FooterButtonStyle returns the footer text style.
+//
+// Deprecated: Use TextStyle(Footer, Body), which has the same colors and attributes.
 func (s Styles) FooterButtonStyle() tcell.Style {
 	return tcell.StyleDefault.Foreground(s.Text).Background(s.Footer)
 }
@@ -98,7 +101,7 @@ func (s Styles) FooterButtonStyle() tcell.Style {
 // keymap comparison. The host supplies which column is current.
 func (s Styles) ComparisonHeaderStyle(current bool) tcell.Style {
 	if current {
-		return s.FieldStyle().Underline(true)
+		return s.TextStyle(Field, Body).Underline(true)
 	}
 	if s.theme == "blackwhite" {
 		return tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorSilver)
@@ -120,6 +123,9 @@ func (s Styles) PopupBackdrop(base tcell.Style, limited bool) tcell.Style {
 	return result
 }
 
+// PopupCardStyle returns panel body text style.
+//
+// Deprecated: Use TextStyle(Panel, Body), which returns the same style.
 func (s Styles) PopupCardStyle() tcell.Style { return s.TextStyle(Panel, Body) }
 func (s Styles) PopupShadowStyle() tcell.Style {
 	return tcell.StyleDefault.Background(tcell.ColorBlack)

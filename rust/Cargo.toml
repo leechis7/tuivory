@@ -1,6 +1,6 @@
 [package]
 name = "tuivory"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 rust-version = "1.85"
 description = "Reusable TUI component models, design tokens, styles and optional renderers"
@@ -56,4 +56,9 @@ required-features = ["playground"]
 [[example]]
 name = "states"
 path = "examples/states/main.rs"
+required-features = ["ratatui"]
+
+[[example]]
+name = "shadows"
+path = "examples/shadows/main.rs"
 required-features = ["ratatui"]

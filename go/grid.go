@@ -331,7 +331,14 @@ type GridSpan struct {
 	Start, Width int
 }
 
+// Click is the legacy row-ID and horizontal-coordinate mouse entry point.
+//
+// Deprecated: Use Pointer for local mouse coordinates, or Focus and Handle for programmatic selection/sorting.
 func (g *Grid) Click(rowID, kind string, x, width, height int) GridEvent {
+	return g.click(rowID, kind, x, width, height)
+}
+
+func (g *Grid) click(rowID, kind string, x, width, height int) GridEvent {
 	for _, s := range g.Geometry(width, height).Columns {
 		if x >= s.Start && x < s.Start+s.Width {
 			if kind == "@header" {

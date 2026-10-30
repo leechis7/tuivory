@@ -27,7 +27,7 @@ func (s Styler) Button(button *tview.Button) {
 func (s Styler) Input(field *tview.InputField) {
 	p := s.Styles
 	s.Box(field.Box, p.Surface, p.Text)
-	field.SetFieldStyle(p.FieldStyle()).SetLabelStyle(tcell.StyleDefault.Foreground(p.Muted).Background(p.Surface)).
+	field.SetFieldStyle(p.TextStyle(style.Field, style.Body)).SetLabelStyle(tcell.StyleDefault.Foreground(p.Muted).Background(p.Surface)).
 		SetPlaceholderStyle(tcell.StyleDefault.Foreground(p.Placeholder).Background(p.Field))
 }
 
@@ -50,7 +50,7 @@ func (s Styler) Checkbox(box *tview.Checkbox) {
 	p := s.Styles
 	s.Box(box.Box, p.Surface, p.Text)
 	box.SetLabelStyle(tcell.StyleDefault.Foreground(p.Text).Background(p.Surface)).
-		SetCheckedStyle(p.FieldStyle()).SetUncheckedStyle(p.FieldStyle()).SetActivatedStyle(p.SelectionStyle()).
+		SetCheckedStyle(p.TextStyle(style.Field, style.Body)).SetUncheckedStyle(p.TextStyle(style.Field, style.Body)).SetActivatedStyle(p.SelectionStyle()).
 		SetCheckedString(tview.Escape("[x]")).SetUncheckedString(tview.Escape("[ ]"))
 }
 
@@ -61,7 +61,7 @@ func (s Styler) Form(form *tview.Form) {
 	s.Box(form.Box, p.Surface, p.Text)
 	form.SetBorderPadding(1, 1, 2, 2)
 	form.SetButtonsAlign(tview.AlignCenter)
-	form.SetLabelColor(p.Muted).SetFieldStyle(p.FieldStyle()).
+	form.SetLabelColor(p.Muted).SetFieldStyle(p.TextStyle(style.Field, style.Body)).
 		SetButtonStyle(p.ButtonStyle()).SetButtonActivatedStyle(p.ButtonFocusStyle()).SetButtonDisabledStyle(p.DisabledStyle())
 	for i := 0; i < form.GetFormItemCount(); i++ {
 		switch item := form.GetFormItem(i).(type) {
@@ -69,7 +69,7 @@ func (s Styler) Form(form *tview.Form) {
 			s.Input(item)
 			item.SetDrawFunc(func(_ tcell.Screen, x, y, width, height int) (int, int, int, int) {
 				label := tcell.StyleDefault.Foreground(p.Muted).Background(p.Surface)
-				input := p.FieldStyle()
+				input := p.TextStyle(style.Field, style.Body)
 				if item.HasFocus() {
 					label = label.Foreground(p.Accent).Bold(true)
 					input = input.Underline(true)
@@ -105,8 +105,12 @@ func (s Styler) Modal(modal *tview.Modal) {
 		SetButtonStyle(p.ButtonStyle()).SetButtonActivatedStyle(p.ButtonFocusStyle())
 }
 
-// Table styles a simple data table; app-specific cell states belong to the host.
-func (s Styler) Table(table *tview.Table) {
+// Table styles a simple data table on the canvas.
+//
+// Deprecated: Use TableOn(table, tuivory.Canvas), which preserves the same styling.
+func (s Styler) Table(table *tview.Table) { s.TableOn(table, style.Canvas) }
+
+func (s Styler) table(table *tview.Table) {
 	p := s.Styles
 	s.Box(table.Box, p.Background, p.Text)
 	table.SetBordersColor(p.Muted).SetSelectedStyle(p.SelectionStyle())

@@ -24,7 +24,8 @@ use tuivory::{
     ColorProfile, Theme,
     forms::{Form, FormField},
     layout::CellRect,
-    menu::{Menu, MenuEvent, MenuItem, menu_placement},
+    menu::{Menu, MenuEvent, MenuItem},
+    popup::{ShadowMode, ShadowOptions, popup_placement},
     ratatui::{FormWidget, MenuBarWidget, MenuPopupWidget, Styles},
 };
 fn tr(en: bool, ko: &str, english: &str) -> String {
@@ -107,6 +108,7 @@ struct App {
     theme: Theme,
     profile: ColorProfile,
     styles: Styles,
+    shadow: ShadowOptions,
     menu: Menu,
     form: Form,
     origin: String,
@@ -157,11 +159,7 @@ impl App {
         );
         if height > 1 {
             f.render_widget(
-                MenuBarWidget {
-                    model: &mut self.menu,
-                    styles: &self.styles,
-                    focused: false,
-                },
+                MenuBarWidget::new(&mut self.menu, &self.styles),
                 Rect::new(0, 1, width, 1),
             );
         }
@@ -207,7 +205,22 @@ impl App {
                     .style(self.styles.text_on_surface("body", "surface").unwrap()),
                 Rect::new(0, height - 2, width, 1),
             );
-            f.render_widget(Paragraph::new(tr(self.en,"F10 메뉴 · Shift+F10 문맥 · Alt+F/E/V · F2 테마 F3 색상 F4 ASCII F5 사용 가능 상태 · Tab 영역 · Ctrl+Q 종료","F10 menu / Shift+F10 context / Alt+F/E/V / F2 theme F3 colors F4 ASCII F5 eligibility / Tab panel / Ctrl+Q quit")).style(self.styles.role("hint").unwrap()),Rect::new(0,height-1,width,1));
+            let mut hints = tr(
+                self.en,
+                "F10 메뉴 · Shift+F10 문맥 · Alt+F/E/V · F2 테마 F3 색상 F4 ASCII F5 사용 가능 상태 · Tab 영역 · Ctrl+Q 종료",
+                "F10 menu / Shift+F10 context / Alt+F/E/V / F2 theme F3 colors F4 ASCII F5 eligibility / Tab panel / Ctrl+Q quit",
+            );
+            if self.shadow.mode != ShadowMode::Off {
+                hints = format!(
+                    "F6 {}: {} · {hints}",
+                    tr(self.en, "그림자", "shadow"),
+                    self.shadow.mode.as_str()
+                );
+            }
+            f.render_widget(
+                Paragraph::new(hints).style(self.styles.role("hint").unwrap()),
+                Rect::new(0, height - 1, width, 1),
+            );
         }
         if self.menu.opened() {
             let mut anchor = CellRect {
@@ -230,7 +243,7 @@ impl App {
                 }
             }
             let (w, h) = self.menu.content_size();
-            let r = menu_placement(
+            let placement = popup_placement(
                 anchor,
                 CellRect {
                     x: 0,
@@ -240,7 +253,9 @@ impl App {
                 },
                 (w + 4).clamp(24, 52),
                 h + 4,
+                self.shadow,
             );
+            let r = placement.card;
             self.popup = Rect::new(r.x as u16, r.y as u16, r.width as u16, r.height as u16);
             let mut title = self.menu.title();
             if title.is_empty() {
@@ -252,15 +267,16 @@ impl App {
                 .unwrap()
                 .inner(self.popup);
             f.render_widget(
-                MenuPopupWidget {
-                    model: &mut self.menu,
-                    styles: &self.styles,
-                    title: &title,
-                    ascii: self.ascii,
-                    focused: true,
-                    padding: 1,
-                },
-                self.popup,
+                MenuPopupWidget::new(&mut self.menu, &self.styles, &title)
+                    .ascii(self.ascii)
+                    .padding(1)
+                    .shadow(self.shadow),
+                Rect::new(
+                    placement.bounds.x as u16,
+                    placement.bounds.y as u16,
+                    placement.bounds.width as u16,
+                    placement.bounds.height as u16,
+                ),
             );
         }
     }
@@ -285,6 +301,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut profile = ColorProfile::Indexed256;
     let mut output = None;
     let mut opened = false;
+    let mut shadow = ShadowOptions::default();
     let mut open_id = "file".to_string();
     let mut args = std::env::args().skip(1);
     while let Some(a) = args.next() {
@@ -301,6 +318,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--colors" => profile = args.next().ok_or("missing colors")?.parse()?,
             "--snapshot" => output = Some(args.next().ok_or("missing snapshot")?),
             "--open" => opened = true,
+            "--shadow" => shadow.mode = args.next().ok_or("missing shadow mode")?.parse()?,
             "--menu-id" => open_id = args.next().ok_or("missing menu ID")?,
             _ => return Err(format!("unknown option {a}").into()),
         }
@@ -314,6 +332,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         theme,
         profile,
         styles: Styles::new(theme, profile)?,
+        shadow,
         menu,
         form: Form::new(vec![FormField {
             id: "value".into(),
@@ -387,6 +406,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                     KeyCode::F(4) => {
                         app.ascii = !app.ascii;
+                        continue;
+                    }
+                    KeyCode::F(6) => {
+                        app.shadow.mode = match app.shadow.mode {
+                            ShadowMode::Off => ShadowMode::Auto,
+                            ShadowMode::Auto => ShadowMode::Solid,
+                            ShadowMode::Solid => ShadowMode::Dim,
+                            ShadowMode::Dim => ShadowMode::Off,
+                        };
                         continue;
                     }
                     KeyCode::F(5) => {

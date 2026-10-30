@@ -41,7 +41,8 @@ def main():
         if args.ratatui:
             manifest += 'ratatui = { version = "0.30.2", default-features = false }\n'
         (consumer / 'Cargo.toml').write_text(manifest)
-        source = '''use tuivory::{Color, ColorProfile, Theme, TokenDocument};
+        source = '''#![deny(deprecated)]
+use tuivory::{Color, ColorProfile, Theme, TokenDocument};
 fn main() {
     let control_state = tuivory::interaction::ControlState { read_only:true, invalid:true, edited:true, ..Default::default() };
     assert!(!control_state.visual().editable); assert_eq!(control_state.visual().role,"error"); assert_eq!(control_state.visual().markers,"!*=");
@@ -103,7 +104,10 @@ fn main() {
     terminal.draw(|f| f.render_widget(tuivory::ratatui::GridWidget{model:&grid,styles:&styles,focused:true},f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(grid.geometry(24,4).gutter as u16-1,0)].symbol(),"│");
     let mut menu_terminal=ratatui::Terminal::new(ratatui::backend::TestBackend::new(40,10)).unwrap();
-    menu_terminal.draw(|f|f.render_widget(tuivory::ratatui::MenuPopupWidget{model:&mut menu,styles:&styles,title:"Menu",ascii:true,focused:true,padding:1},f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),"+");assert_eq!(menu_terminal.backend().buffer()[(2,2)].symbol(),">");
+    menu_terminal.draw(|f|f.render_widget(tuivory::ratatui::MenuPopupWidget::new(&mut menu,&styles,"Menu").ascii(true).padding(1),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),"+");assert_eq!(menu_terminal.backend().buffer()[(2,2)].symbol(),">");
+    menu_terminal.draw(|f|f.render_widget(tuivory::ratatui::MenuWidget::new(&mut menu,&styles).ascii(true),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),">");
+    menu_terminal.draw(|f|f.render_widget(tuivory::ratatui::MenuBarWidget::new(&mut menu,&styles),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(2,0)].symbol(),"R");
+    assert_eq!(menu.return_id(),"editor");
     let runs = tuivory::components::status_line(&[tuivory::components::StatusItem { id: "e".into(), text: "Failure".into(),role: "error".into(),priority:10 }],24).runs;
     terminal.draw(|f| f.render_widget(tuivory::ratatui::LineWidget::new(runs.clone(),&styles).unwrap(),f.area())).unwrap();
     terminal.draw(|f| f.render_widget(styles.panel("External",true,1,true).unwrap(),f.area())).unwrap();
@@ -113,6 +117,33 @@ fn main() {
         shutil.copyfile(module / 'Cargo.lock', consumer / 'Cargo.lock')
         subprocess.run(['cargo', 'run', '--manifest-path', str(consumer / 'Cargo.toml'), '--offline'],
                        env=env, check=True)
+        if args.ratatui:
+            legacy = r'''#![deny(deprecated)]
+use tuivory::{menu::{Menu,MenuItem},ratatui::{Styles,MenuWidget,MenuBarWidget,MenuPopupWidget},Theme,ColorProfile};
+fn main() {
+    let styles=Styles::new(Theme::Dark,ColorProfile::Ansi8).unwrap();
+    let mut menu=Menu::new(vec![MenuItem{id:"a".into(),label:"A".into(),..Default::default()}]).unwrap();
+    let _=MenuWidget{model:&mut menu,styles:&styles,ascii:false,focused:false};
+    let _=MenuBarWidget{model:&mut menu,styles:&styles,focused:false};
+    let _=MenuPopupWidget{model:&mut menu,styles:&styles,title:"Menu",ascii:false,focused:false,padding:1};
+    let rows=tuivory::grid::MemoryRows::new(vec![]).unwrap();
+    let mut grid=tuivory::grid::Grid::new(vec![],Box::new(rows)).unwrap();
+    let _=grid.click("","",0,40,8);
+}
+'''
+            main_file = consumer / 'src/main.rs'
+            try:
+                main_file.write_text(legacy)
+                check = subprocess.run(['cargo','check','--manifest-path',str(consumer/'Cargo.toml'),
+                                        '--offline','--message-format=json'],env=env,text=True,capture_output=True)
+                diagnostics = [json.loads(line) for line in check.stdout.splitlines() if line.startswith('{')]
+                deprecated = [d['message']['message'] for d in diagnostics
+                              if d.get('reason') == 'compiler-message' and
+                              (d['message'].get('code') or {}).get('code') == 'deprecated']
+                assert check.returncode != 0 and len(deprecated) == 4, (check.stdout,check.stderr)
+                print('External compiler rejects all four legacy Rust APIs under deny(deprecated).')
+            finally:
+                main_file.write_text(source)
         if args.static_output:
             target = 'x86_64-unknown-linux-musl'
             static_env = dict(linker_environment(target), CARGO_TARGET_DIR=env['CARGO_TARGET_DIR'])

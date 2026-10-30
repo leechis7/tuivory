@@ -700,12 +700,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                         FormEvent::default()
                     } else if mode == "grid" {
-                        let e = grid.click(
-                            &row.id,
-                            &row.value,
-                            usize::from(m.column - body.x),
+                        let e = grid.pointer(
+                            "click",
+                            isize::try_from(m.column - body.x).unwrap(),
+                            isize::try_from(m.row - body.y).unwrap(),
                             body.width.into(),
                             body.height.into(),
+                            false,
                         );
                         FormEvent {
                             kind: e.kind,

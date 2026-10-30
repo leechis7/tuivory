@@ -48,3 +48,5 @@ python3 tools/check_go_module.py
 외부 단일 import 검사도 두 API를 호출하고 `Show()` 출력 버퍼를 검사합니다. 이 결과는 tcell 시뮬레이션이며 고객 서버·SSH·폰트별 실제 단말 검증을 대신하지 않습니다. 커밋·원격 CI·게시 여부는 TVR-14 기록에서 구분합니다.
 
 [Go API](go-package.md) · [팝업·포커스](focus.md) · [견본](playground.md)
+
+0.5.0 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](popup-shadows.md).

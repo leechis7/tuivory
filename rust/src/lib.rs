@@ -22,6 +22,7 @@ pub mod grid;
 pub mod interaction;
 pub mod layout;
 pub mod menu;
+pub mod popup;
 mod tokens;
 pub mod tree;
 mod types;

@@ -196,6 +196,7 @@ fn literal_layout_and_geometry() {
 }
 #[cfg(feature = "ratatui")]
 #[test]
+#[allow(deprecated)] // Compare legacy focus=true literals with the new constructor.
 fn twelve_palettes_and_overlay_output() {
     use ratatui::{Terminal, backend::TestBackend, layout::Rect, widgets::Paragraph};
     use tuivory::{
@@ -261,14 +262,9 @@ fn twelve_palettes_and_overlay_output() {
                     .draw(|f| {
                         f.render_widget(Paragraph::new("界".repeat(20)), Rect::new(0, 2, 40, 1));
                         f.render_widget(
-                            MenuPopupWidget {
-                                model: &mut m,
-                                styles: &styles,
-                                title: "Menu",
-                                padding: 1,
-                                ascii,
-                                focused: false,
-                            },
+                            MenuPopupWidget::new(&mut m, &styles, "Menu")
+                                .ascii(ascii)
+                                .padding(1),
                             Rect::new(3, 1, 32, 8),
                         );
                     })
