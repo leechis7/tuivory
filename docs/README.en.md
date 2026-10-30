@@ -2,9 +2,9 @@
 
 [한국어 (default)](README.md) · **English**
 
-Current product version is **0.4.0**. [Changes, installation and release assets](release-0.4.0.en.md).
+Current product version is **0.5.0**. [Changes, installation and release assets](release-0.5.0.en.md).
 
-Documentation follows the current repository implementation. The current Go version is `v0.4.0`; Rust is distributed through Git tag `rust/v0.4.0`. New documentation, edits, and feature changes update related Korean and English documents together.
+Documentation follows the current repository implementation. The current Go version is `v0.5.0`; Rust is distributed through Git tag `rust/v0.5.0`. New documentation, edits, and feature changes update related Korean and English documents together.
 
 | Document | Contents |
 | --- | --- |
@@ -56,6 +56,10 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 
 [Component background audit](background-audit.en.md): 948 actual renderings distinguish plain-text surface leakage from intentional field/selection/edit backgrounds.
 
-[Surface/text background design guide](../design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.4.0.
+[Surface/text background design guide](../design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.5.0.
 
 [Disabled states across twelve palettes](disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
+
+[API lifecycle, deprecation and migration](api-lifecycle.en.md) · [Public API overlap audit](api-overlap-audit.en.md): distinguish unreleased targets, replacements and first-release/removal plans.
+
+TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).

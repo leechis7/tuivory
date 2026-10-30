@@ -84,7 +84,7 @@ impl Grid {
                 }
             }
             if action == "click" || action == "double" {
-                return self.click("", "@header", x, width, height);
+                return self.click_cell("", "@header", x, width, height);
             }
             return GridEvent::default();
         }

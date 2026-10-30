@@ -103,3 +103,5 @@ Pass `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x` to compos
 Focus border rules: framed explorer trees/lists, input/editor areas, data grids and normal dialogs use double borders while receiving input and single borders when inactive. Do not add borders to individual unframed fields, buttons or tabs. Menus retain single borders with selection/open-state cues. Go playground cards/dialogs use tview’s existing double focus borders; 0.4.0 also aligns explorer/token/help focus colors. Rust shared panels already support double borders. [Validation](../evidence/focus-borders.en.md).
 
 In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
+
+TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).

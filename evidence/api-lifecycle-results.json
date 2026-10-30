@@ -1,0 +1,6170 @@
+{
+  "issue": "TVR-20",
+  "recorded_at": "2026-10-30T00:40:53.167635+00:00",
+  "base_commit": "fef7a7b2247d1c68ef0fb1469e6a2fc2e1cec9b5",
+  "branch": "codex/TVR-20-api-lifecycle",
+  "source_status": "uncommitted; unpublished",
+  "released_baseline": "0.4.0",
+  "version_bumped": false,
+  "deprecated_symbols": [
+    {
+      "api": "rust::ratatui::MenuWidget::focused",
+      "language": "rust",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "rust::ratatui::MenuWidget::new",
+      "reason": "Ignored since 0.4.0; menus use selection/open state and the host owns input focus.",
+      "source": "rust/src/ratatui/menu.rs",
+      "owner": "MenuWidget",
+      "member": "focused"
+    },
+    {
+      "api": "rust::ratatui::MenuBarWidget::focused",
+      "language": "rust",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "rust::ratatui::MenuBarWidget::new",
+      "reason": "Ignored since 0.4.0; menus use selection/open state and the host owns input focus.",
+      "source": "rust/src/ratatui/menu.rs",
+      "owner": "MenuBarWidget",
+      "member": "focused"
+    },
+    {
+      "api": "rust::ratatui::MenuPopupWidget::focused",
+      "language": "rust",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "rust::ratatui::MenuPopupWidget::new",
+      "reason": "Ignored since 0.4.0; menus use selection/open state and the host owns input focus.",
+      "source": "rust/src/ratatui/menu.rs",
+      "owner": "MenuPopupWidget",
+      "member": "focused"
+    },
+    {
+      "api": "go::Styles::FieldStyle",
+      "language": "go",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "go::Styles::TextStyle",
+      "replacement_source": "go/internal/style/roles.go",
+      "reason": "Exact duplicate of TextStyle(Field, Body), including custom colors and attributes.",
+      "source": "go/internal/style/styles.go",
+      "owner": "Styles",
+      "member": "FieldStyle"
+    },
+    {
+      "api": "go::Styles::FooterButtonStyle",
+      "language": "go",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "go::Styles::TextStyle",
+      "replacement_source": "go/internal/style/roles.go",
+      "reason": "Exact duplicate of TextStyle(Footer, Body).",
+      "source": "go/internal/style/roles.go",
+      "owner": "Styles",
+      "member": "FooterButtonStyle"
+    },
+    {
+      "api": "go::Styles::PopupCardStyle",
+      "language": "go",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "go::Styles::TextStyle",
+      "replacement_source": "go/internal/style/roles.go",
+      "reason": "Exact forwarding wrapper for TextStyle(Panel, Body).",
+      "source": "go/internal/style/roles.go",
+      "owner": "Styles",
+      "member": "PopupCardStyle"
+    },
+    {
+      "api": "go::Styler::Table",
+      "language": "go",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "go::Styler::TableOn",
+      "replacement_source": "go/internal/widgets/widgets.go",
+      "reason": "Canvas-only entry point duplicates explicit TableOn(table, Canvas).",
+      "source": "go/internal/widgets/style.go",
+      "owner": "Styler",
+      "member": "Table"
+    },
+    {
+      "api": "go::Grid::Click",
+      "language": "go",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "go::Grid::Pointer",
+      "replacement_source": "go/grid_pointer.go",
+      "reason": "Legacy mixed row-ID/horizontal-coordinate mouse entry is superseded by unified local-coordinate pointer input. Use Focus/Handle for programmatic actions.",
+      "source": "go/grid.go",
+      "owner": "Grid",
+      "member": "Click"
+    },
+    {
+      "api": "rust::grid::Grid::click",
+      "language": "rust",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "rust::grid::Grid::pointer",
+      "replacement_source": "rust/src/grid/pointer.rs",
+      "reason": "Legacy mixed row-ID/horizontal-coordinate mouse entry is superseded by unified local-coordinate pointer input. Use focus/handle for programmatic actions.",
+      "source": "rust/src/grid.rs",
+      "owner": "Grid",
+      "member": "click"
+    },
+    {
+      "api": "go::Colors::SelectionText",
+      "language": "go",
+      "status": "deprecated",
+      "availability": "unreleased",
+      "deprecated_since": null,
+      "removal_version": null,
+      "replacement": "go::Styles::SelectionFG",
+      "replacement_kind": "field",
+      "replacement_source": "go/internal/style/theme.go",
+      "reason": "Historical copy of the selected foreground, not read by SDK rendering; Styles.SelectionFG is the live setting.",
+      "source": "go/internal/style/theme.go",
+      "owner": "Colors",
+      "member": "SelectionText"
+    }
+  ],
+  "removed_symbols": [],
+  "api_family_audit": "../docs/api-overlap-audit.md",
+  "inventory": {
+    "go_public_declarations": 751,
+    "rust_public_item_pages": 159,
+    "scope": "Go root plus methods/fields exposed by public aliases; Rust all-feature public rustdoc pages. Third-party inherited APIs are excluded. Names locate declarations; family behavior comparisons determine overlap.",
+    "go": [
+      {
+        "Language": "go",
+        "API": "ListItem",
+        "Kind": "type",
+        "Source": "go/collections.go",
+        "Line": 9
+      },
+      {
+        "Language": "go",
+        "API": "ListItem.ID",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "ListItem.Label",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "ListItem.Secondary",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "ListItem.Shortcut",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "ListItem.Icon",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "ListItem.ASCIIIcon",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "ListItem.Disabled",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "ListItem.Separator",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "ListEvent",
+        "Kind": "type",
+        "Source": "go/collections.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "ListEvent.Kind",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "ListEvent.ID",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "ListEvent.Query",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "ListModel",
+        "Kind": "type",
+        "Source": "go/collections.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.Focused",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.Selected",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.Query",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.Empty",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "NewList",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.Items",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.SetItems",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 28
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.Focus",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 54
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.SetQuery",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 75
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.Handle",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 85
+      },
+      {
+        "Language": "go",
+        "API": "ListModel.Layout",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 122
+      },
+      {
+        "Language": "go",
+        "API": "SearchPicker",
+        "Kind": "type",
+        "Source": "go/collections.go",
+        "Line": 180
+      },
+      {
+        "Language": "go",
+        "API": "SearchPicker.List",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 181
+      },
+      {
+        "Language": "go",
+        "API": "SearchPicker.Open",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 182
+      },
+      {
+        "Language": "go",
+        "API": "SearchPicker.Value",
+        "Kind": "field",
+        "Source": "go/collections.go",
+        "Line": 183
+      },
+      {
+        "Language": "go",
+        "API": "NewSearchPicker",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 186
+      },
+      {
+        "Language": "go",
+        "API": "SearchPicker.Handle",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 193
+      },
+      {
+        "Language": "go",
+        "API": "SearchPicker.Click",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 234
+      },
+      {
+        "Language": "go",
+        "API": "SearchPicker.Layout",
+        "Kind": "function/method",
+        "Source": "go/collections.go",
+        "Line": 240
+      },
+      {
+        "Language": "go",
+        "API": "TabView",
+        "Kind": "type",
+        "Source": "go/component_views.go",
+        "Line": 29
+      },
+      {
+        "Language": "go",
+        "API": "TabView.OnEvent",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 34
+      },
+      {
+        "Language": "go",
+        "API": "NewTabView",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 37
+      },
+      {
+        "Language": "go",
+        "API": "TabView.SetPalette",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 47
+      },
+      {
+        "Language": "go",
+        "API": "TabView.SetTabs",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 55
+      },
+      {
+        "Language": "go",
+        "API": "TabView.Draw",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 63
+      },
+      {
+        "Language": "go",
+        "API": "TabView.InputHandler",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 98
+      },
+      {
+        "Language": "go",
+        "API": "TabView.MouseHandler",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 120
+      },
+      {
+        "Language": "go",
+        "API": "PanelView",
+        "Kind": "type",
+        "Source": "go/component_views.go",
+        "Line": 150
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.Child",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 152
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.ASCII",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 154
+      },
+      {
+        "Language": "go",
+        "API": "NewPanelView",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 157
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.SetPalette",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 169
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.StyleChildren",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 177
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.HasFocus",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 178
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.Focus",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 179
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.Blur",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 180
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.Draw",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 181
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.InputHandler",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 236
+      },
+      {
+        "Language": "go",
+        "API": "PanelView.MouseHandler",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 243
+      },
+      {
+        "Language": "go",
+        "API": "SplitView",
+        "Kind": "type",
+        "Source": "go/component_views.go",
+        "Line": 254
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.First",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 256
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.Second",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 256
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.Spec",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 257
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.State",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 258
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.Rows",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 259
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.ActiveSecond",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 259
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.ASCII",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 259
+      },
+      {
+        "Language": "go",
+        "API": "NewSplitView",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 264
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.SetPalette",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 274
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.StyleChildren",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 282
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.HasFocus",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 283
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.Focus",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 284
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.Blur",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 291
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.Draw",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 300
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.ResizeKey",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 349
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.InputHandler",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 371
+      },
+      {
+        "Language": "go",
+        "API": "SplitView.MouseHandler",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 385
+      },
+      {
+        "Language": "go",
+        "API": "BreadcrumbView",
+        "Kind": "type",
+        "Source": "go/component_views.go",
+        "Line": 430
+      },
+      {
+        "Language": "go",
+        "API": "BreadcrumbView.Items",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 432
+      },
+      {
+        "Language": "go",
+        "API": "BreadcrumbView.OnNavigate",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 434
+      },
+      {
+        "Language": "go",
+        "API": "NewBreadcrumbView",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 437
+      },
+      {
+        "Language": "go",
+        "API": "BreadcrumbView.SetPalette",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 444
+      },
+      {
+        "Language": "go",
+        "API": "BreadcrumbView.Draw",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 461
+      },
+      {
+        "Language": "go",
+        "API": "BreadcrumbView.MouseHandler",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 465
+      },
+      {
+        "Language": "go",
+        "API": "StatusView",
+        "Kind": "type",
+        "Source": "go/component_views.go",
+        "Line": 482
+      },
+      {
+        "Language": "go",
+        "API": "StatusView.Omitted",
+        "Kind": "field",
+        "Source": "go/component_views.go",
+        "Line": 486
+      },
+      {
+        "Language": "go",
+        "API": "NewStatusView",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 489
+      },
+      {
+        "Language": "go",
+        "API": "StatusView.SetPalette",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 499
+      },
+      {
+        "Language": "go",
+        "API": "StatusView.SetItems",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 513
+      },
+      {
+        "Language": "go",
+        "API": "StatusView.Draw",
+        "Kind": "function/method",
+        "Source": "go/component_views.go",
+        "Line": 524
+      },
+      {
+        "Language": "go",
+        "API": "CellText",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "TabItem",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 58
+      },
+      {
+        "Language": "go",
+        "API": "TabItem.ID",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 59
+      },
+      {
+        "Language": "go",
+        "API": "TabItem.Title",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 59
+      },
+      {
+        "Language": "go",
+        "API": "TabItem.Edited",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 60
+      },
+      {
+        "Language": "go",
+        "API": "TabItem.Closable",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 60
+      },
+      {
+        "Language": "go",
+        "API": "TabItem.Disabled",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 60
+      },
+      {
+        "Language": "go",
+        "API": "TabState",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 62
+      },
+      {
+        "Language": "go",
+        "API": "TabState.Active",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 63
+      },
+      {
+        "Language": "go",
+        "API": "TabState.Focused",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 63
+      },
+      {
+        "Language": "go",
+        "API": "TabState.First",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 64
+      },
+      {
+        "Language": "go",
+        "API": "TabAction",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 66
+      },
+      {
+        "Language": "go",
+        "API": "TabPrevious",
+        "Kind": "const",
+        "Source": "go/components.go",
+        "Line": 69
+      },
+      {
+        "Language": "go",
+        "API": "TabNext",
+        "Kind": "const",
+        "Source": "go/components.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "TabFirst",
+        "Kind": "const",
+        "Source": "go/components.go",
+        "Line": 71
+      },
+      {
+        "Language": "go",
+        "API": "TabLast",
+        "Kind": "const",
+        "Source": "go/components.go",
+        "Line": 72
+      },
+      {
+        "Language": "go",
+        "API": "TabActivate",
+        "Kind": "const",
+        "Source": "go/components.go",
+        "Line": 73
+      },
+      {
+        "Language": "go",
+        "API": "TabClose",
+        "Kind": "const",
+        "Source": "go/components.go",
+        "Line": 74
+      },
+      {
+        "Language": "go",
+        "API": "TabEvent",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 77
+      },
+      {
+        "Language": "go",
+        "API": "TabEvent.Kind",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 77
+      },
+      {
+        "Language": "go",
+        "API": "TabEvent.ID",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 77
+      },
+      {
+        "Language": "go",
+        "API": "TabCell",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 78
+      },
+      {
+        "Language": "go",
+        "API": "TabCell.ID",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "TabCell.Text",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "TabCell.Start",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 80
+      },
+      {
+        "Language": "go",
+        "API": "TabCell.Width",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 80
+      },
+      {
+        "Language": "go",
+        "API": "TabCell.Active",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 81
+      },
+      {
+        "Language": "go",
+        "API": "TabCell.Focused",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 81
+      },
+      {
+        "Language": "go",
+        "API": "TabCell.Disabled",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 81
+      },
+      {
+        "Language": "go",
+        "API": "TabLayout",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 83
+      },
+      {
+        "Language": "go",
+        "API": "TabLayout.Cells",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 84
+      },
+      {
+        "Language": "go",
+        "API": "TabLayout.Previous",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 85
+      },
+      {
+        "Language": "go",
+        "API": "TabLayout.Next",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 85
+      },
+      {
+        "Language": "go",
+        "API": "Tabs",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 87
+      },
+      {
+        "Language": "go",
+        "API": "NewTabs",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 89
+      },
+      {
+        "Language": "go",
+        "API": "Tabs.Reconcile",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 99
+      },
+      {
+        "Language": "go",
+        "API": "Tabs.Handle",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 119
+      },
+      {
+        "Language": "go",
+        "API": "Tabs.Layout",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 179
+      },
+      {
+        "Language": "go",
+        "API": "Tabs.Click",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 226
+      },
+      {
+        "Language": "go",
+        "API": "SplitState",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 250
+      },
+      {
+        "Language": "go",
+        "API": "SplitState.Preferred",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 250
+      },
+      {
+        "Language": "go",
+        "API": "SplitSpec",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 251
+      },
+      {
+        "Language": "go",
+        "API": "SplitSpec.FirstMin",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 251
+      },
+      {
+        "Language": "go",
+        "API": "SplitSpec.SecondMin",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 251
+      },
+      {
+        "Language": "go",
+        "API": "SplitLayout",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 252
+      },
+      {
+        "Language": "go",
+        "API": "SplitLayout.First",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 253
+      },
+      {
+        "Language": "go",
+        "API": "SplitLayout.Divider",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 253
+      },
+      {
+        "Language": "go",
+        "API": "SplitLayout.Second",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 253
+      },
+      {
+        "Language": "go",
+        "API": "SplitLayout.Compact",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 254
+      },
+      {
+        "Language": "go",
+        "API": "SplitSpec.Layout",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 257
+      },
+      {
+        "Language": "go",
+        "API": "SplitSpec.Resize",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 270
+      },
+      {
+        "Language": "go",
+        "API": "LineRun",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 282
+      },
+      {
+        "Language": "go",
+        "API": "LineRun.Text",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 283
+      },
+      {
+        "Language": "go",
+        "API": "LineRun.Role",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 283
+      },
+      {
+        "Language": "go",
+        "API": "LineRun.ID",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 283
+      },
+      {
+        "Language": "go",
+        "API": "LineRun.Start",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 284
+      },
+      {
+        "Language": "go",
+        "API": "LineRun.Width",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 284
+      },
+      {
+        "Language": "go",
+        "API": "PathItem",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 292
+      },
+      {
+        "Language": "go",
+        "API": "PathItem.ID",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 292
+      },
+      {
+        "Language": "go",
+        "API": "PathItem.Label",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 292
+      },
+      {
+        "Language": "go",
+        "API": "Breadcrumbs",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 294
+      },
+      {
+        "Language": "go",
+        "API": "StatusItem",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 335
+      },
+      {
+        "Language": "go",
+        "API": "StatusItem.ID",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 336
+      },
+      {
+        "Language": "go",
+        "API": "StatusItem.Text",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 336
+      },
+      {
+        "Language": "go",
+        "API": "StatusItem.Role",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 336
+      },
+      {
+        "Language": "go",
+        "API": "StatusItem.Priority",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 337
+      },
+      {
+        "Language": "go",
+        "API": "StatusLayout",
+        "Kind": "type",
+        "Source": "go/components.go",
+        "Line": 339
+      },
+      {
+        "Language": "go",
+        "API": "StatusLayout.Runs",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 340
+      },
+      {
+        "Language": "go",
+        "API": "StatusLayout.Omitted",
+        "Kind": "field",
+        "Source": "go/components.go",
+        "Line": 341
+      },
+      {
+        "Language": "go",
+        "API": "StatusLine",
+        "Kind": "function/method",
+        "Source": "go/components.go",
+        "Line": 361
+      },
+      {
+        "Language": "go",
+        "API": "WideSafeScreen",
+        "Kind": "function/method",
+        "Source": "go/drawing.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "DimRegion",
+        "Kind": "function/method",
+        "Source": "go/drawing.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "NoticeAction",
+        "Kind": "type",
+        "Source": "go/feedback.go",
+        "Line": 9
+      },
+      {
+        "Language": "go",
+        "API": "NoticeAction.ID",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "NoticeAction.Label",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "NoticeAction.Disabled",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "Notice",
+        "Kind": "type",
+        "Source": "go/feedback.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "Notice.ID",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "Notice.Text",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "Notice.Detail",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "Notice.Severity",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "Notice.Priority",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "Notice.Persistent",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "Notice.ExpiresAt",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "Notice.Actions",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "NoticeEvent",
+        "Kind": "type",
+        "Source": "go/feedback.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "NoticeEvent.Kind",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "NoticeEvent.ID",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "NoticeEvent.Action",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "NoticeQueue",
+        "Kind": "type",
+        "Source": "go/feedback.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "NoticeQueue.Focused",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 24
+      },
+      {
+        "Language": "go",
+        "API": "NewNoticeQueue",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "NoticeQueue.Push",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 48
+      },
+      {
+        "Language": "go",
+        "API": "NoticeQueue.Visible",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 87
+      },
+      {
+        "Language": "go",
+        "API": "NoticeQueue.Dismiss",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 105
+      },
+      {
+        "Language": "go",
+        "API": "NoticeQueue.Expire",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 117
+      },
+      {
+        "Language": "go",
+        "API": "NoticeQueue.Handle",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 130
+      },
+      {
+        "Language": "go",
+        "API": "NoticeQueue.Layout",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 168
+      },
+      {
+        "Language": "go",
+        "API": "Progress",
+        "Kind": "type",
+        "Source": "go/feedback.go",
+        "Line": 204
+      },
+      {
+        "Language": "go",
+        "API": "Progress.ID",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 205
+      },
+      {
+        "Language": "go",
+        "API": "Progress.Label",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 205
+      },
+      {
+        "Language": "go",
+        "API": "Progress.Status",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 205
+      },
+      {
+        "Language": "go",
+        "API": "Progress.Message",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 205
+      },
+      {
+        "Language": "go",
+        "API": "Progress.CancelLabel",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 205
+      },
+      {
+        "Language": "go",
+        "API": "Progress.Current",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 206
+      },
+      {
+        "Language": "go",
+        "API": "Progress.Total",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 206
+      },
+      {
+        "Language": "go",
+        "API": "Progress.Cancellable",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 207
+      },
+      {
+        "Language": "go",
+        "API": "Progress.RequestCancel",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 210
+      },
+      {
+        "Language": "go",
+        "API": "Progress.Layout",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 216
+      },
+      {
+        "Language": "go",
+        "API": "DataState",
+        "Kind": "type",
+        "Source": "go/feedback.go",
+        "Line": 257
+      },
+      {
+        "Language": "go",
+        "API": "DataState.Kind",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 257
+      },
+      {
+        "Language": "go",
+        "API": "DataState.Text",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 257
+      },
+      {
+        "Language": "go",
+        "API": "DataState.Detail",
+        "Kind": "field",
+        "Source": "go/feedback.go",
+        "Line": 257
+      },
+      {
+        "Language": "go",
+        "API": "DataState.Layout",
+        "Kind": "function/method",
+        "Source": "go/feedback.go",
+        "Line": 259
+      },
+      {
+        "Language": "go",
+        "API": "ComponentSpan",
+        "Kind": "type",
+        "Source": "go/forms.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "ComponentSpan.Start",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "ComponentSpan.Width",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "ComponentSpan.Text",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "ComponentSpan.Role",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "ComponentSpan.Focused",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "ComponentLine",
+        "Kind": "type",
+        "Source": "go/forms.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "ComponentLine.ID",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "ComponentLine.Text",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "ComponentLine.Role",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "ComponentLine.Value",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "ComponentLine.Focused",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 19
+      },
+      {
+        "Language": "go",
+        "API": "ComponentLine.Spans",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "FormOption",
+        "Kind": "type",
+        "Source": "go/forms.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "FormOption.ID",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 23
+      },
+      {
+        "Language": "go",
+        "API": "FormOption.Label",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 23
+      },
+      {
+        "Language": "go",
+        "API": "FormOption.Disabled",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 24
+      },
+      {
+        "Language": "go",
+        "API": "FormField",
+        "Kind": "type",
+        "Source": "go/forms.go",
+        "Line": 26
+      },
+      {
+        "Language": "go",
+        "API": "FormField.ID",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Kind",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Label",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Help",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Error",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Value",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Choice",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Action",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Options",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 28
+      },
+      {
+        "Language": "go",
+        "API": "FormField.State",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 29
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Required",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 30
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Checked",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 30
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Open",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 30
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Pending",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 31
+      },
+      {
+        "Language": "go",
+        "API": "FormField.Cursor",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 32
+      },
+      {
+        "Language": "go",
+        "API": "FormEvent",
+        "Kind": "type",
+        "Source": "go/forms.go",
+        "Line": 34
+      },
+      {
+        "Language": "go",
+        "API": "FormEvent.Kind",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 35
+      },
+      {
+        "Language": "go",
+        "API": "FormEvent.ID",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 35
+      },
+      {
+        "Language": "go",
+        "API": "FormEvent.Missing",
+        "Kind": "field",
+        "Source": "go/forms.go",
+        "Line": 36
+      },
+      {
+        "Language": "go",
+        "API": "Form",
+        "Kind": "type",
+        "Source": "go/forms.go",
+        "Line": 38
+      },
+      {
+        "Language": "go",
+        "API": "NewForm",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 58
+      },
+      {
+        "Language": "go",
+        "API": "Form.Fields",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 94
+      },
+      {
+        "Language": "go",
+        "API": "Form.Focused",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 95
+      },
+      {
+        "Language": "go",
+        "API": "Form.Focus",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 96
+      },
+      {
+        "Language": "go",
+        "API": "Form.SetState",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 102
+      },
+      {
+        "Language": "go",
+        "API": "Form.SetFeedback",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 121
+      },
+      {
+        "Language": "go",
+        "API": "Form.Missing",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 132
+      },
+      {
+        "Language": "go",
+        "API": "Form.Handle",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 153
+      },
+      {
+        "Language": "go",
+        "API": "Form.Layout",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 343
+      },
+      {
+        "Language": "go",
+        "API": "Form.Click",
+        "Kind": "function/method",
+        "Source": "go/forms.go",
+        "Line": 429
+      },
+      {
+        "Language": "go",
+        "API": "GridColumn",
+        "Kind": "type",
+        "Source": "go/grid.go",
+        "Line": 8
+      },
+      {
+        "Language": "go",
+        "API": "GridColumn.ID",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 9
+      },
+      {
+        "Language": "go",
+        "API": "GridColumn.Label",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 9
+      },
+      {
+        "Language": "go",
+        "API": "GridColumn.Width",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "GridColumn.Editable",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "GridRecord",
+        "Kind": "type",
+        "Source": "go/grid.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "GridRecord.ID",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "GridRecord.Cells",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "GridRecord.State",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "GridSource",
+        "Kind": "type",
+        "Source": "go/grid.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "MemoryRows",
+        "Kind": "type",
+        "Source": "go/grid.go",
+        "Line": 26
+      },
+      {
+        "Language": "go",
+        "API": "NewMemoryRows",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 31
+      },
+      {
+        "Language": "go",
+        "API": "MemoryRows.Len",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 50
+      },
+      {
+        "Language": "go",
+        "API": "MemoryRows.IndexOf",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 51
+      },
+      {
+        "Language": "go",
+        "API": "MemoryRows.Row",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 57
+      },
+      {
+        "Language": "go",
+        "API": "GridEvent",
+        "Kind": "type",
+        "Source": "go/grid.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "GridEvent.Kind",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "GridEvent.RowID",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "GridEvent.ColumnID",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "GridEvent.Text",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "GridEvent.Direction",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "Grid",
+        "Kind": "type",
+        "Source": "go/grid.go",
+        "Line": 71
+      },
+      {
+        "Language": "go",
+        "API": "Grid.RowID",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 74
+      },
+      {
+        "Language": "go",
+        "API": "Grid.ColumnID",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 74
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SelectedRow",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 74
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SelectedColumn",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 74
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SortColumn",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 74
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SortDirection",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 74
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Row",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 75
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Column",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 75
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Top",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 75
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Left",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 75
+      },
+      {
+        "Language": "go",
+        "API": "Grid.WholeRow",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 76
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Empty",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 77
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Labels",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 85
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Status",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 86
+      },
+      {
+        "Language": "go",
+        "API": "NewGrid",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 93
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Columns",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 114
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SetSource",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 115
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Focus",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 172
+      },
+      {
+        "Language": "go",
+        "API": "Grid.ResizeColumn",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 187
+      },
+      {
+        "Language": "go",
+        "API": "Grid.RequestFilter",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 209
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Handle",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 213
+      },
+      {
+        "Language": "go",
+        "API": "GridSpan",
+        "Kind": "type",
+        "Source": "go/grid.go",
+        "Line": 329
+      },
+      {
+        "Language": "go",
+        "API": "GridSpan.ID",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 330
+      },
+      {
+        "Language": "go",
+        "API": "GridSpan.Start",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 331
+      },
+      {
+        "Language": "go",
+        "API": "GridSpan.Width",
+        "Kind": "field",
+        "Source": "go/grid.go",
+        "Line": 331
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Click",
+        "Kind": "function/method",
+        "Source": "go/grid.go",
+        "Line": 337
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions",
+        "Kind": "type",
+        "Source": "go/grid_options.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.RowNumbers",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.HideMarkers",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.VerticalLines",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.HorizontalLines",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.Striped",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.UseSurface",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.HideHeader",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.ScrollHeader",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.StatusBar",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.ASCII",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.HighlightCell",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.HighlightRow",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.PreserveEdited",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.HideSelectionMarker",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.ShowCellMarkers",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.DisableKeyboard",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.DisableMouse",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.DisableEditing",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.DisableCopy",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.DisableResize",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.DisableHeaderSort",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.Padding",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.RowSpacing",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.GutterWidth",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.MaxCopyCells",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.Selection",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.StatusFields",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "GridColumnOptions",
+        "Kind": "type",
+        "Source": "go/grid_options.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "GridColumnOptions.Align",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "GridColumnOptions.MinWidth",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "GridColumnOptions.MaxWidth",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "GridColumnOptions.AutoFit",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 23
+      },
+      {
+        "Language": "go",
+        "API": "GridColumnOptions.Expand",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 24
+      },
+      {
+        "Language": "go",
+        "API": "GridColumnOptions.Overflow",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 25
+      },
+      {
+        "Language": "go",
+        "API": "GridCellInfo",
+        "Kind": "type",
+        "Source": "go/grid_options.go",
+        "Line": 29
+      },
+      {
+        "Language": "go",
+        "API": "GridCellInfo.Display",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 30
+      },
+      {
+        "Language": "go",
+        "API": "GridCellInfo.HasDisplay",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 31
+      },
+      {
+        "Language": "go",
+        "API": "GridCellInfo.Null",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 31
+      },
+      {
+        "Language": "go",
+        "API": "GridCellInfo.Numeric",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 31
+      },
+      {
+        "Language": "go",
+        "API": "GridCellInfo.State",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 32
+      },
+      {
+        "Language": "go",
+        "API": "GridCellInfo.Metadata",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 33
+      },
+      {
+        "Language": "go",
+        "API": "GridRange",
+        "Kind": "type",
+        "Source": "go/grid_options.go",
+        "Line": 35
+      },
+      {
+        "Language": "go",
+        "API": "GridRange.AnchorRow",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 35
+      },
+      {
+        "Language": "go",
+        "API": "GridRange.AnchorColumn",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 35
+      },
+      {
+        "Language": "go",
+        "API": "GridRange.EndRow",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 35
+      },
+      {
+        "Language": "go",
+        "API": "GridRange.EndColumn",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 35
+      },
+      {
+        "Language": "go",
+        "API": "GridDataStatus",
+        "Kind": "type",
+        "Source": "go/grid_options.go",
+        "Line": 36
+      },
+      {
+        "Language": "go",
+        "API": "GridDataStatus.TotalRows",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 37
+      },
+      {
+        "Language": "go",
+        "API": "GridDataStatus.Metadata",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 38
+      },
+      {
+        "Language": "go",
+        "API": "GridDataStatus.Filter",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 38
+      },
+      {
+        "Language": "go",
+        "API": "GridDataStatus.Error",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 38
+      },
+      {
+        "Language": "go",
+        "API": "GridDataStatus.Loading",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 39
+      },
+      {
+        "Language": "go",
+        "API": "GridDataStatus.HasMore",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 39
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry",
+        "Kind": "type",
+        "Source": "go/grid_options.go",
+        "Line": 41
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry.Top",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry.Left",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry.Gutter",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry.HeaderRows",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry.FooterRows",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry.BodyRows",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry.Stride",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "GridGeometry.Columns",
+        "Kind": "field",
+        "Source": "go/grid_options.go",
+        "Line": 43
+      },
+      {
+        "Language": "go",
+        "API": "GridPreset",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 46
+      },
+      {
+        "Language": "go",
+        "API": "GridOptions.WithDensity",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 57
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SetOptions",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 73
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Options",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 97
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SetColumnOptions",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 104
+      },
+      {
+        "Language": "go",
+        "API": "Grid.ColumnOptions",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 138
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SetCellInfo",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 139
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SelectionMode",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 158
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SetSelectionMode",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 160
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SelectRange",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 184
+      },
+      {
+        "Language": "go",
+        "API": "Grid.SelectedRange",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 196
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Revision",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 197
+      },
+      {
+        "Language": "go",
+        "API": "Grid.ApplySource",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 198
+      },
+      {
+        "Language": "go",
+        "API": "Grid.RequestPage",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 213
+      },
+      {
+        "Language": "go",
+        "API": "Grid.AutoFitColumn",
+        "Kind": "function/method",
+        "Source": "go/grid_options.go",
+        "Line": 346
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Pointer",
+        "Kind": "function/method",
+        "Source": "go/grid_pointer.go",
+        "Line": 5
+      },
+      {
+        "Language": "go",
+        "API": "GridPalette",
+        "Kind": "function/method",
+        "Source": "go/grid_presentation.go",
+        "Line": 57
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Geometry",
+        "Kind": "function/method",
+        "Source": "go/grid_presentation.go",
+        "Line": 197
+      },
+      {
+        "Language": "go",
+        "API": "Grid.Layout",
+        "Kind": "function/method",
+        "Source": "go/grid_presentation.go",
+        "Line": 324
+      },
+      {
+        "Language": "go",
+        "API": "Grid.StatusItems",
+        "Kind": "function/method",
+        "Source": "go/grid_presentation.go",
+        "Line": 446
+      },
+      {
+        "Language": "go",
+        "API": "ControlState",
+        "Kind": "type",
+        "Source": "go/interaction.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "ControlState.Disabled",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "ControlState.ReadOnly",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "ControlState.Busy",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "ControlState.Selected",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "ControlState.Edited",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "ControlState.Invalid",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "ControlVisual",
+        "Kind": "type",
+        "Source": "go/interaction.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "ControlVisual.Role",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "ControlVisual.Markers",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "ControlVisual.Focusable",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "ControlVisual.Activatable",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "ControlVisual.Editable",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "ControlState.Visual",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 26
+      },
+      {
+        "Language": "go",
+        "API": "ControlStyle",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 55
+      },
+      {
+        "Language": "go",
+        "API": "FocusTarget",
+        "Kind": "type",
+        "Source": "go/interaction.go",
+        "Line": 64
+      },
+      {
+        "Language": "go",
+        "API": "FocusTarget.ID",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "FocusTarget.State",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 66
+      },
+      {
+        "Language": "go",
+        "API": "FocusTarget.Hidden",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 67
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack",
+        "Kind": "type",
+        "Source": "go/interaction.go",
+        "Line": 113
+      },
+      {
+        "Language": "go",
+        "API": "NewFocusStack",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 115
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.ScopeID",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 135
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Focused",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 141
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Depth",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 147
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Targets",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 153
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Focus",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 161
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Move",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 168
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Update",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 201
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Open",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 217
+      },
+      {
+        "Language": "go",
+        "API": "PopupCloseRequest",
+        "Kind": "type",
+        "Source": "go/interaction.go",
+        "Line": 239
+      },
+      {
+        "Language": "go",
+        "API": "PopupCloseRequest.ID",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 239
+      },
+      {
+        "Language": "go",
+        "API": "PopupCloseRequest.Reason",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 239
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.RequestClose",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 243
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Close",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 252
+      },
+      {
+        "Language": "go",
+        "API": "InputRoute",
+        "Kind": "type",
+        "Source": "go/interaction.go",
+        "Line": 264
+      },
+      {
+        "Language": "go",
+        "API": "InputRoute.ScopeID",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 265
+      },
+      {
+        "Language": "go",
+        "API": "InputRoute.Blocked",
+        "Kind": "field",
+        "Source": "go/interaction.go",
+        "Line": 266
+      },
+      {
+        "Language": "go",
+        "API": "FocusStack.Route",
+        "Kind": "function/method",
+        "Source": "go/interaction.go",
+        "Line": 271
+      },
+      {
+        "Language": "go",
+        "API": "Density",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 9
+      },
+      {
+        "Language": "go",
+        "API": "DensityAuto",
+        "Kind": "const",
+        "Source": "go/layout.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "DensityCompact",
+        "Kind": "const",
+        "Source": "go/layout.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "DensityComfortable",
+        "Kind": "const",
+        "Source": "go/layout.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "SpacingTokens",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "SpacingTokens.Gap",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "SpacingTokens.Padding",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "SpacingTokens.ControlGap",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "SpacingTokens.CompactBelow",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "ResolveSpacing",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 19
+      },
+      {
+        "Language": "go",
+        "API": "CellRect",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 39
+      },
+      {
+        "Language": "go",
+        "API": "CellRect.X",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 39
+      },
+      {
+        "Language": "go",
+        "API": "CellRect.Y",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 39
+      },
+      {
+        "Language": "go",
+        "API": "CellRect.Width",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 39
+      },
+      {
+        "Language": "go",
+        "API": "CellRect.Height",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 39
+      },
+      {
+        "Language": "go",
+        "API": "CellRect.Inset",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 41
+      },
+      {
+        "Language": "go",
+        "API": "StackItem",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 48
+      },
+      {
+        "Language": "go",
+        "API": "StackItem.ID",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 49
+      },
+      {
+        "Language": "go",
+        "API": "StackItem.Min",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 50
+      },
+      {
+        "Language": "go",
+        "API": "StackItem.Preferred",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 50
+      },
+      {
+        "Language": "go",
+        "API": "StackItem.Weight",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 50
+      },
+      {
+        "Language": "go",
+        "API": "StackSlot",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 52
+      },
+      {
+        "Language": "go",
+        "API": "StackSlot.ID",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 53
+      },
+      {
+        "Language": "go",
+        "API": "StackSlot.Start",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 54
+      },
+      {
+        "Language": "go",
+        "API": "StackSlot.Size",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 54
+      },
+      {
+        "Language": "go",
+        "API": "StackResult",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 56
+      },
+      {
+        "Language": "go",
+        "API": "StackResult.Slots",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 57
+      },
+      {
+        "Language": "go",
+        "API": "StackResult.Hidden",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 58
+      },
+      {
+        "Language": "go",
+        "API": "StackResult.Gap",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 59
+      },
+      {
+        "Language": "go",
+        "API": "StackLayout",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 62
+      },
+      {
+        "Language": "go",
+        "API": "NamedRect",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 147
+      },
+      {
+        "Language": "go",
+        "API": "NamedRect.ID",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 148
+      },
+      {
+        "Language": "go",
+        "API": "NamedRect.Rect",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 149
+      },
+      {
+        "Language": "go",
+        "API": "StackRects",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 152
+      },
+      {
+        "Language": "go",
+        "API": "DrawerPlacement",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 186
+      },
+      {
+        "Language": "go",
+        "API": "DrawerPlacement.Rect",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 187
+      },
+      {
+        "Language": "go",
+        "API": "DrawerPlacement.Overlay",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 188
+      },
+      {
+        "Language": "go",
+        "API": "DrawerLayout",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 191
+      },
+      {
+        "Language": "go",
+        "API": "ComponentEvent",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 199
+      },
+      {
+        "Language": "go",
+        "API": "ComponentEvent.Kind",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 199
+      },
+      {
+        "Language": "go",
+        "API": "ComponentEvent.ID",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 199
+      },
+      {
+        "Language": "go",
+        "API": "Badge",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 200
+      },
+      {
+        "Language": "go",
+        "API": "Badge.ID",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 201
+      },
+      {
+        "Language": "go",
+        "API": "Badge.Label",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 201
+      },
+      {
+        "Language": "go",
+        "API": "Badge.Count",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 202
+      },
+      {
+        "Language": "go",
+        "API": "Badge.Limit",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 203
+      },
+      {
+        "Language": "go",
+        "API": "Badge.State",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 204
+      },
+      {
+        "Language": "go",
+        "API": "Badge.Line",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 207
+      },
+      {
+        "Language": "go",
+        "API": "Chip",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 224
+      },
+      {
+        "Language": "go",
+        "API": "Chip.ID",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 225
+      },
+      {
+        "Language": "go",
+        "API": "Chip.Label",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 225
+      },
+      {
+        "Language": "go",
+        "API": "Chip.State",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 226
+      },
+      {
+        "Language": "go",
+        "API": "Chip.Removable",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 227
+      },
+      {
+        "Language": "go",
+        "API": "Chip.Line",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 230
+      },
+      {
+        "Language": "go",
+        "API": "Chip.RequestRemove",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 240
+      },
+      {
+        "Language": "go",
+        "API": "Shortcut",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 247
+      },
+      {
+        "Language": "go",
+        "API": "Shortcut.Key",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 248
+      },
+      {
+        "Language": "go",
+        "API": "Shortcut.Text",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 248
+      },
+      {
+        "Language": "go",
+        "API": "Shortcut.Priority",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 249
+      },
+      {
+        "Language": "go",
+        "API": "Shortcut.Disabled",
+        "Kind": "field",
+        "Source": "go/layout.go",
+        "Line": 250
+      },
+      {
+        "Language": "go",
+        "API": "Help",
+        "Kind": "type",
+        "Source": "go/layout.go",
+        "Line": 252
+      },
+      {
+        "Language": "go",
+        "API": "NewHelp",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 254
+      },
+      {
+        "Language": "go",
+        "API": "Help.Layout",
+        "Kind": "function/method",
+        "Source": "go/layout.go",
+        "Line": 267
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem",
+        "Kind": "type",
+        "Source": "go/menu.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.ID",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.Parent",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.Label",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.Secondary",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.Shortcut",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.Mnemonic",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.Icon",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.ASCIIIcon",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.Disabled",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "MenuItem.Separator",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "MenuEvent",
+        "Kind": "type",
+        "Source": "go/menu.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "MenuEvent.Kind",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "MenuEvent.ID",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "MenuEvent.ReturnID",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarCell",
+        "Kind": "type",
+        "Source": "go/menu.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarCell.ID",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarCell.Text",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarCell.Role",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarCell.Start",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarCell.Width",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarCell.Focused",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarLayout",
+        "Kind": "type",
+        "Source": "go/menu.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarLayout.Cells",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarLayout.Previous",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "MenuBarLayout.Next",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "Menu",
+        "Kind": "type",
+        "Source": "go/menu.go",
+        "Line": 24
+      },
+      {
+        "Language": "go",
+        "API": "Menu.BackLabel",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 34
+      },
+      {
+        "Language": "go",
+        "API": "Menu.EmptyLabel",
+        "Kind": "field",
+        "Source": "go/menu.go",
+        "Line": 34
+      },
+      {
+        "Language": "go",
+        "API": "NewMenu",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 37
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Items",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 94
+      },
+      {
+        "Language": "go",
+        "API": "Menu.SetItems",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 98
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Opened",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 160
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Path",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 161
+      },
+      {
+        "Language": "go",
+        "API": "Menu.FocusedID",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 162
+      },
+      {
+        "Language": "go",
+        "API": "Menu.ReturnID",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 163
+      },
+      {
+        "Language": "go",
+        "API": "Menu.BarFocusedID",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 164
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Title",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 165
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Open",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 172
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Close",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 208
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Back",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 227
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Focus",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 238
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Click",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 252
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Handle",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 258
+      },
+      {
+        "Language": "go",
+        "API": "Menu.HandleBar",
+        "Kind": "function/method",
+        "Source": "go/menu.go",
+        "Line": 365
+      },
+      {
+        "Language": "go",
+        "API": "Menu.ContentSize",
+        "Kind": "function/method",
+        "Source": "go/menu_layout.go",
+        "Line": 24
+      },
+      {
+        "Language": "go",
+        "API": "Menu.Layout",
+        "Kind": "function/method",
+        "Source": "go/menu_layout.go",
+        "Line": 32
+      },
+      {
+        "Language": "go",
+        "API": "Menu.BarLayout",
+        "Kind": "function/method",
+        "Source": "go/menu_layout.go",
+        "Line": 127
+      },
+      {
+        "Language": "go",
+        "API": "Menu.BarClick",
+        "Kind": "function/method",
+        "Source": "go/menu_layout.go",
+        "Line": 189
+      },
+      {
+        "Language": "go",
+        "API": "MenuPlacement",
+        "Kind": "function/method",
+        "Source": "go/menu_layout.go",
+        "Line": 208
+      },
+      {
+        "Language": "go",
+        "API": "MenuKey",
+        "Kind": "function/method",
+        "Source": "go/menu_view.go",
+        "Line": 9
+      },
+      {
+        "Language": "go",
+        "API": "MenuView",
+        "Kind": "type",
+        "Source": "go/menu_view.go",
+        "Line": 41
+      },
+      {
+        "Language": "go",
+        "API": "MenuView.ASCII",
+        "Kind": "field",
+        "Source": "go/menu_view.go",
+        "Line": 43
+      },
+      {
+        "Language": "go",
+        "API": "NewMenuView",
+        "Kind": "function/method",
+        "Source": "go/menu_view.go",
+        "Line": 46
+      },
+      {
+        "Language": "go",
+        "API": "NewMenuBarView",
+        "Kind": "function/method",
+        "Source": "go/menu_view.go",
+        "Line": 98
+      },
+      {
+        "Language": "go",
+        "API": "RowsView",
+        "Kind": "type",
+        "Source": "go/rows_view.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.Rows",
+        "Kind": "field",
+        "Source": "go/rows_view.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.Key",
+        "Kind": "field",
+        "Source": "go/rows_view.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.Click",
+        "Kind": "field",
+        "Source": "go/rows_view.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.Pointer",
+        "Kind": "field",
+        "Source": "go/rows_view.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.PreserveBackgrounds",
+        "Kind": "field",
+        "Source": "go/rows_view.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.Mouse",
+        "Kind": "field",
+        "Source": "go/rows_view.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "NewRowsView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 25
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.Draw",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 32
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.InputHandler",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.MouseHandler",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 77
+      },
+      {
+        "Language": "go",
+        "API": "FormKey",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 110
+      },
+      {
+        "Language": "go",
+        "API": "NewFormView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 151
+      },
+      {
+        "Language": "go",
+        "API": "NavigationKey",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 171
+      },
+      {
+        "Language": "go",
+        "API": "NewListView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 196
+      },
+      {
+        "Language": "go",
+        "API": "NewSearchPickerView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 215
+      },
+      {
+        "Language": "go",
+        "API": "GridKey",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 248
+      },
+      {
+        "Language": "go",
+        "API": "NewGridView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 303
+      },
+      {
+        "Language": "go",
+        "API": "NewNoticeView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 374
+      },
+      {
+        "Language": "go",
+        "API": "NewProgressView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 403
+      },
+      {
+        "Language": "go",
+        "API": "NewDataStateView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 424
+      },
+      {
+        "Language": "go",
+        "API": "NewBadgeView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 428
+      },
+      {
+        "Language": "go",
+        "API": "NewChipView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 431
+      },
+      {
+        "Language": "go",
+        "API": "NewHelpView",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 454
+      },
+      {
+        "Language": "go",
+        "API": "RowsView.SetPalette",
+        "Kind": "function/method",
+        "Source": "go/rows_view.go",
+        "Line": 457
+      },
+      {
+        "Language": "go",
+        "API": "TextOnSurface",
+        "Kind": "function/method",
+        "Source": "go/surface_style.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "ControlStyleOnSurface",
+        "Kind": "function/method",
+        "Source": "go/surface_style.go",
+        "Line": 86
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode",
+        "Kind": "type",
+        "Source": "go/tree.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode.ID",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode.Parent",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode.Name",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode.Secondary",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode.Icon",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode.ASCIIIcon",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode.Count",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "TreeNode.Branch",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "TreeRow",
+        "Kind": "type",
+        "Source": "go/tree.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "TreeRow.Node",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "TreeRow.Depth",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 23
+      },
+      {
+        "Language": "go",
+        "API": "Tree",
+        "Kind": "type",
+        "Source": "go/tree.go",
+        "Line": 25
+      },
+      {
+        "Language": "go",
+        "API": "NewTree",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 30
+      },
+      {
+        "Language": "go",
+        "API": "TreeState",
+        "Kind": "type",
+        "Source": "go/tree.go",
+        "Line": 67
+      },
+      {
+        "Language": "go",
+        "API": "TreeState.Selected",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 68
+      },
+      {
+        "Language": "go",
+        "API": "TreeState.Expanded",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 69
+      },
+      {
+        "Language": "go",
+        "API": "TreeState.Scroll",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "TreeState.Horizontal",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "TreeAction",
+        "Kind": "type",
+        "Source": "go/tree.go",
+        "Line": 72
+      },
+      {
+        "Language": "go",
+        "API": "TreeUp",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 75
+      },
+      {
+        "Language": "go",
+        "API": "TreeDown",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 76
+      },
+      {
+        "Language": "go",
+        "API": "TreeLeft",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 77
+      },
+      {
+        "Language": "go",
+        "API": "TreeRight",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 78
+      },
+      {
+        "Language": "go",
+        "API": "TreeToggle",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "TreeActivate",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 80
+      },
+      {
+        "Language": "go",
+        "API": "TreeHome",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 81
+      },
+      {
+        "Language": "go",
+        "API": "TreeEnd",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 82
+      },
+      {
+        "Language": "go",
+        "API": "TreePageUp",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 83
+      },
+      {
+        "Language": "go",
+        "API": "TreePageDown",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 84
+      },
+      {
+        "Language": "go",
+        "API": "TreePanLeft",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 85
+      },
+      {
+        "Language": "go",
+        "API": "TreePanRight",
+        "Kind": "const",
+        "Source": "go/tree.go",
+        "Line": 86
+      },
+      {
+        "Language": "go",
+        "API": "TreeEvent",
+        "Kind": "type",
+        "Source": "go/tree.go",
+        "Line": 91
+      },
+      {
+        "Language": "go",
+        "API": "TreeEvent.Kind",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 91
+      },
+      {
+        "Language": "go",
+        "API": "TreeEvent.ID",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 91
+      },
+      {
+        "Language": "go",
+        "API": "Tree.Visible",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 93
+      },
+      {
+        "Language": "go",
+        "API": "Tree.Reconcile",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 111
+      },
+      {
+        "Language": "go",
+        "API": "Tree.Handle",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 153
+      },
+      {
+        "Language": "go",
+        "API": "Tree.Click",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 223
+      },
+      {
+        "Language": "go",
+        "API": "TreeView",
+        "Kind": "type",
+        "Source": "go/tree.go",
+        "Line": 244
+      },
+      {
+        "Language": "go",
+        "API": "TreeView.ASCII",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 249
+      },
+      {
+        "Language": "go",
+        "API": "TreeView.OnEvent",
+        "Kind": "field",
+        "Source": "go/tree.go",
+        "Line": 250
+      },
+      {
+        "Language": "go",
+        "API": "NewTreeView",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 253
+      },
+      {
+        "Language": "go",
+        "API": "TreeView.SetTree",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 265
+      },
+      {
+        "Language": "go",
+        "API": "TreeView.SetPalette",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 274
+      },
+      {
+        "Language": "go",
+        "API": "TreeView.Draw",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 312
+      },
+      {
+        "Language": "go",
+        "API": "TreeView.InputHandler",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 390
+      },
+      {
+        "Language": "go",
+        "API": "TreeView.MouseHandler",
+        "Kind": "function/method",
+        "Source": "go/tree.go",
+        "Line": 409
+      },
+      {
+        "Language": "go",
+        "API": "Styler",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "Styles",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "Colors",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 19
+      },
+      {
+        "Language": "go",
+        "API": "Pair",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "Palette",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "Surface",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 22
+      },
+      {
+        "Language": "go",
+        "API": "TextRole",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 23
+      },
+      {
+        "Language": "go",
+        "API": "CellState",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 24
+      },
+      {
+        "Language": "go",
+        "API": "GridColors",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 25
+      },
+      {
+        "Language": "go",
+        "API": "SyntaxKind",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 26
+      },
+      {
+        "Language": "go",
+        "API": "Roles",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "StyleChildren",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 28
+      },
+      {
+        "Language": "go",
+        "API": "Choice",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 29
+      },
+      {
+        "Language": "go",
+        "API": "TokenPair",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 30
+      },
+      {
+        "Language": "go",
+        "API": "TokenPalette",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 31
+      },
+      {
+        "Language": "go",
+        "API": "TokenDocument",
+        "Kind": "type",
+        "Source": "go/tuivory.go",
+        "Line": 32
+      },
+      {
+        "Language": "go",
+        "API": "Canvas",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 36
+      },
+      {
+        "Language": "go",
+        "API": "Panel",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 37
+      },
+      {
+        "Language": "go",
+        "API": "Field",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 38
+      },
+      {
+        "Language": "go",
+        "API": "Footer",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 39
+      },
+      {
+        "Language": "go",
+        "API": "Editor",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 40
+      },
+      {
+        "Language": "go",
+        "API": "Body",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 41
+      },
+      {
+        "Language": "go",
+        "API": "Hint",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "Accent",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 43
+      },
+      {
+        "Language": "go",
+        "API": "Warning",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 44
+      },
+      {
+        "Language": "go",
+        "API": "SyntaxKeyword",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 45
+      },
+      {
+        "Language": "go",
+        "API": "SyntaxFunction",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 46
+      },
+      {
+        "Language": "go",
+        "API": "SyntaxType",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 47
+      },
+      {
+        "Language": "go",
+        "API": "SyntaxString",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 48
+      },
+      {
+        "Language": "go",
+        "API": "SyntaxNumber",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 49
+      },
+      {
+        "Language": "go",
+        "API": "SyntaxComment",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 50
+      },
+      {
+        "Language": "go",
+        "API": "SyntaxParameter",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 51
+      },
+      {
+        "Language": "go",
+        "API": "TokenFormat",
+        "Kind": "const",
+        "Source": "go/tuivory.go",
+        "Line": 52
+      },
+      {
+        "Language": "go",
+        "API": "New",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 56
+      },
+      {
+        "Language": "go",
+        "API": "NewStyles",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 59
+      },
+      {
+        "Language": "go",
+        "API": "ProfileForColors",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 62
+      },
+      {
+        "Language": "go",
+        "API": "NewChoice",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 66
+      },
+      {
+        "Language": "go",
+        "API": "CandidateTokens",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 72
+      },
+      {
+        "Language": "go",
+        "API": "ParseTokens",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 75
+      },
+      {
+        "Language": "go",
+        "API": "CandidateTokensJSON",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 78
+      },
+      {
+        "Language": "go",
+        "API": "Resolve",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 81
+      },
+      {
+        "Language": "go",
+        "API": "BorderColor",
+        "Kind": "function/method",
+        "Source": "go/tuivory.go",
+        "Line": 84
+      },
+      {
+        "Language": "go",
+        "API": "CellState.Row",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 7
+      },
+      {
+        "Language": "go",
+        "API": "CellState.CurrentRow",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 8
+      },
+      {
+        "Language": "go",
+        "API": "CellState.Null",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 8
+      },
+      {
+        "Language": "go",
+        "API": "CellState.Edited",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 8
+      },
+      {
+        "Language": "go",
+        "API": "CellState.InRange",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 8
+      },
+      {
+        "Language": "go",
+        "API": "Styles.GridHeaderStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/grid.go",
+        "Line": 11
+      },
+      {
+        "Language": "go",
+        "API": "Styles.GridActiveStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/grid.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "Styles.GridCellStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/grid.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "Styles.GridDividerColor",
+        "Kind": "function/method",
+        "Source": "go/internal/style/grid.go",
+        "Line": 51
+      },
+      {
+        "Language": "go",
+        "API": "Styles.GridGutterStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/grid.go",
+        "Line": 58
+      },
+      {
+        "Language": "go",
+        "API": "Styles.GridStatusStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/grid.go",
+        "Line": 69
+      },
+      {
+        "Language": "go",
+        "API": "GridColors.Background",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "GridColors.Stripe",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "GridColors.Header",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "GridColors.Current",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "GridColors.RangeBG",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "GridColors.Divider",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "GridColors.Muted",
+        "Kind": "field",
+        "Source": "go/internal/style/grid.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "Styles.GridColors",
+        "Kind": "function/method",
+        "Source": "go/internal/style/grid.go",
+        "Line": 91
+      },
+      {
+        "Language": "go",
+        "API": "Pair.FG",
+        "Kind": "field",
+        "Source": "go/internal/style/palette.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "Pair.BG",
+        "Kind": "field",
+        "Source": "go/internal/style/palette.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "Pair.Bold",
+        "Kind": "field",
+        "Source": "go/internal/style/palette.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "Pair.Style",
+        "Kind": "function/method",
+        "Source": "go/internal/style/palette.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "Styles.Theme",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 24
+      },
+      {
+        "Language": "go",
+        "API": "Styles.Profile",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 25
+      },
+      {
+        "Language": "go",
+        "API": "Styles.SurfaceColor",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 28
+      },
+      {
+        "Language": "go",
+        "API": "Styles.SurfaceText",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 43
+      },
+      {
+        "Language": "go",
+        "API": "Styles.TextColor",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 54
+      },
+      {
+        "Language": "go",
+        "API": "Styles.TextStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 67
+      },
+      {
+        "Language": "go",
+        "API": "Styles.BorderStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 75
+      },
+      {
+        "Language": "go",
+        "API": "Styles.DropDownStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 79
+      },
+      {
+        "Language": "go",
+        "API": "Styles.TabStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 86
+      },
+      {
+        "Language": "go",
+        "API": "Styles.FooterButtonStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 96
+      },
+      {
+        "Language": "go",
+        "API": "Styles.ComparisonHeaderStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 102
+      },
+      {
+        "Language": "go",
+        "API": "Styles.SplitterStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 112
+      },
+      {
+        "Language": "go",
+        "API": "Styles.PopupBackdrop",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 118
+      },
+      {
+        "Language": "go",
+        "API": "Styles.PopupCardStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 129
+      },
+      {
+        "Language": "go",
+        "API": "Styles.PopupShadowStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/roles.go",
+        "Line": 130
+      },
+      {
+        "Language": "go",
+        "API": "Styles.FieldStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/styles.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "Styles.SelectionStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/styles.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "Styles.ButtonStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/styles.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "Styles.ButtonFocusStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/styles.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "Styles.DisabledStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/styles.go",
+        "Line": 35
+      },
+      {
+        "Language": "go",
+        "API": "Styles.EditedStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/styles.go",
+        "Line": 45
+      },
+      {
+        "Language": "go",
+        "API": "Styles.EditorStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/styles.go",
+        "Line": 48
+      },
+      {
+        "Language": "go",
+        "API": "Styles.SyntaxStyle",
+        "Kind": "function/method",
+        "Source": "go/internal/style/syntax.go",
+        "Line": 44
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Background",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Surface",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Footer",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Field",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Text",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Muted",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Accent",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Button",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 65
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Editor",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 66
+      },
+      {
+        "Language": "go",
+        "API": "Colors.EditorText",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 66
+      },
+      {
+        "Language": "go",
+        "API": "Colors.FieldText",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 66
+      },
+      {
+        "Language": "go",
+        "API": "Colors.SelectionText",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 70
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Placeholder",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 71
+      },
+      {
+        "Language": "go",
+        "API": "Colors.Warning",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 71
+      },
+      {
+        "Language": "go",
+        "API": "Styles.Selection",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 120
+      },
+      {
+        "Language": "go",
+        "API": "Styles.SelectionFG",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 120
+      },
+      {
+        "Language": "go",
+        "API": "Styles.Edited",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 120
+      },
+      {
+        "Language": "go",
+        "API": "Styles.EditedFG",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 120
+      },
+      {
+        "Language": "go",
+        "API": "Styles.Disabled",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 120
+      },
+      {
+        "Language": "go",
+        "API": "Styles.Focus",
+        "Kind": "field",
+        "Source": "go/internal/style/theme.go",
+        "Line": 120
+      },
+      {
+        "Language": "go",
+        "API": "Roles.Surfaces",
+        "Kind": "field",
+        "Source": "go/internal/widgets/apply.go",
+        "Line": 13
+      },
+      {
+        "Language": "go",
+        "API": "Roles.Text",
+        "Kind": "field",
+        "Source": "go/internal/widgets/apply.go",
+        "Line": 14
+      },
+      {
+        "Language": "go",
+        "API": "Roles.Tree",
+        "Kind": "field",
+        "Source": "go/internal/widgets/apply.go",
+        "Line": 15
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Apply",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/apply.go",
+        "Line": 25
+      },
+      {
+        "Language": "go",
+        "API": "Styler.RefreshBorders",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/apply.go",
+        "Line": 146
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Styles",
+        "Kind": "field",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 12
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Box",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 19
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Button",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 23
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Input",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Editor",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 34
+      },
+      {
+        "Language": "go",
+        "API": "Styler.List",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 40
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Checkbox",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 49
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Form",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 59
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Modal",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 101
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Table",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/style.go",
+        "Line": 111
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Text",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 10
+      },
+      {
+        "Language": "go",
+        "API": "Styler.DropDown",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 16
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Choice",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 37
+      },
+      {
+        "Language": "go",
+        "API": "Choice.SetFormAttributes",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 42
+      },
+      {
+        "Language": "go",
+        "API": "Choice.Draw",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 47
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Tree",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 56
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Tab",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 68
+      },
+      {
+        "Language": "go",
+        "API": "Styler.FooterButton",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 73
+      },
+      {
+        "Language": "go",
+        "API": "Styler.TableOn",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 78
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Grid",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 96
+      },
+      {
+        "Language": "go",
+        "API": "Styler.Comparison",
+        "Kind": "function/method",
+        "Source": "go/internal/widgets/widgets.go",
+        "Line": 124
+      },
+      {
+        "Language": "go",
+        "API": "TokenPair.Foreground",
+        "Kind": "field",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 17
+      },
+      {
+        "Language": "go",
+        "API": "TokenPair.Background",
+        "Kind": "field",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 18
+      },
+      {
+        "Language": "go",
+        "API": "TokenPair.ReferenceForeground",
+        "Kind": "field",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 19
+      },
+      {
+        "Language": "go",
+        "API": "TokenPair.ReferenceBackground",
+        "Kind": "field",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 20
+      },
+      {
+        "Language": "go",
+        "API": "TokenPair.FontWeight",
+        "Kind": "field",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 21
+      },
+      {
+        "Language": "go",
+        "API": "TokenDocument.Format",
+        "Kind": "field",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 27
+      },
+      {
+        "Language": "go",
+        "API": "TokenDocument.Roles",
+        "Kind": "field",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 28
+      },
+      {
+        "Language": "go",
+        "API": "TokenDocument.Palettes",
+        "Kind": "field",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 29
+      },
+      {
+        "Language": "go",
+        "API": "TokenDocument.Palette",
+        "Kind": "function/method",
+        "Source": "go/internal/tokens/tokens.go",
+        "Line": 105
+      }
+    ],
+    "rust": [
+      {
+        "api": "collections::struct.ListEvent",
+        "page": "collections/struct.ListEvent.html"
+      },
+      {
+        "api": "collections::struct.ListItem",
+        "page": "collections/struct.ListItem.html"
+      },
+      {
+        "api": "collections::struct.ListModel",
+        "page": "collections/struct.ListModel.html"
+      },
+      {
+        "api": "collections::struct.SearchPicker",
+        "page": "collections/struct.SearchPicker.html"
+      },
+      {
+        "api": "components::enum.TabAction",
+        "page": "components/enum.TabAction.html"
+      },
+      {
+        "api": "components::enum.TabEvent",
+        "page": "components/enum.TabEvent.html"
+      },
+      {
+        "api": "components::fn.breadcrumbs",
+        "page": "components/fn.breadcrumbs.html"
+      },
+      {
+        "api": "components::fn.cell_text",
+        "page": "components/fn.cell_text.html"
+      },
+      {
+        "api": "components::fn.cells",
+        "page": "components/fn.cells.html"
+      },
+      {
+        "api": "components::fn.clean",
+        "page": "components/fn.clean.html"
+      },
+      {
+        "api": "components::fn.status_line",
+        "page": "components/fn.status_line.html"
+      },
+      {
+        "api": "components::struct.LineRun",
+        "page": "components/struct.LineRun.html"
+      },
+      {
+        "api": "components::struct.PathItem",
+        "page": "components/struct.PathItem.html"
+      },
+      {
+        "api": "components::struct.SplitLayout",
+        "page": "components/struct.SplitLayout.html"
+      },
+      {
+        "api": "components::struct.SplitSpec",
+        "page": "components/struct.SplitSpec.html"
+      },
+      {
+        "api": "components::struct.SplitState",
+        "page": "components/struct.SplitState.html"
+      },
+      {
+        "api": "components::struct.StatusItem",
+        "page": "components/struct.StatusItem.html"
+      },
+      {
+        "api": "components::struct.StatusLayout",
+        "page": "components/struct.StatusLayout.html"
+      },
+      {
+        "api": "components::struct.TabCell",
+        "page": "components/struct.TabCell.html"
+      },
+      {
+        "api": "components::struct.TabItem",
+        "page": "components/struct.TabItem.html"
+      },
+      {
+        "api": "components::struct.TabLayout",
+        "page": "components/struct.TabLayout.html"
+      },
+      {
+        "api": "components::struct.TabState",
+        "page": "components/struct.TabState.html"
+      },
+      {
+        "api": "components::struct.Tabs",
+        "page": "components/struct.Tabs.html"
+      },
+      {
+        "api": "constant.CANDIDATE_JSON",
+        "page": "constant.CANDIDATE_JSON.html"
+      },
+      {
+        "api": "constant.TOKEN_FORMAT",
+        "page": "constant.TOKEN_FORMAT.html"
+      },
+      {
+        "api": "enum.Color",
+        "page": "enum.Color.html"
+      },
+      {
+        "api": "enum.ColorProfile",
+        "page": "enum.ColorProfile.html"
+      },
+      {
+        "api": "enum.Error",
+        "page": "enum.Error.html"
+      },
+      {
+        "api": "enum.Theme",
+        "page": "enum.Theme.html"
+      },
+      {
+        "api": "feedback::struct.DataState",
+        "page": "feedback/struct.DataState.html"
+      },
+      {
+        "api": "feedback::struct.Notice",
+        "page": "feedback/struct.Notice.html"
+      },
+      {
+        "api": "feedback::struct.NoticeAction",
+        "page": "feedback/struct.NoticeAction.html"
+      },
+      {
+        "api": "feedback::struct.NoticeEvent",
+        "page": "feedback/struct.NoticeEvent.html"
+      },
+      {
+        "api": "feedback::struct.NoticeQueue",
+        "page": "feedback/struct.NoticeQueue.html"
+      },
+      {
+        "api": "feedback::struct.Progress",
+        "page": "feedback/struct.Progress.html"
+      },
+      {
+        "api": "fn.profile_for_colors",
+        "page": "fn.profile_for_colors.html"
+      },
+      {
+        "api": "forms::struct.ComponentLine",
+        "page": "forms/struct.ComponentLine.html"
+      },
+      {
+        "api": "forms::struct.ComponentSpan",
+        "page": "forms/struct.ComponentSpan.html"
+      },
+      {
+        "api": "forms::struct.Form",
+        "page": "forms/struct.Form.html"
+      },
+      {
+        "api": "forms::struct.FormEvent",
+        "page": "forms/struct.FormEvent.html"
+      },
+      {
+        "api": "forms::struct.FormField",
+        "page": "forms/struct.FormField.html"
+      },
+      {
+        "api": "forms::struct.FormOption",
+        "page": "forms/struct.FormOption.html"
+      },
+      {
+        "api": "grid::fn.grid_preset",
+        "page": "grid/fn.grid_preset.html"
+      },
+      {
+        "api": "grid::options::fn.grid_preset",
+        "page": "grid/options/fn.grid_preset.html"
+      },
+      {
+        "api": "grid::options::struct.GridCellInfo",
+        "page": "grid/options/struct.GridCellInfo.html"
+      },
+      {
+        "api": "grid::options::struct.GridColumnOptions",
+        "page": "grid/options/struct.GridColumnOptions.html"
+      },
+      {
+        "api": "grid::options::struct.GridDataStatus",
+        "page": "grid/options/struct.GridDataStatus.html"
+      },
+      {
+        "api": "grid::options::struct.GridGeometry",
+        "page": "grid/options/struct.GridGeometry.html"
+      },
+      {
+        "api": "grid::options::struct.GridOptions",
+        "page": "grid/options/struct.GridOptions.html"
+      },
+      {
+        "api": "grid::options::struct.GridRange",
+        "page": "grid/options/struct.GridRange.html"
+      },
+      {
+        "api": "grid::struct.Grid",
+        "page": "grid/struct.Grid.html"
+      },
+      {
+        "api": "grid::struct.GridCellInfo",
+        "page": "grid/struct.GridCellInfo.html"
+      },
+      {
+        "api": "grid::struct.GridColumn",
+        "page": "grid/struct.GridColumn.html"
+      },
+      {
+        "api": "grid::struct.GridColumnOptions",
+        "page": "grid/struct.GridColumnOptions.html"
+      },
+      {
+        "api": "grid::struct.GridDataStatus",
+        "page": "grid/struct.GridDataStatus.html"
+      },
+      {
+        "api": "grid::struct.GridEvent",
+        "page": "grid/struct.GridEvent.html"
+      },
+      {
+        "api": "grid::struct.GridGeometry",
+        "page": "grid/struct.GridGeometry.html"
+      },
+      {
+        "api": "grid::struct.GridOptions",
+        "page": "grid/struct.GridOptions.html"
+      },
+      {
+        "api": "grid::struct.GridRange",
+        "page": "grid/struct.GridRange.html"
+      },
+      {
+        "api": "grid::struct.GridRecord",
+        "page": "grid/struct.GridRecord.html"
+      },
+      {
+        "api": "grid::struct.GridSpan",
+        "page": "grid/struct.GridSpan.html"
+      },
+      {
+        "api": "grid::struct.MemoryRows",
+        "page": "grid/struct.MemoryRows.html"
+      },
+      {
+        "api": "grid::trait.GridSource",
+        "page": "grid/trait.GridSource.html"
+      },
+      {
+        "api": "interaction::struct.ControlState",
+        "page": "interaction/struct.ControlState.html"
+      },
+      {
+        "api": "interaction::struct.ControlVisual",
+        "page": "interaction/struct.ControlVisual.html"
+      },
+      {
+        "api": "interaction::struct.FocusStack",
+        "page": "interaction/struct.FocusStack.html"
+      },
+      {
+        "api": "interaction::struct.FocusTarget",
+        "page": "interaction/struct.FocusTarget.html"
+      },
+      {
+        "api": "interaction::struct.InputRoute",
+        "page": "interaction/struct.InputRoute.html"
+      },
+      {
+        "api": "interaction::struct.PopupCloseRequest",
+        "page": "interaction/struct.PopupCloseRequest.html"
+      },
+      {
+        "api": "layout::enum.Density",
+        "page": "layout/enum.Density.html"
+      },
+      {
+        "api": "layout::fn.drawer_layout",
+        "page": "layout/fn.drawer_layout.html"
+      },
+      {
+        "api": "layout::fn.stack_layout",
+        "page": "layout/fn.stack_layout.html"
+      },
+      {
+        "api": "layout::fn.stack_rects",
+        "page": "layout/fn.stack_rects.html"
+      },
+      {
+        "api": "layout::struct.Badge",
+        "page": "layout/struct.Badge.html"
+      },
+      {
+        "api": "layout::struct.CellRect",
+        "page": "layout/struct.CellRect.html"
+      },
+      {
+        "api": "layout::struct.Chip",
+        "page": "layout/struct.Chip.html"
+      },
+      {
+        "api": "layout::struct.ComponentEvent",
+        "page": "layout/struct.ComponentEvent.html"
+      },
+      {
+        "api": "layout::struct.DrawerPlacement",
+        "page": "layout/struct.DrawerPlacement.html"
+      },
+      {
+        "api": "layout::struct.Help",
+        "page": "layout/struct.Help.html"
+      },
+      {
+        "api": "layout::struct.NamedRect",
+        "page": "layout/struct.NamedRect.html"
+      },
+      {
+        "api": "layout::struct.Shortcut",
+        "page": "layout/struct.Shortcut.html"
+      },
+      {
+        "api": "layout::struct.SpacingTokens",
+        "page": "layout/struct.SpacingTokens.html"
+      },
+      {
+        "api": "layout::struct.StackItem",
+        "page": "layout/struct.StackItem.html"
+      },
+      {
+        "api": "layout::struct.StackResult",
+        "page": "layout/struct.StackResult.html"
+      },
+      {
+        "api": "layout::struct.StackSlot",
+        "page": "layout/struct.StackSlot.html"
+      },
+      {
+        "api": "menu::fn.menu_placement",
+        "page": "menu/fn.menu_placement.html"
+      },
+      {
+        "api": "menu::struct.Menu",
+        "page": "menu/struct.Menu.html"
+      },
+      {
+        "api": "menu::struct.MenuBarCell",
+        "page": "menu/struct.MenuBarCell.html"
+      },
+      {
+        "api": "menu::struct.MenuBarLayout",
+        "page": "menu/struct.MenuBarLayout.html"
+      },
+      {
+        "api": "menu::struct.MenuEvent",
+        "page": "menu/struct.MenuEvent.html"
+      },
+      {
+        "api": "menu::struct.MenuItem",
+        "page": "menu/struct.MenuItem.html"
+      },
+      {
+        "api": "ratatui::components::fn.split_rects",
+        "page": "ratatui/components/fn.split_rects.html"
+      },
+      {
+        "api": "ratatui::components::struct.LineWidget",
+        "page": "ratatui/components/struct.LineWidget.html"
+      },
+      {
+        "api": "ratatui::components::struct.SplitRects",
+        "page": "ratatui/components/struct.SplitRects.html"
+      },
+      {
+        "api": "ratatui::components::struct.TabsWidget",
+        "page": "ratatui/components/struct.TabsWidget.html"
+      },
+      {
+        "api": "ratatui::fn.split_rects",
+        "page": "ratatui/fn.split_rects.html"
+      },
+      {
+        "api": "ratatui::fn.stack_rects",
+        "page": "ratatui/fn.stack_rects.html"
+      },
+      {
+        "api": "ratatui::menu::struct.MenuBarWidget",
+        "page": "ratatui/menu/struct.MenuBarWidget.html"
+      },
+      {
+        "api": "ratatui::menu::struct.MenuPopupWidget",
+        "page": "ratatui/menu/struct.MenuPopupWidget.html"
+      },
+      {
+        "api": "ratatui::menu::struct.MenuWidget",
+        "page": "ratatui/menu/struct.MenuWidget.html"
+      },
+      {
+        "api": "ratatui::rows::fn.stack_rects",
+        "page": "ratatui/rows/fn.stack_rects.html"
+      },
+      {
+        "api": "ratatui::rows::struct.BadgeWidget",
+        "page": "ratatui/rows/struct.BadgeWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.ChipWidget",
+        "page": "ratatui/rows/struct.ChipWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.DataStateWidget",
+        "page": "ratatui/rows/struct.DataStateWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.FormWidget",
+        "page": "ratatui/rows/struct.FormWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.GridWidget",
+        "page": "ratatui/rows/struct.GridWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.HelpWidget",
+        "page": "ratatui/rows/struct.HelpWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.ListWidget",
+        "page": "ratatui/rows/struct.ListWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.NoticeWidget",
+        "page": "ratatui/rows/struct.NoticeWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.ProgressWidget",
+        "page": "ratatui/rows/struct.ProgressWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.RawRowsWidget",
+        "page": "ratatui/rows/struct.RawRowsWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.RowsWidget",
+        "page": "ratatui/rows/struct.RowsWidget.html"
+      },
+      {
+        "api": "ratatui::rows::struct.SearchPickerWidget",
+        "page": "ratatui/rows/struct.SearchPickerWidget.html"
+      },
+      {
+        "api": "ratatui::rows::type.StackRects",
+        "page": "ratatui/rows/type.StackRects.html"
+      },
+      {
+        "api": "ratatui::struct.BadgeWidget",
+        "page": "ratatui/struct.BadgeWidget.html"
+      },
+      {
+        "api": "ratatui::struct.ChipWidget",
+        "page": "ratatui/struct.ChipWidget.html"
+      },
+      {
+        "api": "ratatui::struct.DataStateWidget",
+        "page": "ratatui/struct.DataStateWidget.html"
+      },
+      {
+        "api": "ratatui::struct.FormWidget",
+        "page": "ratatui/struct.FormWidget.html"
+      },
+      {
+        "api": "ratatui::struct.GridWidget",
+        "page": "ratatui/struct.GridWidget.html"
+      },
+      {
+        "api": "ratatui::struct.HelpWidget",
+        "page": "ratatui/struct.HelpWidget.html"
+      },
+      {
+        "api": "ratatui::struct.LineWidget",
+        "page": "ratatui/struct.LineWidget.html"
+      },
+      {
+        "api": "ratatui::struct.ListWidget",
+        "page": "ratatui/struct.ListWidget.html"
+      },
+      {
+        "api": "ratatui::struct.MenuBarWidget",
+        "page": "ratatui/struct.MenuBarWidget.html"
+      },
+      {
+        "api": "ratatui::struct.MenuPopupWidget",
+        "page": "ratatui/struct.MenuPopupWidget.html"
+      },
+      {
+        "api": "ratatui::struct.MenuWidget",
+        "page": "ratatui/struct.MenuWidget.html"
+      },
+      {
+        "api": "ratatui::struct.NoticeWidget",
+        "page": "ratatui/struct.NoticeWidget.html"
+      },
+      {
+        "api": "ratatui::struct.ProgressWidget",
+        "page": "ratatui/struct.ProgressWidget.html"
+      },
+      {
+        "api": "ratatui::struct.RawRowsWidget",
+        "page": "ratatui/struct.RawRowsWidget.html"
+      },
+      {
+        "api": "ratatui::struct.RowsWidget",
+        "page": "ratatui/struct.RowsWidget.html"
+      },
+      {
+        "api": "ratatui::struct.SearchPickerWidget",
+        "page": "ratatui/struct.SearchPickerWidget.html"
+      },
+      {
+        "api": "ratatui::struct.SplitRects",
+        "page": "ratatui/struct.SplitRects.html"
+      },
+      {
+        "api": "ratatui::struct.Styles",
+        "page": "ratatui/struct.Styles.html"
+      },
+      {
+        "api": "ratatui::struct.TabsWidget",
+        "page": "ratatui/struct.TabsWidget.html"
+      },
+      {
+        "api": "ratatui::struct.TreeWidget",
+        "page": "ratatui/struct.TreeWidget.html"
+      },
+      {
+        "api": "ratatui::tree::struct.TreeWidget",
+        "page": "ratatui/tree/struct.TreeWidget.html"
+      },
+      {
+        "api": "ratatui::type.StackRects",
+        "page": "ratatui/type.StackRects.html"
+      },
+      {
+        "api": "struct.Palette",
+        "page": "struct.Palette.html"
+      },
+      {
+        "api": "struct.Style",
+        "page": "struct.Style.html"
+      },
+      {
+        "api": "struct.TokenDocument",
+        "page": "struct.TokenDocument.html"
+      },
+      {
+        "api": "struct.TokenPair",
+        "page": "struct.TokenPair.html"
+      },
+      {
+        "api": "struct.TokenPalette",
+        "page": "struct.TokenPalette.html"
+      },
+      {
+        "api": "tokens::constant.CANDIDATE_JSON",
+        "page": "tokens/constant.CANDIDATE_JSON.html"
+      },
+      {
+        "api": "tokens::constant.TOKEN_FORMAT",
+        "page": "tokens/constant.TOKEN_FORMAT.html"
+      },
+      {
+        "api": "tokens::struct.TokenDocument",
+        "page": "tokens/struct.TokenDocument.html"
+      },
+      {
+        "api": "tokens::struct.TokenPair",
+        "page": "tokens/struct.TokenPair.html"
+      },
+      {
+        "api": "tokens::struct.TokenPalette",
+        "page": "tokens/struct.TokenPalette.html"
+      },
+      {
+        "api": "tree::enum.TreeAction",
+        "page": "tree/enum.TreeAction.html"
+      },
+      {
+        "api": "tree::enum.TreeEvent",
+        "page": "tree/enum.TreeEvent.html"
+      },
+      {
+        "api": "tree::struct.Tree",
+        "page": "tree/struct.Tree.html"
+      },
+      {
+        "api": "tree::struct.TreeNode",
+        "page": "tree/struct.TreeNode.html"
+      },
+      {
+        "api": "tree::struct.TreeRow",
+        "page": "tree/struct.TreeRow.html"
+      },
+      {
+        "api": "tree::struct.TreeState",
+        "page": "tree/struct.TreeState.html"
+      },
+      {
+        "api": "types::enum.Color",
+        "page": "types/enum.Color.html"
+      },
+      {
+        "api": "types::enum.ColorProfile",
+        "page": "types/enum.ColorProfile.html"
+      },
+      {
+        "api": "types::enum.Error",
+        "page": "types/enum.Error.html"
+      },
+      {
+        "api": "types::enum.Theme",
+        "page": "types/enum.Theme.html"
+      },
+      {
+        "api": "types::fn.profile_for_colors",
+        "page": "types/fn.profile_for_colors.html"
+      },
+      {
+        "api": "types::struct.Palette",
+        "page": "types/struct.Palette.html"
+      },
+      {
+        "api": "types::struct.Style",
+        "page": "types/struct.Style.html"
+      }
+    ]
+  },
+  "validation": {
+    "go_all_race": "passed",
+    "go_vet": "passed",
+    "go_12_palette_and_custom_color_style_migration": "passed",
+    "go_post_Show_legacy_and_Canvas_table_equivalence": "passed",
+    "go_grid_click_and_programmatic_migration": "passed; DisableMouse difference documented",
+    "rust_core_1_85_1_all_targets": "passed",
+    "rust_1_88_all_features_all_targets": "passed",
+    "rust_doctest_fmt_clippy": "passed",
+    "rust_three_menu_types_12_palettes_Unicode_ASCII": "legacy/new buffer/state equivalence passed",
+    "rust_grid_click_migration": "passed; DisableMouse difference documented",
+    "external_Go_module": "passed",
+    "external_Rust_packaged_crate": "passed; preferred constructors compile with deny(deprecated)",
+    "external_Rust_legacy_diagnostics": "all four targeted legacy API uses rejected specifically by deprecated lint",
+    "python_tool_tests": 13,
+    "lifecycle_source_registry_KO_EN_checker": "passed; added to CI validate and make check",
+    "generated_tokens_shared_cases_links": "passed",
+    "go_default_Linux_ARM64_static_ELF": "passed",
+    "native_Rust_PTY_cases": [
+      "menu/ko",
+      "menu/en",
+      "grid/ko",
+      "grid/en"
+    ]
+  },
+  "image_parity": {
+    "matching_references": 16,
+    "sha256": {
+      "menu-ascii-en.svg": "37ea7d0e0dfd86c0b72d04be4169501488011167397fe3f1feaaf9ae4f7c27dc",
+      "menu-light-en.svg": "93f25897f01c9ac8004ee5239f17ff5a71153ec706671e81cf332b5780b76810",
+      "menu-blackwhite.svg": "d6f4091594d9777fd50dfad75dfe47033546aae4f96957af5fd04f1c38114810",
+      "grid-dark.svg": "1849185963c0434b0b0dc94a710636e81827830973d11e434449701cea861a85",
+      "grid-dark-en.svg": "7468f129e4db5232b0e830c3d2798bade72dcafdd843d9943a2b430fb2d36721",
+      "menu-ascii.svg": "f2f54483ccac35d50780233c8dfbf7596f8e4ef93093afeedceacf4052b7913c",
+      "menu-light.svg": "fc3e6ef2eee57b5a8bbeb61e2c3e35d2f56176b6e33afd2b00d443a67afac271",
+      "menu-dark-en.svg": "a572778f3122d168a2a86a899d307a454e763285e1bc2fdb46f162f96035876c",
+      "grid-light.svg": "f833c78a50cf675768fd59145184f6a21cffe33edf8fcef43925047a73d45409",
+      "menu-nested.svg": "7c41d69f88974a0a6a4d0a268b95aa53055a27a1e37880f3bd6b68ef3e21301e",
+      "grid-light-en.svg": "c43b94a3859b9ffbc8c8b4b234f05c0b603ffa20d51df413635fab3c084ac796",
+      "grid-blackwhite.svg": "54a0c69ade5950653e6070c464168eed1b0b20b649f689407facb655c2fe340d",
+      "menu-blackwhite-en.svg": "581c08107216f5f3f5395095ef6fa39ba093007dde2a884645ec26f4a7883805",
+      "menu-dark.svg": "127842d46a1c470d96578ab68a29d411750084c67b7fbc1c277a48a0935cb127",
+      "grid-blackwhite-en.svg": "569e9d000facea55f88407d50e2b2f67ad2417d766998be43f946633d1c78604",
+      "menu-nested-en.svg": "800a93251f7f8a2e0956f044c5f1bdc61e0e89fdeae2f3cee1c24077274fb941"
+    }
+  },
+  "not_run": [
+    "remote GitHub CI",
+    "CentOS",
+    "commit",
+    "push",
+    "release",
+    "actual LazyOra/LazyBeaver integration"
+  ],
+  "source_sha256": {
+    "design/README.en.md": "ff460f5dc4ae235535c19bd6d9a6e98e0af5d864e555ba7f52a75576acc31dd3",
+    "design/README.md": "54cfd9941df4cfe48ca4aef73999f3229d3bd867eee6256fa0ee1ed3368f83dc",
+    "design/api-lifecycle.json": "8384dd974e0b3c6b7e8840b7cb3dccfff4def80e356dc5501bb7907c3e086c9f",
+    "docs/README.en.md": "fb731dfbede7ebf8f25765c3fbff6a14e0a3b1c4d5543e616793220de291a36d",
+    "docs/README.md": "11bfe9ed449652e5c9e42bb3b67fe919870ff01074ee9edd866f38347e502bf5",
+    "docs/api-lifecycle.en.md": "85d2ffcf3b6b2f120f5a976ca48760168892e1c2b31b4d67edb982494f5a8cb8",
+    "docs/api-lifecycle.md": "44052508ccca176fbc283db76031922c2e26aedf503bd32a3c375b481bf485fc",
+    "docs/api-overlap-audit.en.md": "4b57e4fbc9a21a9815fde071a47d44de4ea2aab657a5bf169a5e95190f2f9379",
+    "docs/api-overlap-audit.md": "f5913b4232acda0ef127333b0cbdabdbaf3519fb33f0ca6217226cc2ebf9ac63",
+    "docs/go-package.en.md": "5825c2d85b688160b888d2acc53ab06ffc4748b2fba5a9fdbbe01236ab6d57f6",
+    "docs/go-package.md": "9a143562211f75c41a64d5bd9b40c36a722e48468bd8cd9f898dc6fd56ad3fd4",
+    "docs/grid.en.md": "5ce5aec9f1dd0e6f4df6b3ac49bf9d597ec409a449943cfc344302fcb4c5a80a",
+    "docs/grid.md": "53ea8dc5257f66abae1a4c9630542ea9e3d483ded001d9e4017168d005921409",
+    "docs/menus.en.md": "239c282e4ad102dbf1114c19342f88fc7dee8b1c49cb244c21df550ea9b17070",
+    "docs/menus.md": "79c3901a649df13419daa31347213ea6011b755b6f7ec592225d06c34423c905",
+    "go/README.en.md": "99769e0b133db6ee608f6f9b342ba53737456d84ddbeb7b712c30ce51da37656",
+    "go/README.md": "944a74a5d4c9bef66fa60d57d4bed77bcb75d7f97686b8a991d0220259eceac8",
+    "go/api_lifecycle_test.go": "37ac379ff34240ab02dcbd8a591c1ba6e1f3f252e44975fbd162e4bb79ef544b",
+    "go/grid.go": "0ab9c05dbe9860cccccd6ec75ed0956382bc860283ab5235944936c6b206cc7d",
+    "go/grid_pointer.go": "6b06988b6f885290871d64fdb8cfb37e6ed924c7a36be23ca9a466486fbb0de5",
+    "go/internal/style/grid.go": "839847ae959fec62f4830299a73c7999e6c1a64e0e1e5f67ad01eab325fea659",
+    "go/internal/style/roles.go": "95b67a2c49b29f477e915a652dc6f17a1ee38675fb95bca44c44f03e71a8ddd2",
+    "go/internal/style/styles.go": "0dc7003e63d515fc8a5aa0f5f0fe06b2efacae82fe81caf9acaf6d5cecac8483",
+    "go/internal/style/theme.go": "eaf425cf2068526b1f258e355bc41f8da9532754b301d37cd2f2675363bf5f0e",
+    "go/internal/widgets/style.go": "674d3d7a432665c51dbd0d1b5c5b1ba70a852fb44b637194cb982b3342ba7f92",
+    "go/internal/widgets/widgets.go": "4ef846a449f6e8fe74b2c0862c9c9cb09adaa12d7ddbfc717099a082b8a6bf78",
+    "rust/README.en.md": "f43fe52ce7b68b9db7b5d947973365037268c6158c3ec4d429394895cb1ae9c3",
+    "rust/README.md": "a8648e083bb8793e1f272a9fcfd66429c239db99d5eddfeef20e27b0c66d8382",
+    "rust/examples/catalog/main.rs": "e2862e7ea91d87c4305038516249704cf7d9eb6b73432f6574946949c8a635d6",
+    "rust/examples/menu/main.rs": "40ff431f949957b2164c6fa7c02367ce640121495e86dff11b28f7f10dddb01f",
+    "rust/src/grid.rs": "b1780583484e048a4f0e99b284c0264c2cfa39f9700f0a85345d1f4e35ff70f6",
+    "rust/src/grid/pointer.rs": "8babd0f4a8ae3430f906b73d9162c7b619fe0c351754256f6f206a9ddc207a9b",
+    "rust/src/ratatui/menu.rs": "742571091a9188e0437823980c01281dd5b2533955f407549f851bcc97643f5f",
+    "rust/tests/api_lifecycle.rs": "e667febe9873dfd4b05476f47e8a873570902de9c96c7dee75890649a3007d81",
+    "rust/tests/menu.rs": "fb74100b5885f80e3c4da5be0b5c83f676d95a8b1a19ae9aea0287c60eb154ee",
+    "tools/check_api_lifecycle.py": "fe21d3ca50ceebea24ed2bde9c675924b99197a924268e82c4d30416aa64afde",
+    "tools/check_rust_module.py": "cec3475777bafb9113861eba76a3df516a92f4e2ef2c6b56d557dd05f2c58d44"
+  },
+  "local_log_sha256": {
+    "go-build.log": "113bc8f6e8ea2dd7cf8278f74106dc35960c264f071d1f3fdc4e36ea633e88bb",
+    "go-external.log": "74b44e55c515dd796a85620f2f06710e15f93330a1bace50a086a1b497d4978d",
+    "go-final.log": "3c1037696e38a8f44b79440c916cdf73725ac9c46b80a4c32e1d4158df5f365d",
+    "go-lifecycle.log": "dfeea120723fc8dd092ba8d772b960b12dee31f5827dc84fe335da32daa36d57",
+    "go-tests.log": "61213376c743c7a28cfe7623cfd1df2be7fc9d81d245a1a0fd825fa11f827f16",
+    "image-parity.log": "4ce9754904b97f63bdf81cbbe64a87cd0d63e9bd5e360d5fbc1de3f27cbc8206",
+    "pty-grid-en.log": "4927c6f321ce3380cc01f0dc0118d83a26f690b869f273f54b8286518e555bb2",
+    "pty-grid-ko.log": "7aac8533d0caa42fb43361bf47cc3d5a4681ef04b2aa17c75c24e77649a53fcf",
+    "pty-menu-en.log": "11d647a700d9f3f619efb43da88ad339fce465bff8ec41f7ba702d0a880531b9",
+    "pty-menu-ko.log": "24236109e81dad8eb7f104273bd4b5394648617182aadfef0a4dc49e3400ea5b",
+    "python-final.log": "d24f295fbc92b36748ad54b05c8b63038b882a09e145ce3bd45d8cf4340f37dd",
+    "python-tests.log": "31200762b8011f57aa08d2594469b55e06339d6f69e884365725faa50b97d44a",
+    "rust-clippy.log": "5544c9c2749ff0fc8f4815758fadf8d998dbe67782ea12e4f3b8fd97e4d9ab2a",
+    "rust-core.log": "483af554e6c861bb6bd62a91312b66b8d22ec2b99ef23b7594aee8c4717f7a1b",
+    "rust-doc-api.log": "2a3c6bbb93cf8e97924dbf7f14581dac147d155267f04eccbdd7b427d8847c0a",
+    "rust-doctest.log": "dfd7b452ed9f2ea066850215357a8df39f31e45ebeee98ac1576adbfaa9b1a2f",
+    "rust-external.log": "08d73a82b5eee3c1660c0ea3670cfb68ae41600e68aafedc728f7097517e06da",
+    "rust-final.log": "b35df867830d9100c4a4933b8004e1d3019b49c77ab724909c6eba1bda278116",
+    "rust-lifecycle.log": "7f9879e834b9793ced334d6b7e0e93aaf3a9fd37f71a95c542d3a176c5103fe2",
+    "rust-menu.log": "d30fb53f00df3250a5b70b4c6910a8d496fe5a793545e37809e5ae59d87d71ab",
+    "rust-ui-build.log": "10bb4fb137313eda2a7f978e2a61abf0eba4e8c813575ad82948bc4567fbe1c4"
+  },
+  "raw_logs": "bin/validation/TVR-20/ (ignored)"
+}

@@ -13,7 +13,7 @@ import (
 type scene struct {
 	*tview.Box
 	background  tview.Primitive
-	popup       *ui.PanelView
+	popup       *ui.ShadowView
 	bar         *ui.RowsView
 	menu        *ui.Menu
 	drawPopup   func(tcell.Screen)
@@ -79,6 +79,7 @@ func main() {
 	theme := flag.String("theme", "dark", "theme")
 	colors := flag.String("colors", "256", "color profile")
 	ascii := flag.Bool("ascii", false, "ASCII menu glyphs")
+	shadowFlag := flag.String("shadow", "off", "off/auto/solid/dim")
 	flag.Parse()
 	if *lang != "ko" && *lang != "en" {
 		log.Fatal("invalid language")
@@ -129,6 +130,11 @@ func main() {
 	right.SetTitle(tr("미리보기", "Preview"))
 	menuView, _ := ui.NewMenuView(menu, p, *ascii, func(e ui.MenuEvent) { emit(e) })
 	popup, _ := ui.NewPanelView(menuView, p)
+	shadowOptions := ui.ShadowOptions{Mode: ui.ShadowMode(*shadowFlag)}
+	shadow, err := ui.NewShadowView(popup, p, shadowOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
 	bar, _ := ui.NewMenuBarView(menu, p, func(e ui.MenuEvent) {
 		if e.Kind == "focus" && menu.Opened() {
 			e = menu.Open(e.ID, menu.ReturnID())
@@ -173,13 +179,14 @@ func main() {
 	}
 	refresh = func() {
 		p = palette()
-		for _, e := range []error{editor.SetPalette(p), menuView.SetPalette(p), bar.SetPalette(p), popup.SetPalette(p), left.SetPalette(p), right.SetPalette(p)} {
+		for _, e := range []error{editor.SetPalette(p), menuView.SetPalette(p), bar.SetPalette(p), popup.SetPalette(p), shadow.SetPalette(p), left.SetPalette(p), right.SetPalette(p)} {
 			if e != nil {
 				log.Fatal(e)
 			}
 		}
 		menuView.ASCII = *ascii
 		popup.ASCII = *ascii
+		shadow.ASCII = *ascii
 		left.ASCII = *ascii
 		right.ASCII = *ascii
 		title := menu.Title()
@@ -191,10 +198,14 @@ func main() {
 			v.SetTextColor(p["body"].FG).SetBackgroundColor(p["surface"].BG)
 		}
 		header.SetText("TUIVORY Menu / " + tr("컴포넌트와 앱의 명령 연결", "Components and host actions"))
-		hints.SetText(tr("F10 메뉴 · Shift+F10 문맥 · Alt+F/E/V · F2 테마 F3 색상 F4 ASCII F5 사용 가능 상태 · Tab 영역 · Ctrl+Q 종료", "F10 menu / Shift+F10 context / Alt+F/E/V / F2 theme F3 colors F4 ASCII F5 eligibility / Tab panel / Ctrl+Q quit"))
+		shadowHint := ""
+		if *shadowFlag != "off" {
+			shadowHint = tr("F6 그림자: ", "F6 shadow: ") + *shadowFlag + " · "
+		}
+		hints.SetText(shadowHint + tr("F10 메뉴 · Shift+F10 문맥 · Alt+F/E/V · F2 테마 F3 색상 F4 ASCII F5 사용 가능 상태 · Tab 영역 · Ctrl+Q 종료", "F10 menu / Shift+F10 context / Alt+F/E/V / F2 theme F3 colors F4 ASCII F5 eligibility / Tab panel / Ctrl+Q quit"))
 	}
 	body := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 1, 0, false).AddItem(bar, 1, 0, false).AddItem(left, 0, 1, true).AddItem(right, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
-	root := &scene{Box: tview.NewBox(), background: body, popup: popup, bar: bar, menu: menu, event: func(e ui.MenuEvent) { emit(e) }, beforeMouse: func() { origin = activeOrigin() }, paste: func(text string) {
+	root := &scene{Box: tview.NewBox(), background: body, popup: shadow, bar: bar, menu: menu, event: func(e ui.MenuEvent) { emit(e) }, beforeMouse: func() { origin = activeOrigin() }, paste: func(text string) {
 		if activeOrigin() == "editor" {
 			form.Handle("insert", text)
 		}
@@ -210,9 +221,10 @@ func main() {
 			}
 		}
 		mw, mh := menu.ContentSize()
-		r := ui.MenuPlacement(anchor, ui.CellRect{X: x, Y: y, Width: w, Height: h}, min(52, max(24, mw+4)), mh+4)
-		popup.SetRect(r.X, r.Y, r.Width, r.Height)
-		popup.Draw(screen)
+		plan := ui.PopupPlacement(anchor, ui.CellRect{X: x, Y: y, Width: w, Height: h}, min(52, max(24, mw+4)), mh+4, shadowOptions)
+		r := plan.Bounds
+		shadow.SetRect(r.X, r.Y, r.Width, r.Height)
+		shadow.Draw(screen)
 	}
 	cycle := func(s *string, values []string) {
 		for n, v := range values {
@@ -237,6 +249,14 @@ func main() {
 			return nil
 		case tcell.KeyF4:
 			*ascii = !*ascii
+			refresh()
+			return nil
+		case tcell.KeyF6:
+			cycle(shadowFlag, []string{"off", "auto", "solid", "dim"})
+			shadowOptions.Mode = ui.ShadowMode(*shadowFlag)
+			if err := shadow.SetShadow(shadowOptions); err != nil {
+				log.Fatal(err)
+			}
 			refresh()
 			return nil
 		case tcell.KeyF5:

@@ -93,3 +93,7 @@ Hosts must block background key/paste/mouse events while open, choose outside-cl
 In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
 
 Disabled menus and menu bars use color/brightness without an extra disabled prefix. Check/radio selection indicators remain.
+
+See [API lifecycle/migration](api-lifecycle.en.md) for deprecated APIs in unreleased source. Existing tags remain unchanged and legacy paths remain compatible.
+
+TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).

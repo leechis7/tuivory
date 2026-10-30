@@ -2,7 +2,7 @@
 
 [한국어 (default)](README.md) · **English**
 
-**0.4.0**: shared menus, grid options and static executables. [Release guide](docs/release-0.4.0.en.md).
+**0.5.0**: shared menus, grid options and static executables. [Release guide](docs/release-0.5.0.en.md).
 
 **Tuivory** (TUI + ivory) provides reusable TUI components and styles, with shared design rules and data for implementations in multiple languages. Korean is the primary documentation language; this English guide covers installation, usage, and the current scope.
 
@@ -26,7 +26,7 @@ Python and JavaScript currently provide token-reading examples; their UI package
 Requires Go 1.24 or later. The module path is `github.com/leechis7/tuivory/go` and the package name is `tuivory`.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.4.0
+go get github.com/leechis7/tuivory/go@v0.5.0
 ```
 
 Apply styles to widgets created by your application:
@@ -40,7 +40,7 @@ theme.Form(form)
 theme.Button(button)
 ```
 
-Themes: `dark`, `light`, `blackwhite`. Color profiles: `8`, `16`, `256`, `truecolor`. The current release is **0.4.0**, tagged `go/v0.4.0` for Go and `rust/v0.4.0` for Rust Git dependencies. It includes shared UI, bilingual playgrounds and documentation. The [release](https://github.com/leechis7/tuivory/releases/tag/go/v0.4.0) provides static Linux ARM64/x86_64 playgrounds/catalogs and source packages.
+Themes: `dark`, `light`, `blackwhite`. Color profiles: `8`, `16`, `256`, `truecolor`. The current release is **0.5.0**, tagged `go/v0.5.0` for Go and `rust/v0.5.0` for Rust Git dependencies. It includes shared UI, bilingual playgrounds and documentation. The [release](https://github.com/leechis7/tuivory/releases/tag/go/v0.5.0) provides static Linux ARM64/x86_64 playgrounds/catalogs and source packages.
 
 See the [Go usage guide](docs/go-package.en.md) for a complete runnable example, roles, state handling, and theme changes. See [installation and usage](docs/installation.en.md) and the [documentation index](docs/README.en.md).
 
@@ -76,7 +76,7 @@ This reference image renders actual Go widgets in English through a simulated sc
 
 ## Use Rust
 
-The crate supports Rust 1.85+ through Git tag `rust/v0.4.0` or a local path dependency on `rust/`. See the [Rust guide](rust/README.en.md) for setup, API, and scope. It uses shared candidate tokens and is not a port of the full Go widget styler.
+The crate supports Rust 1.85+ through Git tag `rust/v0.5.0` or a local path dependency on `rust/`. See the [Rust guide](rust/README.en.md) for setup, API, and scope. It uses shared candidate tokens and is not a port of the full Go widget styler.
 
 ```sh
 cargo run --manifest-path rust/Cargo.toml --locked --example tokens -- dark 256
@@ -89,7 +89,7 @@ The optional Ratatui 0.30.2 adapter and Crossterm 0.29 interactive example requi
 
 ## Shared Tree
 
-Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction rules. Included in `go/v0.4.0` and `rust/v0.4.0`. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
+Go/tview and Rust/Ratatui now provide stable-ID expansion/selection/scroll models and public Tree renderers with the same candidate palette and interaction rules. Included in `go/v0.5.0` and `rust/v0.5.0`. [Support audit](docs/component-audit.en.md) · [Tree API and bilingual examples](docs/tree.en.md)
 
 ```sh
 make run-tree-go ARGS="--lang en"
@@ -121,7 +121,7 @@ License: [AGPL-3.0-only](LICENSE). See [NOTICE](NOTICE.en.md) for the origins of
 
 ## Shared workspace components
 
-The [tabs, panels, splitters, status, and breadcrumbs guide](docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.4.0` and `rust/v0.4.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
+The [tabs, panels, splitters, status, and breadcrumbs guide](docs/workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.5.0` and `rust/v0.5.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
 
 ## Static distribution and CentOS 7.4
 
@@ -145,8 +145,12 @@ Go popup/shadow wide-glyph protection: [shared drawing API](docs/overlay-drawing
 
 [TVR-17 grid configuration](docs/grid.en.md): simple/data presets, ranges, column options, status and stale-response protection on the same Go/Rust grid. Unreleased source.
 
-[Shared menus](docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Included in 0.4.0.
+[Shared menus](docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Included in 0.5.0.
 
-[Surface/text background design guide](design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.4.0.
+[Surface/text background design guide](design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.5.0.
 
 [Disabled states across twelve palettes](docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
+
+[API lifecycle, deprecation and migration](docs/api-lifecycle.en.md) · [Public API overlap audit](docs/api-overlap-audit.en.md): distinguish unreleased targets, replacements and first-release/removal plans.
+
+TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](docs/popup-shadows.en.md).

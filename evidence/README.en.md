@@ -58,3 +58,5 @@ Oracle data types, workers, and database test infrastructure are not copied here
 [Disabled states across twelve palettes](../docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
 
 [TVR-7 disabled-color follow-up](../docs/disabled-states.en.md) · [results JSON](disabled-colors-results.json): no ordinary disabled prefixes, twelve-palette gray/Dim and input exclusions, 104 localized references.
+
+[TVR-20 API lifecycle/overlap](../docs/api-lifecycle.en.md) · [results JSON](api-lifecycle-results.json): ten unreleased deprecations, migration diagnostics/render/input compatibility, paired docs and API-family audit.

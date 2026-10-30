@@ -43,7 +43,7 @@ func (s Styles) GridCellStyle(state CellState) tcell.Style {
 		result = s.EditedStyle()
 	}
 	if state.InRange {
-		result = s.FieldStyle().Underline(true)
+		result = s.TextStyle(Field, Body).Underline(true)
 	}
 	return result
 }

@@ -101,3 +101,5 @@ Capture `Revision / revision()` after each sort/filter/load_more request. On the
 [Validation](grid-validation.en.md) · [Static distribution](static-build.en.md) · [LazyOra v0.11.2 reference](https://github.com/leechis7/lazyora/blob/98a2f47e8621838101d5db781232a699dba382f3/internal/ui/grid.go). Presentation/interaction principles informed the design; no DB/Oracle implementation is included.
 
 NewGridView enables RowsView.PreserveBackgrounds; Rust GridWidget uses the same preservation path. Use RowsWidget.preserve_backgrounds() when rendering grid rows directly. Keep simple/data background options and custom grid.* roles. In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
+
+See [API lifecycle/migration](api-lifecycle.en.md) for deprecated APIs in unreleased source. Existing tags remain unchanged and legacy paths remain compatible.

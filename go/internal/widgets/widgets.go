@@ -72,11 +72,11 @@ func (s Styler) Tab(button *tview.Button, active bool) {
 
 func (s Styler) FooterButton(button *tview.Button) {
 	s.Button(button)
-	button.SetStyle(s.Styles.FooterButtonStyle())
+	button.SetStyle(s.Styles.TextStyle(style.Footer, style.Body))
 }
 
 func (s Styler) TableOn(table *tview.Table, surface style.Surface) {
-	s.Table(table)
+	s.table(table)
 	p := s.Styles
 	s.Box(table.Box, p.SurfaceColor(surface), p.SurfaceText(surface))
 	for row := 0; row < table.GetRowCount(); row++ {

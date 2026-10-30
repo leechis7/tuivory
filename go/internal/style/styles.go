@@ -6,6 +6,9 @@ import (
 	"sync"
 )
 
+// FieldStyle returns the field text style.
+//
+// Deprecated: Use TextStyle(Field, Body), which has the same colors and attributes.
 func (s Styles) FieldStyle() tcell.Style {
 	return tcell.StyleDefault.Foreground(s.FieldText).Background(s.Field)
 }

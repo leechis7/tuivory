@@ -9,8 +9,31 @@ pub struct MenuWidget<'a> {
     pub model: &'a mut Menu,
     pub styles: &'a Styles,
     pub ascii: bool,
-    /// Retained for compatibility; menus use selection/open state, not focus decoration.
+    /// Ignored since 0.4.0; input focus remains owned by the host.
+    /// Deprecated in unreleased source after 0.4.0; removal is not scheduled.
+    /// Construct with [`MenuWidget::new`] instead.
+    #[deprecated(
+        since = "0.5.0",
+        note = "Ignored: menus use selection/open state. Use MenuWidget::new instead."
+    )]
     pub focused: bool,
+}
+impl<'a> MenuWidget<'a> {
+    /// Create a menu renderer without an ineffective focus flag.
+    #[allow(deprecated)] // Initialize the source-compatible, ignored legacy field only here.
+    pub fn new(model: &'a mut Menu, styles: &'a Styles) -> Self {
+        Self {
+            model,
+            styles,
+            ascii: false,
+            focused: false,
+        }
+    }
+    /// Select ASCII presentation without changing menu state.
+    pub fn ascii(mut self, ascii: bool) -> Self {
+        self.ascii = ascii;
+        self
+    }
 }
 impl Widget for MenuWidget<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
@@ -28,8 +51,25 @@ impl Widget for MenuWidget<'_> {
 pub struct MenuBarWidget<'a> {
     pub model: &'a mut Menu,
     pub styles: &'a Styles,
-    /// Retained for compatibility; menus use selection/open state, not focus decoration.
+    /// Ignored since 0.4.0; input focus remains owned by the host.
+    /// Deprecated in unreleased source after 0.4.0; removal is not scheduled.
+    /// Construct with [`MenuBarWidget::new`] instead.
+    #[deprecated(
+        since = "0.5.0",
+        note = "Ignored: menus use selection/open state. Use MenuBarWidget::new instead."
+    )]
     pub focused: bool,
+}
+impl<'a> MenuBarWidget<'a> {
+    /// Create a menu bar; the menu model determines open/selection state.
+    #[allow(deprecated)] // Initialize the source-compatible, ignored legacy field only here.
+    pub fn new(model: &'a mut Menu, styles: &'a Styles) -> Self {
+        Self {
+            model,
+            styles,
+            focused: false,
+        }
+    }
 }
 impl Widget for MenuBarWidget<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
@@ -77,9 +117,45 @@ pub struct MenuPopupWidget<'a> {
     pub styles: &'a Styles,
     pub title: &'a str,
     pub ascii: bool,
-    /// Retained for compatibility; menus use selection/open state, not focus decoration.
+    /// Ignored since 0.4.0; input focus remains owned by the host.
+    /// Deprecated in unreleased source after 0.4.0; removal is not scheduled.
+    /// Construct with [`MenuPopupWidget::new`] instead.
+    #[deprecated(
+        since = "0.5.0",
+        note = "Ignored: menus use selection/open state. Use MenuPopupWidget::new instead."
+    )]
     pub focused: bool,
     pub padding: u16,
+}
+impl<'a> MenuPopupWidget<'a> {
+    /// Create a single-border popup with one cell of padding and Unicode drawing.
+    #[allow(deprecated)] // Initialize the source-compatible, ignored legacy field only here.
+    pub fn new(model: &'a mut Menu, styles: &'a Styles, title: &'a str) -> Self {
+        Self {
+            model,
+            styles,
+            title,
+            ascii: false,
+            focused: false,
+            padding: 1,
+        }
+    }
+    /// Wrap this popup with an optional shadow; the allocation includes the shadow.
+    pub fn shadow(self, options: crate::popup::ShadowOptions) -> super::ShadowWidget<'a, Self> {
+        let styles = self.styles;
+        let ascii = self.ascii;
+        super::ShadowWidget::new(self, styles, options).ascii(ascii)
+    }
+    /// Select ASCII presentation without changing menu state.
+    pub fn ascii(mut self, ascii: bool) -> Self {
+        self.ascii = ascii;
+        self
+    }
+    /// Set padding inside the host-assigned popup rectangle.
+    pub fn padding(mut self, padding: u16) -> Self {
+        self.padding = padding;
+        self
+    }
 }
 impl Widget for MenuPopupWidget<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
@@ -100,12 +176,8 @@ impl Widget for MenuPopupWidget<'_> {
             .expect("menu panel roles");
         let inner = block.inner(area);
         block.render(area, buf);
-        MenuWidget {
-            model: self.model,
-            styles: self.styles,
-            ascii: self.ascii,
-            focused: false,
-        }
-        .render(inner, buf);
+        MenuWidget::new(self.model, self.styles)
+            .ascii(self.ascii)
+            .render(inner, buf);
     }
 }

@@ -1,0 +1,73 @@
+{
+  "issue": "TVR-19",
+  "baseline_commit": "6c67262",
+  "source": "uncommitted codex/TVR-19-popup-shadow",
+  "local_validation": "passed",
+  "modes": [
+    "off",
+    "auto",
+    "solid",
+    "dim"
+  ],
+  "default": "off",
+  "profiles": 12,
+  "shared_geometry_cases": 32,
+  "wide_glyph_cases_per_language": 192,
+  "pty_runs": 16,
+  "localized_shadow_images": 12,
+  "unchanged_default_menu_images": 10,
+  "checks": [
+    "Go full race/vet",
+    "Python 13 tests",
+    "API lifecycle, tokens, shared fixtures and documentation links",
+    "Rust 1.85.1 core all targets, doctests, fmt, Clippy",
+    "Rust 1.88.0 all features/targets, doctests, fmt, Clippy",
+    "Independent Go module and Rust crate import/render all four modes",
+    "Go Linux ARM64 static ELF: no PT_INTERP/DT_NEEDED"
+  ],
+  "commands": [
+    "make test check build",
+    "make test-rust check-rust",
+    "make test-rust-ui check-rust-ui",
+    "python3 tools/smoke_menu.py <binary> --lang <ko|en> --shadow <mode>",
+    "python3 tools/snapshot_popup_shadows.py rust/target/debug/examples/shadows"
+  ],
+  "limitations": [
+    "Dim foreground brightness is terminal-dependent; blank backgrounds do not darken",
+    "SVG Dim is approximated with opacity, not measured terminal brightness",
+    "Solid black may be invisible on black; Auto uses stippling there",
+    "Hosts own backdrop redraw, caller anchors and global input policy",
+    "Wide glyph boundary repair may blank the adjacent cell while retaining its style"
+  ],
+  "centos": "not run per user instruction",
+  "github_ci": "not run",
+  "committed": false,
+  "published": false,
+  "details": "popup-shadows.md",
+  "default_offset": {
+    "right": 2,
+    "down": 1
+  },
+  "follow_up": {
+    "change": "Reduce default right offset from two cells to one; keep one row down",
+    "rerun": [
+      "shared 32 geometry fixtures",
+      "Go post-Show shadow race tests",
+      "Rust five popup-shadow tests",
+      "localized twelve shadow images",
+      "Go Korean / Rust English Dim PTYs"
+    ],
+    "prior_full_validation": "Full-suite and sixteen-PTY results above precede the narrower default."
+  },
+  "final_adjustment": {
+    "change": "Restore 2x1 default and soften Auto RGB/256 shading from 60% to 80% channel factor",
+    "rerun": [
+      "32 shared geometry cases",
+      "Go shadow race/post-Show tests",
+      "Rust five popup-shadow tests",
+      "12 localized shadow reference images",
+      "documentation links/shared-data checks"
+    ],
+    "full_suite_and_pty": "Previous full-suite/PTY evidence retained; latest change checked with targeted render/geometry tests"
+  }
+}

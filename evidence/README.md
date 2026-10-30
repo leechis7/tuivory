@@ -58,3 +58,5 @@ ANSI 팔레트(참조/사용자 변경/미확인), 굵게 설정:
 [비활성 상태와 12팔레트 비교](../docs/disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.
 
 [TVR-7 비활성 색상 후속 검증](../docs/disabled-states.md) · [결과 JSON](disabled-colors-results.json): 일반 접두사 제거, 12팔레트 회색/Dim·입력 차단·104개 한영 참조.
+
+[TVR-20 API 지원 상태·중복 정리](../docs/api-lifecycle.md) · [결과 JSON](api-lifecycle-results.json): 미배포 Deprecated 10개·전환 경고/출력/입력 호환·한영 문서 일치·공개 API 영역 점검.

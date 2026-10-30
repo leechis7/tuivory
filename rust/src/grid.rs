@@ -383,7 +383,25 @@ impl Grid {
         event.column_id = self.column_id.clone();
         event
     }
+    /// Legacy row-ID and horizontal-coordinate mouse entry point.
+    /// Deprecated in unreleased source after 0.4.0; removal is not scheduled.
+    /// Use [`Grid::pointer`] for local mouse input, or [`Grid::focus`] and
+    /// [`Grid::handle`] for programmatic selection/sorting.
+    #[deprecated(
+        since = "0.5.0",
+        note = "Use Grid::pointer for mouse coordinates, or Grid::focus and Grid::handle for programmatic actions."
+    )]
     pub fn click(
+        &mut self,
+        row_id: &str,
+        kind: &str,
+        x: usize,
+        width: usize,
+        height: usize,
+    ) -> GridEvent {
+        self.click_cell(row_id, kind, x, width, height)
+    }
+    fn click_cell(
         &mut self,
         row_id: &str,
         kind: &str,
