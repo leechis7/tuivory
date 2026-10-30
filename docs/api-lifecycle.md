@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](api-lifecycle.en.md)
 
-현재 공개 릴리스는 **0.4.0**입니다. 아래 TVR-20 변경은 **0.4.0 이후 미배포 작업 소스**에만 있습니다. 기존 `go/v0.4.0`·`rust/v0.4.0` 태그를 수정하지 않으며, 새 Rust 생성자도 해당 태그에는 없습니다. 현재 작업 소스를 path 의존성으로 적용하거나 후속 릴리스 안내를 확인하세요. 제품 `VERSION`은 이번 작업에서 올리지 않습니다.
+Deprecated 최초 배포 버전은 **0.5.0**입니다. 기존 0.4.0 태그는 보존합니다. [릴리스 안내](release-0.5.0.md).
 
 ## 상태를 읽는 방법
 
@@ -22,33 +22,33 @@
 | 언어/API | 상태 | 용도 또는 전환 경로 |
 | --- | --- | --- |
 | Go `Styler`·공통 컴포넌트 모델/뷰 | 지원 | 기존 위젯 스타일 적용과 공통 컴포넌트 조작·그리기 |
-| Go `Styles.PopupShadowStyle`·`DimRegion`·`WideSafeScreen` | 지원 | 직접 그리는 팝업/그림자·두 칸 문자 경계 보호. 미배포 TVR-19 `ShadowView`가 일반 팝업을 감싸며 앞의 두 API를 내부 사용. 임의 영역 그리기·경계 보호까지 대체하지 않으므로 현재 지원 |
+| Go `Styles.PopupShadowStyle`·`DimRegion`·`WideSafeScreen` | 지원 | 직접 그리는 팝업/그림자·두 칸 문자 경계 보호. 0.5.0 TVR-19 `ShadowView`가 일반 팝업을 감싸며 앞의 두 API를 내부 사용. 임의 영역 그리기·경계 보호까지 대체하지 않으므로 현재 지원 |
 | Go `Pair.Style`·`ControlStyle` / Rust `Styles::role`·`Styles::control` | 지원 | 원래 역할의 명시적 배경을 사용하는 직접 조합. 표면 지정 API와 목적이 다름 |
 | Go `TextOnSurface`·`ControlStyleOnSurface` / Rust `text_on_surface`·`control_on_surface` | 지원, 0.4.0부터 | 실제 표면 위 평문 배경·대비·상태 처리 |
 | Go `RowsView.PreserveBackgrounds` / Rust `RowsWidget::preserve_backgrounds`·`RawRowsWidget` | 지원, 0.4.0부터 | 명시적 역할 배경을 보존하는 그리드/사용자 행 조합 |
-| Rust `MenuWidget`·`MenuBarWidget`·`MenuPopupWidget` | 지원 | 타입·메뉴 모델·입력 동작은 계속 지원. 미배포 소스에서 `new` 생성자 권장 |
-| Go `Colors.SelectionText` | Deprecated — 미배포 | 렌더링이 읽지 않는 과거 값 사본. 실제 전경은 `Styles.SelectionFG` |
-| Go `Styles.FieldStyle` | Deprecated — 미배포 | `Styles.TextStyle(Field, Body)` — 사용자 색상 조정도 동일 |
-| Go `Styles.FooterButtonStyle` | Deprecated — 미배포 | `Styles.TextStyle(Footer, Body)` |
-| Go `Styles.PopupCardStyle` | Deprecated — 미배포 | `Styles.TextStyle(Panel, Body)` |
-| Go `Styler.Table` | Deprecated — 미배포 | `Styler.TableOn(table, Canvas)` |
-| Go `Grid.Click` | Deprecated — 미배포 | 마우스는 `Grid.Pointer`, 프로그램 제어는 `Focus`+`Handle` |
-| Rust `Grid::click` | Deprecated — 미배포 | 마우스는 `Grid::pointer`, 프로그램 제어는 `focus`+`handle` |
-| Rust `MenuWidget::focused` | Deprecated — 미배포 | `MenuWidget::new(model, styles).ascii(ascii)` |
-| Rust `MenuBarWidget::focused` | Deprecated — 미배포 | `MenuBarWidget::new(model, styles)` |
-| Rust `MenuPopupWidget::focused` | Deprecated — 미배포 | `MenuPopupWidget::new(model, styles, title).ascii(ascii).padding(padding)` |
+| Rust `MenuWidget`·`MenuBarWidget`·`MenuPopupWidget` | 지원 | 타입·메뉴 모델·입력 동작은 계속 지원. 0.5.0 소스에서 `new` 생성자 권장 |
+| Go `Colors.SelectionText` | Deprecated — 0.5.0 | 렌더링이 읽지 않는 과거 값 사본. 실제 전경은 `Styles.SelectionFG` |
+| Go `Styles.FieldStyle` | Deprecated — 0.5.0 | `Styles.TextStyle(Field, Body)` — 사용자 색상 조정도 동일 |
+| Go `Styles.FooterButtonStyle` | Deprecated — 0.5.0 | `Styles.TextStyle(Footer, Body)` |
+| Go `Styles.PopupCardStyle` | Deprecated — 0.5.0 | `Styles.TextStyle(Panel, Body)` |
+| Go `Styler.Table` | Deprecated — 0.5.0 | `Styler.TableOn(table, Canvas)` |
+| Go `Grid.Click` | Deprecated — 0.5.0 | 마우스는 `Grid.Pointer`, 프로그램 제어는 `Focus`+`Handle` |
+| Rust `Grid::click` | Deprecated — 0.5.0 | 마우스는 `Grid::pointer`, 프로그램 제어는 `focus`+`handle` |
+| Rust `MenuWidget::focused` | Deprecated — 0.5.0 | `MenuWidget::new(model, styles).ascii(ascii)` |
+| Rust `MenuBarWidget::focused` | Deprecated — 0.5.0 | `MenuBarWidget::new(model, styles)` |
+| Rust `MenuPopupWidget::focused` | Deprecated — 0.5.0 | `MenuPopupWidget::new(model, styles, title).ascii(ascii).padding(padding)` |
 | Rust 일반 `RowsWidget`·`FormWidget` 등의 `focused` | 지원 | 실제 포커스 표시를 제어함. 메뉴의 효과 없는 필드와 구분 |
 
 ### Rust 메뉴 focused 필드 3개
 
 - 이유: 0.4.0부터 메뉴는 입력 포커스와 별개로 선택/열림 상태만 그립니다. 이 필드들은 호환 목적으로 남아 있었으며 표시 효과가 없습니다.
-- 지정 시점: TVR-20, 0.4.0 이후 미배포 작업 소스. **Deprecated가 처음 배포될 버전은 아직 미정**이며 `#[deprecated]`의 `since`를 임의의 0.4.0으로 표시하지 않습니다.
+- 최초 Deprecated 배포: **0.5.0**. Rust `since`와 상태 목록도 같은 버전입니다.
 - 대체 경로: 위 `new` 생성자와 `ascii`/`padding` 설정 메서드. Unicode, padding=1이 기본값이며 메뉴 바에는 추가 설정이 없습니다.
 - 기존 구조체 리터럴은 계속 컴파일되지만 해당 필드를 지정하면 Deprecated 경고가 납니다. `deny(deprecated)`나 경고를 오류로 처리하는 앱은 새 경로로 전환해야 합니다. 필드를 제거하거나 실제 입력 포커스 동작을 바꾸지는 않습니다.
 - 제거 계획: **미정**. 현재 릴리스나 다음 릴리스에서 자동 제거하지 않습니다.
 
 ```rust
-// 이전 코드: 미배포 소스에서는 focused 필드에 경고가 남
+// 이전 코드: 0.5.0 소스에서는 focused 필드에 경고가 남
 let popup = MenuPopupWidget {
     model: &mut menu,
     styles: &styles,
@@ -58,7 +58,7 @@ let popup = MenuPopupWidget {
     padding: 1,
 };
 
-// 권장 코드: 미배포 소스의 새 생성자, deprecated 경고 없음
+// 권장 코드: 0.5.0 소스의 새 생성자, deprecated 경고 없음
 let popup = MenuPopupWidget::new(&mut menu, &styles, "Menu")
     .ascii(true)
     .padding(1);
@@ -70,7 +70,7 @@ let popup = MenuPopupWidget::new(&mut menu, &styles, "Menu")
 
 1. 사용 중단 이유와 경고 없이 사용할 대체 API를 먼저 마련합니다. 필요한 설정·동작·성능을 보존하고 기존 사용 경로도 검증합니다.
 2. [상태 목록](../design/api-lifecycle.json)에 대상·상태·대체 API·사유·지정 시점·제거 계획을 기록하고 이 한영 사용 문서를 함께 수정합니다.
-3. Go는 해당 공개 선언의 GoDoc 문단에 `Deprecated: ...`를, Rust는 해당 심볼에 `#[deprecated(note = "...")]`를 붙입니다. 타입 전체를 중단하지 않는다면 필드/메서드에만 표시합니다. 이번 미배포 작업에서는 위 Go 메서드/필드 6개에 GoDoc 표시를 추가했습니다. Go 컴파일러 자체는 Deprecated 경고를 내지 않으며 GoDoc·IDE·분석 도구가 이 정보를 사용합니다.
+3. Go는 해당 공개 선언의 GoDoc 문단에 `Deprecated: ...`를, Rust는 해당 심볼에 `#[deprecated(note = "...")]`를 붙입니다. 타입 전체를 중단하지 않는다면 필드/메서드에만 표시합니다. 0.5.0 작업에서는 위 Go 메서드/필드 6개에 GoDoc 표시를 추가했습니다. Go 컴파일러 자체는 Deprecated 경고를 내지 않으며 GoDoc·IDE·분석 도구가 이 정보를 사용합니다.
 4. 미배포 항목을 릴리스할 때 `availability`를 `released`로 바꾸고 `deprecated_since`를 첫 배포 버전으로 기록합니다. Rust의 `since`와 한영 문서에도 같은 버전을 반영합니다. 기존 태그와 과거 도입 버전을 바꾸지 않습니다.
 5. 제거가 승인되면 실제 제거 릴리스·전환 방법을 안내하고 목록을 `removed`로 갱신합니다. 제거 이력도 보존합니다. 현재는 제거 항목이 없습니다.
 6. 자체 예제와 독립 적용 앱은 경고 없는 경로를 사용합니다. 호환 회귀를 위한 오래된 호출만 좁은 범위에서 경고를 허용하며 라이브러리/프로젝트 전체의 Deprecated 경고를 숨기지 않습니다.
@@ -83,7 +83,7 @@ python3 tools/check_api_lifecycle.py
 
 ## 중복 기능의 전환과 차이
 
-단순 이름 유사성이 아니라 반환 스타일·표면·옵션·입력·데이터 소유권을 비교합니다. [전체 API 영역별 중복 점검](api-overlap-audit.md)에 각 판단의 근거를 기록합니다. 현재 미배포 Deprecated 대상은 Go 메서드/필드 6개와 Rust 메서드/필드 4개, 총 10개입니다. 지정/첫 배포 버전·제거 계획은 모두 위와 같이 미배포/미정입니다.
+단순 이름 유사성이 아니라 반환 스타일·표면·옵션·입력·데이터 소유권을 비교합니다. [전체 API 영역별 중복 점검](api-overlap-audit.md)에 각 판단의 근거를 기록합니다. 0.5.0 Deprecated 대상은 Go 메서드/필드 6개와 Rust 메서드/필드 4개, 총 10개입니다. 첫 배포 버전은 0.5.0이며 제거 계획은 미정입니다.
 
 ```go
 // 이전 -> 권장: 동일한 스타일/Canvas 표면

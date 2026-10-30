@@ -38,6 +38,7 @@ class LifecycleFailures(unittest.TestCase):
     def test_unreleased_since_version_fails(self):
         path = self.root / 'design/api-lifecycle.json'
         data = json.loads(path.read_text())
+        data['entries'][0]['availability'] = 'unreleased'
         data['entries'][0]['deprecated_since'] = '0.4.0'
         path.write_text(json.dumps(data))
         self.assertTrue(any('must not invent' in e for e in inspect(self.root)))

@@ -4,17 +4,17 @@
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-crate 버전은 **0.4.0**이며 루트 `VERSION`과 일치합니다. `rust/v0.4.0` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.4.0.md).
+crate 버전은 **0.5.0**이며 루트 `VERSION`과 일치합니다. `rust/v0.5.0` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.5.0.md).
 
 공통 컴포넌트 모델·후보 토큰·스타일 코어, 선택적 Ratatui 렌더러와 DB 없는 대화형 예제를 제공합니다. 기본 코어는 Rust 1.85 이상(1.85.1 검증), Ratatui 0.30.2 어댑터와 Crossterm 0.29 예제는 Rust 1.88 이상(1.88.0 검증)입니다. 코어와 어댑터는 Go 코드·단말 I/O·DB에 의존하지 않습니다.
 
 ## 사용
 
-버전 0.4.0은 `rust/v0.4.0` Git 태그로 배포하며 crates.io에는 게시하지 않습니다. 외부 프로젝트의 Cargo.toml에서 Git 의존성을 지정하거나 로컬 체크아웃의 rust/를 path 의존성으로 사용합니다.
+버전 0.5.0은 `rust/v0.5.0` Git 태그로 배포하며 crates.io에는 게시하지 않습니다. 외부 프로젝트의 Cargo.toml에서 Git 의존성을 지정하거나 로컬 체크아웃의 rust/를 path 의존성으로 사용합니다.
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.4.0" }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.5.0" }
 # Ratatui 사용 시 features = ["ratatui"] 추가
 ```
 
@@ -70,7 +70,7 @@ fn main() -> Result<(), tuivory::Error> {
 
 `Styles::from_palette()`로 검증된 사용자 팔레트를 사용할 수 있습니다. `role()`은 Ratatui Style을 반환하고, `block(title, focused)`는 역할 색상과 포커스 시 이중 테두리를 적용합니다. 코어 Color/Style의 `Into` 변환은 ANSI 인덱스·RGB·굵기를 보존합니다. 테마 변경 시 호스트가 Styles만 교체하고 위젯 상태를 유지합니다.
 
-기존 [playground](../docs/rust-playground.md)의 입력·목록·표·모달은 호스트 구현입니다. 별도로 0.2.0은 `forms`·`collections`·`grid`·`feedback`·`layout` 모델과 공개 Ratatui 위젯을 제공합니다. [카탈로그와 API](../docs/release-0.4.0.md)를 참고하세요.
+기존 [playground](../docs/rust-playground.md)의 입력·목록·표·모달은 호스트 구현입니다. 별도로 0.2.0은 `forms`·`collections`·`grid`·`feedback`·`layout` 모델과 공개 Ratatui 위젯을 제공합니다. [카탈로그와 API](../docs/release-0.5.0.md)를 참고하세요.
 
 ## 예제와 검증
 
@@ -106,15 +106,15 @@ make build-rust
 
 ## 공통 Tree
 
-`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}`는 Rust 1.85 이상에서 프레임워크 없이 사용합니다. 선택적 `tuivory::ratatui::TreeWidget`은 Rust 1.88 이상입니다. Go와 같은 안정 ID·펼침·선택·스크롤·이벤트 처리 규칙을 따르며 아이콘·보조 설명·개수·Unicode/ASCII를 렌더링합니다. [Tree 사용법](../docs/tree.md) · [지원 범위 점검](../docs/component-audit.md). 루트에서 `make run-tree-rust ARGS="--lang ko"`로 실행합니다. 이 TVR-7 변경은 `rust/v0.4.0`에 포함합니다.
+`tuivory::tree::{Tree, TreeNode, TreeState, TreeAction, TreeEvent}`는 Rust 1.85 이상에서 프레임워크 없이 사용합니다. 선택적 `tuivory::ratatui::TreeWidget`은 Rust 1.88 이상입니다. Go와 같은 안정 ID·펼침·선택·스크롤·이벤트 처리 규칙을 따르며 아이콘·보조 설명·개수·Unicode/ASCII를 렌더링합니다. [Tree 사용법](../docs/tree.md) · [지원 범위 점검](../docs/component-audit.md). 루트에서 `make run-tree-rust ARGS="--lang ko"`로 실행합니다. 이 TVR-7 변경은 `rust/v0.5.0`에 포함합니다.
 
 ## 공통 워크스페이스 컴포넌트
 
-[탭·패널·분할선·상태 표시줄·경로 사용법](../docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.4.0`과 Rust `rust/v0.4.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
+[탭·패널·분할선·상태 표시줄·경로 사용법](../docs/workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.5.0`과 Rust `rust/v0.5.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
 
 ## 공통 컨트롤 상태와 포커스
 
-0.2.0의 `interaction::{ControlState, FocusTarget, FocusStack}`과 Ratatui `Styles::control`을 제공합니다. [공통 명세·한영 예제](../docs/focus.md)를 참조하고 루트에서 `make run-focus-rust ARGS="--lang ko"`로 실행합니다. 이 API는 rust/v0.4.0에 포함합니다.
+0.2.0의 `interaction::{ControlState, FocusTarget, FocusStack}`과 Ratatui `Styles::control`을 제공합니다. [공통 명세·한영 예제](../docs/focus.md)를 참조하고 루트에서 `make run-focus-rust ARGS="--lang ko"`로 실행합니다. 이 API는 rust/v0.5.0에 포함합니다.
 
 [TVR-9: 입력·폼](../docs/forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
@@ -126,16 +126,16 @@ make build-rust
 
 [TVR-13: 배치·밀도·부가 컴포넌트](../docs/layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
 
-[TVR-17 그리드 옵션](../docs/grid.md): simple/data 프리셋·범위·열 구성·상태줄·응답 세대 검사와 5행 비교 예제. 0.4.0에 포함합니다.
+[TVR-17 그리드 옵션](../docs/grid.md): simple/data 프리셋·범위·열 구성·상태줄·응답 세대 검사와 5행 비교 예제. 0.5.0에 포함합니다.
 
-[공통 메뉴](../docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 0.4.0에 포함합니다.
+[공통 메뉴](../docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 0.5.0에 포함합니다.
 
-0.4.0의 메뉴는 단일선 테두리와 항목 선택·열린 메뉴 표시를 사용합니다. 입력 차단·호출 위치 복귀는 유지합니다. [메뉴 표시 규칙](../docs/menus.md).
+0.5.0의 메뉴는 단일선 테두리와 항목 선택·열린 메뉴 표시를 사용합니다. 입력 차단·호출 위치 복귀는 유지합니다. [메뉴 표시 규칙](../docs/menus.md).
 
-0.4.0의 TextOnSurface / Styles::text_on_surface 및 ControlStyleOnSurface / Styles::control_on_surface로 평문을 실제 바탕에 연결하고 대비를 보정합니다. 원본 토큰과 raw 스타일은 유지하며 명시적 상태/사용자 배경은 보존합니다. [한영 표면 디자인 가이드](../design/surfaces.md).
+0.5.0의 TextOnSurface / Styles::text_on_surface 및 ControlStyleOnSurface / Styles::control_on_surface로 평문을 실제 바탕에 연결하고 대비를 보정합니다. 원본 토큰과 raw 스타일은 유지하며 명시적 상태/사용자 배경은 보존합니다. [한영 표면 디자인 가이드](../design/surfaces.md).
 
 [비활성 상태와 12팔레트 비교](../docs/disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.
 
-[API 지원 상태·Deprecated·전환 안내](../docs/api-lifecycle.md) · [공개 API 중복 점검](../docs/api-overlap-audit.md): 미배포 변경의 대상·대체 방법·배포/제거 계획을 구분합니다.
+[API 지원 상태·Deprecated·전환 안내](../docs/api-lifecycle.md) · [공개 API 중복 점검](../docs/api-overlap-audit.md): 0.5.0 변경의 대상·대체 방법·배포/제거 계획을 구분합니다.
 
-미배포 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](../docs/popup-shadows.md).
+0.5.0의 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](../docs/popup-shadows.md).

@@ -388,6 +388,7 @@ impl Grid {
     /// Use [`Grid::pointer`] for local mouse input, or [`Grid::focus`] and
     /// [`Grid::handle`] for programmatic selection/sorting.
     #[deprecated(
+        since = "0.5.0",
         note = "Use Grid::pointer for mouse coordinates, or Grid::focus and Grid::handle for programmatic actions."
     )]
     pub fn click(

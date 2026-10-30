@@ -2,7 +2,7 @@
 
 [한국어 (default)](api-overlap-audit.md) · **English**
 
-TVR-20 audits unreleased source after 0.4.0. Beyond menu fields, the review covers the API families below using Go root exports and methods/fields exposed through aliases such as Styles/Styler, plus all-feature Rust public rustdoc items. Inherited/implemented third-party tview/Ratatui APIs are not counted as duplicate Tuivory APIs. Declaration inventories locate symbols; the behavior comparisons below determine semantic overlap.
+TVR-20 audits source for 0.5.0. Beyond menu fields, the review covers the API families below using Go root exports and methods/fields exposed through aliases such as Styles/Styler, plus all-feature Rust public rustdoc items. Inherited/implemented third-party tview/Ratatui APIs are not counted as duplicate Tuivory APIs. Declaration inventories locate symbols; the behavior comparisons below determine semantic overlap.
 
 ## Overlap being retired
 
@@ -16,7 +16,7 @@ TVR-20 audits unreleased source after 0.4.0. Beyond menu fields, the review cove
 | Go `Grid.Click` / Rust `Grid::click` | Legacy mouse path mixing row IDs and horizontal coordinates | Unified `Pointer/pointer`; programmatic IDs use `Focus/focus` + `Handle/handle`. Document DisableMouse behavior differences |
 | Rust three menu `focused` fields | Ignored compatibility fields since 0.4.0 | `new`, `ascii`, `padding`; match legacy literals and new render/state behavior across twelve palettes |
 
-In total, **10** public methods/fields are deprecated in unreleased source. Existing behavior and names remain for source compatibility; removal is not scheduled. The [lifecycle/migration guide](api-lifecycle.en.md) and [registry](../design/api-lifecycle.json) define exact targets, rationale, replacements and publication status.
+In total, **10** public methods/fields are deprecated in 0.5.0. Existing behavior and names remain for source compatibility; removal is not scheduled. The [lifecycle/migration guide](api-lifecycle.en.md) and [registry](../design/api-lifecycle.json) define exact targets, rationale, replacements and publication status.
 
 ## Remaining families and consolidation conditions
 
@@ -38,6 +38,6 @@ In total, **10** public methods/fields are deprecated in unreleased source. Exis
 | Paths/status/Notice/Progress/DataState/Badge/Chip/Help models/rows/views | Layout/host requests are separated from rendering; model-only consumers must remain possible |
 | Go public aliases / internal declarations; Rust re-exports | One symbol exposed through a public import is not multiple independently implemented features |
 
-This audit does not promise permanent support for every current API. Update the registry and decisions when replacements or real host migration evidence become available. TVR-19 options now exist in unreleased source for popup composition; they do not replace arbitrary-region drawing or host-owned screens.
+This audit does not promise permanent support for every current API. Update the registry and decisions when replacements or real host migration evidence become available. TVR-19 options now exist in 0.5.0 for popup composition; they do not replace arbitrary-region drawing or host-owned screens.
 
 See the [TVR-20 results](../evidence/api-lifecycle-results.json) for validation, public declaration/item inventories and source hashes. Go 751 declarations and Rust 159 public item pages use different counting units and are not comparable API counts. Validation is local; no commit, publication or remote CI was performed.

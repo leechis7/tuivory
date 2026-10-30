@@ -96,4 +96,4 @@ Disabled menus and menu bars use color/brightness without an extra disabled pref
 
 See [API lifecycle/migration](api-lifecycle.en.md) for deprecated APIs in unreleased source. Existing tags remain unchanged and legacy paths remain compatible.
 
-Unreleased TVR-19 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).
+TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).

@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](go-package.en.md)
 
-현재 공개 제품 버전은 **0.4.0**입니다. [변경 범위·설치·배포 자산](release-0.4.0.md).
+현재 공개 제품 버전은 **0.5.0**입니다. [변경 범위·설치·배포 자산](release-0.5.0.md).
 
 현재 Go 소스는 `go/`에 있는 독립 하위 모듈입니다. 모듈 경로는 **`github.com/leechis7/tuivory/go`**, 패키지 이름은 **`tuivory`**이며 Tuivory 관련 import는 하나입니다.
 
@@ -10,10 +10,10 @@
 import "github.com/leechis7/tuivory/go"
 ```
 
-현재 버전은 `v0.4.0`이며 Go 하위 모듈 태그는 `go/v0.4.0`입니다.
+현재 버전은 `v0.5.0`이며 Go 하위 모듈 태그는 `go/v0.5.0`입니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.4.0
+go get github.com/leechis7/tuivory/go@v0.5.0
 ```
 
 | Go 모듈 내부 | 책임 |
@@ -34,7 +34,7 @@ go -C go run ./examples/starter
 go -C go run ./cmd/tuivory --theme light --colors 16
 ```
 
-이 실행 명령과 `--lang`은 `v0.4.0` 소스 기준입니다. 견본은 한국어가 기본이며 `--lang en`을 추가하면 영어 UI로 실행합니다. `--lang ko`는 한국어를 명시합니다. 언어 선택은 견본 UI에만 적용하며 공개 스타일 API에는 영향을 주지 않습니다. 시작 템플릿의 예시 문구는 한국어입니다.
+이 실행 명령과 `--lang`은 `v0.5.0` 소스 기준입니다. 견본은 한국어가 기본이며 `--lang en`을 추가하면 영어 UI로 실행합니다. `--lang ko`는 한국어를 명시합니다. 언어 선택은 견본 UI에만 적용하며 공개 스타일 API에는 영향을 주지 않습니다. 시작 템플릿의 예시 문구는 한국어입니다.
 
 ```go
 import "github.com/leechis7/tuivory/go"
@@ -100,7 +100,7 @@ styler.FooterButton(footerButton)
 
 ## 배포와 독립 사용
 
-이 저장소는 Go 외의 언어도 포함하므로 `go.mod`는 `go/`에 둡니다. Go 버전 조회·설치는 `github.com/leechis7/tuivory/go@v0.4.0`을 사용합니다. 루트 모듈은 제공하지 않습니다.
+이 저장소는 Go 외의 언어도 포함하므로 `go.mod`는 `go/`에 둡니다. Go 버전 조회·설치는 `github.com/leechis7/tuivory/go@v0.5.0`을 사용합니다. 루트 모듈은 제공하지 않습니다.
 
 [설치·사용 안내](installation.md)에서 현재 모듈·명령·토큰 식별자를 확인할 수 있습니다. 원출처와 라이선스는 [NOTICE](../NOTICE.md)에 보존합니다.
 
@@ -132,10 +132,10 @@ Tuivory는 적용 앱에 필수 공유 라이브러리 의존성을 추가하지
 
 `WideSafeScreen(screen)`으로 카드 전체 Draw를 감싸고, 그림자는 `DimRegion(screen, CellRect{...})`으로 그립니다. 좌우 경계 보정·Show 이후 검사는 [오버레이 그리기](overlay-drawing.md)를 보세요. 0.2.0 태그에 포함한 API입니다.
 
-0.4.0의 TextOnSurface / Styles::text_on_surface 및 ControlStyleOnSurface / Styles::control_on_surface로 평문을 실제 바탕에 연결하고 대비를 보정합니다. 원본 토큰과 raw 스타일은 유지하며 명시적 상태/사용자 배경은 보존합니다. [한영 표면 디자인 가이드](../design/surfaces.md).
+0.5.0의 TextOnSurface / Styles::text_on_surface 및 ControlStyleOnSurface / Styles::control_on_surface로 평문을 실제 바탕에 연결하고 대비를 보정합니다. 원본 토큰과 raw 스타일은 유지하며 명시적 상태/사용자 배경은 보존합니다. [한영 표면 디자인 가이드](../design/surfaces.md).
 
 ## API 지원 상태와 이전
 
-[지원·호환용·Deprecated·제거 상태와 전환 예제](api-lifecycle.md) · [전체 영역 중복 점검](api-overlap-audit.md). 현재 공개 설치는 0.4.0이며 Deprecated 지정은 그 이후 미배포 소스에만 적용합니다. 과거 0.2.0 도입 기록과 구분합니다.
+[지원·호환용·Deprecated·제거 상태와 전환 예제](api-lifecycle.md) · [전체 영역 중복 점검](api-overlap-audit.md). 현재 공개 설치는 0.5.0이며 Deprecated 지정은 그 이후 미배포 소스에만 적용합니다. 과거 0.2.0 도입 기록과 구분합니다.
 
-미배포 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](popup-shadows.md).
+0.5.0의 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](popup-shadows.md).

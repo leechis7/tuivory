@@ -2,7 +2,7 @@
 
 [한국어 (default)](popup-shadows.md) · **English**
 
-TVR-19 is an **unreleased source** feature, absent from public 0.4.0 tags. Shadows are **off by default** and selected per menu/context menu/general popup by the host. They do not determine application focus, global keys or business actions.
+TVR-19 ships in **0.5.0**, absent from previous 0.4.0 tags. Shadows are **off by default** and selected per menu/context menu/general popup by the host. They do not determine application focus, global keys or business actions.
 
 ## Modes
 

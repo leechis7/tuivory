@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 0.5.0 — 2026-10-30
+
 - TVR-19: Add default-off popup shadows through Go `ShadowView`, Rust `ShadowWidget` and menu popups: Auto/Solid/Dim, default two-cell-right/one-row-down shadows with softer Auto shading, full-footprint placement, card-only input, wide-glyph boundary protection, bilingual examples and 12-palette images. [Usage](docs/popup-shadows.en.md).
 
 - TVR-20: audit API overlap; deprecate six Go methods/fields and four Rust methods/fields with replacements while preserving legacy behavior. Add warning-free menu constructors, bilingual migration guides and source/doc checks; correct current Go version guidance to 0.4.0.

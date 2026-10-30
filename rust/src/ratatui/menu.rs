@@ -12,7 +12,10 @@ pub struct MenuWidget<'a> {
     /// Ignored since 0.4.0; input focus remains owned by the host.
     /// Deprecated in unreleased source after 0.4.0; removal is not scheduled.
     /// Construct with [`MenuWidget::new`] instead.
-    #[deprecated(note = "Ignored: menus use selection/open state. Use MenuWidget::new instead.")]
+    #[deprecated(
+        since = "0.5.0",
+        note = "Ignored: menus use selection/open state. Use MenuWidget::new instead."
+    )]
     pub focused: bool,
 }
 impl<'a> MenuWidget<'a> {
@@ -52,6 +55,7 @@ pub struct MenuBarWidget<'a> {
     /// Deprecated in unreleased source after 0.4.0; removal is not scheduled.
     /// Construct with [`MenuBarWidget::new`] instead.
     #[deprecated(
+        since = "0.5.0",
         note = "Ignored: menus use selection/open state. Use MenuBarWidget::new instead."
     )]
     pub focused: bool,
@@ -117,6 +121,7 @@ pub struct MenuPopupWidget<'a> {
     /// Deprecated in unreleased source after 0.4.0; removal is not scheduled.
     /// Construct with [`MenuPopupWidget::new`] instead.
     #[deprecated(
+        since = "0.5.0",
         note = "Ignored: menus use selection/open state. Use MenuPopupWidget::new instead."
     )]
     pub focused: bool,
