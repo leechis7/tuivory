@@ -93,3 +93,5 @@ Go는 `NewPanelView(menuView, palette)`로 감싸고 계산한 사각형에 그�
 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
 
 비활성 메뉴·메뉴 바는 색상/명암으로 구분하며 별도 비활성 접두사를 붙이지 않습니다. 체크·라디오 선택 표식은 유지합니다.
+
+미배포 소스의 Deprecated API와 전환 코드는 [지원 상태 안내](api-lifecycle.md)를 참고하세요. 기존 태그의 API는 바꾸지 않으며 호환 경로는 유지합니다.

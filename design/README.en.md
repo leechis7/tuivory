@@ -52,3 +52,5 @@ Follow the [component/application boundary](../docs/component-boundary.en.md). E
 [Surface/text background rules](surfaces.en.md): actual-surface plain text, explicit state backgrounds, contrast correction and binding APIs.
 
 [Disabled states across twelve palettes](../docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
+
+[API lifecycle, deprecation and migration](../docs/api-lifecycle.en.md) · [Public API overlap audit](../docs/api-overlap-audit.en.md): distinguish unreleased targets, replacements and first-release/removal plans.

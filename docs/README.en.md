@@ -59,3 +59,5 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 [Surface/text background design guide](../design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.4.0.
 
 [Disabled states across twelve palettes](disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
+
+[API lifecycle, deprecation and migration](api-lifecycle.en.md) · [Public API overlap audit](api-overlap-audit.en.md): distinguish unreleased targets, replacements and first-release/removal plans.

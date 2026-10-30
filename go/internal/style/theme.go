@@ -62,8 +62,13 @@ func NewStyles(theme, profile string) (Styles, error) {
 func indexed(i int) tcell.Color { return tcell.PaletteColor(i) }
 
 type Colors struct {
-	Background, Surface, Footer, Field, Text, Muted, Accent, Button    tcell.Color
-	Editor, EditorText, FieldText, SelectionText, Placeholder, Warning tcell.Color
+	Background, Surface, Footer, Field, Text, Muted, Accent, Button tcell.Color
+	Editor, EditorText, FieldText                                   tcell.Color
+	// SelectionText is a historical palette snapshot; SDK rendering reads Styles.SelectionFG.
+	//
+	// Deprecated: Use Styles.SelectionFG to configure or read the selected foreground.
+	SelectionText        tcell.Color
+	Placeholder, Warning tcell.Color
 }
 
 var palette = Colors{

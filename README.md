@@ -130,3 +130,5 @@ Go 팝업·그림자의 두 칸 문자 경계 보호: [공통 그리기 API](doc
 [표면·글자 배경 디자인 가이드](design/surfaces.md): 평문 배경 상속, 입력/선택/수정 배경 보존, 대비 보정. 0.4.0에 포함합니다.
 
 [비활성 상태와 12팔레트 비교](docs/disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.
+
+[API 지원 상태·Deprecated·전환 안내](docs/api-lifecycle.md) · [공개 API 중복 점검](docs/api-overlap-audit.md): 미배포 변경의 대상·대체 방법·배포/제거 계획을 구분합니다.

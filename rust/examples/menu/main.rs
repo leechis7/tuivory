@@ -157,11 +157,7 @@ impl App {
         );
         if height > 1 {
             f.render_widget(
-                MenuBarWidget {
-                    model: &mut self.menu,
-                    styles: &self.styles,
-                    focused: false,
-                },
+                MenuBarWidget::new(&mut self.menu, &self.styles),
                 Rect::new(0, 1, width, 1),
             );
         }
@@ -252,14 +248,9 @@ impl App {
                 .unwrap()
                 .inner(self.popup);
             f.render_widget(
-                MenuPopupWidget {
-                    model: &mut self.menu,
-                    styles: &self.styles,
-                    title: &title,
-                    ascii: self.ascii,
-                    focused: true,
-                    padding: 1,
-                },
+                MenuPopupWidget::new(&mut self.menu, &self.styles, &title)
+                    .ascii(self.ascii)
+                    .padding(1),
                 self.popup,
             );
         }

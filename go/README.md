@@ -56,3 +56,5 @@ make check
 0.4.0의 TextOnSurface / Styles::text_on_surface 및 ControlStyleOnSurface / Styles::control_on_surface로 평문을 실제 바탕에 연결하고 대비를 보정합니다. 원본 토큰과 raw 스타일은 유지하며 명시적 상태/사용자 배경은 보존합니다. [한영 표면 디자인 가이드](../design/surfaces.md).
 
 [비활성 상태와 12팔레트 비교](../docs/disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.
+
+[API 지원 상태·Deprecated·전환 안내](../docs/api-lifecycle.md) · [공개 API 중복 점검](../docs/api-overlap-audit.md): 미배포 변경의 대상·대체 방법·배포/제거 계획을 구분합니다.

@@ -52,3 +52,5 @@
 [표면·글자 배경 규칙](surfaces.md): 평문 바탕 상속, 명시적 상태 배경 보존, 대비 보정과 언어별 연결 API의 기준입니다.
 
 [비활성 상태와 12팔레트 비교](../docs/disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.
+
+[API 지원 상태·Deprecated·전환 안내](../docs/api-lifecycle.md) · [공개 API 중복 점검](../docs/api-overlap-audit.md): 미배포 변경의 대상·대체 방법·배포/제거 계획을 구분합니다.

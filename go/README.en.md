@@ -54,3 +54,5 @@ In 0.4.0, menus use single borders and current-item/open-menu cues. Input blocki
 Version 0.4.0 TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface / Styles::control_on_surface bind plain text to its real surface and correct contrast. Preserve original tokens/raw styles and explicit state/custom backgrounds. [Bilingual surface design guide](../design/surfaces.en.md).
 
 [Disabled states across twelve palettes](../docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
+
+[API lifecycle, deprecation and migration](../docs/api-lifecycle.en.md) · [Public API overlap audit](../docs/api-overlap-audit.en.md): distinguish unreleased targets, replacements and first-release/removal plans.
