@@ -48,3 +48,5 @@ python3 tools/check_go_module.py
 The external single-import check also calls both APIs and inspects output after `Show()`. These are tcell simulation results, not customer-server, SSH or physical-terminal/font validation. Track commit, remote CI and publication separately in TVR-14.
 
 [Go API](go-package.en.md) · [Popup focus](focus.en.md) · [Playground](playground.en.md)
+
+Unreleased TVR-19 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).

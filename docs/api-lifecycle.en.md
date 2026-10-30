@@ -22,7 +22,7 @@ Public APIs outside the explicit deprecation list are supported. The following c
 | Language/API | Status | Purpose or migration |
 | --- | --- | --- |
 | Go `Styler` and shared component models/views | Supported | Existing-widget styling and shared component interaction/rendering |
-| Go `Styles.PopupShadowStyle`, `DimRegion`, `WideSafeScreen` | Supported | Custom popup/shadow drawing and wide-glyph protection; currently supported; reassess equivalent coverage when TVR-19 options exist |
+| Go `Styles.PopupShadowStyle`, `DimRegion`, `WideSafeScreen` | Supported | Custom popup/shadow drawing and wide-glyph protection; unreleased TVR-19 `ShadowView` wraps popups and uses the first two APIs internally; arbitrary-region drawing and boundary protection remain supported |
 | Go `Pair.Style`, `ControlStyle` / Rust `Styles::role`, `Styles::control` | Supported | Compose explicit original-role backgrounds; distinct from surface-bound styling |
 | Go `TextOnSurface`, `ControlStyleOnSurface` / Rust `text_on_surface`, `control_on_surface` | Supported since 0.4.0 | Actual-surface plain-text backgrounds, contrast and states |
 | Go `RowsView.PreserveBackgrounds` / Rust `RowsWidget::preserve_backgrounds`, `RawRowsWidget` | Supported since 0.4.0 | Preserve explicit backgrounds in grids/custom rows |

@@ -61,3 +61,5 @@ The current product is Tuivory, public Go package `tuivory`, Jira project TVR. E
 [Disabled states across twelve palettes](disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
 
 [API lifecycle, deprecation and migration](api-lifecycle.en.md) · [Public API overlap audit](api-overlap-audit.en.md): distinguish unreleased targets, replacements and first-release/removal plans.
+
+Unreleased TVR-19 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).

@@ -58,3 +58,5 @@ make check
 [비활성 상태와 12팔레트 비교](../docs/disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.
 
 [API 지원 상태·Deprecated·전환 안내](../docs/api-lifecycle.md) · [공개 API 중복 점검](../docs/api-overlap-audit.md): 미배포 변경의 대상·대체 방법·배포/제거 계획을 구분합니다.
+
+미배포 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](../docs/popup-shadows.md).

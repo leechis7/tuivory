@@ -57,3 +57,8 @@ required-features = ["playground"]
 name = "states"
 path = "examples/states/main.rs"
 required-features = ["ratatui"]
+
+[[example]]
+name = "shadows"
+path = "examples/shadows/main.rs"
+required-features = ["ratatui"]

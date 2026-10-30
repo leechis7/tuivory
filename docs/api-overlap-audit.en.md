@@ -29,7 +29,7 @@ In total, **10** public methods/fields are deprecated in unreleased source. Exis
 | Existing `Styler.Form/Input/List/Tree/Grid/Comparison` / shared models/views | Applying styles while retaining existing tview objects/state/cells differs from new data-driven interactive components. Reassess once existing object/callback/custom-style migration is ready |
 | Selection/button/button-focus/tab/comparison-header styles | Some profiles happen to share colors, but full themes, custom colors, modifiers and state composition differ |
 | `Styles.Disabled` / `DisabledStyle`, `GridColors.RangeBG` / actual range styling | Candidates needing a coherent replacement for historical values, live configuration and rendered styles. Provide read/write/custom-composition paths before deciding deprecation |
-| `PopupShadowStyle` / `DimRegion` / TVR-19 popup options | Style creation, explicit-region drawing and complete popup composition have different scope. **Low-level APIs are not promised permanent retention.** Reassess when the new options can replace direct composition |
+| `PopupShadowStyle` / `DimRegion` / TVR-19 popup options | Style creation, explicit-region drawing and complete popup composition have different scope. **Low-level APIs are not promised permanent retention.** Unreleased `ShadowView` wraps a popup and uses the first two APIs internally; arbitrary-region styling/Dim and glyph protection remain supported |
 | Model Handle / individual Open/Close/Focus/Resize | Input action routing and programmatic control share implementations but offer different model entry paths |
 | FormKey/NavigationKey/MenuKey / model actions | tcell event translation differs from framework-independent model control, analogous to crossterm host wiring |
 | Grid SetSource / ApplySource and revision | Immediate replacement differs from stale asynchronous response rejection; preserve data/sort/selection restoration semantics |
@@ -38,6 +38,6 @@ In total, **10** public methods/fields are deprecated in unreleased source. Exis
 | Paths/status/Notice/Progress/DataState/Badge/Chip/Help models/rows/views | Layout/host requests are separated from rendering; model-only consumers must remain possible |
 | Go public aliases / internal declarations; Rust re-exports | One symbol exposed through a public import is not multiple independently implemented features |
 
-This audit does not promise permanent support for every current API. Update the registry and decisions when replacements or real host migration evidence become available. Do not describe unimplemented TVR-19 options or host-owned screen composition as completed replacements.
+This audit does not promise permanent support for every current API. Update the registry and decisions when replacements or real host migration evidence become available. TVR-19 options now exist in unreleased source for popup composition; they do not replace arbitrary-region drawing or host-owned screens.
 
 See the [TVR-20 results](../evidence/api-lifecycle-results.json) for validation, public declaration/item inventories and source hashes. Go 751 declarations and Rust 159 public item pages use different counting units and are not comparable API counts. Validation is local; no commit, publication or remote CI was performed.

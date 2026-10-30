@@ -152,3 +152,5 @@ Version 0.4.0 TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface 
 ## API status and migration
 
 [Supported, compatibility, deprecated and removed APIs with migration examples](api-lifecycle.en.md) · [API-family overlap audit](api-overlap-audit.en.md). Public installation currently uses 0.4.0; new deprecation annotations apply only to subsequent unreleased source, distinct from historical 0.2.0 introductions.
+
+Unreleased TVR-19 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).

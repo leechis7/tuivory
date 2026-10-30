@@ -135,6 +135,12 @@ impl<'a> MenuPopupWidget<'a> {
             padding: 1,
         }
     }
+    /// Wrap this popup with an optional shadow; the allocation includes the shadow.
+    pub fn shadow(self, options: crate::popup::ShadowOptions) -> super::ShadowWidget<'a, Self> {
+        let styles = self.styles;
+        let ascii = self.ascii;
+        super::ShadowWidget::new(self, styles, options).ascii(ascii)
+    }
     /// Select ASCII presentation without changing menu state.
     pub fn ascii(mut self, ascii: bool) -> Self {
         self.ascii = ascii;

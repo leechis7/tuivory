@@ -22,7 +22,7 @@
 | 언어/API | 상태 | 용도 또는 전환 경로 |
 | --- | --- | --- |
 | Go `Styler`·공통 컴포넌트 모델/뷰 | 지원 | 기존 위젯 스타일 적용과 공통 컴포넌트 조작·그리기 |
-| Go `Styles.PopupShadowStyle`·`DimRegion`·`WideSafeScreen` | 지원 | 직접 그리는 팝업/그림자·두 칸 문자 경계 보호. 현재 지원. TVR-19 옵션 구현 후 동등한 대체 가능 범위를 재검토 |
+| Go `Styles.PopupShadowStyle`·`DimRegion`·`WideSafeScreen` | 지원 | 직접 그리는 팝업/그림자·두 칸 문자 경계 보호. 미배포 TVR-19 `ShadowView`가 일반 팝업을 감싸며 앞의 두 API를 내부 사용. 임의 영역 그리기·경계 보호까지 대체하지 않으므로 현재 지원 |
 | Go `Pair.Style`·`ControlStyle` / Rust `Styles::role`·`Styles::control` | 지원 | 원래 역할의 명시적 배경을 사용하는 직접 조합. 표면 지정 API와 목적이 다름 |
 | Go `TextOnSurface`·`ControlStyleOnSurface` / Rust `text_on_surface`·`control_on_surface` | 지원, 0.4.0부터 | 실제 표면 위 평문 배경·대비·상태 처리 |
 | Go `RowsView.PreserveBackgrounds` / Rust `RowsWidget::preserve_backgrounds`·`RawRowsWidget` | 지원, 0.4.0부터 | 명시적 역할 배경을 보존하는 그리드/사용자 행 조합 |

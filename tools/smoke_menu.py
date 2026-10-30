@@ -3,10 +3,10 @@
 import argparse,fcntl,os,pty,select,signal,struct,subprocess,termios,time
 from pathlib import Path
 from smoke_focus import Screen
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('binary',type=Path);p.add_argument('--lang',choices=['ko','en'],default='en');p.add_argument('--ascii',action='store_true');args=p.parse_args()
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('binary',type=Path);p.add_argument('--lang',choices=['ko','en'],default='en');p.add_argument('--ascii',action='store_true');p.add_argument('--shadow',choices=['off','auto','solid','dim'],default='off');args=p.parse_args()
 master,slave=pty.openpty();fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',32,120,0,0))
 def terminal():os.setsid();fcntl.ioctl(0,termios.TIOCSCTTY,0)
-process=subprocess.Popen([str(args.binary.resolve()),'--lang',args.lang]+(['--ascii']if args.ascii else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave);screen=Screen();captured=bytearray();reports=0
+process=subprocess.Popen([str(args.binary.resolve()),'--lang',args.lang,'--shadow',args.shadow]+(['--ascii']if args.ascii else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave);screen=Screen();captured=bytearray();reports=0
 def drain(seconds=.25):
  global reports
  until=time.monotonic()+seconds
@@ -28,6 +28,8 @@ try:
  send(b'\r');has('open:recent/origin=editor')
  send(b'\x1b[B');send(b'\x1b[C');has('open:more/origin=editor')
  for key in (b'\x1b[12~',b'\x1b[13~',b'\x1b[14~'):send(key)
+ if args.shadow!='off':
+  for _ in range(4):send(b'\x1b[17~') # F6 shadow cycle.
  for h,w in ((16,36),(32,120)):
   fcntl.ioctl(master,termios.TIOCSWINSZ,struct.pack('HHHH',h,w,0,0));os.killpg(process.pid,signal.SIGWINCH);drain()
  send(b'b');has('activate:beta/origin=editor')
