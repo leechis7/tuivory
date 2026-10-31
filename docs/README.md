@@ -2,64 +2,14 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
-현재 제품 버전은 **0.5.0**입니다. [변경 범위·설치·배포 자산](release-0.5.0.md).
+현재 릴리스는 **0.5.0**입니다. 설치 → 컴포넌트 사용법 → API 명세 순서로 읽으세요.
 
-문서는 현재 저장소 구현을 기준으로 유지합니다. 현재 Go 버전은 `v0.5.0`이며 Rust도 Git 태그 `rust/v0.5.0`으로 배포합니다. 신규 작성·수정과 기능 변경 시 관련 한국어·영어 문서를 함께 갱신합니다.
+- [설치·빠른 시작](installation.md)
+- [컴포넌트 가이드](components.md)
+- [API 명세](api/README.md)
+- [디자인 가이드](design-guide.md)
+- [전체 예제](../examples/README.md)
+- [앱과 라이브러리의 책임](component-boundary.md)
+- [개발·검증·이력](development.md)
 
-| 문서 | 내용 |
-| --- | --- |
-| [컴포넌트와 앱의 책임](component-boundary.md) | 화면 조합·배치·포커스·전역 명령의 경계와 예제 |
-| [프로젝트 소개](../README.md) | 제공 범위·설치·빠른 시작 |
-| [설치·사용 안내](installation.md) | 현재 모듈·CLI·토큰 식별자와 배포/소스 구분 |
-| [Rust 패키지](../rust/README.md) | Git 배포 crate·공통 토큰·스타일·Ratatui 어댑터·외부 사용 |
-| [Rust 견본](rust-playground.md) | Ratatui 어댑터·한영 실행·조작·이미지·검증 |
-| [공통 UI 점검](component-audit.md) · [Tree API](tree.md) | Go·Rust 지원/앱 책임·후속 계획·공통 Tree·검증 |
-| [공통 워크스페이스](workspace.md) | 탭·패널·분할·상태 표시줄·경로 API·통합 예제·검증 |
-| [Go 사용법](go-package.md) | 공개 API·역할·상태·테마 재적용 |
-| [견본](playground.md) | 한국어·영어 실행·키 조작·이미지 생성 |
-| [저장소 구조](architecture.md) | 언어별 경계·공통 데이터·내장 자산 |
-| [공통 명세](../design/README.md) | 언어 독립 설계 명세 |
-| [토큰](../design/tokens/README.md) · [테마](../design/themes/README.md) | JSON·스키마·CSV와 검증 범위 |
-| [설계 원칙](principles.md) | 의미·프로필·상태·입력·셀·검증 |
-| [컴포넌트 패턴](patterns.md) | 위젯별 상태와 조작 규칙 |
-| [단말 프로필](terminal-profiles.md) | 색상 능력·ANSI·표현 제한 |
-| [추출 출처](lazyora-extraction.md) · [Go 범위](go-style-coverage.md) | 원본 해시·API 대응·동등성 근거 |
-| [언어별 예제](../examples/README.md) | Go·Rust·Python·JavaScript·Shell의 실제 제공 범위 |
-| [로드맵](roadmap.md) | 구현 상태와 후속 범위 |
-| [작업 관리](work-tracking.md) | TVR·PR·CI·게시 상태 |
-| [검증 양식](../evidence/README.md) · [초기 배포 근거](../evidence/initial-migration.md) | 계산·시뮬레이션·실제 단말 및 배포 기록 |
-| [공식 참고 자료](sources.md) · [출처 고지](../NOTICE.md) | 설계 참고와 저작권·라이선스 |
-| [기여 안내](../CONTRIBUTING.md) · [작업 규칙](../AGENTS.md) | 문서 현행화·검증·승인 원칙 |
-| [변경 이력](../CHANGELOG.md) | 태그 배포와 0.5.0 변경 |
-
-현재 제품명은 Tuivory, 공개 Go 패키지는 `tuivory`, 일감 프로젝트는 TVR입니다. 이전 원출처 이름은 라이선스·출처 고지에서만 식별합니다. [LICENSE](../LICENSE)는 원문을 유지합니다.
-
-[정적 배포](static-build.md): Go·Rust·후속 언어 정책·CentOS 7.4·외부 앱 검증
-
-## 컴포넌트 확장
-
-[상태·포커스·팝업 API](focus.md) · [MUI 비교 후속 백로그](components-backlog.md). TVR-8 기반을 먼저 검증하고 입력·폼 → 목록·검색 → 표 → 알림 → 부가 컴포넌트 순으로 진행합니다.
-
-[TVR-9: 입력·폼](forms.md): `Form / FormField / FormWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
-
-[TVR-10: 목록·메뉴·검색 선택](collections.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
-
-[TVR-11: 표·데이터 그리드](grid.md): `Grid / GridSource / GridWidget`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
-
-[TVR-12: 알림·진행·데이터 상태](feedback.md): `NoticeQueue / Progress / DataState`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
-
-[TVR-13: 배치·밀도·부가 컴포넌트](layout.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Go/Rust 공개 API와 한영 실행 예제. 0.2.0에 포함합니다.
-
-[두 칸 문자·오버레이 그리기](overlay-drawing.md): Go 공개 화면 래퍼·그림자·Show 이후 출력 회귀.
-
-[공통 메뉴](menus.md): Menu·메뉴 바·계층 복귀·팝업·호스트 문맥·한영 예제. 0.5.0에 포함.
-
-[컴포넌트 배경색 전수 조사](background-audit.md): 948개 실제 렌더링으로 평문 바탕 누출과 의도한 입력/선택/수정 배경을 구분한 조사 보고서입니다.
-
-[표면·글자 배경 디자인 가이드](../design/surfaces.md): 평문 배경 상속, 입력/선택/수정 배경 보존, 대비 보정. 0.5.0에 포함합니다.
-
-[비활성 상태와 12팔레트 비교](disabled-states.md): 일반 비활성 접두사 제거, 회색/Dim 전경, 입력 차단과 한영 실행 예제.
-
-[API 지원 상태·Deprecated·전환 안내](api-lifecycle.md) · [공개 API 중복 점검](api-overlap-audit.md): 0.5.0 변경의 대상·대체 방법·배포/제거 계획을 구분합니다.
-
-0.5.0의 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](popup-shadows.md).
+[현재 릴리스](release-0.5.0.md)

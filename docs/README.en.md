@@ -2,64 +2,14 @@
 
 [한국어 (default)](README.md) · **English**
 
-Current product version is **0.5.0**. [Changes, installation and release assets](release-0.5.0.en.md).
+Current release: **0.5.0**. Start with installation, choose a component, then consult its API.
 
-Documentation follows the current repository implementation. The current Go version is `v0.5.0`; Rust is distributed through Git tag `rust/v0.5.0`. New documentation, edits, and feature changes update related Korean and English documents together.
+- [Installation](installation.en.md)
+- [Component guides](components.en.md)
+- [API reference](api/README.en.md)
+- [Design guide](design-guide.en.md)
+- [Examples](../examples/README.en.md)
+- [Responsibilities](component-boundary.en.md)
+- [Development and history](development.en.md)
 
-| Document | Contents |
-| --- | --- |
-| [Component/application boundary](component-boundary.en.md) | Screen composition, layout, focus, global commands and examples |
-| [Project overview](../README.en.md) | Scope, installation, quick start |
-| [Installation and usage](installation.en.md) | Current module, CLI, token identifiers; published version versus source |
-| [Rust package](../rust/README.en.md) | Git-distributed crate, tokens, styles, Ratatui adapter, external usage |
-| [Rust playground](rust-playground.en.md) | Ratatui adapter, bilingual execution, controls, images, validation |
-| [UI audit](component-audit.en.md) · [Tree API](tree.en.md) | Go/Rust support, host boundaries, next phases, shared Tree and checks |
-| [Shared workspace](workspace.en.md) | Tabs, panels, splitters, status/breadcrumbs APIs, integrated examples and checks |
-| [Go usage](go-package.en.md) | Public API, roles, states, theme reapplication |
-| [Playground](playground.en.md) | Korean/English execution, controls, image generation |
-| [Architecture](architecture.en.md) | Language boundaries, shared data, embedded assets |
-| [Shared specification](../design/README.en.md) | Language-independent design specifications |
-| [Tokens](../design/tokens/README.en.md) · [Themes](../design/themes/README.en.md) | JSON, schema, CSV, validation scope |
-| [Principles](principles.en.md) | Meaning, profiles, state, input, cells, validation |
-| [Component patterns](patterns.en.md) | Widget states and input handling rules |
-| [Terminal profiles](terminal-profiles.en.md) | Color capabilities, ANSI, rendering limits |
-| [Extraction sources](lazyora-extraction.en.md) · [Go coverage](go-style-coverage.en.md) | Source hashes, API mapping, parity evidence |
-| [Language examples](../examples/README.en.md) | Actual Go/Rust/Python/JavaScript/Shell support |
-| [Roadmap](roadmap.en.md) | Implemented and future scope |
-| [Work tracking](work-tracking.en.md) | TVR, PR, CI, publication |
-| [Evidence template](../evidence/README.en.md) · [Initial release evidence](../evidence/initial-migration.en.md) | Calculations, simulation, real terminals, release records |
-| [Official references](sources.en.md) · [Origin notice](../NOTICE.en.md) | Design sources, copyright, licensing |
-| [Contributing](../CONTRIBUTING.en.md) · [Work rules](../AGENTS.en.md) | Documentation synchronization, validation, approval |
-| [Changelog](../CHANGELOG.en.md) | Tagged releases and unreleased changes |
-
-The current product is Tuivory, public Go package `tuivory`, Jira project TVR. Earlier source names are identified only in license/origin notices. [LICENSE](../LICENSE) remains in its original form.
-
-[Static distribution](static-build.en.md): Go/Rust/future language policy, CentOS 7.4 and external hosts
-
-## Component expansion
-
-[Control states/focus/popups](focus.en.md) · [MUI follow-up backlog](components-backlog.en.md). Validate TVR-8 first, then forms → lists/search → tables → feedback → supporting components.
-
-[TVR-9: Inputs and forms](forms.en.md): `Form / FormField / FormWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
-
-[TVR-10: Lists, menus and search selection](collections.en.md): `ListModel / SearchPicker / ListWidget / SearchPickerWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
-
-[TVR-11: Tables and data grid](grid.en.md): `Grid / GridSource / GridWidget`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
-
-[TVR-12: Notices, progress and data states](feedback.en.md): `NoticeQueue / Progress / DataState`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
-
-[TVR-13: Layout, density and supporting components](layout.en.md): `SpacingTokens / StackLayout / Badge / Chip / Help`. Public Go/Rust APIs and localized hosts; included in 0.2.0.
-
-[Wide glyphs and overlay drawing](overlay-drawing.en.md): public Go screen wrapper, shadows and output regressions after Show.
-
-[Shared menus](menus.en.md): Menu/bar/hierarchical return/popup/host context and bilingual examples. Unreleased source.
-
-[Component background audit](background-audit.en.md): 948 actual renderings distinguish plain-text surface leakage from intentional field/selection/edit backgrounds.
-
-[Surface/text background design guide](../design/surfaces.en.md): plain-text surface binding, explicit field/selection/edit backgrounds and contrast correction. Included in 0.5.0.
-
-[Disabled states across twelve palettes](disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
-
-[API lifecycle, deprecation and migration](api-lifecycle.en.md) · [Public API overlap audit](api-overlap-audit.en.md): distinguish unreleased targets, replacements and first-release/removal plans.
-
-TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).
+[Current release](release-0.5.0.en.md)

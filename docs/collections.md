@@ -27,7 +27,7 @@ make run-catalog-rust ARGS="--mode collections --lang en"
 
 [Backlog](components-backlog.md) · [Static distribution](static-build.md)
 
-v0.2.0의 메뉴는 ListModel 기반 평면 목록입니다. 새 [공통 메뉴](menus.md)는 미배포 소스에서 계층 그룹·뒤로가기·메뉴 바·팝업 배치·호출 패널 복귀 요청을 제공합니다. 기존 목록·검색 선택 API는 유지하고 메뉴 내용·원격 후보·업무 명령은 앱이 정합니다.
+v0.2.0의 메뉴는 ListModel 기반 평면 목록입니다. 새 [공통 메뉴](menus.md)는 0.3.0부터 계층 그룹·뒤로가기·메뉴 바·팝업 배치·호출 패널 복귀 요청을 제공합니다. 기존 목록·검색 선택 API는 유지하고 메뉴 내용·원격 후보·업무 명령은 앱이 정합니다.
 
 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
 

@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](workspace.en.md)
 
-TVR-7의 [Tree](tree.md)에 이어 Go/tview와 Rust/Ratatui의 공통 워크스페이스 컴포넌트를 제공합니다. 앱은 데이터·포커스·실행·닫기 승인과 단말 I/O를 소유합니다. DB 조회·SQL 실행·JDBC는 포함하지 않습니다. 기존 컴포넌트는 v0.1.0부터 제공하며 현재 배포는 v0.2.0입니다. GitHub CI·실제 앱 적용은 작업 기록에서 구분합니다.
+TVR-7의 [Tree](tree.md)에 이어 Go/tview와 Rust/Ratatui의 공통 워크스페이스 컴포넌트를 제공합니다. 앱은 데이터·포커스·실행·닫기 승인과 단말 I/O를 소유합니다. DB 조회·SQL 실행·JDBC는 포함하지 않습니다. 기존 컴포넌트는 v0.1.0부터 제공하며 현재 배포는 v0.5.0입니다. GitHub CI·실제 앱 적용은 작업 기록에서 구분합니다.
 
 ## 탭
 
@@ -38,7 +38,7 @@ Go `NewSplitView(first, second, state, spec, palette)`는 열/행 배치·마우
 
 ## import와 예제
 
-Go는 `go get github.com/leechis7/tuivory/go@v0.2.0`으로 설치하거나 로컬 체크아웃의 `go/`를 replace로 지정합니다. `github.com/leechis7/tuivory/go` 하나로 새 API를 사용하며, 후보 토큰을 `CandidateTokens → Palette → Resolve`로 해석해 뷰에 전달합니다. 기존 LazyOra 추출 스타일 전체와 같은 데이터라는 의미는 아닙니다.
+Go는 `go get github.com/leechis7/tuivory/go@v0.5.0`으로 설치하거나 로컬 체크아웃의 `go/`를 replace로 지정합니다. `github.com/leechis7/tuivory/go` 하나로 새 API를 사용하며, 후보 토큰을 `CandidateTokens → Palette → Resolve`로 해석해 뷰에 전달합니다. 기존 LazyOra 추출 스타일 전체와 같은 데이터라는 의미는 아닙니다.
 
 ```go
 tabs, err := tuivory.NewTabs([]tuivory.TabItem{
@@ -92,7 +92,7 @@ python3 tools/smoke_workspace.py /path/to/go-workspace
 python3 tools/smoke_workspace.py /path/to/rust-workspace
 ```
 
-로컬 검증은 한영 PTY 시작·종료·화면 복원과 영문 통합 시나리오(변경 문서 닫기 보류, 키 입력, 분할 드래그, 화면 축소·복귀)를 포함합니다. 로컬 검증과 GitHub CI 결과·실제 원격 단말·LazyOra/LazyBeaver 적용을 구분합니다. 에픽은 요청대로 열어두며 기존 컴포넌트는 v0.1.0부터 제공하고 v0.2.0에도 포함합니다. 이번 호스트 CLI 옵션은 미배포입니다.
+로컬 검증은 한영 PTY 시작·종료·화면 복원과 영문 통합 시나리오(변경 문서 닫기 보류, 키 입력, 분할 드래그, 화면 축소·복귀)를 포함합니다. 로컬 검증과 GitHub CI 결과·실제 원격 단말·LazyOra/LazyBeaver 적용을 구분합니다. 에픽은 요청대로 열어두며 기존 컴포넌트는 v0.1.0부터 제공하고 v0.2.0에도 포함합니다. 호스트 CLI 옵션은 현재 0.5.0에서 사용할 수 있습니다.
 
 Go `PanelView`는 [공통 두 칸 문자 보정](overlay-drawing.md)을 자동 적용합니다. 외부 카드와 그림자는 공개 화면 래퍼·DimRegion으로 연결합니다.
 
@@ -100,7 +100,7 @@ Go `PanelView`는 [공통 두 칸 문자 보정](overlay-drawing.md)을 자동 �
 
 예제에 `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x`를 주면 같은 공개 컴포넌트를 다른 정책으로 조합합니다. 기본은 columns·tabs,tree,content·ctrl-q입니다. 첫 항목이 초기 포커스를 받고 Tab/Shift+Tab은 지정 순서를 따릅니다. 설정은 라이브러리 전역 옵션이 아닌 예제 호스트의 CLI이며 화면 전체의 표준을 강제하지 않습니다. 새 호스트 옵션은 0.4.0에 포함합니다. [책임 범위·한영 화면·재현 명령](component-boundary.md).
 
-포커스 테두리 규칙: 탐색 트리/목록·입력/편집 영역·데이터 그리드·일반 팝업처럼 내용을 감싼 영역은 현재 조작 중일 때 이중선, 비활성일 때 단일선을 사용합니다. 테두리를 갖지 않는 개별 입력칸·버튼·탭에 테두리를 추가하지 않습니다. 메뉴는 선택/열림 표시만으로 충분하므로 단일선을 유지합니다. Go 견본의 카드·팝업은 tview 기본 이중선을 사용하며, 0.3.0 이후 미배포 소스에서 탐색·토큰·도움말의 포커스 색상 갱신도 맞춥니다. Rust 공통 패널은 이미 이중선을 지원합니다. [실제 검증](../evidence/focus-borders.md).
+포커스 테두리 규칙: 탐색 트리/목록·입력/편집 영역·데이터 그리드·일반 팝업처럼 내용을 감싼 영역은 현재 조작 중일 때 이중선, 비활성일 때 단일선을 사용합니다. 테두리를 갖지 않는 개별 입력칸·버튼·탭에 테두리를 추가하지 않습니다. 메뉴는 선택/열림 표시만으로 충분하므로 단일선을 유지합니다. Go 견본의 카드·팝업은 tview 기본 이중선을 사용하며, 0.4.0부터 탐색·토큰·도움말의 포커스 색상 갱신도 맞춥니다. Rust 공통 패널은 이미 이중선을 지원합니다. [실제 검증](../evidence/focus-borders.md).
 
 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
 
