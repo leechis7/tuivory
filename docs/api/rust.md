@@ -1,4 +1,4 @@
-# Rust API — 0.5.0
+# Rust API — source (0.6.0)
 
 **한국어 (기본)** · [English](rust.en.md)
 
@@ -656,6 +656,202 @@ pub fn status_line(items: &[StatusItem], width: usize) -> StatusLayout;
 
 
 
+### tuivory::containers::ContainerOptions
+
+```rust
+pub struct ContainerOptions {
+    pub kind: String,
+    pub gap: usize,
+    pub padding: usize,
+    pub rows: Vec<Track>,
+    pub columns: Vec<Track>,
+    pub virtual_width: usize,
+    pub virtual_height: usize,
+}
+```
+
+
+
+
+### tuivory::containers::ContainerState
+
+```rust
+pub struct ContainerState {
+    pub focused: String,
+    pub captured: String,
+    // Private fields omitted.
+}
+```
+
+
+
+#### tuivory::containers::ContainerState::eligible
+
+```rust
+pub fn eligible<'a>(&self, items: &'a [LayoutItem]) -> Vec<&'a str>;
+```
+
+
+
+#### tuivory::containers::ContainerState::reconcile
+
+```rust
+pub fn reconcile(&mut self, items: &[LayoutItem]);
+```
+
+
+
+#### tuivory::containers::ContainerState::move_focus
+
+```rust
+pub fn move_focus(&mut self, items: &[LayoutItem], previous: bool) -> &str;
+```
+
+
+
+#### tuivory::containers::ContainerState::hit
+
+```rust
+pub fn hit<'a>(
+        &self,
+        items: &[LayoutItem],
+        rects: &'a [NamedRect],
+        x: usize,
+        y: usize,
+    ) -> Option<&'a str>;
+```
+
+
+
+#### tuivory::containers::ContainerState::pointer
+
+```rust
+pub fn pointer(
+        &mut self,
+        items: &[LayoutItem],
+        rects: &[NamedRect],
+        x: usize,
+        y: usize,
+        press: bool,
+        release: bool,
+    ) -> Option<String>;
+```
+
+Call on pointer press/drag/release. Hosts deliver input to the returned ID.
+
+### tuivory::containers::LayoutItem
+
+```rust
+pub struct LayoutItem {
+    pub id: String,
+    pub track: Track,
+    pub row: usize,
+    pub column: usize,
+    pub row_span: usize,
+    pub column_span: usize,
+    pub hidden: bool,
+    pub disabled: bool,
+    pub drawer: String,
+    pub modal: bool,
+    pub centered: bool,
+    pub area: CellRect,
+}
+```
+
+
+
+
+### tuivory::containers::Track
+
+```rust
+pub struct Track {
+    pub min: usize,
+    pub max: usize,
+    pub fixed: usize,
+    pub weight: usize,
+}
+```
+
+
+
+
+### tuivory::containers::compute_container
+
+```rust
+pub fn compute_container(
+    bounds: CellRect,
+    items: &[LayoutItem],
+    options: &ContainerOptions,
+) -> Result<Vec<NamedRect>, Error>;
+```
+
+
+
+
+### tuivory::controls::Control
+
+```rust
+pub struct Control {
+    pub model: Form,
+    pub id: String,
+}
+```
+
+
+
+#### tuivory::controls::Control::new
+
+```rust
+pub fn new(field: FormField) -> Result<Self, Error>;
+```
+
+
+
+#### tuivory::controls::Control::input
+
+```rust
+pub fn input(id: &str, label: &str, value: &str, secret: bool) -> Result<Self, Error>;
+```
+
+
+
+#### tuivory::controls::Control::button
+
+```rust
+pub fn button(id: &str, label: &str) -> Result<Self, Error>;
+```
+
+
+
+#### tuivory::controls::Control::check
+
+```rust
+pub fn check(id: &str, label: &str, checked: bool) -> Result<Self, Error>;
+```
+
+
+
+#### tuivory::controls::Control::select
+
+```rust
+pub fn select(
+        id: &str,
+        label: &str,
+        options: Vec<FormOption>,
+        choice: &str,
+    ) -> Result<Self, Error>;
+```
+
+
+
+#### tuivory::controls::Control::layout
+
+```rust
+pub fn layout(&self, width: usize, height: usize) -> Vec<ComponentLine>;
+```
+
+
+
 ### tuivory::feedback::DataState
 
 ```rust
@@ -870,10 +1066,34 @@ pub fn new(mut fields: Vec<FormField>) -> Result<Self, Error>;
 
 
 
+#### tuivory::forms::Form::value
+
+```rust
+pub fn value(&self, id: &str) -> Option<&str>;
+```
+
+Explicit raw-value access, including password inputs.
+
+#### tuivory::forms::Form::select_text
+
+```rust
+pub fn select_text(&mut self, id: &str, anchor: usize, cursor: usize) -> bool;
+```
+
+
+
 #### tuivory::forms::Form::fields
 
 ```rust
 pub fn fields(&self) -> &[FormField];
+```
+
+
+
+#### tuivory::forms::Form::at_tab_boundary
+
+```rust
+pub fn at_tab_boundary(&self, previous: bool) -> bool;
 ```
 
 
@@ -949,6 +1169,7 @@ pub struct FormEvent {
     pub kind: String,
     pub id: String,
     pub missing: Vec<String>,
+    pub text: String,
 }
 ```
 
@@ -2281,6 +2502,36 @@ pub struct ChipWidget<'a> {
 
 
 
+### tuivory::ratatui::ContainerWidget
+
+```rust
+pub struct ContainerWidget<'a, F> {
+    pub items: &'a [crate::containers::LayoutItem],
+    pub options: &'a crate::containers::ContainerOptions,
+    pub styles: &'a Styles,
+    pub scroll_x: usize,
+    pub scroll_y: usize,
+    pub render_child: F,
+}
+```
+
+Executes a language-neutral layout and clips each child to its viewport.
+The factory chooses widgets by stable ID; it does not compute placement.
+
+
+### tuivory::ratatui::ControlWidget
+
+```rust
+pub struct ControlWidget<'a> {
+    pub model: &'a crate::controls::Control,
+    pub styles: &'a Styles,
+    pub focused: bool,
+}
+```
+
+
+
+
 ### tuivory::ratatui::DataStateWidget
 
 ```rust
@@ -2677,6 +2928,33 @@ pub fn block<'a>(&self, title: &'a str, focused: bool) -> Result<Block<'a>, Erro
 Create a panel border without modifying the host's focus callbacks.
 Double borders preserve the focus cue even without color.
 
+### tuivory::ratatui::SurfaceWidget
+
+```rust
+pub struct SurfaceWidget<'a, W> {
+
+    // Private fields omitted.
+}
+```
+
+Opaque borderless surface. The host supplies placement and routes input.
+
+#### tuivory::ratatui::SurfaceWidget::new
+
+```rust
+pub fn new(child: W, styles: &'a Styles) -> Self;
+```
+
+
+
+#### tuivory::ratatui::SurfaceWidget::padding
+
+```rust
+pub fn padding(mut self, cells: u16) -> Self;
+```
+
+
+
 ### tuivory::ratatui::TabsWidget
 
 ```rust
@@ -2693,6 +2971,19 @@ pub struct TabsWidget<'a> {
 ```rust
 pub fn new(tabs: &'a Tabs, styles: &'a Styles) -> Result<Self, crate::Error>;
 ```
+
+
+
+### tuivory::ratatui::TextWidget
+
+```rust
+pub struct TextWidget<'a> {
+    pub model: &'a mut TextDocument,
+    pub styles: &'a Styles,
+    pub focused: bool,
+}
+```
+
 
 
 
@@ -2743,6 +3034,209 @@ pub fn stack_rects(
 ```
 
 Convert shared terminal-cell geometry into Ratatui rectangles.
+
+
+### tuivory::text::SyntaxSpan
+
+```rust
+pub struct SyntaxSpan {
+    pub start: usize,
+    pub end: usize,
+    pub role: String,
+}
+```
+
+
+
+
+### tuivory::text::TextBuffer
+
+```rust
+pub struct TextBuffer {
+    pub cursor: usize,
+    pub anchor: usize,
+    pub state: ControlState,
+    pub secret: bool,
+    pub single_line: bool,
+    // Private fields omitted.
+}
+```
+
+
+
+#### tuivory::text::TextBuffer::new
+
+```rust
+pub fn new(text: &str) -> Self;
+```
+
+
+
+#### tuivory::text::TextBuffer::text
+
+```rust
+pub fn text(&self) -> &str;
+```
+
+
+
+#### tuivory::text::TextBuffer::display
+
+```rust
+pub fn display(&self) -> String;
+```
+
+
+
+#### tuivory::text::TextBuffer::set_text
+
+```rust
+pub fn set_text(&mut self, text: &str);
+```
+
+
+
+#### tuivory::text::TextBuffer::select
+
+```rust
+pub fn select(&mut self, anchor: usize, cursor: usize);
+```
+
+
+
+#### tuivory::text::TextBuffer::selection
+
+```rust
+pub fn selection(&self) -> (usize, usize);
+```
+
+
+
+#### tuivory::text::TextBuffer::cursor_byte
+
+```rust
+pub fn cursor_byte(&self) -> usize;
+```
+
+
+
+#### tuivory::text::TextBuffer::handle
+
+```rust
+pub fn handle(&mut self, action: &str, text: &str) -> TextEvent;
+```
+
+
+
+### tuivory::text::TextDocument
+
+```rust
+pub struct TextDocument {
+    pub buffer: TextBuffer,
+    pub wrap: bool,
+    pub line_numbers: bool,
+    pub ascii: bool,
+    pub scroll_x: usize,
+    pub scroll_y: usize,
+    pub syntax: Vec<SyntaxSpan>,
+    // Private fields omitted.
+}
+```
+
+
+
+#### tuivory::text::TextDocument::set_text
+
+```rust
+pub fn set_text(&mut self, text: &str);
+```
+
+
+
+#### tuivory::text::TextDocument::reveal_cursor
+
+```rust
+pub fn reveal_cursor(&mut self);
+```
+
+
+
+#### tuivory::text::TextDocument::set_syntax
+
+```rust
+pub fn set_syntax(&mut self, spans: Vec<SyntaxSpan>) -> Result<(), crate::Error>;
+```
+
+
+
+#### tuivory::text::TextDocument::editor
+
+```rust
+pub fn editor(text: &str) -> Self;
+```
+
+
+
+#### tuivory::text::TextDocument::viewer
+
+```rust
+pub fn viewer(text: &str) -> Self;
+```
+
+
+
+#### tuivory::text::TextDocument::handle
+
+```rust
+pub fn handle(&mut self, action: &str, text: &str) -> TextEvent;
+```
+
+
+
+#### tuivory::text::TextDocument::layout
+
+```rust
+pub fn layout(&mut self, width: usize, height: usize) -> Vec<ComponentLine>;
+```
+
+
+
+#### tuivory::text::TextDocument::point
+
+```rust
+pub fn point(&mut self, x: isize, y: isize, width: usize, height: usize, extend: bool);
+```
+
+
+
+#### tuivory::text::TextDocument::set_markup
+
+```rust
+pub fn set_markup(&mut self, markup: &str) -> Result<(), Error>;
+```
+
+
+
+### tuivory::text::TextEvent
+
+```rust
+pub struct TextEvent {
+    pub kind: String,
+    pub text: String,
+}
+```
+
+
+
+
+### tuivory::text_markup::parse_markup
+
+```rust
+pub fn parse_markup(markup: &str) -> Result<(String, Vec<SyntaxSpan>), Error>;
+```
+
+Explicit `[role]text[/]` styling; `[[` escapes `[`. Copies return plain logical
+text. Literal text APIs never parse tags. Invalid markup leaves data intact.
 
 
 ### tuivory::tree::Tree

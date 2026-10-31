@@ -21,11 +21,11 @@ Tuivory는 **TUI 컴포넌트 라이브러리**입니다. 공통 테마·스타�
 
 ## 실제 제공 범위
 
-현재 배포는 v0.2.0입니다. [지원 점검표](component-audit.md)는 기본 배포와 미배포 TVR-17을 구분합니다.
+현재 공개 배포는 v0.6.0이며 TVR-22~25를 포함합니다. [지원 점검표](component-audit.md)는 현재 제공 범위와 후속 작업을 구분합니다.
 
 - **포커스**: `FocusStack`은 앱이 제공한 순서/스코프로 탐색합니다. 전체 앱의 Tab 순서를 정하거나 tview/Ratatui 이벤트 루프를 대신하지 않습니다. [API](focus.md)
 - **탭**: 활성/포커스 분리, 긴 제목·넘침, 변경/닫기 표시와 요청은 이미 제공합니다. SQL/세션 관리 기능을 새로 요구할 근거가 아닙니다. [API](workspace.md)
-- **메뉴**: v0.2.0은 `ListModel` 기반 평면 목록입니다. 미배포 [Menu API](menus.md)는 계층 그룹·하위 진입/복귀·메뉴 바·단일 팝업 배치와 원래 문맥 복귀 요청을 제공합니다. 그룹 구성·사용 가능 상태·실제 명령은 앱이 정합니다.
+- **메뉴**: v0.2.0은 `ListModel` 기반 평면 목록입니다. 0.3.0부터 제공하는 [Menu API](menus.md)는 계층 그룹·하위 진입/복귀·메뉴 바·단일 팝업 배치와 원래 문맥 복귀 요청을 제공합니다. 그룹 구성·사용 가능 상태·실제 명령은 앱이 정합니다.
 - **도움말**: `Help`는 앱이 준 단축키/설명의 우선순위 표시입니다. 완성 도움말 화면·목차·전역 키 등록기는 앱 책임입니다. [API](layout.md)
 - **그리드**: TVR-17의 옵션/프리셋은 같은 공통 Grid에 속합니다. DB 동작·트랜잭션·실제 내보내기는 앱이 연결합니다. [공개 API](grid.md)
 
@@ -45,7 +45,7 @@ make run-workspace-rust ARGS="--lang ko --layout rows --focus-order content,tree
 
 `--layout columns|rows`는 초기 분할 방향, `--focus-order`는 tabs/tree/content를 정확히 한 번씩 나열한 순서, `--quit-key ctrl-q|ctrl-x`는 앱의 종료 키입니다. 첫 항목에 초기 포커스를 줍니다. 잘못된 구성은 단말 진입 전에 거부합니다. 기존 F6 방향 변경·Shift+Tab 역순·마우스 선택과 수정 탭 닫기 승인도 그대로 사용할 수 있습니다. `--lang en`과 테마/색상/ASCII 옵션은 두 구성 모두 지원합니다. Ctrl+X를 선택하면 Ctrl+Q는 종료 키로 등록하지 않습니다.
 
-Go 호스트는 `tview.Flex`, `focus` 목록, `Application.SetInputCapture`에서 정책을 정합니다. Rust 호스트는 자신의 `App`, `Layout`, 포커스 순서와 Crossterm 처리에서 정합니다. 양쪽의 `NewTabView/TabsWidget`, `NewTreeView/TreeWidget`, 패널·분할·상태·경로 모델은 동일합니다. 초기/실제 배치와 전역 명령을 공통 코어에 넣지 않습니다.
+Go 호스트는 `tview.Flex`, `focus` 목록, `Application.SetInputCapture`에서 정책을 정합니다. Rust 호스트는 자신의 `App`, `Layout`, 포커스 순서와 Crossterm 처리에서 정합니다. 양쪽의 `NewTabView/TabsWidget`, `NewTreeView/TreeWidget`, 패널·분할·상태·경로 모델은 동일합니다. 앱은 초기 화면 구조와 전역 명령을 선언하고 SDK는 배치 도구와 컨테이너로 실제 계산·그리기·일반 입력 전달을 수행합니다.
 
 ![앱이 선택한 행 분할·포커스·종료 키](images/workspace-host.svg)
 
@@ -56,3 +56,7 @@ Rust TestBackend 120×32의 한국어 참조입니다. Go 캡처·SSH 화면·�
 후속 요청에 따라 중첩 메뉴를 [공통 Menu](menus.md)로 보완했습니다. 0.3.0부터 포함하며 기존 v0.2.0의 평면 목록 지원과 구분합니다. 앱 고유 자동 그룹 기준·메뉴 분류·SQL/세션·완성 도움말 화면은 계속 호스트 책임입니다. 공통 기능 추가를 이유로 앱 전체 화면 이전을 요구하지 않습니다.
 
 [작업/검증 기록](../evidence/component-boundary.md) · [예제 사용법](workspace.md)
+
+## 배치 실행과 신규 컨트롤
+
+TVR-22~25의 [컨트롤·컨테이너](controls.md)는 Surface·입력·편집기·행/열/격자/레이어의 실행을 SDK가 담당하도록 확장합니다. 앱이 화면 구조/슬롯·콘텐츠·전역 키·업무 승인과 동작을 결정한다는 경계는 유지합니다. 위 표의 화면별 위치·배치 선택은 앱의 선언을 뜻하며 배치 엔진을 앱에서 재구현하라는 뜻이 아닙니다. Go/Rust backend 타입 전체를 감추는 TVR-26은 별도이며 직접 backend import 0개를 완료했다고 주장하지 않습니다.

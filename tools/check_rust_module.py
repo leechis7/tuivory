@@ -44,6 +44,16 @@ def main():
         source = '''#![deny(deprecated)]
 use tuivory::{Color, ColorProfile, Theme, TokenDocument};
 fn main() {
+    let password=tuivory::controls::Control::input("pw","Password","private",true).unwrap();
+    assert_eq!(password.model.value("pw"),Some("private"));
+    assert_ne!(password.model.fields()[0].value,"private");
+    let mut editor=tuivory::text::TextDocument::editor("literal [error] and 한글");
+    editor.buffer.handle("select_all","");
+    assert_eq!(editor.handle("copy","").text,"literal [error] and 한글");
+    editor.set_markup("[info]safe[/]").unwrap();
+    let items=vec![tuivory::containers::LayoutItem{id:"editor".into(),..Default::default()}];
+    let rects=tuivory::containers::compute_container(tuivory::layout::CellRect{x:0,y:0,width:20,height:4},&items,&tuivory::containers::ContainerOptions{kind:"row".into(),..Default::default()}).unwrap();
+    assert_eq!(rects[0].rect.width,20);
     let control_state = tuivory::interaction::ControlState { read_only:true, invalid:true, edited:true, ..Default::default() };
     assert!(!control_state.visual().editable); assert_eq!(control_state.visual().role,"error"); assert_eq!(control_state.visual().markers,"!*=");
     let target = |id:&str| tuivory::interaction::FocusTarget { id:id.into(), ..Default::default() };
@@ -94,6 +104,11 @@ fn main() {
     let styles = tuivory::ratatui::Styles::new(Theme::Dark, ColorProfile::Ansi8).unwrap();
     assert!(styles.control(control_state,true).unwrap().add_modifier.contains(ratatui::style::Modifier::UNDERLINED));
     let mut terminal = ratatui::Terminal::new(ratatui::backend::TestBackend::new(24, 4)).unwrap();
+    terminal.draw(|f| f.render_widget(tuivory::ratatui::SurfaceWidget::new(tuivory::ratatui::TextWidget{model:&mut editor,styles:&styles,focused:true},&styles),f.area())).unwrap();
+    terminal.draw(|f| f.render_widget(tuivory::ratatui::ControlWidget{model:&password,styles:&styles,focused:true},f.area())).unwrap();
+    terminal.draw(|f| f.render_widget(tuivory::ratatui::ContainerWidget{items:&items,options:&tuivory::containers::ContainerOptions{kind:"row".into(),..Default::default()},styles:&styles,scroll_x:0,scroll_y:0,render_child:|id:&str,area,buf:&mut ratatui::buffer::Buffer|{
+        assert_eq!(id,"editor");ratatui::widgets::Widget::render(ratatui::widgets::Paragraph::new("external"),area,buf);
+    }},f.area())).unwrap();
     terminal.draw(|f| f.render_widget(styles.block("External", true).unwrap(), f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "╔");
     let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), ..Default::default() }]).unwrap();

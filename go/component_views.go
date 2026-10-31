@@ -149,10 +149,18 @@ func (v *TabView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func
 // PanelView wraps a host-owned primitive; no content or event callbacks are replaced.
 type PanelView struct {
 	*tview.Box
-	Child   tview.Primitive
-	palette Palette
-	ASCII   bool
+	Child    tview.Primitive
+	palette  Palette
+	ASCII    bool
+	bordered bool
 }
+
+func (v *PanelView) SetBorder(show bool) *PanelView {
+	v.bordered = show
+	v.Box.SetBorder(show)
+	return v
+}
+func (v *PanelView) GetBorder() bool { return v.bordered }
 
 func NewPanelView(child tview.Primitive, palette Palette) (*PanelView, error) {
 	if child == nil {
@@ -178,6 +186,7 @@ func (v *PanelView) StyleChildren() []tview.Primitive     { return []tview.Primi
 func (v *PanelView) HasFocus() bool                       { return v.Child.HasFocus() }
 func (v *PanelView) Focus(delegate func(tview.Primitive)) { delegate(v.Child) }
 func (v *PanelView) Blur()                                { v.Child.Blur() }
+func (v *PanelView) AtTabBoundary(previous bool) bool     { return tabBoundary(v.Child, previous) }
 func (v *PanelView) Draw(screen tcell.Screen) {
 	screen = WideSafeScreen(screen)
 	x, y, w, h := v.GetRect()
@@ -191,7 +200,7 @@ func (v *PanelView) Draw(screen tcell.Screen) {
 	if focused {
 		border = v.palette["focus.border"].Style().Bold(true)
 	}
-	if w > 0 && h > 0 {
+	if v.GetBorder() && w > 0 && h > 0 {
 		tl, tr, bl, br, hz, vt := '┌', '┐', '└', '┘', '─', '│'
 		if focused {
 			tl, tr, bl, br, hz, vt = '╔', '╗', '╚', '╝', '═', '║'
@@ -237,6 +246,13 @@ func (v *PanelView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) 
 	return v.WrapInputHandler(func(e *tcell.EventKey, focus func(tview.Primitive)) {
 		if handler := v.Child.InputHandler(); handler != nil {
 			handler(e, focus)
+		}
+	})
+}
+func (v *PanelView) PasteHandler() func(string, func(tview.Primitive)) {
+	return v.WrapPasteHandler(func(text string, focus func(tview.Primitive)) {
+		if handler := v.Child.PasteHandler(); handler != nil {
+			handler(text, focus)
 		}
 	})
 }

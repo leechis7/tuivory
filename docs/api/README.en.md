@@ -2,7 +2,9 @@
 
 [한국어 (default)](README.md) · **English**
 
-Reference version: **0.5.0**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
+This reference follows 0.6.0 source and **includes TVR-22–25 APIs**. [Availability and migration](../controls.en.md).
+
+Reference version: **0.6.0**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
 
 - [Go public declarations](go.en.md)
 - [Rust public declarations](rust.en.md)

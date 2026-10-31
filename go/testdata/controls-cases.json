@@ -1,0 +1,365 @@
+{
+  "text": [
+    {
+      "name": "grapheme-selection",
+      "text": "한é😀",
+      "ops": [
+        {
+          "action": "select_all",
+          "kind": "select"
+        },
+        {
+          "action": "copy",
+          "kind": "copy",
+          "event_text": "한é😀"
+        },
+        {
+          "action": "insert",
+          "text": "界",
+          "kind": "change"
+        },
+        {
+          "action": "undo",
+          "kind": "change"
+        },
+        {
+          "action": "redo",
+          "kind": "change"
+        }
+      ],
+      "expected": "界",
+      "cursor": 1
+    },
+    {
+      "name": "combining-insertion",
+      "text": "a",
+      "ops": [
+        {
+          "action": "insert",
+          "text": "́",
+          "kind": "change"
+        },
+        {
+          "action": "backspace",
+          "kind": "change"
+        },
+        {
+          "action": "undo",
+          "kind": "change"
+        }
+      ],
+      "expected": "á",
+      "cursor": 1
+    },
+    {
+      "name": "secret-copy-blocked",
+      "text": "秘密😀",
+      "secret": true,
+      "ops": [
+        {
+          "action": "select_all",
+          "kind": "select"
+        },
+        {
+          "action": "copy",
+          "kind": ""
+        },
+        {
+          "action": "cut",
+          "kind": ""
+        },
+        {
+          "action": "paste",
+          "text": "new",
+          "kind": "change"
+        },
+        {
+          "action": "undo",
+          "kind": "change"
+        }
+      ],
+      "expected": "秘密😀",
+      "cursor": 3
+    },
+    {
+      "name": "read-only-selection",
+      "text": "a\r\n界",
+      "read_only": true,
+      "ops": [
+        {
+          "action": "select_all",
+          "kind": "select"
+        },
+        {
+          "action": "copy",
+          "kind": "copy",
+          "event_text": "a\r\n界"
+        },
+        {
+          "action": "insert",
+          "text": "bad",
+          "kind": ""
+        }
+      ],
+      "expected": "a\r\n界",
+      "cursor": 3
+    },
+    {
+      "name": "single-line-paste",
+      "text": "",
+      "single_line": true,
+      "ops": [
+        {
+          "action": "paste",
+          "text": "한\n😀\tX",
+          "kind": "change"
+        }
+      ],
+      "expected": "한😀 X",
+      "cursor": 4
+    }
+  ],
+  "layout": [
+    {
+      "name": "row-caps",
+      "bounds": {
+        "width": 20,
+        "height": 8
+      },
+      "options": {
+        "kind": "row",
+        "gap": 1,
+        "padding": 1
+      },
+      "items": [
+        {
+          "id": "a",
+          "track": {
+            "fixed": 4
+          }
+        },
+        {
+          "id": "b",
+          "track": {
+            "weight": 1
+          }
+        },
+        {
+          "id": "c",
+          "track": {
+            "weight": 2,
+            "max": 6
+          }
+        }
+      ],
+      "expected": [
+        [
+          "a",
+          1,
+          1,
+          4,
+          6
+        ],
+        [
+          "b",
+          6,
+          1,
+          6,
+          6
+        ],
+        [
+          "c",
+          13,
+          1,
+          6,
+          6
+        ]
+      ]
+    },
+    {
+      "name": "tiny-column",
+      "bounds": {
+        "width": 2,
+        "height": 2
+      },
+      "options": {
+        "kind": "column",
+        "gap": 1
+      },
+      "items": [
+        {
+          "id": "a",
+          "track": {
+            "min": 2
+          }
+        },
+        {
+          "id": "b",
+          "track": {
+            "min": 2
+          }
+        }
+      ],
+      "expected": [
+        [
+          "a",
+          0,
+          0,
+          2,
+          2
+        ],
+        [
+          "b",
+          0,
+          2,
+          2,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "grid-span",
+      "bounds": {
+        "width": 12,
+        "height": 6
+      },
+      "options": {
+        "kind": "grid",
+        "gap": 1,
+        "rows": [
+          {
+            "fixed": 2
+          },
+          {
+            "weight": 1
+          }
+        ],
+        "columns": [
+          {
+            "weight": 1
+          },
+          {
+            "weight": 2
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "a",
+          "column_span": 2
+        },
+        {
+          "id": "b",
+          "row": 1
+        },
+        {
+          "id": "c",
+          "row": 1,
+          "column": 1
+        }
+      ],
+      "expected": [
+        [
+          "a",
+          0,
+          0,
+          12,
+          2
+        ],
+        [
+          "b",
+          0,
+          3,
+          4,
+          3
+        ],
+        [
+          "c",
+          5,
+          3,
+          7,
+          3
+        ]
+      ]
+    },
+    {
+      "name": "modal-layer",
+      "bounds": {
+        "width": 10,
+        "height": 6
+      },
+      "options": {
+        "kind": "layers"
+      },
+      "items": [
+        {
+          "id": "background"
+        },
+        {
+          "id": "popup",
+          "modal": true,
+          "centered": true,
+          "area": {
+            "width": 6,
+            "height": 2
+          }
+        }
+      ],
+      "expected": [
+        [
+          "background",
+          0,
+          0,
+          10,
+          6
+        ],
+        [
+          "popup",
+          2,
+          2,
+          6,
+          2
+        ]
+      ]
+    },
+    {
+      "name": "right-drawer",
+      "bounds": {
+        "width": 12,
+        "height": 8
+      },
+      "options": {
+        "kind": "layers",
+        "padding": 1
+      },
+      "items": [
+        {
+          "id": "background"
+        },
+        {
+          "id": "drawer",
+          "drawer": "right",
+          "area": {
+            "width": 4
+          }
+        }
+      ],
+      "expected": [
+        [
+          "background",
+          1,
+          1,
+          10,
+          6
+        ],
+        [
+          "drawer",
+          7,
+          1,
+          4,
+          6
+        ]
+      ]
+    }
+  ]
+}

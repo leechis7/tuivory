@@ -4,15 +4,15 @@
 
 [Public API reference](api/go.en.md)
 
-Current public product version is **0.5.0**. [Changes, installation and release assets](release-0.5.0.en.md).
+Current public product version is **0.6.0**. [Changes, installation and release assets](release-0.6.0.en.md).
 
 The Go code is an independent submodule in `go/`. Its module path is **`github.com/leechis7/tuivory/go`**, and its single public package is **`tuivory`**. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.5.0
+go get github.com/leechis7/tuivory/go@v0.6.0
 ```
 
-The current release is `v0.5.0`, tagged `go/v0.5.0`.
+The current release is `v0.6.0`, tagged `go/v0.6.0`.
 
 | Module path | Responsibility |
 | --- | --- |
@@ -119,7 +119,7 @@ For form choices, prefer `NewChoice`. It prevents common form input colors from 
 
 Go tests compare 240 palette values and 1,572 style cases captured by independently running the original LazyOra functions. See [extraction sources](lazyora-extraction.en.md) and [style coverage](go-style-coverage.en.md). Simulated screen checks and actual terminal observations are recorded separately.
 
-There is no root Go module: install `github.com/leechis7/tuivory/go@v0.5.0`. The module embeds generated `go/internal/tokens/candidate.json` from shared sources in `design/tokens/`. Consumers need no repository-root files, Python, Shell, or generation tools. `python3 tools/export_tokens.py --check` checks the embedded copy against the shared source.
+There is no root Go module: install `github.com/leechis7/tuivory/go@v0.6.0`. The module embeds generated `go/internal/tokens/candidate.json` from shared sources in `design/tokens/`. Consumers need no repository-root files, Python, Shell, or generation tools. `python3 tools/export_tokens.py --check` checks the embedded copy against the shared source.
 
 See [installation and usage](installation.en.md) for current module, command, and token identifiers. Original attribution and licensing are preserved in [NOTICE](../NOTICE.en.md). For setup and validation commands, return to the [English README](../README.en.md).
 
@@ -156,3 +156,5 @@ Version 0.5.0 TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface 
 [Supported, compatibility, deprecated and removed APIs with migration examples](api-lifecycle.en.md) · [API-family overlap audit](api-overlap-audit.en.md). Public installation currently uses 0.5.0; deprecation annotations are also included in 0.5.0, distinct from historical 0.2.0 introductions.
 
 TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).
+
+0.6.0 TVR-22–25 adds borderless Surface, standalone/secret controls, text editing/viewing and row/column/grid/layer containers. [Usage, source availability and examples](controls.en.md).

@@ -56,7 +56,8 @@ impl SpacingTokens {
         }
     }
 }
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(default)]
 pub struct CellRect {
     pub x: usize,
     pub y: usize,

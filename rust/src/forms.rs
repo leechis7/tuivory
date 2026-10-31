@@ -57,17 +57,22 @@ pub struct FormEvent {
     pub kind: String,
     pub id: String,
     pub missing: Vec<String>,
+    pub text: String,
 }
 #[derive(Clone, Debug)]
 pub struct Form {
     fields: Vec<FormField>,
     focus: FocusStack,
+    inputs: std::collections::BTreeMap<String, crate::text::TextBuffer>,
 }
 impl Form {
     pub fn new(mut fields: Vec<FormField>) -> Result<Self, Error> {
+        let mut inputs = std::collections::BTreeMap::new();
         for field in &mut fields {
-            if !["text", "textarea", "button", "checkbox", "radio", "select"]
-                .contains(&field.kind.as_str())
+            if ![
+                "text", "textarea", "password", "button", "checkbox", "radio", "select",
+            ]
+            .contains(&field.kind.as_str())
                 || field.open
             {
                 return Err(Error::Invalid(
@@ -84,6 +89,13 @@ impl Form {
                 return Err(Error::Invalid("unknown choice".into()));
             }
             field.cursor = field.value.graphemes(true).count();
+            if ["text", "textarea", "password"].contains(&field.kind.as_str()) {
+                let mut b = crate::text::TextBuffer::new(&field.value);
+                b.secret = field.kind == "password";
+                b.single_line = field.kind != "textarea";
+                field.value = b.display();
+                inputs.insert(field.id.clone(), b);
+            }
         }
         let focus = FocusStack::new(
             "form",
@@ -96,10 +108,45 @@ impl Form {
                 })
                 .collect(),
         )?;
-        Ok(Self { fields, focus })
+        Ok(Self {
+            fields,
+            focus,
+            inputs,
+        })
+    }
+    /// Explicit raw-value access, including password inputs.
+    pub fn value(&self, id: &str) -> Option<&str> {
+        self.inputs.get(id).map(|b| b.text()).or_else(|| {
+            self.fields
+                .iter()
+                .find(|f| f.id == id)
+                .map(|f| f.value.as_str())
+        })
+    }
+    pub fn select_text(&mut self, id: &str, anchor: usize, cursor: usize) -> bool {
+        let Some(b) = self.inputs.get_mut(id) else {
+            return false;
+        };
+        b.select(anchor, cursor);
+        if let Some(f) = self.fields.iter_mut().find(|f| f.id == id) {
+            f.cursor = b.cursor
+        }
+        true
     }
     pub fn fields(&self) -> &[FormField] {
         &self.fields
+    }
+    pub fn at_tab_boundary(&self, previous: bool) -> bool {
+        let ids: Vec<_> = self
+            .fields
+            .iter()
+            .filter(|f| f.state.visual().focusable)
+            .map(|f| f.id.as_str())
+            .collect();
+        if ids.is_empty() {
+            return true;
+        }
+        self.focused() == if previous { ids[0] } else { ids[ids.len() - 1] }
     }
     pub fn focused(&self) -> &str {
         self.focus.focused()
@@ -150,7 +197,9 @@ impl Form {
                     return false;
                 }
                 let empty = match f.kind.as_str() {
-                    "text" | "textarea" => f.value.trim().is_empty(),
+                    "text" | "textarea" | "password" => {
+                        self.value(&f.id).unwrap_or("").trim().is_empty()
+                    }
                     "checkbox" => !f.checked,
                     "radio" | "select" => f.choice.is_empty(),
                     _ => false,
@@ -186,6 +235,14 @@ impl Form {
         let Some(field) = self.fields.iter_mut().find(|f| f.id == focused) else {
             return none();
         };
+        let action = if action == "insert"
+            && text == " "
+            && !["text", "textarea", "password"].contains(&field.kind.as_str())
+        {
+            "toggle"
+        } else {
+            action
+        };
         if action == "cancel" {
             if field.open {
                 field.open = false;
@@ -197,13 +254,44 @@ impl Form {
                 ..Default::default()
             };
         }
+        if field.kind == "button" && ["left", "right"].contains(&action) && !field.state.disabled {
+            self.focus.move_focus(action == "left");
+            return none();
+        }
+        if let Some(b) = self.inputs.get_mut(&field.id) {
+            b.state = field.state;
+            b.cursor = field.cursor;
+            if action == "activate" && field.kind != "textarea" {
+                if !field.state.visual().activatable {
+                    return none();
+                }
+                return self.handle("submit", "");
+            }
+            let e = b.handle(
+                if action == "activate" {
+                    "newline"
+                } else {
+                    action
+                },
+                text,
+            );
+            field.value = b.display();
+            field.cursor = b.cursor;
+            field.state = b.state;
+            return FormEvent {
+                kind: e.kind,
+                id: focused,
+                text: e.text,
+                ..Default::default()
+            };
+        }
         let navigate = ["text", "textarea"].contains(&field.kind.as_str())
             && ["left", "right", "home", "end"].contains(&action)
             && !field.state.disabled;
         if !field.state.visual().activatable && !navigate {
             return none();
         }
-        if field.kind == "button" && action == "activate" {
+        if field.kind == "button" && (action == "activate" || action == "toggle") {
             return match field.action.as_str() {
                 "submit" => self.handle("submit", ""),
                 "cancel" => FormEvent {
@@ -336,6 +424,12 @@ impl Form {
         let Some(field) = self.fields.iter_mut().find(|f| f.id == id) else {
             return FormEvent::default();
         };
+        if field.kind == "button" {
+            if field.state.visual().activatable {
+                return self.handle("activate", "");
+            }
+            return FormEvent::default();
+        }
         if !field.state.visual().editable {
             return FormEvent::default();
         }
@@ -396,7 +490,7 @@ impl Form {
                 "",
             );
             match field.kind.as_str() {
-                "text" | "textarea" => {
+                "text" | "textarea" | "password" => {
                     let mut position = 0;
                     for line in field.value.split('\n') {
                         let count = line.graphemes(true).count();
@@ -469,6 +563,32 @@ impl Form {
                 add(format!("! {}", field.error), "error", false, "")
             } else if !field.help.is_empty() {
                 add(format!("  {}", field.help), "hint", false, "")
+            }
+        }
+        for field in &self.fields {
+            if let Some(buffer) = self.inputs.get(&field.id) {
+                let (lo, hi) = buffer.selection();
+                if lo != hi {
+                    let mut doc = crate::text::TextDocument::viewer("");
+                    doc.buffer = buffer.clone();
+                    let selected = doc.layout(
+                        width.saturating_sub(2),
+                        field.value.graphemes(true).count() + 1,
+                    );
+                    let mut at = 0;
+                    for row in &mut rows {
+                        if row.id == field.id && (row.role == "field" || row.role == "disabled") {
+                            if let Some(line) = selected.get(at) {
+                                row.text = format!("  {}", line.text);
+                                row.spans = line.spans.clone();
+                                for span in &mut row.spans {
+                                    span.start += 2
+                                }
+                            }
+                            at += 1
+                        }
+                    }
+                }
             }
         }
         let start = anchor

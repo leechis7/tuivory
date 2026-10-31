@@ -17,5 +17,6 @@ Choose a component for models, state, events, language usage and runnable exampl
 | [Layout](layout.en.md) | Layout, density, badges, shortcut help |
 | [Shadows](popup-shadows.en.md) | Popup shadows, placement, hit areas |
 | [Drawing](overlay-drawing.en.md) | Wide glyphs and region drawing |
+| [Surface, controls, editor and containers](controls.en.md) | 0.6.0 TVR-22–25, Go/Rust |
 
 [API reference](api/README.en.md) · [All examples](../examples/README.en.md)

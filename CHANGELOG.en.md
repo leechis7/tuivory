@@ -2,7 +2,9 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
-## Unreleased
+## 0.6.0 — 2026-10-31
+
+- TVR-22–25: Add borderless opaque surfaces, secret/standalone controls and rich form operations, grapheme-safe text editing/viewing with explicit markup, and row/column/grid/layer/drawer layout execution. Reuse existing models/styles, preserve state/input isolation, and provide bilingual examples, source-generated APIs and regression fixtures. Fix duplicated focused Rust panel titles. Full backend facade TVR-26 remains separate.
 
 - TVR-21: Reorganize documentation by purpose, add source-generated Go/Rust public API references and CI drift detection, and refresh current installation/version guidance. Existing guide paths and historical evidence remain available.
 

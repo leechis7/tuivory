@@ -1,4 +1,4 @@
-# Go API — 0.5.0
+# Go API — source (0.6.0)
 
 [한국어 (default)](go.md) · **English**
 
@@ -76,6 +76,7 @@ func ProfileForColors(count int, limited bool) string
     ProfileForColors translates host-reported color capability without terminal
     I/O.
 
+func TextKey(e *tcell.EventKey) (string, string)
 func TextOnSurface(palette Palette, role, surface string) (tcell.Style, error)
     TextOnSurface binds a text role to the actual surface without changing
     tokens. Use a better surface foreground below the role target (disabled 2:1,
@@ -247,6 +248,125 @@ type ComponentSpan struct {
     ComponentLine is literal presentation data; ID identifies a hit-tested item.
 ```
 
+## ContainerChild
+
+```go
+type ContainerChild struct {
+	Item  LayoutItem
+	Child tview.Primitive
+}
+```
+
+## ContainerOptions
+
+```go
+type ContainerOptions struct {
+	Kind          string // row, column, grid, layers
+	Gap, Padding  int
+	Rows, Columns []Track
+	VirtualWidth  int `json:"virtual_width"`
+	VirtualHeight int `json:"virtual_height"`
+}
+```
+
+## ContainerState
+
+```go
+type ContainerState struct {
+	Focused, Captured string
+
+	// Has unexported fields.
+}
+    ContainerState is a backend-neutral focus/hit/drag router. Modal layers
+    block lower layers even when the pointer is outside the card. IDs survive
+    reflow.
+
+func (s *ContainerState) Eligible(items []LayoutItem) []string
+
+func (s *ContainerState) Hit(items []LayoutItem, rects []NamedRect, x, y int) string
+
+func (s *ContainerState) Move(items []LayoutItem, previous bool) string
+
+func (s *ContainerState) Reconcile(items []LayoutItem)
+```
+
+## ContainerView
+
+```go
+type ContainerView struct {
+	*tview.Box
+	Options ContainerOptions
+	State   ContainerState
+	// CycleFocus enables Tab/Backtab within this container; disable it when a
+	// child form owns Tab. Hosts can also call FocusID/MoveFocus explicitly.
+	CycleFocus bool
+
+	ScrollX, ScrollY int
+	// Has unexported fields.
+}
+
+func NewColumn(children []ContainerChild, palette Palette) (*ContainerView, error)
+
+func NewContainer(options ContainerOptions, children []ContainerChild, palette Palette) (*ContainerView, error)
+
+func NewLayerStack(children []ContainerChild, palette Palette) (*ContainerView, error)
+
+func NewLayoutGrid(rows, columns []Track, children []ContainerChild, palette Palette) (*ContainerView, error)
+
+func NewRow(children []ContainerChild, palette Palette) (*ContainerView, error)
+
+func (v *ContainerView) AtTabBoundary(previous bool) bool
+
+func (v *ContainerView) Blur()
+
+func (v *ContainerView) Draw(screen tcell.Screen)
+
+func (v *ContainerView) Focus(delegate func(tview.Primitive))
+
+func (v *ContainerView) FocusID(id string) bool
+
+func (v *ContainerView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
+
+func (v *ContainerView) Layout() ([]NamedRect, error)
+
+func (v *ContainerView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
+
+func (v *ContainerView) MoveFocus(previous bool) string
+
+func (v *ContainerView) PasteHandler() func(string, func(tview.Primitive))
+
+func (v *ContainerView) SetChildren(children []ContainerChild) error
+
+func (v *ContainerView) SetOptions(options ContainerOptions) error
+
+func (v *ContainerView) SetPalette(p Palette) error
+
+func (v *ContainerView) StyleChildren() []tview.Primitive
+```
+
+## Control
+
+```go
+type Control struct {
+	*Form
+	ID string
+}
+    Control is a standalone input, check, select or button backed by the same
+    form model. Data, eligibility and activation remain host-owned.
+
+func NewButton(id, label string) (*Control, error)
+
+func NewCheck(id, label string, checked bool) (*Control, error)
+
+func NewControl(field FormField) (*Control, error)
+
+func NewInput(id, label, value string, secret bool) (*Control, error)
+
+func NewSelect(id, label string, options []FormOption, choice string) (*Control, error)
+
+func (c *Control) Layout(w, h int) []ComponentLine
+```
+
 ## ControlState
 
 ```go
@@ -371,6 +491,8 @@ type Form struct {
 
 func NewForm(fields []FormField) (*Form, error)
 
+func (f *Form) AtTabBoundary(previous bool) bool
+
 func (f *Form) Click(id, option string) FormEvent
     Click commits an enabled option, or activates a button/check/select.
     Text clicks focus only.
@@ -389,9 +511,14 @@ func (f *Form) Layout(width, height int) []ComponentLine
 
 func (f *Form) Missing() []string
 
+func (f *Form) SelectText(id string, anchor, cursor int) bool
+
 func (f *Form) SetFeedback(id, help, message string) bool
 
 func (f *Form) SetState(id string, state ControlState) bool
+
+func (f *Form) Value(id string) (string, bool)
+    Value is the explicit raw-value access path, including secret inputs.
 ```
 
 ## FormEvent
@@ -399,6 +526,7 @@ func (f *Form) SetState(id string, state ControlState) bool
 ```go
 type FormEvent struct {
 	Kind, ID string
+	Text     string // Non-secret clipboard request; the host performs clipboard I/O.
 	Missing  []string
 }
 
@@ -652,6 +780,23 @@ type InputRoute struct {
 }
 ```
 
+## LayoutItem
+
+```go
+type LayoutItem struct {
+	ID                      string
+	Track                   Track
+	Row, Column             int
+	RowSpan                 int `json:"row_span"`
+	ColumnSpan              int `json:"column_span"`
+	Hidden, Modal, Centered bool
+	Disabled                bool
+	Drawer                  string // "left" or "right" for an edge-attached layer.
+	// Layer size: zero expands to available space. Nonzero X/Y are inset offsets.
+	Area CellRect
+}
+```
+
 ## LineRun
 
 ```go
@@ -829,6 +974,8 @@ type NamedRect struct {
 	Rect CellRect
 }
 
+func ComputeContainer(bounds CellRect, items []LayoutItem, options ContainerOptions) ([]NamedRect, error)
+
 func StackRects(parent CellRect, items []StackItem, tokens SpacingTokens, vertical bool) ([]NamedRect, []string, error)
 ```
 
@@ -936,17 +1083,25 @@ type PanelView struct {
 
 func NewPanelView(child tview.Primitive, palette Palette) (*PanelView, error)
 
+func (v *PanelView) AtTabBoundary(previous bool) bool
+
 func (v *PanelView) Blur()
 
 func (v *PanelView) Draw(screen tcell.Screen)
 
 func (v *PanelView) Focus(delegate func(tview.Primitive))
 
+func (v *PanelView) GetBorder() bool
+
 func (v *PanelView) HasFocus() bool
 
 func (v *PanelView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
 
 func (v *PanelView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
+
+func (v *PanelView) PasteHandler() func(string, func(tview.Primitive))
+
+func (v *PanelView) SetBorder(show bool) *PanelView
 
 func (v *PanelView) SetPalette(palette Palette) error
 
@@ -1022,10 +1177,12 @@ type Roles struct {
 ```go
 type RowsView struct {
 	*tview.Box
-	Rows    func(int, int) []ComponentLine
-	Key     func(*tcell.EventKey)
-	Click   func(ComponentLine)
-	Pointer func(ComponentLine, int)
+	Rows        func(int, int) []ComponentLine
+	Key         func(*tcell.EventKey)
+	Paste       func(string)
+	TabBoundary func(bool) bool
+	Click       func(ComponentLine)
+	Pointer     func(ComponentLine, int)
 
 	// PreserveBackgrounds keeps explicit row/span backgrounds for grid or custom composition.
 	PreserveBackgrounds bool
@@ -1038,7 +1195,14 @@ func NewBadgeView(badge *Badge, palette Palette) (*RowsView, error)
 
 func NewChipView(chip *Chip, palette Palette, onEvent func(ComponentEvent)) (*RowsView, error)
 
+func NewControlView(control *Control, palette Palette, onEvent func(FormEvent)) (*RowsView, error)
+
 func NewDataStateView(state *DataState, palette Palette) (*RowsView, error)
+
+func NewEditorView(doc *TextDocument, palette Palette, onEvent func(TextEvent)) (*RowsView, error)
+    NewEditorView and NewTextViewView share the same literal renderer. Read-only
+    is a buffer state, not a second editor implementation. Clipboard events are
+    delivered to the host and never executed by the library.
 
 func NewFormView(form *Form, palette Palette, onEvent func(FormEvent)) (*RowsView, error)
 
@@ -1058,11 +1222,17 @@ func NewRowsView(rows func(int, int) []ComponentLine, palette Palette) (*RowsVie
 
 func NewSearchPickerView(model *SearchPicker, palette Palette, ascii bool, onEvent func(ListEvent)) (*RowsView, error)
 
+func NewTextViewView(doc *TextDocument, palette Palette, onEvent func(TextEvent)) (*RowsView, error)
+
+func (v *RowsView) AtTabBoundary(previous bool) bool
+
 func (v *RowsView) Draw(screen tcell.Screen)
 
 func (v *RowsView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
 
 func (v *RowsView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
+
+func (v *RowsView) PasteHandler() func(string, func(tview.Primitive))
 
 func (v *RowsView) SetPalette(palette Palette) error
 ```
@@ -1135,6 +1305,8 @@ type ShadowView struct {
     shadow space; Child receives only the card. Shadows never receive input.
 
 func NewShadowView(child tview.Primitive, palette Palette, options ShadowOptions) (*ShadowView, error)
+
+func (v *ShadowView) AtTabBoundary(previous bool) bool
 
 func (v *ShadowView) Blur()
 
@@ -1530,6 +1702,17 @@ const (
 )
 ```
 
+## SurfaceView
+
+```go
+type SurfaceView = PanelView
+    SurfaceView is an opaque, borderless child container. The assigned rectangle
+    is filled before the child is drawn. Hosts still choose placement and
+    actions.
+
+func NewSurfaceView(child tview.Primitive, palette Palette) (*SurfaceView, error)
+```
+
 ## SyntaxKind
 
 ```go
@@ -1552,6 +1735,21 @@ const (
 	SyntaxComment
 	SyntaxParameter
 )
+```
+
+## SyntaxSpan
+
+```go
+type SyntaxSpan struct {
+	Start, End int
+	Role       string
+}
+    SyntaxSpan offsets are grapheme indices in the original text, never bytes.
+
+func ParseMarkup(markup string) (string, []SyntaxSpan, error)
+    ParseMarkup is an explicit opt-in to [role]text[/] styling. [[ escapes [.
+    It returns plain logical text and grapheme spans; ordinary SetText/Layout
+    never interprets markup. Unknown/unbalanced tags return an error atomically.
 ```
 
 ## TabAction
@@ -1655,6 +1853,85 @@ func (t *Tabs) Layout(s *TabState, width int) TabLayout
 func (t *Tabs) Reconcile(s *TabState)
 ```
 
+## TextBuffer
+
+```go
+type TextBuffer struct {
+	Cursor, Anchor     int
+	State              ControlState
+	Secret, SingleLine bool
+	// Has unexported fields.
+}
+    TextBuffer uses extended grapheme indices, including newlines, for
+    selection. Text is retrieved explicitly. Secret buffers never expose copy
+    requests or plaintext through formatting/JSON. History retains at most 128
+    edits in memory.
+
+func NewTextBuffer(text string) *TextBuffer
+
+func (b *TextBuffer) CursorByte() int
+
+func (b *TextBuffer) Format(s fmt.State, _ rune)
+
+func (b *TextBuffer) Handle(action, text string) TextEvent
+
+func (b *TextBuffer) MarshalJSON() ([]byte, error)
+
+func (b *TextBuffer) Select(anchor, cursor int)
+
+func (b *TextBuffer) Selection() (int, int)
+
+func (b *TextBuffer) SetText(text string)
+
+func (b *TextBuffer) String() string
+
+func (b *TextBuffer) Text() string
+```
+
+## TextDocument
+
+```go
+type TextDocument struct {
+	Buffer                   *TextBuffer
+	Wrap, LineNumbers, ASCII bool
+	ScrollX, ScrollY         int
+	Syntax                   []SyntaxSpan
+
+	// Has unexported fields.
+}
+
+func NewEditor(text string) *TextDocument
+
+func NewTextView(text string) *TextDocument
+
+func (d *TextDocument) Handle(action, text string) TextEvent
+    Handle adds viewport scrolling; copy/cut are host clipboard requests.
+
+func (d *TextDocument) Layout(width, height int) []ComponentLine
+    Layout renders literal text; markup is not inferred. Call SetText to replace
+    data and provide syntax roles separately. No lexer, clipboard or file I/O.
+
+func (d *TextDocument) Point(x, y, width, height int, extend bool)
+    Point hit-tests a cell coordinate relative to the content viewport. Extend
+    keeps the selection anchor for a captured drag, even outside the viewport.
+
+func (d *TextDocument) RevealCursor()
+
+func (d *TextDocument) SetMarkup(markup string) error
+
+func (d *TextDocument) SetSyntax(spans []SyntaxSpan) error
+
+func (d *TextDocument) SetText(text string)
+```
+
+## TextEvent
+
+```go
+type TextEvent struct{ Kind, Text string }
+    TextEvent carries requests only. Text is populated only for non-secret
+    copy/cut.
+```
+
 ## TextRole
 
 ```go
@@ -1738,6 +2015,14 @@ type TokenPalette = tokens.Palette
 package tokens // import "github.com/leechis7/tuivory/go/internal/tokens"
 
 type Palette map[string]Pair
+```
+
+## Track
+
+```go
+type Track struct{ Min, Max, Fixed, Weight int }
+    Track constraints are terminal cells; Max=0 means unbounded. Fixed>0
+    overrides weight. On tiny screens minimums shrink in declaration order.
 ```
 
 ## Tree
