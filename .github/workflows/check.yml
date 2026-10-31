@@ -97,6 +97,13 @@ jobs:
           go build -C go -o "$RUNNER_TEMP/tuivory-focus" ./examples/focus
           python3 tools/smoke_focus.py "$RUNNER_TEMP/tuivory-focus" --lang ko
           python3 tools/smoke_focus.py "$RUNNER_TEMP/tuivory-focus" --lang en
+      - name: Check controls, editing and containers through terminal input
+        run: |
+          go build -C go -o "$RUNNER_TEMP/tuivory-controls" ./examples/controls
+          for lang in ko en; do
+            python3 tools/smoke_controls.py "$RUNNER_TEMP/tuivory-controls" --lang "$lang"
+            python3 tools/smoke_controls.py "$RUNNER_TEMP/tuivory-controls" --lang "$lang" --ascii
+          done
   rust-core:
     runs-on: ubuntu-24.04
     steps:
@@ -138,6 +145,13 @@ jobs:
         run: |
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/playground" --lang ko
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/playground" --lang en
+      - name: Check controls, editing and containers through terminal input
+        run: |
+          for lang in ko en; do
+            python3 tools/smoke_controls.py "$CARGO_TARGET_DIR/debug/examples/controls" --lang "$lang"
+            python3 tools/smoke_controls.py "$CARGO_TARGET_DIR/debug/examples/controls" --lang "$lang" --ascii
+          done
+          python3 tools/snapshot_controls.py "$CARGO_TARGET_DIR/debug/examples/controls" --output "$RUNNER_TEMP/controls-images"
       - name: Verify reference rendering
         run: python3 tools/snapshot_rust.py "$CARGO_TARGET_DIR/debug/examples/playground" --output "$RUNNER_TEMP/tuivory-rust-images"
       - name: Check public Tree example and reference views

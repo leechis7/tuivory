@@ -15,10 +15,13 @@
 
 use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
 mod components;
+mod container;
 mod menu;
 mod rows;
 mod shadow;
 mod surface;
+mod text;
+pub use container::{ContainerWidget, SurfaceWidget};
 pub use menu::{MenuBarWidget, MenuPopupWidget, MenuWidget};
 pub use rows::{
     BadgeWidget, ChipWidget, DataStateWidget, FormWidget, GridWidget, HelpWidget, ListWidget,
@@ -26,6 +29,7 @@ pub use rows::{
     stack_rects,
 };
 pub use shadow::ShadowWidget;
+pub use text::{ControlWidget, TextWidget};
 mod tree;
 use ::ratatui::{
     style::{Color, Modifier, Style},
@@ -86,12 +90,14 @@ impl Styles {
         padding: u16,
         ascii: bool,
     ) -> Result<Block<'a>, Error> {
+        let display = if focused {
+            format!("> {title}")
+        } else {
+            title.to_owned()
+        };
         let mut block = self
-            .block(title, focused)?
+            .styled_block(display, focused)?
             .padding(::ratatui::widgets::Padding::uniform(padding));
-        if focused {
-            block = block.title(format!("> {title}"));
-        }
         if ascii {
             block = block.border_set(::ratatui::symbols::border::Set {
                 top_left: "+",
@@ -149,6 +155,13 @@ impl Styles {
     /// Create a panel border without modifying the host's focus callbacks.
     /// Double borders preserve the focus cue even without color.
     pub fn block<'a>(&self, title: &'a str, focused: bool) -> Result<Block<'a>, Error> {
+        self.styled_block(title, focused)
+    }
+    fn styled_block<'a>(
+        &self,
+        title: impl Into<::ratatui::text::Line<'a>>,
+        focused: bool,
+    ) -> Result<Block<'a>, Error> {
         Ok(Block::default()
             .title(title)
             .borders(Borders::ALL)

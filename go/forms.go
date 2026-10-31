@@ -33,11 +33,13 @@ type FormField struct {
 }
 type FormEvent struct {
 	Kind, ID string
+	Text     string // Non-secret clipboard request; the host performs clipboard I/O.
 	Missing  []string
 }
 type Form struct {
 	fields []FormField
 	focus  *FocusStack
+	inputs map[string]*TextBuffer
 }
 
 func clusters(s string) []string {
@@ -58,10 +60,11 @@ func fieldCopy(fields []FormField) []FormField {
 func NewForm(fields []FormField) (*Form, error) {
 	fields = fieldCopy(fields)
 	targets := []FocusTarget{}
+	inputs := map[string]*TextBuffer{}
 	for i := range fields {
 		f := &fields[i]
 		switch f.Kind {
-		case "text", "textarea", "button", "checkbox", "radio", "select":
+		case "text", "textarea", "password", "button", "checkbox", "radio", "select":
 		default:
 			return nil, fmt.Errorf("unknown field kind %q", f.Kind)
 		}
@@ -83,16 +86,65 @@ func NewForm(fields []FormField) (*Form, error) {
 			return nil, fmt.Errorf("unknown choice")
 		}
 		f.Cursor = len(clusters(f.Value))
+		if f.Kind == "text" || f.Kind == "textarea" || f.Kind == "password" {
+			b := NewTextBuffer("")
+			b.Secret = f.Kind == "password"
+			b.SingleLine = f.Kind != "textarea"
+			b.SetText(f.Value)
+			inputs[f.ID] = b
+			f.Value = b.display()
+		}
 		targets = append(targets, FocusTarget{ID: f.ID, State: f.State})
 	}
 	focus, err := NewFocusStack("form", targets)
 	if err != nil {
 		return nil, err
 	}
-	return &Form{fields: fields, focus: focus}, nil
+	return &Form{fields: fields, focus: focus, inputs: inputs}, nil
+}
+
+// Value is the explicit raw-value access path, including secret inputs.
+func (f *Form) Value(id string) (string, bool) {
+	if b, ok := f.inputs[id]; ok {
+		return b.Text(), true
+	}
+	for _, field := range f.fields {
+		if field.ID == id {
+			return field.Value, true
+		}
+	}
+	return "", false
+}
+func (f *Form) SelectText(id string, anchor, cursor int) bool {
+	b, ok := f.inputs[id]
+	if !ok {
+		return false
+	}
+	b.Select(anchor, cursor)
+	for i := range f.fields {
+		if f.fields[i].ID == id {
+			f.fields[i].Cursor = b.Cursor
+		}
+	}
+	return true
 }
 func (f *Form) Fields() []FormField { return fieldCopy(f.fields) }
-func (f *Form) Focused() string     { return f.focus.Focused() }
+func (f *Form) AtTabBoundary(previous bool) bool {
+	ids := []string{}
+	for _, field := range f.fields {
+		if field.State.Visual().Focusable {
+			ids = append(ids, field.ID)
+		}
+	}
+	if len(ids) == 0 {
+		return true
+	}
+	if previous {
+		return f.Focused() == ids[0]
+	}
+	return f.Focused() == ids[len(ids)-1]
+}
+func (f *Form) Focused() string { return f.focus.Focused() }
 func (f *Form) Focus(id string) bool {
 	for i := range f.fields {
 		f.fields[i].Open = false
@@ -137,8 +189,9 @@ func (f *Form) Missing() []string {
 		}
 		empty := false
 		switch field.Kind {
-		case "text", "textarea":
-			empty = strings.TrimSpace(field.Value) == ""
+		case "text", "textarea", "password":
+			value, _ := f.Value(field.ID)
+			empty = strings.TrimSpace(value) == ""
 		case "checkbox":
 			empty = !field.Checked
 		case "radio", "select":
@@ -172,6 +225,13 @@ func (f *Form) Handle(action, text string) FormEvent {
 			continue
 		}
 		event.ID = field.ID
+		if action == "insert" && text == " " && field.Kind != "text" && field.Kind != "textarea" && field.Kind != "password" {
+			action = "toggle"
+		}
+		if field.Kind == "button" && (action == "left" || action == "right") && !field.State.Disabled {
+			f.focus.Move(action == "left")
+			return FormEvent{}
+		}
 		if action == "cancel" {
 			if field.Open {
 				field.Open = false
@@ -179,11 +239,29 @@ func (f *Form) Handle(action, text string) FormEvent {
 			}
 			return FormEvent{Kind: "cancel", ID: field.ID}
 		}
+		if b, ok := f.inputs[field.ID]; ok {
+			b.State = field.State
+			b.Cursor = field.Cursor
+			if action == "activate" && field.Kind != "textarea" {
+				if !field.State.Visual().Activatable {
+					return FormEvent{}
+				}
+				return f.Handle("submit", "")
+			}
+			if action == "activate" {
+				action = "newline"
+			}
+			e := b.Handle(action, text)
+			field.Value = b.display()
+			field.Cursor = b.Cursor
+			field.State = b.State
+			return FormEvent{Kind: e.Kind, ID: field.ID, Text: e.Text}
+		}
 		navigate := (field.Kind == "text" || field.Kind == "textarea") && (action == "left" || action == "right" || action == "home" || action == "end") && !field.State.Disabled
 		if !field.State.Visual().Activatable && !navigate {
 			return FormEvent{}
 		}
-		if field.Kind == "button" && action == "activate" {
+		if field.Kind == "button" && (action == "activate" || action == "toggle") {
 			switch field.Action {
 			case "submit":
 				return f.Handle("submit", "")
@@ -364,10 +442,26 @@ func (f *Form) Layout(width, height int) []ComponentLine {
 		}
 		value := field.Value
 		switch field.Kind {
-		case "text", "textarea":
+		case "text", "textarea", "password":
 			valueRole := "field"
 			if field.State.Disabled {
 				valueRole = "disabled"
+			}
+			if b, ok := f.inputs[field.ID]; ok {
+				lo, hi := b.Selection()
+				if lo != hi {
+					doc := TextDocument{Buffer: b}
+					for _, line := range doc.Layout(max(0, width-2), max(1, len(clusters(value))+1)) {
+						line.ID = field.ID
+						line.Text = "  " + line.Text
+						line.Role = valueRole
+						for i := range line.Spans {
+							line.Spans[i].Start += 2
+						}
+						rows = append(rows, line)
+					}
+					break
+				}
 			}
 			position := 0
 			for _, line := range strings.Split(value, "\n") {
@@ -449,6 +543,12 @@ func (f *Form) Click(id, option string) FormEvent {
 		field := &f.fields[i]
 		if field.ID != id {
 			continue
+		}
+		if field.Kind == "button" {
+			if field.State.Visual().Activatable {
+				return f.Handle("activate", "")
+			}
+			return FormEvent{}
 		}
 		if !field.State.Visual().Editable {
 			return FormEvent{}

@@ -39,6 +39,18 @@ import (
     "github.com/leechis7/tuivory/go"
 )
 func TestIsolatedModule(t *testing.T) {
+    password, err := tuivory.NewInput("pw","Password","private",true)
+    if err!=nil {t.Fatal(err)}
+    raw,ok:=password.Value("pw");if !ok||raw!="private"||password.Fields()[0].Value=="private" { t.Fatal("external secret input") }
+    editor:=tuivory.NewEditor("literal [error] and 한글")
+    editor.Buffer.Handle("select_all","")
+    if editor.Handle("copy","").Text!="literal [error] and 한글" {t.Fatal("external editor")}
+    if err:=editor.SetMarkup("[info]safe[/]");err!=nil {t.Fatal(err)}
+    controlsTokens,_:=tuivory.CandidateTokens();controlsRaw,_:=controlsTokens.Palette("dark","256");controlsPalette,_:=tuivory.Resolve(controlsRaw)
+    editorView,err:=tuivory.NewEditorView(editor,controlsPalette,nil);if err!=nil{t.Fatal(err)}
+    surface,err:=tuivory.NewSurfaceView(editorView,controlsPalette);if err!=nil||surface.GetBorder(){t.Fatal("external surface")}
+    container,err:=tuivory.NewRow([]tuivory.ContainerChild{{Item:tuivory.LayoutItem{ID:"editor"},Child:surface}},controlsPalette)
+    if err!=nil||container==nil{t.Fatal("external container")}
     controlState := tuivory.ControlState{ReadOnly:true,Invalid:true,Edited:true}
     if controlState.Visual().Editable || controlState.Visual().Role!="error" || controlState.Visual().Markers!="!*=" { t.Fatal("control states") }
     focus, err := tuivory.NewFocusStack("root",[]tuivory.FocusTarget{{ID:"open"}})

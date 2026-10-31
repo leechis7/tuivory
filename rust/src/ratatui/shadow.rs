@@ -158,7 +158,7 @@ fn clear_wide(buf: &mut Buffer, x: u16, y: u16) {
         buf[(x + n as u16, y)].set_symbol(" ");
     }
 }
-fn repair_edges(buf: &mut Buffer, area: Rect, y: u16) {
+pub(super) fn repair_edges(buf: &mut Buffer, area: Rect, y: u16) {
     if area.x > buf.area.x && crate::components::cells(buf[(area.x - 1, y)].symbol()) > 1 {
         clear_wide(buf, area.x - 1, y)
     }

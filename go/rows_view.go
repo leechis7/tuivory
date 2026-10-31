@@ -10,16 +10,22 @@ import (
 // RowsView renders literal, cell-clipped semantic lines and delegates actions.
 type RowsView struct {
 	*tview.Box
-	Rows      func(int, int) []ComponentLine
-	Key       func(*tcell.EventKey)
-	Click     func(ComponentLine)
-	Pointer   func(ComponentLine, int)
-	palette   Palette
-	visible   []ComponentLine
-	hideFocus bool
+	Rows        func(int, int) []ComponentLine
+	Key         func(*tcell.EventKey)
+	Paste       func(string)
+	TabBoundary func(bool) bool
+	Click       func(ComponentLine)
+	Pointer     func(ComponentLine, int)
+	palette     Palette
+	visible     []ComponentLine
+	hideFocus   bool
 	// PreserveBackgrounds keeps explicit row/span backgrounds for grid or custom composition.
 	PreserveBackgrounds bool
 	Mouse               func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
+}
+
+func (v *RowsView) AtTabBoundary(previous bool) bool {
+	return v.TabBoundary == nil || v.TabBoundary(previous)
 }
 
 func NewRowsView(rows func(int, int) []ComponentLine, palette Palette) (*RowsView, error) {
@@ -74,6 +80,13 @@ func (v *RowsView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
 		}
 	})
 }
+func (v *RowsView) PasteHandler() func(string, func(tview.Primitive)) {
+	return v.WrapPasteHandler(func(text string, _ func(tview.Primitive)) {
+		if v.Paste != nil {
+			v.Paste(text)
+		}
+	})
+}
 func (v *RowsView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive) {
 	return v.WrapMouseHandler(func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
 		if v.Mouse != nil {
@@ -111,6 +124,16 @@ func FormKey(form *Form, e *tcell.EventKey) FormEvent {
 	action := ""
 	text := ""
 	switch e.Key() {
+	case tcell.KeyCtrlA:
+		action = "select_all"
+	case tcell.KeyCtrlC:
+		action = "copy"
+	case tcell.KeyCtrlX:
+		action = "cut"
+	case tcell.KeyCtrlZ:
+		action = "undo"
+	case tcell.KeyCtrlY:
+		action = "redo"
 	case tcell.KeyTab:
 		action = "next"
 	case tcell.KeyBacktab:
@@ -140,11 +163,14 @@ func FormKey(form *Form, e *tcell.EventKey) FormEvent {
 		text = string(e.Rune())
 		if e.Rune() == ' ' {
 			for _, field := range form.Fields() {
-				if field.ID == form.Focused() && field.Kind != "text" && field.Kind != "textarea" {
+				if field.ID == form.Focused() && field.Kind != "text" && field.Kind != "textarea" && field.Kind != "password" {
 					action = "toggle"
 				}
 			}
 		}
+	}
+	if e.Modifiers()&tcell.ModShift != 0 && (action == "left" || action == "right" || action == "home" || action == "end" || action == "up" || action == "down") {
+		action = "select_" + action
 	}
 	return form.Handle(action, text)
 }
@@ -153,6 +179,7 @@ func NewFormView(form *Form, palette Palette, onEvent func(FormEvent)) (*RowsVie
 	if e != nil {
 		return nil, e
 	}
+	v.TabBoundary = form.AtTabBoundary
 	v.Key = func(key *tcell.EventKey) {
 		event := FormKey(form, key)
 		if onEvent != nil && event.Kind != "" {
@@ -163,6 +190,12 @@ func NewFormView(form *Form, palette Palette, onEvent func(FormEvent)) (*RowsVie
 		event := form.Click(line.ID, line.Value)
 		if onEvent != nil && event.Kind != "" {
 			onEvent(event)
+		}
+	}
+	v.Paste = func(text string) {
+		e := form.Handle("paste", text)
+		if onEvent != nil && e.Kind != "" {
+			onEvent(e)
 		}
 	}
 	return v, nil

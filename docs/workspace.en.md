@@ -38,7 +38,7 @@ Roles use candidate-token names directly. Prefixes warning/error `!`, edited `*`
 
 ## Imports and examples
 
-Go external projects install `github.com/leechis7/tuivory/go@v0.5.0` or use a replace directive for a local checkout. All APIs use the single `github.com/leechis7/tuivory/go` import. Resolve the candidate palette with `CandidateTokens → Palette → Resolve` and pass it to views. This does not claim equality with the complete LazyOra-derived Go styler.
+Go external projects install `github.com/leechis7/tuivory/go@v0.6.0` or use a replace directive for a local checkout. All APIs use the single `github.com/leechis7/tuivory/go` import. Resolve the candidate palette with `CandidateTokens → Palette → Resolve` and pass it to views. This does not claim equality with the complete LazyOra-derived Go styler.
 
 ```go
 tabs, err := tuivory.NewTabs([]tuivory.TabItem{
@@ -105,3 +105,5 @@ Focus border rules: framed explorer trees/lists, input/editor areas, data grids 
 In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
 
 TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).
+
+0.6.0 TVR-22–25 adds borderless Surface, standalone/secret controls, text editing/viewing and row/column/grid/layer containers. [Usage, source availability and examples](controls.en.md).

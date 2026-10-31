@@ -2,7 +2,7 @@
 
 [한국어 (default)](README.md) · **English**
 
-Current release: **0.5.0**. Start with installation, choose a component, then consult its API.
+Current release: **0.6.0**. Start with installation, choose a component, then consult its API.
 
 - [Installation](installation.en.md)
 - [Component guides](components.en.md)
@@ -12,4 +12,4 @@ Current release: **0.5.0**. Start with installation, choose a component, then co
 - [Responsibilities](component-boundary.en.md)
 - [Development and history](development.en.md)
 
-[Current release](release-0.5.0.en.md)
+[Current release](release-0.6.0.en.md)

@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-31",
+  "issues": [
+    "TVR-22",
+    "TVR-23",
+    "TVR-24",
+    "TVR-25"
+  ],
+  "excluded": [
+    "TVR-26"
+  ],
+  "branch": "codex/TVR-22-TVR-23-TVR-24-TVR-25-components",
+  "baseline": "4d008feebc4a0dc70b4247e8e724fc45bc2553f7",
+  "status": "implementation and local validation complete",
+  "committed": false,
+  "published": false,
+  "remote_ci": "not run for these uncommitted changes",
+  "product_version": "0.5.0",
+  "availability": "New APIs are working-source only, absent from published 0.5.0 tags. Version bump/publication and downstream adoption require a separate release.",
+  "implementations": [
+    "Go",
+    "Rust"
+  ],
+  "planned_not_implemented": [
+    "Python",
+    "TypeScript/JavaScript",
+    "C",
+    "C++",
+    "complete backend facade"
+  ],
+  "validation": [
+    {
+      "command": "make test check build",
+      "result": "passed",
+      "coverage": "Go race/vet, Python tools, tokens/fixtures/lifecycle/links, static ARM64 default binary"
+    },
+    {
+      "command": "make test-rust check-rust",
+      "toolchain": "1.85.1",
+      "result": "passed",
+      "coverage": "core all-targets/doc tests, rustfmt, clippy -D warnings"
+    },
+    {
+      "command": "make test-rust-ui check-rust-ui",
+      "toolchain": "1.88.0",
+      "result": "passed",
+      "coverage": "all-feature all-targets/doc tests, rustfmt, clippy -D warnings"
+    },
+    {
+      "command": "python3 tools/check_go_module.py",
+      "result": "passed",
+      "coverage": "isolated module and external import of Surface, Editor, password and Container APIs"
+    },
+    {
+      "command": "python3 tools/check_rust_module.py --ratatui",
+      "result": "passed",
+      "coverage": "standalone packaged crate and external models plus SurfaceWidget, TextWidget, ControlWidget, ContainerWidget; existing deprecation rejection checks"
+    },
+    {
+      "command": "python3 tools/build_rust.py --arch arm64 --examples",
+      "result": "passed",
+      "coverage": "musl ARM64 examples including controls, no PT_INTERP/DT_NEEDED"
+    },
+    {
+      "command": "CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath ./examples/controls",
+      "result": "passed",
+      "coverage": "static ARM64 Go controls host"
+    },
+    {
+      "command": "python3 tools/check_static_elf.py --arch arm64 <Go/Rust default and controls binaries>",
+      "result": "passed",
+      "coverage": "ELF machine=183, no dynamic interpreter/shared libraries"
+    },
+    {
+      "command": "python3 tools/smoke_controls.py <binary> --lang <ko|en> [--ascii]",
+      "result": "passed",
+      "cases": 16,
+      "coverage": "8 debug and 8 final static ARM64 PTY scenarios: secret masking, form traversal, check/button activation, paste, selection/copy, undo/redo, read-only blocking, modal isolation, resize, pointer capture and terminal restoration"
+    },
+    {
+      "command": "python3 tools/snapshot_controls.py rust/target/debug/examples/controls",
+      "result": "passed",
+      "images": 10,
+      "coverage": "KO/EN dark/light/blackwhite/ASCII/popup, TestBackend output with localization/secret assertions"
+    },
+    {
+      "command": "python3 tools/generate_api_reference.py --rust-json rust/target/doc/tuivory.json --check",
+      "result": "passed",
+      "coverage": "paired source declarations; Rust 1.88 rustdoc JSON generated with warnings denied"
+    }
+  ],
+  "regressions": {
+    "shared_fixture": "design/controls-cases.json",
+    "text_cases": 5,
+    "layout_cases": 5,
+    "palettes": "3 themes × 8/16/256/True Color",
+    "physical_output": "Go simulation screen after Show and Rust rendered Buffer",
+    "unicode": "CJK, emoji, combining graphemes, CRLF original preservation, left/right popup wide boundaries",
+    "long_document": "10,000 lines: scrolling, original copying, replacement and undo. Layout currently traverses complete document.",
+    "secret": "explicit raw getter; masked fields/layout/diagnostics; copy/cut suppression; required validation against raw text",
+    "containers": "min/max/fixed/weight, grid spans, right Drawer, clipping/virtual scroll, nested modal restoration, atomic child updates",
+    "additional_fix": "Rust focused panel title appears once; affected bilingual reference images refreshed"
+  },
+  "centos": "not performed, per user instruction",
+  "runtime": "local Linux ARM64; no remote terminal equivalence claimed",
+  "local_logs": "bin/validation/TVR-22-25 (ignored local artifacts; reproduce with commands above)",
+  "snapshot_stage": "Pre-commit implementation validation; publication/CI evidence is in the 0.6.0 GitHub Release manifest.",
+  "release_target": "0.6.0"
+}

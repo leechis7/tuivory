@@ -6,7 +6,7 @@
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-제품 버전은 루트 `VERSION`의 **0.5.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.5.0`으로 배포합니다. [릴리스 안내](../docs/release-0.5.0.md).
+제품 버전은 루트 `VERSION`의 **0.6.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.6.0`으로 배포합니다. [릴리스 안내](../docs/release-0.6.0.md).
 
 Go 모듈과 모든 Go 구현은 이 디렉터리에 있습니다. 모듈 경로는 `github.com/leechis7/tuivory/go`, 패키지 이름은 `tuivory`이며 한 번만 import합니다.
 
@@ -18,10 +18,10 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-현재 버전은 `v0.5.0`이며 Go 하위 모듈 태그는 `go/v0.5.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
+현재 버전은 `v0.6.0`이며 Go 하위 모듈 태그는 `go/v0.6.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.5.0
+go get github.com/leechis7/tuivory/go@v0.6.0
 ```
 
 저장소 루트에서:
@@ -62,3 +62,5 @@ make check
 [API 지원 상태·Deprecated·전환 안내](../docs/api-lifecycle.md) · [공개 API 중복 점검](../docs/api-overlap-audit.md): 0.5.0 변경의 대상·대체 방법·배포/제거 계획을 구분합니다.
 
 0.5.0의 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](../docs/popup-shadows.md).
+
+0.6.0 TVR-22~25는 테두리 없는 Surface, 독립/암호 컨트롤, 텍스트 편집·뷰어와 행·열·격자·레이어 컨테이너를 제공합니다. [사용법·제공 상태·예제](../docs/controls.md).
