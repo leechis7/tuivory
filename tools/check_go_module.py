@@ -35,7 +35,6 @@ def main():
         (consumer / 'consumer_test.go').write_text('''package consumer_test
 import (
     "testing"
-    tcell "github.com/leechis7/tuivory/go/terminal"
     "github.com/leechis7/tuivory/go"
 )
 func TestIsolatedModule(t *testing.T) {
@@ -101,16 +100,16 @@ func TestIsolatedModule(t *testing.T) {
     if tree.Handle(state,tuivory.TreeRight,4).Kind != "expand" { t.Fatal("tree expansion failed") }
     view, err := tuivory.NewTreeView(tree,state,colors)
     if err != nil { t.Fatal(err) }
-    screen := tcell.NewSimulationScreen("UTF-8")
+    screen := tuivory.NewSimulationScreen("UTF-8")
     if err := screen.Init(); err != nil { t.Fatal(err) }
     defer screen.Fini()
     screen.SetSize(30,6)
     safe := tuivory.WideSafeScreen(screen)
-    screen.Put(2,2,"한",tcell.StyleDefault);screen.Put(9,2,"Z",tcell.StyleDefault);screen.Put(8,2,"界",tcell.StyleDefault);screen.Show()
-    safe.Put(3,2,"|",tcell.StyleDefault);safe.Put(8,2,"|",tcell.StyleDefault)
+    screen.Put(2,2,"한",tuivory.StyleDefault);screen.Put(9,2,"Z",tuivory.StyleDefault);screen.Put(8,2,"界",tuivory.StyleDefault);screen.Show()
+    safe.Put(3,2,"|",tuivory.StyleDefault);safe.Put(8,2,"|",tuivory.StyleDefault)
     screen.Show();physical,cols,_:=screen.GetContents()
     if string(physical[2*cols+3].Bytes)!="|" || string(physical[2*cols+9].Bytes)!=" " {t.Fatal("wide overlay physical output")}
-    screen.Put(2,3,"한",tcell.StyleDefault);screen.Put(7,3,"界",tcell.StyleDefault);screen.Show()
+    screen.Put(2,3,"한",tuivory.StyleDefault);screen.Put(7,3,"界",tuivory.StyleDefault);screen.Show()
     tuivory.DimRegion(screen,tuivory.CellRect{X:3,Y:3,Width:5,Height:1});screen.Show()
     physical,cols,_=screen.GetContents()
     if string(physical[3*cols+2].Bytes)!=" " || string(physical[3*cols+8].Bytes)!=" " {t.Fatal("shadow boundary output")}
@@ -146,6 +145,8 @@ func TestIsolatedModule(t *testing.T) {
     if _,err:=tuivory.NewMenuBarView(menu,colors,nil);err!=nil{t.Fatal(err)}
 }
 ''')
+        (consumer / 'single_import_test.go').write_text(
+            (module / 'single_import_test.go').read_text().replace('package tuivory_test', 'package consumer_test'))
         subprocess.run(['go', 'test', '-mod=mod', './...'], cwd=consumer, env=env, check=True)
         if args.static_output:
             output = args.static_output.resolve()

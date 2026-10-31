@@ -2,16 +2,18 @@
 
 [한국어 (default)](README.md) · **English**
 
+**0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).
+
 [Public API reference](../docs/api/go.en.md)
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
-Product version is **0.7.0** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.7.0`. [Release guide](../docs/release-0.7.0.en.md).
+Product version is **0.8.0** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.8.0`. [Release guide](../docs/release-0.8.0.en.md).
 
 All Go implementation code and module configuration live in this directory. The module path is `github.com/leechis7/tuivory/go`; the package name is `tuivory`. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.7.0
+go get github.com/leechis7/tuivory/go@v0.8.0
 ```
 
 ```go
@@ -22,7 +24,7 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-The current release is `v0.7.0`, tagged `go/v0.7.0` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
+The current release is `v0.8.0`, tagged `go/v0.8.0` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
 
 From the repository root:
 

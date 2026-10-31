@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+**0.8.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
+
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
 실제 코드는 각 언어 디렉터리 안에서 관리합니다. 이 디렉터리는 언어별 예제와 공통 정적 배치를 연결합니다.
@@ -48,12 +50,12 @@ Rust 견본은 Rust 1.88 이상에서 `make run-rust ARGS="--lang ko"`로 실행
 
 Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](../docs/overlay-drawing.md)를 참고합니다. 기존 견본의 팝업·Choice와 focus 예제의 PanelView에 공통 보정이 적용됩니다.
 
-[TVR-17 그리드 비교](../docs/grid.md): `make run-catalog-go ARGS="--mode grid --grid-sample --grid-preset data --lang ko"`. Rust는 `run-catalog-rust`, 간결 구성은 `--grid-preset simple`을 사용합니다. 같은 5행 데이터와 2번 행 이름 선택입니다. TVR-17은 미배포 소스입니다.
+[TVR-17 그리드 비교](../docs/grid.md): `make run-catalog-go ARGS="--mode grid --grid-sample --grid-preset data --lang ko"`. Rust는 `run-catalog-rust`, 간결 구성은 `--grid-preset simple`을 사용합니다. 같은 5행 데이터와 2번 행 이름 선택입니다. TVR-17은 공개 배포에 포함됩니다.
 
-[호스트 구성 예제](../docs/component-boundary.md): 기존 workspace에 `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x`를 주어 앱이 선택하는 배치·포커스·전역 키를 확인합니다. 기본 화면과 새 구성은 같은 Go/Rust 공개 컴포넌트를 사용하며 새 호스트 옵션은 미배포 소스입니다.
+[호스트 구성 예제](../docs/component-boundary.md): 기존 workspace에 `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x`를 주어 앱이 선택하는 배치·포커스·전역 키를 확인합니다. 기본 화면과 새 구성은 같은 Go/Rust 공개 컴포넌트를 사용하며 호스트 옵션은 공개 배포에 포함됩니다.
 
-[공통 메뉴](../docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 기존 v0.2.0 태그에는 없는 미배포 소스입니다.
+[공통 메뉴](../docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 0.5.0부터 공개 배포에 포함됩니다.
 
-[컨트롤·Surface·편집기·배치](../docs/controls.md): Go·Rust controls 예제이며 미배포 소스입니다.
+[컨트롤·Surface·편집기·배치](../docs/controls.md): 0.6.0부터 제공하는 Go·Rust controls 예제입니다.
 
 0.7.0 TVR-26의 Go·Rust 공개 예제는 backend 직접 import 없이 Tuivory SDK 경로를 사용합니다. 실행 명령과 화면은 유지합니다. [새 API·전환·배포 상태](../docs/ui-facade.md).

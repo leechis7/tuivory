@@ -5,8 +5,7 @@ import (
 	"flag"
 	"fmt"
 	ui "github.com/leechis7/tuivory/go"
-	tcell "github.com/leechis7/tuivory/go/terminal"
-	tview "github.com/leechis7/tuivory/go/ui"
+
 	"github.com/rivo/uniseg"
 	"log"
 	"strings"
@@ -46,7 +45,7 @@ func area(level, w, h int) rect {
 	}
 	return rect{(w - width) / 2, max(2, (h-height)/2), width, height}
 }
-func write(screen tcell.Screen, x, y, w int, s string, style tcell.Style) {
+func write(screen ui.Screen, x, y, w int, s string, style ui.Style) {
 	glyphs := uniseg.NewGraphemes(ui.CellText(s, w))
 	column := 0
 	for glyphs.Next() {
@@ -57,14 +56,14 @@ func write(screen tcell.Screen, x, y, w int, s string, style tcell.Style) {
 }
 
 type lines struct {
-	*tview.Box
+	*ui.Box
 	items      []ui.FocusTarget
 	palette    ui.Palette
 	focused    string
 	en, active bool
 }
 
-func (l *lines) Draw(screen tcell.Screen) {
+func (l *lines) Draw(screen ui.Screen) {
 	x, y, w, h := l.GetRect()
 	for index, item := range l.items {
 		if index >= h {
@@ -82,7 +81,7 @@ func (l *lines) Draw(screen tcell.Screen) {
 func (l *lines) HasFocus() bool { return l.active }
 
 type view struct {
-	*tview.Box
+	*ui.Box
 	stack          *ui.FocusStack
 	en, ascii      bool
 	theme, profile string
@@ -100,7 +99,7 @@ func (v *view) refresh() {
 		log.Fatal(e)
 	}
 }
-func (v *view) Draw(screen tcell.Screen) {
+func (v *view) Draw(screen ui.Screen) {
 	x, y, w, h := v.GetRect()
 	surface := v.palette["surface"].Style()
 	for row := 0; row < h; row++ {
@@ -115,7 +114,7 @@ func (v *view) Draw(screen tcell.Screen) {
 		if r.w < 3 || r.h < 3 {
 			continue
 		}
-		content := &lines{Box: tview.NewBox(), items: targets(level), palette: v.palette, focused: v.stack.Focused(), en: v.en, active: level == v.stack.Depth()}
+		content := &lines{Box: ui.NewBox(), items: targets(level), palette: v.palette, focused: v.stack.Focused(), en: v.en, active: level == v.stack.Depth()}
 		panel, _ := ui.NewPanelView(content, v.palette)
 		panel.ASCII = v.ascii
 		panel.SetRect(x+r.x, y+r.y, r.w, r.h)
@@ -146,9 +145,9 @@ func (v *view) activate() {
 		_ = v.stack.Close(v.stack.ScopeID())
 	}
 }
-func (v *view) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive) {
-	return func(action tview.MouseAction, event *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
-		if action != tview.MouseLeftClick {
+func (v *view) MouseHandler() func(ui.MouseAction, *ui.EventMouse, func(ui.Primitive)) (bool, ui.Primitive) {
+	return func(action ui.MouseAction, event *ui.EventMouse, focus func(ui.Primitive)) (bool, ui.Primitive) {
+		if action != ui.MouseLeftClick {
 			return false, nil
 		}
 		x, y := event.Position()
@@ -187,9 +186,9 @@ func main() {
 	if e != nil {
 		log.Fatal(e)
 	}
-	v := &view{Box: tview.NewBox(), stack: stack, en: *lang == "en", theme: *theme, profile: *profile, ascii: *ascii}
+	v := &view{Box: ui.NewBox(), stack: stack, en: *lang == "en", theme: *theme, profile: *profile, ascii: *ascii}
 	v.refresh()
-	app := tview.NewApplication()
+	app := ui.NewApplication()
 	cycle := func(value *string, values []string) {
 		for i, s := range values {
 			if *value == s {
@@ -198,25 +197,25 @@ func main() {
 			}
 		}
 	}
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	app.SetInputCapture(func(event *ui.EventKey) *ui.EventKey {
 		switch event.Key() {
-		case tcell.KeyCtrlQ:
+		case ui.KeyCtrlQ:
 			app.Stop()
-		case tcell.KeyTab, tcell.KeyBacktab:
-			stack.Move(event.Key() == tcell.KeyBacktab)
-		case tcell.KeyEnter:
+		case ui.KeyTab, ui.KeyBacktab:
+			stack.Move(event.Key() == ui.KeyBacktab)
+		case ui.KeyEnter:
 			v.activate()
-		case tcell.KeyEscape:
+		case ui.KeyEscape:
 			if request := stack.RequestClose(); request != nil {
 				_ = stack.Close(request.ID)
 			}
-		case tcell.KeyF2:
+		case ui.KeyF2:
 			cycle(&v.theme, []string{"dark", "light", "blackwhite"})
 			v.refresh()
-		case tcell.KeyF3:
+		case ui.KeyF3:
 			cycle(&v.profile, []string{"8", "16", "256", "truecolor"})
 			v.refresh()
-		case tcell.KeyF4:
+		case ui.KeyF4:
 			v.ascii = !v.ascii
 		}
 		return nil

@@ -2,6 +2,8 @@
 
 [한국어 (default)](README.md) · **English**
 
+**0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).
+
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
 Implementation code lives inside each language directory. This directory indexes examples and a shared static layout.
@@ -46,12 +48,12 @@ The [tabs, panels, splitters, status, and breadcrumbs guide](../docs/workspace.e
 
 See [overlay drawing](../docs/overlay-drawing.en.md) for Go popup/external-card usage. Existing playground popups/Choice and the focus example PanelView use the shared repair.
 
-[TVR-17 grid comparison](../docs/grid.en.md): `make run-catalog-go ARGS="--mode grid --grid-sample --grid-preset data --lang en"`. Use `run-catalog-rust` for Rust or `--grid-preset simple` for the simple presentation. Both use the same five rows and row 2 name selection. TVR-17 is unreleased source.
+[TVR-17 grid comparison](../docs/grid.en.md): `make run-catalog-go ARGS="--mode grid --grid-sample --grid-preset data --lang en"`. Use `run-catalog-rust` for Rust or `--grid-preset simple` for the simple presentation. Both use the same five rows and row 2 name selection. TVR-17 is included in public releases.
 
-[Host composition](../docs/component-boundary.en.md): pass `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x` to the existing workspace. Both default and alternative hosts use the same public Go/Rust components; new host options are unreleased source.
+[Host composition](../docs/component-boundary.en.md): pass `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x` to the existing workspace. Both default and alternative hosts use the same public Go/Rust components; host options are included in public releases.
 
-[Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.
+[Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Included in public releases since 0.5.0.
 
-[Controls, surfaces, editor and containers](../docs/controls.en.md): Go/Rust controls examples; unreleased source.
+[Controls, surfaces, editor and containers](../docs/controls.en.md): Go/Rust controls examples, available since 0.6.0.
 
-0.7.0 Go/Rust examples use Tuivory SDK paths without direct backend imports; commands and visual output are retained. [New APIs, migration and availability](../docs/ui-facade.en.md).
+0.8.0 Go/Rust examples use Tuivory SDK paths without direct backend imports; commands and visual output are retained. [New APIs, migration and availability](../docs/ui-facade.en.md).

@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.8.0 — 2026-10-31
+
+- TVR-26 follow-up: compose apps, screens, events, colors and shared components through the single Go root package. Keep semantic model names; distinguish conflicting compatibility widgets with Widget names. Preserve /ui and /terminal paths; update public examples, external consumer checks and bilingual APIs/guides.
+
 ## 0.7.0 — 2026-10-31
 
 - TVR-26: Add language-neutral UI rules, Go ui/terminal and Rust ui/terminal paths reusing existing types/widgets/renderers. Provide shared InputEvent/edit requests, byte syntax-range conversion, Rust Session lifetime/restoration and SDK-only examples/external conformance checks. Future languages and ABI support remain designs, not implemented products.
