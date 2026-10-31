@@ -3,7 +3,7 @@ package tuivory_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gdamore/tcell/v2"
+	tcell "github.com/leechis7/tuivory/go/terminal"
 	ui "github.com/leechis7/tuivory/go"
 	"os"
 	"testing"

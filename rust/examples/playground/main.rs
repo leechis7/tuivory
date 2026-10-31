@@ -2,21 +2,21 @@ mod app;
 mod snapshot;
 
 use app::{App, Language};
-use crossterm::{
-    cursor::Show,
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyEventKind},
-    execute,
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
-};
-use ratatui::{
-    Terminal,
-    backend::{CrosstermBackend, TestBackend},
-};
 use std::{
     error::Error,
     io::{self, IsTerminal},
     path::PathBuf,
     time::Duration,
+};
+use tuivory::ui::terminal::{
+    cursor::Show,
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyEventKind},
+    execute,
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+};
+use tuivory::ui::{
+    Terminal,
+    backend::{CrosstermBackend, TestBackend},
 };
 use tuivory::{ColorProfile, Theme, profile_for_colors};
 
@@ -100,7 +100,10 @@ fn run() -> Result<(), Box<dyn Error>> {
         if options.snapshot.is_some() {
             ColorProfile::Truecolor
         } else {
-            profile_for_colors(i32::from(crossterm::style::available_color_count()), false)
+            profile_for_colors(
+                i32::from(tuivory::ui::terminal::style::available_color_count()),
+                false,
+            )
         }
     });
     let mut app = App::new(options.language, options.theme, profile)?;

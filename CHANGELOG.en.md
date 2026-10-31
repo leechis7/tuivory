@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.7.0 — 2026-10-31
+
+- TVR-26: Add language-neutral UI rules, Go ui/terminal and Rust ui/terminal paths reusing existing types/widgets/renderers. Provide shared InputEvent/edit requests, byte syntax-range conversion, Rust Session lifetime/restoration and SDK-only examples/external conformance checks. Future languages and ABI support remain designs, not implemented products.
+
 ## 0.6.0 — 2026-10-31
 
 - TVR-22–25: Add borderless opaque surfaces, secret/standalone controls and rich form operations, grapheme-safe text editing/viewing with explicit markup, and row/column/grid/layer/drawer layout execution. Reuse existing models/styles, preserve state/input isolation, and provide bilingual examples, source-generated APIs and regression fixtures. Fix duplicated focused Rust panel titles. Full backend facade TVR-26 remains separate.

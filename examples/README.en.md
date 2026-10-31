@@ -53,3 +53,5 @@ See [overlay drawing](../docs/overlay-drawing.en.md) for Go popup/external-card 
 [Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.
 
 [Controls, surfaces, editor and containers](../docs/controls.en.md): Go/Rust controls examples; unreleased source.
+
+0.7.0 Go/Rust examples use Tuivory SDK paths without direct backend imports; commands and visual output are retained. [New APIs, migration and availability](../docs/ui-facade.en.md).

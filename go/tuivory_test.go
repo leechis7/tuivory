@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gdamore/tcell/v2"
+	tcell "github.com/leechis7/tuivory/go/terminal"
 	"github.com/leechis7/tuivory/go"
-	"github.com/rivo/tview"
+	tview "github.com/leechis7/tuivory/go/ui"
 )
 
 // Exercise the public contract using only the root TUIVORY import, including types

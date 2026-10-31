@@ -1,15 +1,15 @@
 //! Render real component states for all twelve palettes; no terminal or DB needed.
 #[path = "../playground/snapshot.rs"]
 mod snapshot;
-use ratatui::{Terminal, backend::TestBackend, layout::Rect, widgets::Widget};
 use std::{error::Error, path::PathBuf};
+use tuivory::ui::{Terminal, backend::TestBackend, layout::Rect, widgets::Widget};
 use tuivory::{
     ColorProfile, Theme,
     collections::{ListItem, ListModel},
     forms::{Form, FormField},
     interaction::ControlState,
     layout::{Help, Shortcut},
-    ratatui::{FormWidget, HelpWidget, ListWidget, Styles},
+    ui::components::{FormWidget, HelpWidget, ListWidget, Styles},
 };
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().collect();

@@ -1,0 +1,455 @@
+{
+  "scope": "Read-only LazyOra first-party Go source and tests; third_party/vendor/bin excluded. No app migration/compilation claimed.",
+  "source_head": "9e438ed3b8e0fe0e4356dfc35ba32c9d6caff618",
+  "source_snapshot_sha256": "58a8d86a8cf21b729c98877012c9c16cc844cad117b3623e400a1c33e76fca22",
+  "files": 231,
+  "package_symbols": {
+    "tview": {
+      "AlignRight": [
+        "github.com/leechis7/tuivory/go/ui.AlignRight"
+      ],
+      "Application": [
+        "github.com/leechis7/tuivory/go/ui.Application"
+      ],
+      "Borders": [
+        "github.com/leechis7/tuivory/go/ui.Borders",
+        "github.com/leechis7/tuivory/go/ui.GetBorders",
+        "github.com/leechis7/tuivory/go/ui.SetBorders"
+      ],
+      "Box": [
+        "github.com/leechis7/tuivory/go/ui.Box"
+      ],
+      "Button": [
+        "github.com/leechis7/tuivory/go/ui.Button"
+      ],
+      "Checkbox": [
+        "github.com/leechis7/tuivory/go/ui.Checkbox"
+      ],
+      "Escape": [
+        "github.com/leechis7/tuivory/go/ui.Escape"
+      ],
+      "Flex": [
+        "github.com/leechis7/tuivory/go/ui.Flex"
+      ],
+      "FlexColumn": [
+        "github.com/leechis7/tuivory/go/ui.FlexColumn"
+      ],
+      "FlexRow": [
+        "github.com/leechis7/tuivory/go/ui.FlexRow"
+      ],
+      "Form": [
+        "github.com/leechis7/tuivory/go/ui.Form"
+      ],
+      "InputField": [
+        "github.com/leechis7/tuivory/go/ui.InputField"
+      ],
+      "List": [
+        "github.com/leechis7/tuivory/go/ui.List"
+      ],
+      "Modal": [
+        "github.com/leechis7/tuivory/go/ui.Modal"
+      ],
+      "MouseAction": [
+        "github.com/leechis7/tuivory/go/ui.MouseAction"
+      ],
+      "MouseConsumed": [
+        "github.com/leechis7/tuivory/go/ui.MouseConsumed"
+      ],
+      "MouseLeftClick": [
+        "github.com/leechis7/tuivory/go/ui.MouseLeftClick"
+      ],
+      "MouseLeftDoubleClick": [
+        "github.com/leechis7/tuivory/go/ui.MouseLeftDoubleClick"
+      ],
+      "MouseLeftDown": [
+        "github.com/leechis7/tuivory/go/ui.MouseLeftDown"
+      ],
+      "MouseLeftUp": [
+        "github.com/leechis7/tuivory/go/ui.MouseLeftUp"
+      ],
+      "MouseMove": [
+        "github.com/leechis7/tuivory/go/ui.MouseMove"
+      ],
+      "MouseRightClick": [
+        "github.com/leechis7/tuivory/go/ui.MouseRightClick"
+      ],
+      "MouseScrollDown": [
+        "github.com/leechis7/tuivory/go/ui.MouseScrollDown"
+      ],
+      "MouseScrollLeft": [
+        "github.com/leechis7/tuivory/go/ui.MouseScrollLeft"
+      ],
+      "MouseScrollRight": [
+        "github.com/leechis7/tuivory/go/ui.MouseScrollRight"
+      ],
+      "MouseScrollUp": [
+        "github.com/leechis7/tuivory/go/ui.MouseScrollUp"
+      ],
+      "NewApplication": [
+        "github.com/leechis7/tuivory/go/ui.NewApplication"
+      ],
+      "NewBox": [
+        "github.com/leechis7/tuivory/go/ui.NewBox"
+      ],
+      "NewButton": [
+        "github.com/leechis7/tuivory/go/ui.NewButton"
+      ],
+      "NewCheckbox": [
+        "github.com/leechis7/tuivory/go/ui.NewCheckbox"
+      ],
+      "NewFlex": [
+        "github.com/leechis7/tuivory/go/ui.NewFlex"
+      ],
+      "NewForm": [
+        "github.com/leechis7/tuivory/go/ui.NewForm"
+      ],
+      "NewInputField": [
+        "github.com/leechis7/tuivory/go/ui.NewInputField"
+      ],
+      "NewList": [
+        "github.com/leechis7/tuivory/go/ui.NewList"
+      ],
+      "NewModal": [
+        "github.com/leechis7/tuivory/go/ui.NewModal"
+      ],
+      "NewPages": [
+        "github.com/leechis7/tuivory/go/ui.NewPages"
+      ],
+      "NewTable": [
+        "github.com/leechis7/tuivory/go/ui.NewTable"
+      ],
+      "NewTableCell": [
+        "github.com/leechis7/tuivory/go/ui.NewTableCell"
+      ],
+      "NewTextArea": [
+        "github.com/leechis7/tuivory/go/ui.NewTextArea"
+      ],
+      "NewTextView": [
+        "github.com/leechis7/tuivory/go/ui.NewTextView"
+      ],
+      "NewTreeNode": [
+        "github.com/leechis7/tuivory/go/ui.NewTreeNode"
+      ],
+      "NewTreeView": [
+        "github.com/leechis7/tuivory/go/ui.NewTreeView"
+      ],
+      "Pages": [
+        "github.com/leechis7/tuivory/go/ui.Pages"
+      ],
+      "Primitive": [
+        "github.com/leechis7/tuivory/go/ui.Primitive"
+      ],
+      "Table": [
+        "github.com/leechis7/tuivory/go/ui.Table"
+      ],
+      "TaggedStringWidth": [
+        "github.com/leechis7/tuivory/go/ui.TaggedStringWidth"
+      ],
+      "TextArea": [
+        "github.com/leechis7/tuivory/go/ui.TextArea"
+      ],
+      "TextView": [
+        "github.com/leechis7/tuivory/go/ui.TextView"
+      ],
+      "TranslateANSI": [
+        "github.com/leechis7/tuivory/go/ui.TranslateANSI"
+      ],
+      "TreeNode": [
+        "github.com/leechis7/tuivory/go/ui.TreeNode"
+      ],
+      "TreeView": [
+        "github.com/leechis7/tuivory/go/ui.TreeView"
+      ],
+      "Unescape": [
+        "github.com/leechis7/tuivory/go/ui.Unescape"
+      ]
+    },
+    "tcell": {
+      "AttrBold": [
+        "github.com/leechis7/tuivory/go/terminal.AttrBold"
+      ],
+      "AttrDim": [
+        "github.com/leechis7/tuivory/go/terminal.AttrDim"
+      ],
+      "AttrReverse": [
+        "github.com/leechis7/tuivory/go/terminal.AttrReverse"
+      ],
+      "AttrUnderline": [
+        "github.com/leechis7/tuivory/go/terminal.AttrUnderline"
+      ],
+      "Button1": [
+        "github.com/leechis7/tuivory/go/terminal.Button1"
+      ],
+      "ButtonNone": [
+        "github.com/leechis7/tuivory/go/terminal.ButtonNone"
+      ],
+      "Color": [
+        "github.com/leechis7/tuivory/go/terminal.Color"
+      ],
+      "ColorAqua": [
+        "github.com/leechis7/tuivory/go/terminal.ColorAqua"
+      ],
+      "ColorBlack": [
+        "github.com/leechis7/tuivory/go/terminal.ColorBlack"
+      ],
+      "ColorGreen": [
+        "github.com/leechis7/tuivory/go/terminal.ColorGreen"
+      ],
+      "ColorOlive": [
+        "github.com/leechis7/tuivory/go/terminal.ColorOlive"
+      ],
+      "ColorRed": [
+        "github.com/leechis7/tuivory/go/terminal.ColorRed"
+      ],
+      "ColorSilver": [
+        "github.com/leechis7/tuivory/go/terminal.ColorSilver"
+      ],
+      "ColorTeal": [
+        "github.com/leechis7/tuivory/go/terminal.ColorTeal"
+      ],
+      "ColorValid": [
+        "github.com/leechis7/tuivory/go/terminal.ColorValid"
+      ],
+      "ColorWhite": [
+        "github.com/leechis7/tuivory/go/terminal.ColorWhite"
+      ],
+      "EventKey": [
+        "github.com/leechis7/tuivory/go/terminal.EventKey"
+      ],
+      "EventMouse": [
+        "github.com/leechis7/tuivory/go/terminal.EventMouse"
+      ],
+      "FindColor": [
+        "github.com/leechis7/tuivory/go/terminal.FindColor"
+      ],
+      "GetColor": [
+        "github.com/leechis7/tuivory/go/terminal.GetColor"
+      ],
+      "Key": [
+        "github.com/leechis7/tuivory/go/terminal.Key"
+      ],
+      "KeyBackspace": [
+        "github.com/leechis7/tuivory/go/terminal.KeyBackspace"
+      ],
+      "KeyBackspace2": [
+        "github.com/leechis7/tuivory/go/terminal.KeyBackspace2"
+      ],
+      "KeyBacktab": [
+        "github.com/leechis7/tuivory/go/terminal.KeyBacktab"
+      ],
+      "KeyCtrlA": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlA"
+      ],
+      "KeyCtrlC": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlC"
+      ],
+      "KeyCtrlD": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlD"
+      ],
+      "KeyCtrlE": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlE"
+      ],
+      "KeyCtrlF": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlF"
+      ],
+      "KeyCtrlI": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlI"
+      ],
+      "KeyCtrlK": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlK"
+      ],
+      "KeyCtrlL": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlL"
+      ],
+      "KeyCtrlN": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlN"
+      ],
+      "KeyCtrlO": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlO"
+      ],
+      "KeyCtrlQ": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlQ"
+      ],
+      "KeyCtrlR": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlR"
+      ],
+      "KeyCtrlS": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlS"
+      ],
+      "KeyCtrlSpace": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlSpace"
+      ],
+      "KeyCtrlT": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlT"
+      ],
+      "KeyCtrlV": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlV"
+      ],
+      "KeyCtrlW": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlW"
+      ],
+      "KeyCtrlX": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlX"
+      ],
+      "KeyCtrlY": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlY"
+      ],
+      "KeyCtrlZ": [
+        "github.com/leechis7/tuivory/go/terminal.KeyCtrlZ"
+      ],
+      "KeyDelete": [
+        "github.com/leechis7/tuivory/go/terminal.KeyDelete"
+      ],
+      "KeyDown": [
+        "github.com/leechis7/tuivory/go/terminal.KeyDown"
+      ],
+      "KeyEnd": [
+        "github.com/leechis7/tuivory/go/terminal.KeyEnd"
+      ],
+      "KeyEnter": [
+        "github.com/leechis7/tuivory/go/terminal.KeyEnter"
+      ],
+      "KeyEscape": [
+        "github.com/leechis7/tuivory/go/terminal.KeyEscape"
+      ],
+      "KeyF1": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF1"
+      ],
+      "KeyF10": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF10"
+      ],
+      "KeyF11": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF11"
+      ],
+      "KeyF12": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF12"
+      ],
+      "KeyF13": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF13"
+      ],
+      "KeyF14": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF14"
+      ],
+      "KeyF2": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF2"
+      ],
+      "KeyF24": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF24"
+      ],
+      "KeyF3": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF3"
+      ],
+      "KeyF4": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF4"
+      ],
+      "KeyF5": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF5"
+      ],
+      "KeyF6": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF6"
+      ],
+      "KeyF7": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF7"
+      ],
+      "KeyF8": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF8"
+      ],
+      "KeyF9": [
+        "github.com/leechis7/tuivory/go/terminal.KeyF9"
+      ],
+      "KeyHome": [
+        "github.com/leechis7/tuivory/go/terminal.KeyHome"
+      ],
+      "KeyLeft": [
+        "github.com/leechis7/tuivory/go/terminal.KeyLeft"
+      ],
+      "KeyPgDn": [
+        "github.com/leechis7/tuivory/go/terminal.KeyPgDn"
+      ],
+      "KeyPgUp": [
+        "github.com/leechis7/tuivory/go/terminal.KeyPgUp"
+      ],
+      "KeyRight": [
+        "github.com/leechis7/tuivory/go/terminal.KeyRight"
+      ],
+      "KeyRune": [
+        "github.com/leechis7/tuivory/go/terminal.KeyRune"
+      ],
+      "KeyTab": [
+        "github.com/leechis7/tuivory/go/terminal.KeyTab"
+      ],
+      "KeyUp": [
+        "github.com/leechis7/tuivory/go/terminal.KeyUp"
+      ],
+      "LookupTerminfo": [
+        "github.com/leechis7/tuivory/go/terminal.LookupTerminfo"
+      ],
+      "ModAlt": [
+        "github.com/leechis7/tuivory/go/terminal.ModAlt"
+      ],
+      "ModCtrl": [
+        "github.com/leechis7/tuivory/go/terminal.ModCtrl"
+      ],
+      "ModMask": [
+        "github.com/leechis7/tuivory/go/terminal.ModMask"
+      ],
+      "ModNone": [
+        "github.com/leechis7/tuivory/go/terminal.ModNone"
+      ],
+      "ModShift": [
+        "github.com/leechis7/tuivory/go/terminal.ModShift"
+      ],
+      "NewDevTty": [
+        "github.com/leechis7/tuivory/go/terminal.NewDevTty"
+      ],
+      "NewEventKey": [
+        "github.com/leechis7/tuivory/go/terminal.NewEventKey"
+      ],
+      "NewEventMouse": [
+        "github.com/leechis7/tuivory/go/terminal.NewEventMouse"
+      ],
+      "NewScreen": [
+        "github.com/leechis7/tuivory/go/terminal.NewScreen"
+      ],
+      "NewSimulationScreen": [
+        "github.com/leechis7/tuivory/go/terminal.NewSimulationScreen"
+      ],
+      "NewTerminfoScreenFromTty": [
+        "github.com/leechis7/tuivory/go/terminal.NewTerminfoScreenFromTty"
+      ],
+      "NewTerminfoScreenFromTtyTerminfo": [
+        "github.com/leechis7/tuivory/go/terminal.NewTerminfoScreenFromTtyTerminfo"
+      ],
+      "PaletteColor": [
+        "github.com/leechis7/tuivory/go/terminal.PaletteColor"
+      ],
+      "Screen": [
+        "github.com/leechis7/tuivory/go/terminal.Screen"
+      ],
+      "SimCell": [
+        "github.com/leechis7/tuivory/go/terminal.SimCell"
+      ],
+      "SimulationScreen": [
+        "github.com/leechis7/tuivory/go/terminal.SimulationScreen"
+      ],
+      "Style": [
+        "github.com/leechis7/tuivory/go/terminal.Style"
+      ],
+      "StyleDefault": [
+        "github.com/leechis7/tuivory/go/terminal.StyleDefault"
+      ],
+      "Tty": [
+        "github.com/leechis7/tuivory/go/terminal.Tty"
+      ],
+      "WheelDown": [
+        "github.com/leechis7/tuivory/go/terminal.WheelDown"
+      ]
+    }
+  },
+  "fork_only_migration": {
+    "focus_border_fields": [
+      "TopLeftFocus"
+    ],
+    "highlighting_hook": "TextArea.SetTextStyleFunc -> shared Editor.SetByteSyntax/host spans; upstream alias does not implement fork hook"
+  }
+}

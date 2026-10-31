@@ -2,9 +2,9 @@
 
 [한국어 (default)](README.md) · **English**
 
-This reference follows 0.6.0 source and **includes TVR-22–25 APIs**. [Availability and migration](../controls.en.md).
+This reference follows 0.7.0 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
 
-Reference version: **0.6.0**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
+Reference version: **0.7.0**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
 
 - [Go public declarations](go.en.md)
 - [Rust public declarations](rust.en.md)
@@ -46,3 +46,5 @@ Underlying Go aliases may show internal package names; applications use public t
 ```sh
 cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --open
 ```
+
+0.7.0 TVR-26: [shared UI APIs](../ui-facade.en.md) · [Go ui](go-ui.en.md) · [Go terminal](go-terminal.en.md). Rust ui::components aliases existing renderer APIs; new InputEvent/Session/byte-span APIs are in the Rust reference.

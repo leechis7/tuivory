@@ -94,4 +94,13 @@ for language, body in [('go',go_body),('rust',rust_body)]:
         if a.check:
             if not target.exists() or target.read_text()!=result:raise SystemExit(f'Stale API reference: {target}')
         else:target.write_text(result)
-print(f'Go root declarations + {len(aliases)} public aliases; Rust {len(entries)} public type/function entries and inherent methods: synchronized.')
+for package in ('ui', 'terminal'):
+    declarations=go_doc('./'+package)
+    for suffix in ('', '.en'):
+        target=ROOT/'docs/api'/f'go-{package}{suffix}.md'
+        intro=(f'**한국어 (기본)** · [English](go-{package}.en.md)\n\n[공통 UI 사용법·설정·호환성](../ui-facade.md) · [심볼 대응](../../design/go-facade-symbols.json)\n\n0.7.0부터 제공하는 SDK 호환 선언입니다. 별칭은 고정 backend의 메서드·콜백을 유지합니다. 전역 변수는 setter 설명을 따릅니다.\n\n' if not suffix else f'[한국어 (default)](go-{package}.md) · **English**\n\n[UI usage/configuration/compatibility](../ui-facade.en.md) · [Symbol mappings](../../design/go-facade-symbols.json)\n\nSDK compatibility declarations available since 0.7.0. Aliases retain pinned backend methods/callbacks. Follow setter guidance for global variables.\n\n')
+        result=f'# Go {package} API — source ({version})\n\n'+intro+'```go\n'+declarations.strip()+'\n```\n'
+        if a.check:
+            if not target.exists() or target.read_text()!=result:raise SystemExit(f'Stale API reference: {target}')
+        else:target.write_text(result)
+print(f'Go root + ui/terminal declarations and {len(aliases)} public aliases; Rust {len(entries)} public type/function entries and inherent methods: synchronized.')

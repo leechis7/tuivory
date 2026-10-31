@@ -5,58 +5,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func TextKey(e *tcell.EventKey) (string, string) {
-	action, text := "", ""
-	switch e.Key() {
-	case tcell.KeyLeft:
-		action = "left"
-	case tcell.KeyRight:
-		action = "right"
-	case tcell.KeyUp:
-		action = "up"
-	case tcell.KeyDown:
-		action = "down"
-	case tcell.KeyHome:
-		action = "home"
-	case tcell.KeyEnd:
-		action = "end"
-	case tcell.KeyEnter:
-		action = "newline"
-	case tcell.KeyBackspace, tcell.KeyBackspace2:
-		action = "backspace"
-	case tcell.KeyDelete:
-		action = "delete"
-	case tcell.KeyCtrlA:
-		action = "select_all"
-	case tcell.KeyCtrlC:
-		action = "copy"
-	case tcell.KeyCtrlX:
-		action = "cut"
-	case tcell.KeyCtrlZ:
-		action = "undo"
-	case tcell.KeyCtrlY:
-		action = "redo"
-	case tcell.KeyPgUp:
-		action = "page_up"
-	case tcell.KeyPgDn:
-		action = "page_down"
-	case tcell.KeyRune:
-		action = "insert"
-		text = string(e.Rune())
-	}
-	if e.Modifiers()&tcell.ModShift != 0 && (action == "left" || action == "right" || action == "up" || action == "down" || action == "home" || action == "end") {
-		action = "select_" + action
-	}
-	if e.Modifiers()&tcell.ModAlt != 0 {
-		if action == "left" {
-			action = "scroll_left"
-		}
-		if action == "right" {
-			action = "scroll_right"
-		}
-	}
-	return action, text
-}
+func TextKey(e *tcell.EventKey) (string, string) { return InputFromKey(e).EditingAction() }
 
 // NewEditorView and NewTextViewView share the same literal renderer. Read-only
 // is a buffer state, not a second editor implementation. Clipboard events are
