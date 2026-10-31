@@ -2,6 +2,8 @@
 
 [한국어 (default)](go-package.md) · **English**
 
+[Public API reference](api/go.en.md)
+
 Current public product version is **0.5.0**. [Changes, installation and release assets](release-0.5.0.en.md).
 
 The Go code is an independent submodule in `go/`. Its module path is **`github.com/leechis7/tuivory/go`**, and its single public package is **`tuivory`**. Requires Go 1.24 or later.
@@ -151,6 +153,6 @@ Version 0.5.0 TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface 
 
 ## API status and migration
 
-[Supported, compatibility, deprecated and removed APIs with migration examples](api-lifecycle.en.md) · [API-family overlap audit](api-overlap-audit.en.md). Public installation currently uses 0.5.0; new deprecation annotations apply only to subsequent unreleased source, distinct from historical 0.2.0 introductions.
+[Supported, compatibility, deprecated and removed APIs with migration examples](api-lifecycle.en.md) · [API-family overlap audit](api-overlap-audit.en.md). Public installation currently uses 0.5.0; deprecation annotations are also included in 0.5.0, distinct from historical 0.2.0 introductions.
 
 TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](popup-shadows.en.md).

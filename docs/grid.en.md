@@ -102,4 +102,4 @@ Capture `Revision / revision()` after each sort/filter/load_more request. On the
 
 NewGridView enables RowsView.PreserveBackgrounds; Rust GridWidget uses the same preservation path. Use RowsWidget.preserve_backgrounds() when rendering grid rows directly. Keep simple/data background options and custom grid.* roles. In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
 
-See [API lifecycle/migration](api-lifecycle.en.md) for deprecated APIs in unreleased source. Existing tags remain unchanged and legacy paths remain compatible.
+See [API lifecycle/migration](api-lifecycle.en.md) for APIs deprecated in 0.5.0. Existing tags remain unchanged and legacy paths remain compatible.

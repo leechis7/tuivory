@@ -33,7 +33,7 @@ Long names/deep nesting clip and pan in terminal cells. Partially clipped wide/c
 
 ## Go usage
 
-Use a replace directive pointing to the checkout's `go/`. Install with `go get github.com/leechis7/tuivory/go@v0.1.0`. The first `go/v0.0.1` tag does not contain these APIs.
+Use a replace directive pointing to the checkout's `go/`. Install with `go get github.com/leechis7/tuivory/go@v0.5.0`. The first `go/v0.0.1` tag does not contain these APIs.
 
 ```go
 tree, err := tuivory.NewTree([]tuivory.TreeNode{

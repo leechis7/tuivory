@@ -2,6 +2,8 @@
 
 [한국어 (default)](README.md) · **English**
 
+[Public API reference](../docs/api/go.en.md)
+
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
 Product version is **0.5.0** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.5.0`. [Release guide](../docs/release-0.5.0.en.md).
@@ -55,6 +57,6 @@ Version 0.5.0 TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface 
 
 [Disabled states across twelve palettes](../docs/disabled-states.en.md): no ordinary disabled prefixes, gray/Dim foregrounds, blocked input and localized runnable references.
 
-[API lifecycle, deprecation and migration](../docs/api-lifecycle.en.md) · [Public API overlap audit](../docs/api-overlap-audit.en.md): distinguish unreleased targets, replacements and first-release/removal plans.
+[API lifecycle, deprecation and migration](../docs/api-lifecycle.en.md) · [Public API overlap audit](../docs/api-overlap-audit.en.md): document targets, replacements and first-release/removal plans.
 
 TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](../docs/popup-shadows.en.md).
