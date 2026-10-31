@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gdamore/tcell/v2"
 	ui "github.com/leechis7/tuivory/go"
-	"github.com/rivo/tview"
+	tcell "github.com/leechis7/tuivory/go/terminal"
+	tview "github.com/leechis7/tuivory/go/ui"
 )
 
 func main() {

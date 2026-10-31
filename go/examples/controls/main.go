@@ -3,9 +3,9 @@ package main
 
 import (
 	"flag"
-	"github.com/gdamore/tcell/v2"
 	ui "github.com/leechis7/tuivory/go"
-	"github.com/rivo/tview"
+	tcell "github.com/leechis7/tuivory/go/terminal"
+	tview "github.com/leechis7/tuivory/go/ui"
 	"log"
 )
 
@@ -50,7 +50,9 @@ func main() {
 	fv, _ := ui.NewFormView(form, p, func(e ui.FormEvent) { status = e.Kind + ":" + e.ID })
 	editor := ui.NewEditor("fn example() {\n    print(\"Unicode 界 😀 é\");\n}\n")
 	editor.Buffer.Select(0, 0)
-	editor.Syntax = []ui.SyntaxSpan{{Start: 0, End: 2, Role: "info"}}
+	if err := editor.SetByteSyntax([]ui.ByteSyntaxSpan{{Start: 0, End: 2, Role: "info"}}); err != nil {
+		log.Fatal(err)
+	}
 	ev, _ := ui.NewEditorView(editor, p, func(e ui.TextEvent) { status = e.Kind })
 	viewer := ui.NewTextView(tr("[리터럴] 도움말과 긴 원문\n세로·가로 스크롤 / Shift+방향키 선택\n원문 복사는 앱에 요청합니다.", "[literal] Help and original text\nScroll vertically/horizontally; Shift+arrows select\nCopying requests a host action."))
 	vv, _ := ui.NewEditorView(viewer, p, func(e ui.TextEvent) { status = e.Kind })

@@ -35,7 +35,7 @@ def main():
         (consumer / 'consumer_test.go').write_text('''package consumer_test
 import (
     "testing"
-    "github.com/gdamore/tcell/v2"
+    tcell "github.com/leechis7/tuivory/go/terminal"
     "github.com/leechis7/tuivory/go"
 )
 func TestIsolatedModule(t *testing.T) {

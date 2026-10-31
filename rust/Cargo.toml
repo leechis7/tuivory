@@ -1,6 +1,6 @@
 [package]
 name = "tuivory"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 rust-version = "1.85"
 description = "Reusable TUI component models, design tokens, styles and optional renderers"
@@ -18,7 +18,8 @@ required-features = ["playground"]
 [features]
 default = []
 ratatui = ["dep:ratatui"]
-playground = ["ratatui", "ratatui/crossterm", "dep:crossterm"]
+terminal = ["ratatui", "ratatui/crossterm", "dep:crossterm"]
+playground = ["terminal"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

@@ -25,3 +25,5 @@ Current conformance implementations are Go and Rust. Stable IDs, values/events a
 ## Values and lifetimes
 
 Models own original text, selection and Undo history, retaining them across rendering. Event strings are values; clipboard and storage operations are never automatic. Go exposes immutable string values, while Rust raw getters borrow &str from the model. Rust widget/Styles references are borrowed for rendering and follow Rust lifetimes alongside any required &mut model reference. Go Container constructors and SetOptions/SetChildren copy configuration lists while retaining the same child component instances. Rendering callbacks run synchronously. These rules align semantics across languages; they do not define a shared C ABI or memory layout.
+
+0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](../docs/ui-facade.en.md).

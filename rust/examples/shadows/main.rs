@@ -1,14 +1,14 @@
 //! Database-free actual popup/shadow references for all twelve palettes.
 #[path = "../playground/snapshot.rs"]
 mod snapshot;
-use ratatui::{Terminal, backend::TestBackend, layout::Rect, widgets::Paragraph};
 use std::{error::Error, path::PathBuf};
+use tuivory::ui::{Terminal, backend::TestBackend, layout::Rect, widgets::Paragraph};
 use tuivory::{
     ColorProfile, Theme,
     layout::CellRect,
     menu::{Menu, MenuItem},
     popup::{ShadowMode, ShadowOptions, popup_placement},
-    ratatui::{MenuPopupWidget, Styles},
+    ui::components::{MenuPopupWidget, Styles},
 };
 fn main() -> Result<(), Box<dyn Error>> {
     let (mut en, mut edge, mut ascii) = (false, false, false);

@@ -2,9 +2,9 @@ package tuivory_test
 
 import (
 	"encoding/json"
-	"github.com/gdamore/tcell/v2"
+	tcell "github.com/leechis7/tuivory/go/terminal"
 	ui "github.com/leechis7/tuivory/go"
-	"github.com/rivo/tview"
+	tview "github.com/leechis7/tuivory/go/ui"
 	"os"
 	"reflect"
 	"testing"

@@ -17,8 +17,11 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ratatui', action='store_true', help='also verify the optional Ratatui adapter externally')
+    parser.add_argument('--terminal-output', type=Path, help='export SDK-only terminal lifecycle test host')
     parser.add_argument('--static-output', type=Path, help='also export a static x86_64 external host')
     args = parser.parse_args()
+    if args.terminal_output:
+        args.ratatui = True
     with tempfile.TemporaryDirectory(prefix='tuivory-rust-module-') as temporary:
         base = Path(temporary)
         module = base / 'module'
@@ -37,9 +40,7 @@ def main():
         manifest = ('[package]\nname = "tuivory-external-check"\nversion = "0.0.0"\n'
                     'edition = "2024"\n\n[dependencies]\n'
                     'tuivory = { path = ' + json.dumps(str(dependency)) +
-                    (', features = ["ratatui"]' if args.ratatui else '') + ' }\n')
-        if args.ratatui:
-            manifest += 'ratatui = { version = "0.30.2", default-features = false }\n'
+                    (', features = ["terminal"]' if args.terminal_output else ', features = ["ratatui"]' if args.ratatui else '') + ' }\n')
         (consumer / 'Cargo.toml').write_text(manifest)
         source = '''#![deny(deprecated)]
 use tuivory::{Color, ColorProfile, Theme, TokenDocument};
@@ -98,43 +99,69 @@ fn main() {
 }
 '''
         if args.ratatui:
-            source = source.replace('    let doc =', '''    let light=tuivory::ratatui::Styles::new(Theme::Light,ColorProfile::Ansi16).unwrap();
+            source = source.replace('    let doc =', '''    let light=tuivory::ui::components::Styles::new(Theme::Light,ColorProfile::Ansi16).unwrap();
     let bound=light.text_on_surface("success","surface").unwrap();
     assert_eq!(bound.fg,light.role("surface").unwrap().fg);assert_eq!(bound.bg,light.role("surface").unwrap().bg);
-    let styles = tuivory::ratatui::Styles::new(Theme::Dark, ColorProfile::Ansi8).unwrap();
-    assert!(styles.control(control_state,true).unwrap().add_modifier.contains(ratatui::style::Modifier::UNDERLINED));
-    let mut terminal = ratatui::Terminal::new(ratatui::backend::TestBackend::new(24, 4)).unwrap();
-    terminal.draw(|f| f.render_widget(tuivory::ratatui::SurfaceWidget::new(tuivory::ratatui::TextWidget{model:&mut editor,styles:&styles,focused:true},&styles),f.area())).unwrap();
-    terminal.draw(|f| f.render_widget(tuivory::ratatui::ControlWidget{model:&password,styles:&styles,focused:true},f.area())).unwrap();
-    terminal.draw(|f| f.render_widget(tuivory::ratatui::ContainerWidget{items:&items,options:&tuivory::containers::ContainerOptions{kind:"row".into(),..Default::default()},styles:&styles,scroll_x:0,scroll_y:0,render_child:|id:&str,area,buf:&mut ratatui::buffer::Buffer|{
-        assert_eq!(id,"editor");ratatui::widgets::Widget::render(ratatui::widgets::Paragraph::new("external"),area,buf);
+    let styles = tuivory::ui::components::Styles::new(Theme::Dark, ColorProfile::Ansi8).unwrap();
+    assert!(styles.control(control_state,true).unwrap().add_modifier.contains(tuivory::ui::style::Modifier::UNDERLINED));
+    let mut terminal = tuivory::ui::Terminal::new(tuivory::ui::backend::TestBackend::new(24, 4)).unwrap();
+    terminal.draw(|f| f.render_widget(tuivory::ui::components::SurfaceWidget::new(tuivory::ui::components::TextWidget{model:&mut editor,styles:&styles,focused:true},&styles),f.area())).unwrap();
+    terminal.draw(|f| f.render_widget(tuivory::ui::components::ControlWidget{model:&password,styles:&styles,focused:true},f.area())).unwrap();
+    terminal.draw(|f| f.render_widget(tuivory::ui::components::ContainerWidget{items:&items,options:&tuivory::containers::ContainerOptions{kind:"row".into(),..Default::default()},styles:&styles,scroll_x:0,scroll_y:0,render_child:|id:&str,area,buf:&mut tuivory::ui::buffer::Buffer|{
+        assert_eq!(id,"editor");tuivory::ui::widgets::Widget::render(tuivory::ui::widgets::Paragraph::new("external"),area,buf);
     }},f.area())).unwrap();
     terminal.draw(|f| f.render_widget(styles.block("External", true).unwrap(), f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "╔");
     let tree = tuivory::tree::Tree::new(vec![tuivory::tree::TreeNode { id: "root".into(), name: "External".into(), ..Default::default() }]).unwrap();
     let mut state = tuivory::tree::TreeState::default();
-    terminal.draw(|f| f.render_stateful_widget(tuivory::ratatui::TreeWidget::new(&tree, &styles).unwrap(), f.area(), &mut state)).unwrap();
+    terminal.draw(|f| f.render_stateful_widget(tuivory::ui::components::TreeWidget::new(&tree, &styles).unwrap(), f.area(), &mut state)).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), ">");
-    terminal.draw(|f| f.render_stateful_widget(tuivory::ratatui::TabsWidget::new(&tabs, &styles).unwrap(),f.area(),&mut tab_state)).unwrap();
-    terminal.draw(|f| f.render_widget(tuivory::ratatui::GridWidget{model:&grid,styles:&styles,focused:true},f.area())).unwrap();
+    terminal.draw(|f| f.render_stateful_widget(tuivory::ui::components::TabsWidget::new(&tabs, &styles).unwrap(),f.area(),&mut tab_state)).unwrap();
+    terminal.draw(|f| f.render_widget(tuivory::ui::components::GridWidget{model:&grid,styles:&styles,focused:true},f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(grid.geometry(24,4).gutter as u16-1,0)].symbol(),"│");
-    let mut menu_terminal=ratatui::Terminal::new(ratatui::backend::TestBackend::new(40,10)).unwrap();
-    menu_terminal.draw(|f|f.render_widget(tuivory::ratatui::MenuPopupWidget::new(&mut menu,&styles,"Menu").ascii(true).padding(1),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),"+");assert_eq!(menu_terminal.backend().buffer()[(2,2)].symbol(),">");
-    menu_terminal.draw(|f|f.render_widget(tuivory::ratatui::MenuWidget::new(&mut menu,&styles).ascii(true),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),">");
-    menu_terminal.draw(|f|f.render_widget(tuivory::ratatui::MenuBarWidget::new(&mut menu,&styles),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(2,0)].symbol(),"R");
+    let mut menu_terminal=tuivory::ui::Terminal::new(tuivory::ui::backend::TestBackend::new(40,10)).unwrap();
+    menu_terminal.draw(|f|f.render_widget(tuivory::ui::components::MenuPopupWidget::new(&mut menu,&styles,"Menu").ascii(true).padding(1),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),"+");assert_eq!(menu_terminal.backend().buffer()[(2,2)].symbol(),">");
+    menu_terminal.draw(|f|f.render_widget(tuivory::ui::components::MenuWidget::new(&mut menu,&styles).ascii(true),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),">");
+    menu_terminal.draw(|f|f.render_widget(tuivory::ui::components::MenuBarWidget::new(&mut menu,&styles),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(2,0)].symbol(),"R");
     assert_eq!(menu.return_id(),"editor");
     let runs = tuivory::components::status_line(&[tuivory::components::StatusItem { id: "e".into(), text: "Failure".into(),role: "error".into(),priority:10 }],24).runs;
-    terminal.draw(|f| f.render_widget(tuivory::ratatui::LineWidget::new(runs.clone(),&styles).unwrap(),f.area())).unwrap();
+    terminal.draw(|f| f.render_widget(tuivory::ui::components::LineWidget::new(runs.clone(),&styles).unwrap(),f.area())).unwrap();
     terminal.draw(|f| f.render_widget(styles.panel("External",true,1,true).unwrap(),f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "+");
     let doc =''')
+        if args.terminal_output:
+            source=source.replace('fn main() {', '''fn main() {
+    if let Ok(mode)=std::env::var("TUIVORY_SESSION_TEST") {
+        use tuivory::ui::Session;
+        if mode=="foreign-raw" {
+            use tuivory::ui::terminal::terminal::{enable_raw_mode,disable_raw_mode,is_raw_mode_enabled};
+            enable_raw_mode().unwrap();
+            assert_eq!(Session::enter(Default::default()).err().unwrap().kind(),std::io::ErrorKind::AlreadyExists);
+            assert!(is_raw_mode_enabled().unwrap());
+            disable_raw_mode().unwrap();println!("FOREIGN_RAW_OK");return;
+        }
+        if mode=="no-tty" {
+            for _ in 0..2 { assert_ne!(Session::enter(Default::default()).err().unwrap().kind(),std::io::ErrorKind::AlreadyExists); }
+            println!("NO_TTY_OK");return;
+        }
+        let guard=Session::enter(Default::default()).unwrap();
+        assert_eq!(Session::enter(Default::default()).err().unwrap().kind(),std::io::ErrorKind::AlreadyExists);
+        if mode=="panic" {panic!("expected session unwind test");}
+        guard.finish().unwrap();
+        let guard=Session::enter(Default::default()).unwrap();drop(guard);
+        println!("SESSION_OK");return;
+    }
+''',1)
         (consumer / 'src/main.rs').write_text(source)
         shutil.copyfile(module / 'Cargo.lock', consumer / 'Cargo.lock')
         subprocess.run(['cargo', 'run', '--manifest-path', str(consumer / 'Cargo.toml'), '--offline'],
                        env=env, check=True)
+        if args.terminal_output:
+            args.terminal_output.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copy2(base/'target/debug/tuivory-external-check',args.terminal_output)
         if args.ratatui:
             legacy = r'''#![deny(deprecated)]
-use tuivory::{menu::{Menu,MenuItem},ratatui::{Styles,MenuWidget,MenuBarWidget,MenuPopupWidget},Theme,ColorProfile};
+use tuivory::{menu::{Menu,MenuItem},ui::components::{Styles,MenuWidget,MenuBarWidget,MenuPopupWidget},Theme,ColorProfile};
 fn main() {
     let styles=Styles::new(Theme::Dark,ColorProfile::Ansi8).unwrap();
     let mut menu=Menu::new(vec![MenuItem{id:"a".into(),label:"A".into(),..Default::default()}]).unwrap();

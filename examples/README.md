@@ -55,3 +55,5 @@ Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](../docs/ov
 [공통 메뉴](../docs/menus.md): Go/Rust 계층·메뉴 바·뒤로가기·단축키/비활성·팝업·호출 문맥 요청과 DB 없는 한영 실행 예제. 기존 v0.2.0 태그에는 없는 미배포 소스입니다.
 
 [컨트롤·Surface·편집기·배치](../docs/controls.md): Go·Rust controls 예제이며 미배포 소스입니다.
+
+0.7.0 TVR-26의 Go·Rust 공개 예제는 backend 직접 import 없이 Tuivory SDK 경로를 사용합니다. 실행 명령과 화면은 유지합니다. [새 API·전환·배포 상태](../docs/ui-facade.md).

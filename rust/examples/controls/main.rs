@@ -1,26 +1,20 @@
 //! Database-free host using public containers, surface, form and text widgets.
 #[path = "../playground/snapshot.rs"]
 mod snapshot;
-use crossterm::{
-    cursor::Show,
-    event::{
-        self, DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture,
-        Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind,
-    },
-    execute,
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+use std::{
+    error::Error,
+    io::{self, IsTerminal},
+    path::Path,
 };
-use ratatui::{
+use tuivory::ui::terminal::event::{
+    self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind,
+};
+use tuivory::ui::{
     Terminal,
     backend::{CrosstermBackend, TestBackend},
     buffer::Buffer,
     layout::Rect,
     widgets::{Paragraph, Widget},
-};
-use std::{
-    error::Error,
-    io::{self, IsTerminal},
-    path::Path,
 };
 use tuivory::{
     ColorProfile, Theme,
@@ -28,8 +22,11 @@ use tuivory::{
     forms::{Form, FormField},
     layout::{CellRect, NamedRect},
     popup::{ShadowMode, ShadowOptions},
-    ratatui::{ContainerWidget, FormWidget, ShadowWidget, Styles, SurfaceWidget, TextWidget},
-    text::{SyntaxSpan, TextDocument},
+    text::TextDocument,
+    text_offsets::ByteSyntaxSpan,
+    ui::components::{
+        ContainerWidget, FormWidget, ShadowWidget, Styles, SurfaceWidget, TextWidget,
+    },
 };
 fn tr(en: bool, ko: &str, english: &str) -> String {
     if en { english } else { ko }.into()
@@ -335,65 +332,12 @@ impl App {
             }
             _ => (),
         }
-        let mut text = String::new();
-        let action = if key.modifiers.contains(KeyModifiers::CONTROL) {
-            match key.code {
-                KeyCode::Char('a') => "select_all",
-                KeyCode::Char('c') => "copy",
-                KeyCode::Char('x') => "cut",
-                KeyCode::Char('z') => "undo",
-                KeyCode::Char('y') => "redo",
-                _ => "",
-            }
-        } else {
-            match key.code {
-                KeyCode::Left => "left",
-                KeyCode::Right => "right",
-                KeyCode::Up => "up",
-                KeyCode::Down => "down",
-                KeyCode::Home => "home",
-                KeyCode::End => "end",
-                KeyCode::Backspace => "backspace",
-                KeyCode::Delete => "delete",
-                KeyCode::Enter => "activate",
-                KeyCode::PageUp => "page_up",
-                KeyCode::PageDown => "page_down",
-                KeyCode::Char(c) => {
-                    text = c.to_string();
-                    "insert"
-                }
-                _ => "",
-            }
-        };
-        let mut action = action.to_string();
-        if key.modifiers.contains(KeyModifiers::SHIFT)
-            && ["left", "right", "up", "down", "home", "end"].contains(&action.as_str())
-        {
-            action = "select_".to_string() + &action
-        }
-        if key.modifiers.contains(KeyModifiers::ALT) {
-            if action == "left" {
-                action = "scroll_left".into()
-            }
-            if action == "right" {
-                action = "scroll_right".into()
-            }
+        let (mut action, text) = tuivory::input::InputEvent::from_key(key).editing_action();
+        if key.code == KeyCode::Enter {
+            action = "activate".into();
         }
         self.action(&action, &text);
         true
-    }
-}
-struct Session;
-impl Drop for Session {
-    fn drop(&mut self) {
-        let _ = disable_raw_mode();
-        let _ = execute!(
-            io::stdout(),
-            DisableMouseCapture,
-            DisableBracketedPaste,
-            LeaveAlternateScreen,
-            Show
-        );
     }
 }
 fn main() -> Result<(), Box<dyn Error>> {
@@ -421,11 +365,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let mut editor = TextDocument::editor("fn example() {\n    print(\"Unicode 界 😀 é\");\n}\n");
     editor.buffer.select(0, 0);
-    editor.syntax = vec![SyntaxSpan {
+    editor.set_byte_syntax(&[ByteSyntaxSpan {
         start: 0,
         end: 2,
         role: "info".into(),
-    }];
+    }])?;
     let mut app = App {
         en,
         ascii,
@@ -504,14 +448,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     if !io::stdin().is_terminal() {
         return Err("interactive terminal required".into());
     }
-    enable_raw_mode()?;
-    let _session = Session;
-    execute!(
-        io::stdout(),
-        EnterAlternateScreen,
-        EnableMouseCapture,
-        EnableBracketedPaste
-    )?;
+    let _session = tuivory::ui::Session::enter(Default::default())?;
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
     loop {
         terminal.draw(|f| {
@@ -542,7 +479,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let id = app.focus.pointer(&items, &app.rects, x, y, press, release);
                 if let Some(id) = id {
                     if let Some(r) = app.rects.iter().find(|r| r.id == id) {
-                        let inner = rect(r.rect).inner(ratatui::layout::Margin::new(2, 2));
+                        let inner = rect(r.rect).inner(tuivory::ui::layout::Margin::new(2, 2));
                         match m.kind {
                             MouseEventKind::ScrollUp => app.action("scroll_up", ""),
                             MouseEventKind::ScrollDown => app.action("scroll_down", ""),

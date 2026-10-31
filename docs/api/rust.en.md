@@ -1,4 +1,4 @@
-# Rust API — source (0.6.0)
+# Rust API — source (0.7.0)
 
 [한국어 (default)](rust.md) · **English**
 
@@ -1695,6 +1695,66 @@ pub fn grid_preset(name: &str) -> Result<GridOptions, Error>;
 
 
 
+### tuivory::input::InputEvent
+
+```rust
+pub struct InputEvent {
+    pub kind: String,
+    pub key: String,
+    pub text: String,
+    pub modifiers: Vec<String>,
+    pub phase: String,
+    pub x: isize,
+    pub y: isize,
+    pub button: String,
+    pub width: usize,
+    pub height: usize,
+}
+```
+
+Screen-cell coordinates, original UTF-8 text and ordered modifier names.
+Hosts consume global keys before forwarding editing actions to a model.
+
+#### tuivory::input::InputEvent::paste
+
+```rust
+pub fn paste(text: &str) -> Self;
+```
+
+
+
+#### tuivory::input::InputEvent::resize
+
+```rust
+pub fn resize(width: usize, height: usize) -> Self;
+```
+
+
+
+#### tuivory::input::InputEvent::editing_action
+
+```rust
+pub fn editing_action(&self) -> (String, String);
+```
+
+Returns requests only. Enter is newline; form hosts map it to activation.
+
+#### tuivory::input::InputEvent::from_key
+
+```rust
+pub fn from_key(event: crate::ui::terminal::event::KeyEvent) -> Self;
+```
+
+
+
+#### tuivory::input::InputEvent::from_terminal
+
+```rust
+pub fn from_terminal(event: crate::ui::terminal::event::Event) -> Self;
+```
+
+
+
 ### tuivory::interaction::ControlState
 
 ```rust
@@ -3217,6 +3277,14 @@ pub fn set_markup(&mut self, markup: &str) -> Result<(), Error>;
 
 
 
+#### tuivory::text::TextDocument::set_byte_syntax
+
+```rust
+pub fn set_byte_syntax(&mut self, spans: &[ByteSyntaxSpan]) -> Result<(), Error>;
+```
+
+Convert byte ranges atomically; host lexing/business semantics remain outside the SDK.
+
 ### tuivory::text::TextEvent
 
 ```rust
@@ -3237,6 +3305,28 @@ pub fn parse_markup(markup: &str) -> Result<(String, Vec<SyntaxSpan>), Error>;
 
 Explicit `[role]text[/]` styling; `[[` escapes `[`. Copies return plain logical
 text. Literal text APIs never parse tags. Invalid markup leaves data intact.
+
+
+### tuivory::text_offsets::ByteSyntaxSpan
+
+```rust
+pub struct ByteSyntaxSpan {
+    pub start: usize,
+    pub end: usize,
+    pub role: String,
+}
+```
+
+Half-open host lexer range in original UTF-8 bytes.
+
+
+### tuivory::text_offsets::grapheme_index
+
+```rust
+pub fn grapheme_index(text: &str, byte_offset: usize) -> Result<usize, Error>;
+```
+
+
 
 
 ### tuivory::tree::Tree
@@ -3382,4 +3472,44 @@ pub struct TreeState {
 ```
 
 
+
+
+### tuivory::ui::Session
+
+```rust
+pub struct Session {
+
+    // Private fields omitted.
+}
+```
+
+Opt-in stdout alternate-screen/raw-mode guard. Drop restores the terminal;
+`finish` additionally reports cleanup errors. No process/global key policy.
+
+#### tuivory::ui::Session::enter
+
+```rust
+pub fn enter(options: SessionOptions) -> std::io::Result<Self>;
+```
+
+
+
+#### tuivory::ui::Session::finish
+
+```rust
+pub fn finish(mut self) -> std::io::Result<()>;
+```
+
+
+
+### tuivory::ui::SessionOptions
+
+```rust
+pub struct SessionOptions {
+    pub mouse: bool,
+    pub bracketed_paste: bool,
+}
+```
+
+Explicit terminal-session configuration; global keys remain host-owned.
 

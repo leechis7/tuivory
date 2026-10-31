@@ -1,0 +1,217 @@
+{
+  "format": 1,
+  "cases": [
+    {
+      "name": "unicode",
+      "raw": "unicode",
+      "event": {
+        "kind": "key",
+        "key": "한",
+        "text": "한",
+        "phase": "press"
+      },
+      "action": "insert",
+      "text": "한"
+    },
+    {
+      "name": "copy",
+      "raw": "ctrl_c",
+      "event": {
+        "kind": "key",
+        "key": "c",
+        "modifiers": [
+          "ctrl"
+        ],
+        "phase": "press"
+      },
+      "action": "copy",
+      "text": ""
+    },
+    {
+      "name": "shift-copy",
+      "raw": "ctrl_shift_c",
+      "event": {
+        "kind": "key",
+        "key": "c",
+        "modifiers": [
+          "shift",
+          "ctrl"
+        ],
+        "phase": "press"
+      },
+      "action": "copy",
+      "text": ""
+    },
+    {
+      "name": "select",
+      "raw": "shift_left",
+      "event": {
+        "kind": "key",
+        "key": "left",
+        "modifiers": [
+          "shift"
+        ],
+        "phase": "press"
+      },
+      "action": "select_left",
+      "text": ""
+    },
+    {
+      "name": "scroll",
+      "raw": "alt_right",
+      "event": {
+        "kind": "key",
+        "key": "right",
+        "modifiers": [
+          "alt"
+        ],
+        "phase": "press"
+      },
+      "action": "scroll_right",
+      "text": ""
+    },
+    {
+      "name": "backtab",
+      "raw": "backtab",
+      "event": {
+        "kind": "key",
+        "key": "tab",
+        "modifiers": [
+          "shift"
+        ],
+        "phase": "press"
+      },
+      "action": "",
+      "text": ""
+    },
+    {
+      "name": "enter",
+      "raw": "enter",
+      "event": {
+        "kind": "key",
+        "key": "enter",
+        "phase": "press"
+      },
+      "action": "newline",
+      "text": ""
+    },
+    {
+      "name": "function-key",
+      "raw": "f10",
+      "event": {
+        "kind": "key",
+        "key": "f10",
+        "phase": "press"
+      },
+      "action": "",
+      "text": ""
+    },
+    {
+      "name": "paste",
+      "raw": "paste",
+      "event": {
+        "kind": "paste",
+        "text": "漢\r\n[info]😀"
+      },
+      "action": "paste",
+      "text": "漢\r\n[info]😀"
+    },
+    {
+      "name": "resize",
+      "raw": "resize",
+      "event": {
+        "kind": "resize",
+        "width": 8,
+        "height": 3
+      },
+      "action": "",
+      "text": ""
+    },
+    {
+      "name": "captured-drag",
+      "raw": "drag",
+      "event": {
+        "kind": "pointer",
+        "x": 6,
+        "y": 3,
+        "phase": "drag",
+        "button": "left",
+        "modifiers": [
+          "shift"
+        ]
+      },
+      "action": "",
+      "text": ""
+    },
+    {
+      "name": "wheel",
+      "raw": "wheel",
+      "event": {
+        "kind": "pointer",
+        "x": 6,
+        "y": 3,
+        "phase": "scroll_down",
+        "button": "none"
+      },
+      "action": "",
+      "text": ""
+    },
+    {
+      "name": "release",
+      "raw": "canonical",
+      "event": {
+        "kind": "key",
+        "key": "x",
+        "text": "x",
+        "phase": "release"
+      },
+      "action": "",
+      "text": ""
+    },
+    {
+      "name": "global-key",
+      "raw": "canonical",
+      "event": {
+        "kind": "key",
+        "key": "q",
+        "modifiers": [
+          "ctrl"
+        ],
+        "phase": "press"
+      },
+      "action": "",
+      "text": ""
+    }
+  ],
+  "byte_offsets": {
+    "text": "a界é😀",
+    "boundaries": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        11,
+        4
+      ]
+    ],
+    "invalid": [
+      2,
+      5,
+      9,
+      12
+    ]
+  }
+}

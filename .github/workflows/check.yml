@@ -51,6 +51,8 @@ jobs:
         run: make -C go test
       - name: Vet Go packages
         run: make -C go check
+      - name: Verify SDK-only UI imports and compatibility exports
+        run: python3 tools/check_ui_facade.py
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -188,7 +190,9 @@ jobs:
           python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --lang en
           python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --output "$RUNNER_TEMP/catalog-images"
       - name: Verify adapter from an external packaged dependency
-        run: python3 tools/check_rust_module.py --ratatui
+        run: |
+          python3 tools/check_rust_module.py --terminal-output "$RUNNER_TEMP/tuivory-session"
+          python3 tools/check_ui_session.py "$RUNNER_TEMP/tuivory-session"
   static-builds:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
