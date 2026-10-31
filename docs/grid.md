@@ -102,4 +102,4 @@ grid.set_cell_info(|_, column| GridCellInfo {
 
 NewGridView는 RowsView.PreserveBackgrounds를 켜며 Rust GridWidget도 같은 보존 경로를 사용합니다. 직접 그리드 행을 그릴 때는 RowsWidget.preserve_backgrounds()를 사용합니다. simple/data 배경 옵션과 사용자 grid.* 역할은 그대로 유지합니다. 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
 
-미배포 소스의 Deprecated API와 전환 코드는 [지원 상태 안내](api-lifecycle.md)를 참고하세요. 기존 태그의 API는 바꾸지 않으며 호환 경로는 유지합니다.
+0.5.0의 Deprecated API와 전환 코드는 [지원 상태 안내](api-lifecycle.md)를 참고하세요. 기존 태그의 API는 바꾸지 않으며 호환 경로는 유지합니다.

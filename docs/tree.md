@@ -33,7 +33,7 @@ Rust 위젯은 렌더링만 담당합니다. 예제처럼 키를 `TreeAction`, �
 
 ## Go 사용
 
-현재 체크아웃의 `go/`를 replace로 연결합니다. `go get github.com/leechis7/tuivory/go@v0.1.0`으로 설치합니다. 첫 태그 `go/v0.0.1`에는 새 API가 없습니다.
+현재 체크아웃의 `go/`를 replace로 연결합니다. `go get github.com/leechis7/tuivory/go@v0.5.0`으로 설치합니다. 첫 태그 `go/v0.0.1`에는 새 API가 없습니다.
 
 ```go
 tree, err := tuivory.NewTree([]tuivory.TreeNode{

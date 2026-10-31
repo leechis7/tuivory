@@ -38,7 +38,7 @@ Roles use candidate-token names directly. Prefixes warning/error `!`, edited `*`
 
 ## Imports and examples
 
-Go external projects install `github.com/leechis7/tuivory/go@v0.2.0` or use a replace directive for a local checkout. All APIs use the single `github.com/leechis7/tuivory/go` import. Resolve the candidate palette with `CandidateTokens → Palette → Resolve` and pass it to views. This does not claim equality with the complete LazyOra-derived Go styler.
+Go external projects install `github.com/leechis7/tuivory/go@v0.5.0` or use a replace directive for a local checkout. All APIs use the single `github.com/leechis7/tuivory/go` import. Resolve the candidate palette with `CandidateTokens → Palette → Resolve` and pass it to views. This does not claim equality with the complete LazyOra-derived Go styler.
 
 ```go
 tabs, err := tuivory.NewTabs([]tuivory.TabItem{

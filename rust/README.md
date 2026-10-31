@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+[공개 API 명세](../docs/api/rust.md)
+
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
 crate 버전은 **0.5.0**이며 루트 `VERSION`과 일치합니다. `rust/v0.5.0` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.5.0.md).
@@ -102,7 +104,7 @@ make build-rust
 
 공통 원본은 [design/tokens](https://github.com/leechis7/tuivory/blob/main/design/tokens/README.md)입니다. `src/data/candidate.json`은 `python3 tools/export_tokens.py`로 생성한 배포용 사본이며 수동 편집하지 않습니다. `include_str!`로 포함하므로 외부 Rust 프로젝트에 design/이나 생성 도구가 필요하지 않습니다.
 
-현재 Cargo 버전은 0.2.0이며 Git 배포를 위해 `publish = false`를 유지합니다. crates.io 게시는 수행하지 않았습니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
+현재 Cargo 버전은 0.5.0이며 Git 배포를 위해 `publish = false`를 유지합니다. crates.io 게시는 수행하지 않았습니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
 
 ## 공통 Tree
 
