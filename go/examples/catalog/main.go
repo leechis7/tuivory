@@ -5,8 +5,7 @@ import (
 	"flag"
 	"fmt"
 	ui "github.com/leechis7/tuivory/go"
-	tcell "github.com/leechis7/tuivory/go/terminal"
-	tview "github.com/leechis7/tuivory/go/ui"
+
 	"log"
 	"strconv"
 	"strings"
@@ -68,9 +67,9 @@ func main() {
 		log.Fatal(err)
 	}
 	palette, _ := ui.Resolve(source)
-	app := tview.NewApplication()
-	header := tview.NewTextView().SetText("TUIVORY Catalog / " + text("이름 · 공통 컴포넌트", "Name / shared components"))
-	footer := tview.NewTextView()
+	app := ui.NewApplication()
+	header := ui.NewWidgetTextView().SetText("TUIVORY Catalog / " + text("이름 · 공통 컴포넌트", "Name / shared components"))
+	footer := ui.NewWidgetTextView()
 	footer.SetText(text("Tab 이동 / Enter 확정 / Esc 취소 / Ctrl+Q 종료", "Tab move / Enter confirm / Esc cancel / Ctrl+Q quit"))
 	view, err := ui.NewFormView(form, palette, func(e ui.FormEvent) {
 		footer.SetText(fmt.Sprintf("%s: %s", e.Kind, e.ID))
@@ -148,19 +147,19 @@ func main() {
 				progress.Message = text("앱이 취소를 처리했습니다", "The host handled cancellation")
 			}
 		}
-		view.Key = func(key *tcell.EventKey) {
-			if key.Key() == tcell.KeyRune && key.Rune() == 'c' {
+		view.Key = func(key *ui.EventKey) {
+			if key.Key() == ui.KeyRune && key.Rune() == 'c' {
 				emit(progress.RequestCancel())
 				return
 			}
-			if key.Key() == tcell.KeyRune && key.Rune() == 't' {
+			if key.Key() == ui.KeyRune && key.Rune() == 't' {
 				now = 100
 				queue.Expire(now)
 				emit(ui.NoticeEvent{Kind: "expired"})
 				return
 			}
 			action := ui.NavigationKey(key)
-			if key.Key() == tcell.KeyDelete {
+			if key.Key() == ui.KeyDelete {
 				action = "dismiss"
 			}
 			emit(queue.Handle(action, now, max(1, height-4)))
@@ -185,25 +184,25 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		view.Key = func(key *tcell.EventKey) {
-			if key.Key() == tcell.KeyF1 {
+		view.Key = func(key *ui.EventKey) {
+			if key.Key() == ui.KeyF1 {
 				helpOpen = !helpOpen
 				return
 			}
 			if helpOpen {
-				if key.Key() == tcell.KeyEscape {
+				if key.Key() == ui.KeyEscape {
 					helpOpen = false
 				}
 				return
 			}
-			if key.Key() == tcell.KeyRune && key.Rune() == 'x' {
+			if key.Key() == ui.KeyRune && key.Rune() == 'x' {
 				event := (ui.Chip{ID: "filter", Removable: true}).RequestRemove()
 				if event.Kind != "" {
 					removed = true
 					footer.SetText(event.Kind + ": " + event.ID)
 				}
 			}
-			if key.Key() == tcell.KeyRune && key.Rune() == 'd' {
+			if key.Key() == ui.KeyRune && key.Rune() == 'd' {
 				if density == ui.DensityCompact {
 					density = ui.DensityComfortable
 				} else {
@@ -216,10 +215,10 @@ func main() {
 	panel, _ := ui.NewPanelView(view, palette)
 	panel.ASCII = *ascii
 	panel.SetTitle(*mode)
-	root := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 1, 0, false).AddItem(panel, 0, 1, true).AddItem(footer, 1, 0, false)
-	app.SetInputCapture(func(e *tcell.EventKey) *tcell.EventKey {
-		if e.Key() == tcell.KeyF2 || e.Key() == tcell.KeyF3 {
-			if e.Key() == tcell.KeyF2 {
+	root := ui.NewFlex().SetDirection(ui.FlexRow).AddItem(header, 1, 0, false).AddItem(panel, 0, 1, true).AddItem(footer, 1, 0, false)
+	app.SetInputCapture(func(e *ui.EventKey) *ui.EventKey {
+		if e.Key() == ui.KeyF2 || e.Key() == ui.KeyF3 {
+			if e.Key() == ui.KeyF2 {
 				values := []string{"dark", "light", "blackwhite"}
 				for i, v := range values {
 					if *theme == v {
@@ -250,13 +249,13 @@ func main() {
 			return nil
 		}
 
-		if *mode == "grid" && e.Key() == tcell.KeyCtrlC {
+		if *mode == "grid" && e.Key() == ui.KeyCtrlC {
 			if view.Key != nil {
 				view.Key(e)
 			}
 			return nil
 		}
-		if e.Key() == tcell.KeyCtrlQ {
+		if e.Key() == ui.KeyCtrlQ {
 			app.Stop()
 			return nil
 		}

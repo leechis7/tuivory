@@ -6,15 +6,13 @@ import (
 	"os"
 
 	"github.com/leechis7/tuivory/go"
-	tcell "github.com/leechis7/tuivory/go/terminal"
-	tview "github.com/leechis7/tuivory/go/ui"
 )
 
 func main() {
-	app := tview.NewApplication()
+	app := tuivory.NewApplication()
 	themes := []string{"dark", "light", "blackwhite"}
 	index := 0
-	form := tview.NewForm().AddTextView("TUIVORY", "F2 테마 변경 · Ctrl+Q 종료", 40, 2, true, false).
+	form := tuivory.NewWidgetForm().AddTextView("TUIVORY", "F2 테마 변경 · Ctrl+Q 종료", 40, 2, true, false).
 		AddInputField("이름", "", 24, nil, nil).AddCheckbox("사용", true, nil).
 		AddButton("종료", func() { app.Stop() })
 	form.SetBorder(true).SetTitle(" Go starter · LazyOra style ")
@@ -28,12 +26,12 @@ func main() {
 		s.Form(form)
 	}
 	apply()
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	app.SetInputCapture(func(event *tuivory.EventKey) *tuivory.EventKey {
 		switch event.Key() {
-		case tcell.KeyCtrlQ:
+		case tuivory.KeyCtrlQ:
 			app.Stop()
 			return nil
-		case tcell.KeyF2:
+		case tuivory.KeyF2:
 			index = (index + 1) % len(themes)
 			apply()
 			return nil

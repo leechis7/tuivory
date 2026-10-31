@@ -4,8 +4,7 @@ package main
 import (
 	"flag"
 	ui "github.com/leechis7/tuivory/go"
-	tcell "github.com/leechis7/tuivory/go/terminal"
-	tview "github.com/leechis7/tuivory/go/ui"
+
 	"log"
 )
 
@@ -41,7 +40,7 @@ func main() {
 		return p
 	}
 	p := palette()
-	app := tview.NewApplication()
+	app := ui.NewApplication()
 	status := tr("명령은 요청만 전달합니다.", "Actions emit requests only.")
 	form, e := ui.NewForm([]ui.FormField{{ID: "name", Kind: "text", Label: tr("이름", "Name"), Value: tr("예제 사용자", "Example user")}, {ID: "password", Kind: "password", Label: tr("암호", "Password"), Value: "example-secret"}, {ID: "check", Kind: "checkbox", Label: tr("선택 상태 보존", "Preserve selection"), Checked: true}, {ID: "save", Kind: "button", Label: tr("저장 요청", "Request save")}})
 	if e != nil {
@@ -99,15 +98,15 @@ func main() {
 		shadow.ASCII = *ascii
 	}
 	refresh()
-	app.SetInputCapture(func(e *tcell.EventKey) *tcell.EventKey {
+	app.SetInputCapture(func(e *ui.EventKey) *ui.EventKey {
 		switch e.Key() {
-		case tcell.KeyCtrlC:
+		case ui.KeyCtrlC:
 			// The host reserves Ctrl+Q for exit and lets the control receive copy.
-			return tcell.NewEventKey(e.Key(), e.Rune(), e.Modifiers())
-		case tcell.KeyCtrlQ:
+			return ui.NewEventKey(e.Key(), e.Rune(), e.Modifiers())
+		case ui.KeyCtrlQ:
 			app.Stop()
 			return nil
-		case tcell.KeyF2:
+		case ui.KeyF2:
 			if *theme == "dark" {
 				*theme = "light"
 			} else if *theme == "light" {
@@ -117,7 +116,7 @@ func main() {
 			}
 			refresh()
 			return nil
-		case tcell.KeyF3:
+		case ui.KeyF3:
 			values := []string{"8", "16", "256", "truecolor"}
 			for i, v := range values {
 				if v == *profile {
@@ -127,11 +126,11 @@ func main() {
 			}
 			refresh()
 			return nil
-		case tcell.KeyF4:
+		case ui.KeyF4:
 			*opened = !*opened
 			update()
 			return nil
-		case tcell.KeyEscape:
+		case ui.KeyEscape:
 			if *opened {
 				*opened = false
 				update()

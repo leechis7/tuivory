@@ -2,11 +2,13 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+**0.8.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
+
 [공개 API 명세](../docs/api/go.md)
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-제품 버전은 루트 `VERSION`의 **0.7.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.7.0`으로 배포합니다. [릴리스 안내](../docs/release-0.7.0.md).
+제품 버전은 루트 `VERSION`의 **0.8.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.8.0`으로 배포합니다. [릴리스 안내](../docs/release-0.8.0.md).
 
 Go 모듈과 모든 Go 구현은 이 디렉터리에 있습니다. 모듈 경로는 `github.com/leechis7/tuivory/go`, 패키지 이름은 `tuivory`이며 한 번만 import합니다.
 
@@ -18,10 +20,10 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-현재 버전은 `v0.7.0`이며 Go 하위 모듈 태그는 `go/v0.7.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
+현재 버전은 `v0.8.0`이며 Go 하위 모듈 태그는 `go/v0.8.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.7.0
+go get github.com/leechis7/tuivory/go@v0.8.0
 ```
 
 저장소 루트에서:

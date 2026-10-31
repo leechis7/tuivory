@@ -2,7 +2,9 @@
 
 **한국어 (기본)** · [English](ui-facade.en.md)
 
-0.7.0 TVR-26의 공통 UI 명세입니다. 현재 Go·Rust를 구현하며 Python·JavaScript/TypeScript·C·C++는 확장 대상으로 설계합니다. [언어별 API·전환](../docs/ui-facade.md)과 [입력/오프셋 시나리오](ui-input-cases.json)를 함께 유지합니다.
+0.8.0 TVR-26의 공통 UI 명세입니다. 현재 Go·Rust를 구현하며 Python·JavaScript/TypeScript·C·C++는 확장 대상으로 설계합니다. [언어별 API·전환](../docs/ui-facade.md)과 [입력/오프셋 시나리오](ui-input-cases.json)를 함께 유지합니다.
+
+**0.8.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
 
 ## 역할과 계층
 
@@ -10,8 +12,8 @@
 | --- | --- | --- | --- |
 | 모델·이벤트 | 안정 ID, 원문, 선택, 상태, 요청 이벤트 | 루트 패키지 | collections/forms/text 등 |
 | 컨트롤·표면·배치 | 그리기, 내부 조작, 크기 제약, 클리핑, 입력/모달 격리 | 루트 컴포넌트 View | ui::components 위젯 |
-| 앱·위젯 호환 | 기존 SDK 내부 backend의 타입/메서드 정체성 보존 | go/ui | ui의 Terminal/Frame 및 하위 모듈 |
-| 터미널 호환 | 화면, 키·포인터, 스타일, 명시적 터미널 I/O | go/terminal | ui::terminal, Session |
+| 앱·위젯 호환 | 기존 SDK 내부 backend의 타입/메서드 정체성 보존 | 루트 (호환: go/ui) | ui의 Terminal/Frame 및 하위 모듈 |
+| 터미널 호환 | 화면, 키·포인터, 스타일, 명시적 터미널 I/O | 루트 (호환: go/terminal) | ui::terminal, Session |
 | 앱 정책 | 화면 구조, 컴포넌트 간 포커스 순서, 전역 키, DB·업무·클립보드 실행 | 앱 | 앱 |
 
 기존 [컴포넌트 규칙](controls.md), [Tree](../docs/tree.md), [스타일](surfaces.md), [상태/포커스](../docs/focus.md), 메뉴·그림자 명세를 재사용합니다. 이 명세의 값은 특정 backend의 구조체나 수명 표현으로 정의하지 않습니다. 언어별 호환 별칭은 현재 backend를 교체해도 바이너리/소스가 그대로 호환된다는 약속이 아닙니다. 기존 API·메서드·trait는 유지하며 Go/Rust에 같은 함수 이름을 강제하지 않습니다.

@@ -2,6 +2,8 @@
 
 [한국어 (default)](README.md) · **English**
 
+**0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).
+
 Status: draft. Tuivory provides reusable TUI components and styles. This specification provides shared guidance for consistent themes, color profiles, and component states across packages. It and the [shared tokens](tokens/README.en.md) are language-independent; they declare neither a stable product version nor an external standard.
 
 ## Specification scope

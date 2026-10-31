@@ -2,48 +2,68 @@
 
 [Korean (default)](ui-facade.md) · **English**
 
-0.7.0 TVR-26 provides go/ui, go/terminal, tuivory::ui, shared input and byte-span conversion. [Release/installation](release-0.7.0.en.md) · [Shared rules](../design/ui-facade.en.md) · [API guide](api/README.en.md).
+0.8.0 TVR-26 provides go/ui, go/terminal, tuivory::ui, shared input and byte-span conversion. [Release/installation](release-0.8.0.en.md) · [Shared rules](../design/ui-facade.en.md) · [API guide](api/README.en.md).
+
+**0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](ui-facade.en.md).
 
 ## Public paths
 
 | Purpose | Go | Rust |
 | --- | --- | --- |
 | Shared models/components | github.com/leechis7/tuivory/go | forms/text/containers etc. |
-| Application/legacy widgets | go/ui | ui::Terminal/Frame, ui::widgets/layout/buffer/style/text etc. |
+| Application/legacy widgets | root package (compatibility: go/ui) | ui::Terminal/Frame, ui::widgets/layout/buffer/style/text etc. |
 | Semantic renderers | Root New…View | Existing widgets/Styles under ui::components |
-| Events/screens | go/terminal | ui::terminal::{event,cursor,terminal,execute,…} |
+| Events/screens | root package (compatibility: go/terminal) | ui::terminal::{event,cursor,terminal,execute,…} |
 | Shared input/edit requests | InputEvent, InputFromKey/InputFromMouse, EditingAction | input::InputEvent, from_key/from_terminal, editing_action |
-| Terminal lifetime | ui.NewApplication Run/Stop/SetScreen | ui::Session, SessionOptions, finish/Drop |
+| Terminal lifetime | tuivory.NewApplication Run/Stop/SetScreen | ui::Session, SessionOptions, finish/Drop |
 
-Go imports three SDK packages without importing tview/tcell. Rust external manifests declare **only tuivory**, enabling the required features. Preserve existing root APIs and tuivory::ratatui paths. SDK compatibility aliases retain pinned backend type/method/trait identity; they do not promise source/ABI interchangeability across backend replacement.
+Go uses one root import; existing /ui and /terminal paths remain supported without direct tview/tcell imports. Rust external manifests declare **only tuivory**, enabling the required features. Preserve existing root APIs and tuivory::ratatui paths. SDK compatibility aliases retain pinned backend type/method/trait identity; they do not promise source/ABI interchangeability across backend replacement.
 
 Rust features: default core (1.85+), ratatui rendering (1.88+), terminal I/O (1.88+). The existing playground feature includes terminal as a compatible alias. Hosts retain database/global-key/clipboard execution policy.
 
 ## Migrating Go imports
 
 ```go
-import (
-    tuivory "github.com/leechis7/tuivory/go"
-    tview "github.com/leechis7/tuivory/go/ui"
-    tcell "github.com/leechis7/tuivory/go/terminal"
-)
+import tuivory "github.com/leechis7/tuivory/go"
+
+app := tuivory.NewApplication()
+view := tuivory.NewWidgetTextView().SetText("Hello / 한글")
+app.SetRoot(view, true)
+app.SetInputCapture(func(key *tuivory.EventKey) *tuivory.EventKey {
+    if key.Key() == tuivory.KeyCtrlQ { app.Stop(); return nil }
+    return key
+})
+// Handle app.Run() errors in your function.
 ```
 
-Preserve local names while changing import paths. Application/Primitive/Box/Form/InputField/TextArea/TextView/Flex/Pages/Grid/Table/TreeView, constructors/constants/alignment/callbacks and screen/simulation-screen types remain usable. Root tuivory.NewForm/NewButton/NewGrid are shared semantic models; SDK tview.NewForm/NewButton/NewGrid are compatibility widgets, allowing incremental adoption without collisions. Prefer [shared components](controls.en.md) for new surfaces/editing/layout.
+Existing root NewForm/NewButton/NewGrid/NewList/NewTextView/NewTreeView semantics remain unchanged. Use the compatibility names below; return types, callbacks and inherited methods retain their identity. Prefer [shared components](controls.en.md) for new screens.
+
+| /ui compatibility name | Single root import name |
+| --- | --- |
+| Button / NewButton | WidgetButton / NewWidgetButton |
+| Form / NewForm | WidgetForm / NewWidgetForm |
+| Grid / NewGrid | WidgetGrid / NewWidgetGrid |
+| List / NewList | WidgetList / NewWidgetList |
+| TextView / NewTextView | WidgetTextView / NewWidgetTextView |
+| TreeView / NewTreeView | WidgetTreeView / NewWidgetTreeView |
+| TreeNode / NewTreeNode | WidgetTreeNode / NewWidgetTreeNode |
+| Theme / Styles / GetStyles / SetStyles | WidgetTheme / WidgetStyles / GetWidgetStyles / SetWidgetStyles |
+
+Other application/primitive/box/input/textarea/flex/pages/table/color/event/constant/screen symbols keep their names at the root. Existing /ui and /terminal imports remain valid. See root and sdk fields in the [generated mapping](../design/go-facade-symbols.json).
 
 Original Application behavior, including default Ctrl+C exit, is retained. Hosts assigning Ctrl+C to copy intercept it as in the [controls example](../go/examples/controls/main.go). Containers forward key/mouse/paste/drag input; hosts choose global behavior.
 
 ### Global configuration
 
-Go cannot alias another package's variables. Borders/Styles are startup snapshots; assignment does not mutate backend globals. Use setters **before the event loop**. Concurrent runtime global updates are unsupported.
+Go cannot alias another package's variables. Borders/WidgetStyles are startup snapshots; assignment does not mutate backend globals. Use setters **before the event loop**. Concurrent runtime global updates are unsupported.
 
 ```go
-theme := tview.GetStyles()
-theme.PrimitiveBackgroundColor = tcell.ColorBlack
-tview.SetStyles(theme)
-borders := tview.GetBorders()
+theme := tuivory.GetWidgetStyles()
+theme.PrimitiveBackgroundColor = tuivory.ColorBlack
+tuivory.SetWidgetStyles(theme)
+borders := tuivory.GetBorders()
 borders.TopLeft = '+'
-tview.SetBorders(borders)
+tuivory.SetBorders(borders)
 ```
 
 DoubleClickInterval/NewLine/TabSize/DefaultFormFieldWidth/Height have Get…/Set… functions. SemigraphicJoints shares map entries; replace it with SetSemigraphicJoints. Terminal defaults/color maps are likewise startup values or shared maps; rebinding an SDK variable is not backend-global rebinding. See the [pinned symbol mapping](../design/go-facade-symbols.json); CI verifies generated output.
@@ -54,7 +74,7 @@ Use the public Git tag as a single dependency; a path to rust/ also works for lo
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.7.0", features = ["terminal"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.8.0", features = ["terminal"] }
 ```
 
 ```rust
@@ -90,11 +110,11 @@ The host selects the exit key. See [Rust controls](../rust/examples/controls/mai
 
 ## Removing the LazyOra fork
 
-This work does not edit LazyOra. Downstream adoption occurs **using the 0.7.0 package**.
+This work does not edit LazyOra. Downstream adoption occurs **using the 0.8.0 package**.
 
 | Existing usage | SDK migration |
 | --- | --- |
-| tview/tcell types, constructors, constants, callbacks | go/ui and go/terminal |
+| tview/tcell types, constructors, constants, callbacks | root package and Widget name mappings above |
 | Six fork-only Borders.…Focus fields and Box focus drawing | Shared PanelView/state presentation; Rust Styles.panel |
 | Fork TextArea.SetTextStyleFunc byte-based styling | Shared Editor/TextView plus host spans and SetByteSyntax/set_byte_syntax |
 | Standard TextArea/TextView retained temporarily | SDK compatibility widgets with upstream v0.42.0 behavior |
@@ -114,6 +134,8 @@ Rust uses text_offsets::ByteSyntaxSpan, TextDocument::set_byte_syntax and graphe
 
 tools/check_ui_facade.py rejects direct backend imports in all public Go examples/root external tests and all Rust examples/UI conformance tests. Validate pinned Go exports, bilingual API declarations, shared input/byte-boundary scenarios and SDK-only isolated Go/packaged Rust consumers. Session PTY tests cover non-TTY initialization failure, duplicate entry, finish/re-entry and panic restoration.
 
-Retain bilingual Unicode/ASCII, twelve-palette, popup/focus/selection/undo/redo/clipboard-request/resize regressions and static ARM64 checks. The [local validation snapshot](../evidence/ui-facade-results.json) is distinct from the [release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.7.0). No CentOS validation. Python/JS/TS/C/C++ and ABI implementations remain [future work](../design/ui-facade.en.md).
+Retain bilingual Unicode/ASCII, twelve-palette, popup/focus/selection/undo/redo/clipboard-request/resize regressions and static ARM64 checks. The [local validation snapshot](../evidence/ui-facade-results.json) is distinct from the [release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0). No CentOS validation. Python/JS/TS/C/C++ and ABI implementations remain [future work](../design/ui-facade.en.md).
 
 [LazyOra package-symbol mappings](../evidence/ui-facade-consumer-map.json) audit first-party Go source/tests read-only; they do not claim app migration/build success. Compatibility widgets retain upstream diagnostic behavior; use shared password models for secret-safe display/diagnostic projections.
+
+The [single-import local validation record](../evidence/go-single-import-results.json) is distinct from the [0.8.0 release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0).
