@@ -21,7 +21,7 @@ Extend the shared package when a generic capability is missing, then import it f
 
 ## Actual support
 
-The current public release is v0.7.0 and includes TVR-22–26; the [support audit](component-audit.en.md) records earlier implementation stages.
+The current public release is v0.8.0 and includes TVR-22–26; the [support audit](component-audit.en.md) records earlier implementation stages.
 
 - **Focus**: `FocusStack` navigates host-supplied orders/scopes. It does not determine the application's overall Tab order or replace tview/Ratatui event loops. [API](focus.en.md)
 - **Tabs**: separate active/focused state, long titles/overflow, edited/closable indicators and requests already exist. This does not imply SQL/session ownership. [API](workspace.en.md)
@@ -59,6 +59,6 @@ A subsequent user request adds nested menus through [shared Menu](menus.en.md). 
 
 ## Layout execution and new controls
 
-Current public release is 0.7.0. 0.6.0 TVR-22–25 [controls/containers](controls.en.md) let the SDK execute surfaces, controls, editing, row/column/grid/layer placement, rendering and common input forwarding. Hosts declare screen structure/slots/content/global keys and business approvals/actions. Earlier host-layout wording means declarative placement choices, not reimplementing a layout engine. 0.7.0 TVR-26 provides SDK compatibility paths and checks public examples for direct backend imports while retaining backend type identity and app business responsibilities. Historical version evidence above is not current installation guidance.
+Current public release is 0.8.0. 0.6.0 TVR-22–25 [controls/containers](controls.en.md) let the SDK execute surfaces, controls, editing, row/column/grid/layer placement, rendering and common input forwarding. Hosts declare screen structure/slots/content/global keys and business approvals/actions. Earlier host-layout wording means declarative placement choices, not reimplementing a layout engine. 0.7.0 TVR-26 provides SDK compatibility paths and checks public examples for direct backend imports while retaining backend type identity and app business responsibilities. Historical version evidence above is not current installation guidance.
 
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](ui-facade.en.md).

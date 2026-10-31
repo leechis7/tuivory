@@ -7,8 +7,6 @@ import (
 	"log"
 
 	ui "github.com/leechis7/tuivory/go"
-	tcell "github.com/leechis7/tuivory/go/terminal"
-	tview "github.com/leechis7/tuivory/go/ui"
 )
 
 func main() {
@@ -58,10 +56,10 @@ func main() {
 	}
 	view.ASCII = *ascii
 	view.SetTitle(text(" 트리 ", " Tree "))
-	header := tview.NewTextView().SetDynamicColors(false)
-	footer := tview.NewTextView().SetDynamicColors(false)
-	button := tview.NewButton(text("포커스 비교: Enter", "Focus comparison: Enter"))
-	app := tview.NewApplication()
+	header := ui.NewWidgetTextView().SetDynamicColors(false)
+	footer := ui.NewWidgetTextView().SetDynamicColors(false)
+	button := ui.NewWidgetButton(text("포커스 비교: Enter", "Focus comparison: Enter"))
+	app := ui.NewApplication()
 	status := text("이름 · 보조 설명 · 개수", "Name · Secondary · Count")
 	refresh := func() {
 		p := paletteFor()
@@ -77,7 +75,7 @@ func main() {
 		status = text("선택은 유지되고 입력 포커스만 이동합니다.", "Selection persists independently of input focus.")
 		refresh()
 	})
-	root := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 2, 0, false).AddItem(view, 0, 1, true).AddItem(button, 1, 0, false).AddItem(footer, 2, 0, false)
+	root := ui.NewFlex().SetDirection(ui.FlexRow).AddItem(header, 2, 0, false).AddItem(view, 0, 1, true).AddItem(button, 1, 0, false).AddItem(footer, 2, 0, false)
 	themes := []string{"dark", "light", "blackwhite"}
 	profiles := []string{"8", "16", "256", "truecolor"}
 	cycle := func(value *string, options []string) {
@@ -88,27 +86,27 @@ func main() {
 			}
 		}
 	}
-	app.SetInputCapture(func(e *tcell.EventKey) *tcell.EventKey {
+	app.SetInputCapture(func(e *ui.EventKey) *ui.EventKey {
 		switch e.Key() {
-		case tcell.KeyCtrlQ:
+		case ui.KeyCtrlQ:
 			app.Stop()
 			return nil
-		case tcell.KeyTab, tcell.KeyBacktab:
+		case ui.KeyTab, ui.KeyBacktab:
 			if view.HasFocus() {
 				app.SetFocus(button)
 			} else {
 				app.SetFocus(view)
 			}
 			return nil
-		case tcell.KeyF2:
+		case ui.KeyF2:
 			cycle(theme, themes)
 			refresh()
 			return nil
-		case tcell.KeyF3:
+		case ui.KeyF3:
 			cycle(colors, profiles)
 			refresh()
 			return nil
-		case tcell.KeyF4:
+		case ui.KeyF4:
 			view.ASCII = !view.ASCII
 			return nil
 		}

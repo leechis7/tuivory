@@ -5,26 +5,25 @@ import (
 	"flag"
 	"fmt"
 	ui "github.com/leechis7/tuivory/go"
-	tcell "github.com/leechis7/tuivory/go/terminal"
-	tview "github.com/leechis7/tuivory/go/ui"
+
 	"log"
 )
 
 type scene struct {
-	*tview.Box
-	background  tview.Primitive
+	*ui.Box
+	background  ui.Primitive
 	popup       *ui.ShadowView
 	bar         *ui.RowsView
 	menu        *ui.Menu
-	drawPopup   func(tcell.Screen)
+	drawPopup   func(ui.Screen)
 	event       func(ui.MenuEvent)
 	beforeMouse func()
 	paste       func(string)
 }
 
 func (s *scene) HasFocus() bool { return s.background.HasFocus() || s.popup.HasFocus() }
-func (s *scene) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
-	return s.WrapInputHandler(func(e *tcell.EventKey, focus func(tview.Primitive)) {
+func (s *scene) InputHandler() func(*ui.EventKey, func(ui.Primitive)) {
+	return s.WrapInputHandler(func(e *ui.EventKey, focus func(ui.Primitive)) {
 		if !s.menu.Opened() {
 			if h := s.background.InputHandler(); h != nil {
 				h(e, focus)
@@ -32,8 +31,8 @@ func (s *scene) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
 		}
 	})
 }
-func (s *scene) PasteHandler() func(string, func(tview.Primitive)) {
-	return s.WrapPasteHandler(func(text string, focus func(tview.Primitive)) {
+func (s *scene) PasteHandler() func(string, func(ui.Primitive)) {
+	return s.WrapPasteHandler(func(text string, focus func(ui.Primitive)) {
 		if !s.menu.Opened() {
 			if s.paste != nil {
 				s.paste(text)
@@ -45,7 +44,7 @@ func (s *scene) PasteHandler() func(string, func(tview.Primitive)) {
 		}
 	})
 }
-func (s *scene) Draw(screen tcell.Screen) {
+func (s *scene) Draw(screen ui.Screen) {
 	x, y, w, h := s.GetRect()
 	s.background.SetRect(x, y, w, h)
 	s.background.Draw(screen)
@@ -53,8 +52,8 @@ func (s *scene) Draw(screen tcell.Screen) {
 		s.drawPopup(screen)
 	}
 }
-func (s *scene) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive) {
-	return s.WrapMouseHandler(func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
+func (s *scene) MouseHandler() func(ui.MouseAction, *ui.EventMouse, func(ui.Primitive)) (bool, ui.Primitive) {
+	return s.WrapMouseHandler(func(a ui.MouseAction, e *ui.EventMouse, focus func(ui.Primitive)) (bool, ui.Primitive) {
 		x, y := e.Position()
 		if s.menu.Opened() {
 			if s.bar.InRect(x, y) {
@@ -63,7 +62,7 @@ func (s *scene) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(t
 			if s.popup.InRect(x, y) {
 				return s.popup.MouseHandler()(a, e, focus)
 			}
-			if a == tview.MouseLeftClick || a == tview.MouseLeftDoubleClick {
+			if a == ui.MouseLeftClick || a == ui.MouseLeftDoubleClick {
 				s.event(s.menu.Close())
 			}
 			return true, nil
@@ -115,15 +114,15 @@ func main() {
 		return p
 	}
 	p := palette()
-	app := tview.NewApplication()
+	app := ui.NewApplication()
 	origin := "editor"
 	var emit func(ui.MenuEvent)
 	var refresh func()
-	status := tview.NewTextView()
-	header := tview.NewTextView()
-	hints := tview.NewTextView()
+	status := ui.NewWidgetTextView()
+	header := ui.NewWidgetTextView()
+	hints := ui.NewWidgetTextView()
 	editor, _ := ui.NewFormView(form, p, func(e ui.FormEvent) { status.SetText(e.Kind + ": " + e.ID) })
-	preview := tview.NewTextView().SetText(tr("앱이 선택한 내용·명령·화면 배치\n메뉴 항목은 실제 파일·DB·클립보드를 변경하지 않습니다.", "Host-owned content, commands and screen layout\nMenu items do not change files, databases or clipboard."))
+	preview := ui.NewWidgetTextView().SetText(tr("앱이 선택한 내용·명령·화면 배치\n메뉴 항목은 실제 파일·DB·클립보드를 변경하지 않습니다.", "Host-owned content, commands and screen layout\nMenu items do not change files, databases or clipboard."))
 	left, _ := ui.NewPanelView(editor, p)
 	left.SetTitle(tr("편집 영역", "Editor"))
 	right, _ := ui.NewPanelView(preview, p)
@@ -194,7 +193,7 @@ func main() {
 			title = tr("문맥 메뉴", "Context menu")
 		}
 		popup.SetTitle(title)
-		for _, v := range []*tview.TextView{header, status, hints, preview} {
+		for _, v := range []*ui.WidgetTextView{header, status, hints, preview} {
 			v.SetTextColor(p["body"].FG).SetBackgroundColor(p["surface"].BG)
 		}
 		header.SetText("TUIVORY Menu / " + tr("컴포넌트와 앱의 명령 연결", "Components and host actions"))
@@ -204,13 +203,13 @@ func main() {
 		}
 		hints.SetText(shadowHint + tr("F10 메뉴 · Shift+F10 문맥 · Alt+F/E/V · F2 테마 F3 색상 F4 ASCII F5 사용 가능 상태 · Tab 영역 · Ctrl+Q 종료", "F10 menu / Shift+F10 context / Alt+F/E/V / F2 theme F3 colors F4 ASCII F5 eligibility / Tab panel / Ctrl+Q quit"))
 	}
-	body := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 1, 0, false).AddItem(bar, 1, 0, false).AddItem(left, 0, 1, true).AddItem(right, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
-	root := &scene{Box: tview.NewBox(), background: body, popup: shadow, bar: bar, menu: menu, event: func(e ui.MenuEvent) { emit(e) }, beforeMouse: func() { origin = activeOrigin() }, paste: func(text string) {
+	body := ui.NewFlex().SetDirection(ui.FlexRow).AddItem(header, 1, 0, false).AddItem(bar, 1, 0, false).AddItem(left, 0, 1, true).AddItem(right, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
+	root := &scene{Box: ui.NewBox(), background: body, popup: shadow, bar: bar, menu: menu, event: func(e ui.MenuEvent) { emit(e) }, beforeMouse: func() { origin = activeOrigin() }, paste: func(text string) {
 		if activeOrigin() == "editor" {
 			form.Handle("insert", text)
 		}
 	}}
-	root.drawPopup = func(screen tcell.Screen) {
+	root.drawPopup = func(screen ui.Screen) {
 		x, y, w, h := root.GetRect()
 		anchor := ui.CellRect{X: x + 4, Y: y + 3, Width: 1, Height: 1}
 		if path := menu.Path(); len(path) > 0 {
@@ -234,24 +233,24 @@ func main() {
 			}
 		}
 	}
-	app.SetInputCapture(func(e *tcell.EventKey) *tcell.EventKey {
+	app.SetInputCapture(func(e *ui.EventKey) *ui.EventKey {
 		switch e.Key() {
-		case tcell.KeyCtrlQ:
+		case ui.KeyCtrlQ:
 			app.Stop()
 			return nil
-		case tcell.KeyF2:
+		case ui.KeyF2:
 			cycle(theme, []string{"dark", "light", "blackwhite"})
 			refresh()
 			return nil
-		case tcell.KeyF3:
+		case ui.KeyF3:
 			cycle(colors, []string{"8", "16", "256", "truecolor"})
 			refresh()
 			return nil
-		case tcell.KeyF4:
+		case ui.KeyF4:
 			*ascii = !*ascii
 			refresh()
 			return nil
-		case tcell.KeyF6:
+		case ui.KeyF6:
 			cycle(shadowFlag, []string{"off", "auto", "solid", "dim"})
 			shadowOptions.Mode = ui.ShadowMode(*shadowFlag)
 			if err := shadow.SetShadow(shadowOptions); err != nil {
@@ -259,7 +258,7 @@ func main() {
 			}
 			refresh()
 			return nil
-		case tcell.KeyF5:
+		case ui.KeyF5:
 			items[2].Disabled = !items[2].Disabled
 			ev, err := menu.SetItems(items)
 			if err != nil {
@@ -267,16 +266,16 @@ func main() {
 			}
 			emit(ev)
 			return nil
-		case tcell.KeyF10:
+		case ui.KeyF10:
 			if menu.Opened() {
-				if e.Modifiers()&tcell.ModShift != 0 {
+				if e.Modifiers()&ui.ModShift != 0 {
 					emit(menu.Open("", menu.ReturnID()))
 				} else {
 					emit(menu.Close())
 				}
 			} else {
 				id := menu.BarFocusedID()
-				if e.Modifiers()&tcell.ModShift != 0 {
+				if e.Modifiers()&ui.ModShift != 0 {
 					id = ""
 				}
 				origin = activeOrigin()
@@ -284,7 +283,7 @@ func main() {
 			}
 			return nil
 		}
-		if e.Key() == tcell.KeyRune && e.Modifiers()&tcell.ModAlt != 0 {
+		if e.Key() == ui.KeyRune && e.Modifiers()&ui.ModAlt != 0 {
 			emit(menu.HandleBar("mnemonic", string(e.Rune())))
 			return nil
 		}
@@ -294,7 +293,7 @@ func main() {
 			emit(menu.Handle(a, v, h))
 			return nil
 		}
-		if e.Key() == tcell.KeyTab {
+		if e.Key() == ui.KeyTab {
 			origin = activeOrigin()
 			if origin == "editor" {
 				restore("preview")

@@ -2,7 +2,9 @@
 
 [Korean (default)](ui-facade.md) · **English**
 
-Shared UI specification for 0.7.0 TVR-26. Go/Rust are implemented; Python, JavaScript/TypeScript and C/C++ are future adapters. Maintain [API/migration mappings](../docs/ui-facade.en.md) and [input/offset scenarios](ui-input-cases.json) together.
+Shared UI specification for 0.8.0 TVR-26. Go/Rust are implemented; Python, JavaScript/TypeScript and C/C++ are future adapters. Maintain [API/migration mappings](../docs/ui-facade.en.md) and [input/offset scenarios](ui-input-cases.json) together.
+
+**0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).
 
 ## Responsibilities and layers
 
@@ -10,8 +12,8 @@ Shared UI specification for 0.7.0 TVR-26. Go/Rust are implemented; Python, JavaS
 | --- | --- | --- | --- |
 | Models/events | Stable IDs, original data, selection, state, requests | Root package | collections/forms/text etc. |
 | Controls/surfaces/layout | Drawing, internal interaction, constraints, clipping, input/modal isolation | Root component Views | ui::components widgets |
-| Application/widget compatibility | Preserve pinned SDK backend type/method identity | go/ui | ui Terminal/Frame and child modules |
-| Terminal compatibility | Screens, keys/pointers, styles, explicit terminal I/O | go/terminal | ui::terminal and Session |
+| Application/widget compatibility | Preserve pinned SDK backend type/method identity | root (compatibility: go/ui) | ui Terminal/Frame and child modules |
+| Terminal compatibility | Screens, keys/pointers, styles, explicit terminal I/O | root (compatibility: go/terminal) | ui::terminal and Session |
 | Host policy | Screen structure, cross-component focus order, global keys, database/business/clipboard execution | Host | Host |
 
 Reuse [component rules](controls.en.md), [Tree](../docs/tree.en.md), [surfaces](surfaces.en.md), [state/focus](../docs/focus.en.md), menu and shadow specifications. Shared values are not defined by backend structures or lifetime syntax. Compatibility aliases do not promise source/binary interchangeability across backend replacements. Preserve existing APIs/methods/traits without requiring identical Go/Rust function names.

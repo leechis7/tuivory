@@ -1,0 +1,60 @@
+{
+  "issue": "TVR-26",
+  "date": "2026-10-31",
+  "status": "implementation and local validation complete; unreleased",
+  "branch": "codex/TVR-26-single-import",
+  "baseline": "b616a16f7416447c9460de6e6fad769ddb10e782",
+  "baseline_release": "0.7.0",
+  "committed": false,
+  "published": false,
+  "remote_ci": "not run for this follow-up",
+  "availability": "Working source adds the single Go root import. Public 0.7.0 still uses the ui/terminal compatibility subpackages for full UI composition.",
+  "api": {
+    "import": "github.com/leechis7/tuivory/go",
+    "existing_semantic_constructors": "unchanged",
+    "compatibility_widgets": "WidgetButton/Form/Grid/List/TextView/TreeView/TreeNode and NewWidget constructors",
+    "global_theme": "WidgetTheme/WidgetStyles and GetWidgetStyles/SetWidgetStyles; configure before event loop",
+    "mapping": "design/go-facade-symbols.json root and sdk fields",
+    "old_ui_terminal_paths": "retained; not deprecated",
+    "dependencies": "pinned backend dependencies retained internally; no new runtime/native dependency"
+  },
+  "validation": [
+    {
+      "command": "make test check build",
+      "result": "passed",
+      "coverage": "Go race/vet, all public examples compile, tokens/fixtures/lifecycle/palette/links, single-import example guard and generated facade checks; default Linux ARM64 static ELF"
+    },
+    {
+      "command": "python3 tools/check_go_module.py",
+      "result": "passed",
+      "coverage": "isolated module without repository design assets; external root-only consumer including application/focus/key/mouse/configuration, existing semantic constructors and compatibility widgets; physical simulation buffer after Show"
+    },
+    {
+      "command": "python3 tools/generate_api_reference.py --rust-json rust/target/doc/tuivory.json --check",
+      "result": "passed",
+      "coverage": "paired root and compatibility Go API declarations; unchanged Rust API"
+    },
+    {
+      "command": "python3 tools/check_static_elf.py --arch arm64 <menu and controls>",
+      "result": "passed",
+      "coverage": "single-import static example binaries, no PT_INTERP/DT_NEEDED"
+    },
+    {
+      "command": "python3 tools/smoke_<controls|menu>.py <ARM64 binary> --lang <ko|en> [--ascii]",
+      "result": "passed",
+      "cases": 8,
+      "coverage": "menu navigation/disabled/placement, editing/selection/clipboard requests/modal isolation/resize and terminal restoration"
+    }
+  ],
+  "not_run": [
+    "GitHub CI and publication for this follow-up",
+    "new x86_64 build",
+    "Rust tests (Rust implementation unchanged)",
+    "actual LazyOra migration",
+    "CentOS (user instruction)"
+  ],
+  "visuals": "Presentation unchanged; examples use aliases of the same backend types. Existing preview assets retained.",
+  "local_logs": "bin/validation/TVR-26/single-import-* (ignored private artifacts)",
+  "record_scope": "Historical implementation-time local snapshot, before the 0.8.0 release",
+  "release_validation": "https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0"
+}

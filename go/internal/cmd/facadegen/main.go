@@ -224,6 +224,18 @@ func main() {
 		sort.Slice(entries, func(i, j int) bool { return entries[i].Name < entries[j].Name })
 		manifest["packages"].(map[string]any)["github.com/leechis7/tuivory/go/"+cfg.name] = map[string]any{"backend": cfg.source, "version": m.Module.Version, "symbols": entries}
 	}
+	root := generateRoot(*check)
+	manifest["root"] = root
+	for _, pkg := range manifest["packages"].(map[string]any) {
+		entries := pkg.(map[string]any)["symbols"].([]entry)
+		for i := range entries {
+			for _, name := range append([]string(nil), entries[i].SDK...) {
+				if name, ok := root[name]; ok {
+					entries[i].SDK = append(entries[i].SDK, name)
+				}
+			}
+		}
+	}
 	data, err := json.MarshalIndent(manifest, "", "  ")
 	must(err)
 	write("../design/go-facade-symbols.json", append(data, '\n'), *check)

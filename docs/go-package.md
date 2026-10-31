@@ -1,10 +1,12 @@
-# Tuivory Go 스타일 패키지
+# Tuivory Go 패키지
 
 **한국어 (기본)** · [English](go-package.en.md)
 
+**0.8.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](ui-facade.md).
+
 [공개 API 명세](api/go.md)
 
-현재 공개 제품 버전은 **0.6.0**입니다. [변경 범위·설치·배포 자산](release-0.6.0.md).
+현재 공개 제품 버전은 **0.8.0**입니다. [변경 범위·설치·배포 자산](release-0.8.0.md).
 
 현재 Go 소스는 `go/`에 있는 독립 하위 모듈입니다. 모듈 경로는 **`github.com/leechis7/tuivory/go`**, 패키지 이름은 **`tuivory`**이며 Tuivory 관련 import는 하나입니다.
 
@@ -12,20 +14,22 @@
 import "github.com/leechis7/tuivory/go"
 ```
 
-현재 버전은 `v0.6.0`이며 Go 하위 모듈 태그는 `go/v0.6.0`입니다.
+현재 버전은 `v0.8.0`이며 Go 하위 모듈 태그는 `go/v0.8.0`입니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.6.0
+go get github.com/leechis7/tuivory/go@v0.8.0
 ```
 
 | Go 모듈 내부 | 책임 |
 | --- | --- |
 | `tuivory.go` | 단일 공개 API·역할·상태 타입 |
+| `facade_generated.go` | 앱·위젯·터미널 타입과 생성자, 설정 연결 |
+| `ui`·`terminal` | 0.7.0부터 유지하는 호환 하위 경로 |
 | `internal/style` | 테마·프로필·상태 계산 |
 | `internal/widgets` | stock tview 적용·재적용 |
 | `internal/tokens` | 공통 토큰 로더와 생성된 배포용 JSON |
 
-하위 구현은 `internal`로 제한하며 앱에서는 import할 필요가 없습니다. 위젯 생성에 필요한 tview/tcell 같은 호스트 라이브러리는 앱에서 사용합니다.
+하위 구현은 `internal`로 제한하며 앱에서는 import할 필요가 없습니다. 앱·위젯·색상·이벤트도 루트 패키지에서 제공합니다. tview/tcell은 내부 의존성입니다. 기존 의미 모델과 호환 위젯의 이름 차이는 [단일 import 안내](ui-facade.md)를 참고하세요.
 
 ## 시작하기
 
@@ -36,7 +40,7 @@ go -C go run ./examples/starter
 go -C go run ./cmd/tuivory --theme light --colors 16
 ```
 
-이 실행 명령과 `--lang`은 `v0.5.0` 소스 기준입니다. 견본은 한국어가 기본이며 `--lang en`을 추가하면 영어 UI로 실행합니다. `--lang ko`는 한국어를 명시합니다. 언어 선택은 견본 UI에만 적용하며 공개 스타일 API에는 영향을 주지 않습니다. 시작 템플릿의 예시 문구는 한국어입니다.
+이 실행 명령과 `--lang`은 현재 작업 소스 기준입니다. 견본은 한국어가 기본이며 `--lang en`을 추가하면 영어 UI로 실행합니다. `--lang ko`는 한국어를 명시합니다. 언어 선택은 견본 UI에만 적용하며 공개 스타일 API에는 영향을 주지 않습니다. 시작 템플릿의 예시 문구는 한국어입니다.
 
 ```go
 import "github.com/leechis7/tuivory/go"
@@ -81,8 +85,8 @@ tokenStyle := styler.Styles.SyntaxStyle(tuivory.SyntaxKeyword, styler.Styles.Edi
 
 ```go
 roles := tuivory.Roles{
-    Surfaces: map[*tview.Box]tuivory.Surface{hint.Box: tuivory.Panel},
-    Text: map[*tview.TextView]tuivory.TextRole{hint: tuivory.Hint},
+    Surfaces: map[*tuivory.Box]tuivory.Surface{hint.Box: tuivory.Panel},
+    Text: map[*tuivory.WidgetTextView]tuivory.TextRole{hint: tuivory.Hint},
 }
 styler.Apply(roles, pages)
 // 상태가 있는 그리드·탭·푸터 버튼은 앱이 아는 상태로 다시 적용합니다.
@@ -90,7 +94,7 @@ styler.Tab(tabButton, isActive)
 styler.FooterButton(footerButton)
 ```
 
-사용자 래퍼는 `StyleChildren() []tview.Primitive`로 자식을 노출할 수 있습니다. 포커스 이동 후 `RefreshBorders`를 호출하면 현재 배경과 포커스에 맞게 경계색을 다시 결정합니다. 앱의 포커스·이벤트 콜백을 교체하지 않습니다.
+사용자 래퍼는 `StyleChildren() []tuivory.Primitive`로 자식을 노출할 수 있습니다. 포커스 이동 후 `RefreshBorders`를 호출하면 현재 배경과 포커스에 맞게 경계색을 다시 결정합니다. 앱의 포커스·이벤트 콜백을 교체하지 않습니다.
 
 폼에서는 `NewChoice`로 만든 선택 필드를 권장합니다. 폼의 공통 입력색 덮어쓰기를 방지하고 열린 목록 아래 한글의 반쪽 문자가 남는 문제를 처리합니다. `Form`은 입력·읽기 전용 설명·stock DropDown의 DrawFunc를 소유합니다. 기존 DrawFunc가 있는 앱은 개별 스타일 함수를 쓰거나 훅을 합성해야 합니다.
 
@@ -102,7 +106,7 @@ styler.FooterButton(footerButton)
 
 ## 배포와 독립 사용
 
-이 저장소는 Go 외의 언어도 포함하므로 `go.mod`는 `go/`에 둡니다. Go 버전 조회·설치는 `github.com/leechis7/tuivory/go@v0.6.0`을 사용합니다. 루트 모듈은 제공하지 않습니다.
+이 저장소는 Go 외의 언어도 포함하므로 `go.mod`는 `go/`에 둡니다. Go 버전 조회·설치는 `github.com/leechis7/tuivory/go@v0.8.0`을 사용합니다. 루트 모듈은 제공하지 않습니다.
 
 [설치·사용 안내](installation.md)에서 현재 모듈·명령·토큰 식별자를 확인할 수 있습니다. 원출처와 라이선스는 [NOTICE](../NOTICE.md)에 보존합니다.
 
@@ -138,8 +142,8 @@ Tuivory는 적용 앱에 필수 공유 라이브러리 의존성을 추가하지
 
 ## API 지원 상태와 이전
 
-[지원·호환용·Deprecated·제거 상태와 전환 예제](api-lifecycle.md) · [전체 영역 중복 점검](api-overlap-audit.md). 현재 공개 설치는 0.6.0이며 Deprecated 지정도 0.5.0에 포함합니다. 과거 0.2.0 도입 기록과 구분합니다.
+[지원·호환용·Deprecated·제거 상태와 전환 예제](api-lifecycle.md) · [전체 영역 중복 점검](api-overlap-audit.md). 현재 공개 설치는 0.8.0이며 Deprecated 지정도 0.5.0에 포함합니다. 과거 0.2.0 도입 기록과 구분합니다.
 
 0.5.0의 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](popup-shadows.md).
 
-0.6.0 TVR-22~25는 테두리 없는 Surface, 독립/암호 컨트롤, 텍스트 편집·뷰어와 행·열·격자·레이어 컨테이너를 제공합니다. [사용법·제공 상태·예제](controls.md).
+0.8.0 TVR-22~25는 테두리 없는 Surface, 독립/암호 컨트롤, 텍스트 편집·뷰어와 행·열·격자·레이어 컨테이너를 제공합니다. [사용법·제공 상태·예제](controls.md).

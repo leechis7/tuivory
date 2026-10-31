@@ -2,19 +2,21 @@
 
 [한국어 (default)](README.md) · **English**
 
+**0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](docs/ui-facade.en.md).
+
 Reusable TUI components for **Go/tview and Rust/Ratatui**. Hosts compose screens, supply data and execute actions. Python/JavaScript currently provide token-reading examples; reusable UI packages are planned.
 
-**0.7.0** · [Release](docs/release-0.7.0.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
+**0.8.0** · [Release](docs/release-0.8.0.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
 
 ## Install
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.7.0
+go get github.com/leechis7/tuivory/go@v0.8.0
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.7.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.8.0", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [Installation details](docs/installation.en.md)

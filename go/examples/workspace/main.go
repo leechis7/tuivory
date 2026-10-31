@@ -5,8 +5,7 @@ import (
 	"flag"
 	"fmt"
 	ui "github.com/leechis7/tuivory/go"
-	tcell "github.com/leechis7/tuivory/go/terminal"
-	tview "github.com/leechis7/tuivory/go/ui"
+
 	"log"
 	"strings"
 )
@@ -47,10 +46,10 @@ func main() {
 	if len(order) != 3 {
 		log.Fatal("--focus-order requires tabs,tree,content exactly once")
 	}
-	quit := tcell.KeyCtrlQ
+	quit := ui.KeyCtrlQ
 	quitLabel := "Ctrl+Q"
 	if *quitKey == "ctrl-x" {
-		quit = tcell.KeyCtrlX
+		quit = ui.KeyCtrlX
 		quitLabel = "Ctrl+X"
 	}
 	doc, _ := ui.CandidateTokens()
@@ -77,7 +76,7 @@ func main() {
 	}
 	treeView, _ := ui.NewTreeView(tree, treeState, palette())
 	treeView.SetBorder(false)
-	content := tview.NewTextView().SetDynamicColors(false).SetScrollable(true)
+	content := ui.NewWidgetTextView().SetDynamicColors(false).SetScrollable(true)
 	left, _ := ui.NewPanelView(treeView, palette())
 	right, _ := ui.NewPanelView(content, palette())
 	left.SetTitle(text("탐색", "Explorer"))
@@ -92,9 +91,9 @@ func main() {
 	}
 	path, _ := ui.NewBreadcrumbView([]ui.PathItem{{ID: "root", Label: text("작업 공간", "Workspace")}, {ID: "project", Label: "Tuivory"}, {ID: "folder", Label: text("공통 컴포넌트 예제", "Shared component examples")}, {ID: "current", Label: text("현재 문서.md", "Current document.md")}}, palette())
 	status, _ := ui.NewStatusView(nil, palette())
-	header := tview.NewTextView().SetDynamicColors(false)
-	hints := tview.NewTextView().SetDynamicColors(false)
-	app := tview.NewApplication()
+	header := ui.NewWidgetTextView().SetDynamicColors(false)
+	hints := ui.NewWidgetTextView().SetDynamicColors(false)
+	app := ui.NewApplication()
 	message := text("상태·포커스·분할 크기는 테마와 독립적입니다.", "State, focus and split sizes are independent of the theme.")
 	var refresh func()
 	refresh = func() {
@@ -144,10 +143,10 @@ func main() {
 		message = fmt.Sprintf("%s: %s", text("경로 이동 요청", "Navigation request"), id)
 		refresh()
 	}
-	root := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(header, 1, 0, false).AddItem(path, 1, 0, false).AddItem(tabView, 1, 0, true).AddItem(split, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
+	root := ui.NewFlex().SetDirection(ui.FlexRow).AddItem(header, 1, 0, false).AddItem(path, 1, 0, false).AddItem(tabView, 1, 0, true).AddItem(split, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
 	// The host supplies screen composition, cross-component focus, and global keys.
-	controls := map[string]tview.Primitive{"tabs": tabView, "tree": treeView, "content": content}
-	focus := []tview.Primitive{controls[order[0]], controls[order[1]], controls[order[2]]}
+	controls := map[string]ui.Primitive{"tabs": tabView, "tree": treeView, "content": content}
+	focus := []ui.Primitive{controls[order[0]], controls[order[1]], controls[order[2]]}
 	split.ActiveSecond = focus[0] == content
 	cycle := func(value *string, values []string) {
 		for i, s := range values {
@@ -157,7 +156,7 @@ func main() {
 			}
 		}
 	}
-	app.SetInputCapture(func(e *tcell.EventKey) *tcell.EventKey {
+	app.SetInputCapture(func(e *ui.EventKey) *ui.EventKey {
 		if split.ResizeKey(e) {
 			return nil
 		}
@@ -165,7 +164,7 @@ func main() {
 		case quit:
 			app.Stop()
 			return nil
-		case tcell.KeyTab, tcell.KeyBacktab:
+		case ui.KeyTab, ui.KeyBacktab:
 			current := 0
 			for i, p := range focus {
 				if p.HasFocus() {
@@ -173,7 +172,7 @@ func main() {
 				}
 			}
 			delta := 1
-			if e.Key() == tcell.KeyBacktab {
+			if e.Key() == ui.KeyBacktab {
 				delta = 2
 			}
 			next := (current + delta) % 3
@@ -182,23 +181,23 @@ func main() {
 			}
 			app.SetFocus(focus[next])
 			return nil
-		case tcell.KeyF1:
+		case ui.KeyF1:
 			message = text("탭: ←/→·Enter·x / 트리: 방향키·Space·Enter / Ctrl+방향키 크기 조절", "Tabs: Left/Right, Enter, x / Tree: arrows, Space, Enter / Ctrl+arrows resize")
 			refresh()
 			return nil
-		case tcell.KeyF2:
+		case ui.KeyF2:
 			cycle(theme, []string{"dark", "light", "blackwhite"})
 			refresh()
 			return nil
-		case tcell.KeyF3:
+		case ui.KeyF3:
 			cycle(profile, []string{"8", "16", "256", "truecolor"})
 			refresh()
 			return nil
-		case tcell.KeyF4:
+		case ui.KeyF4:
 			*ascii = !*ascii
 			refresh()
 			return nil
-		case tcell.KeyF5:
+		case ui.KeyF5:
 			for i := range items {
 				if items[i].ID == tabState.Active {
 					items[i].Edited = !items[i].Edited
@@ -208,7 +207,7 @@ func main() {
 			_ = tabView.SetTabs(tabs)
 			refresh()
 			return nil
-		case tcell.KeyF6:
+		case ui.KeyF6:
 			split.Rows = !split.Rows
 			if split.Rows {
 				split.State = rows
