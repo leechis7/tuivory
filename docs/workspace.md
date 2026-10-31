@@ -38,7 +38,7 @@ Go `NewSplitView(first, second, state, spec, palette)`는 열/행 배치·마우
 
 ## import와 예제
 
-Go는 `go get github.com/leechis7/tuivory/go@v0.5.0`으로 설치하거나 로컬 체크아웃의 `go/`를 replace로 지정합니다. `github.com/leechis7/tuivory/go` 하나로 새 API를 사용하며, 후보 토큰을 `CandidateTokens → Palette → Resolve`로 해석해 뷰에 전달합니다. 기존 LazyOra 추출 스타일 전체와 같은 데이터라는 의미는 아닙니다.
+Go는 `go get github.com/leechis7/tuivory/go@v0.6.0`으로 설치하거나 로컬 체크아웃의 `go/`를 replace로 지정합니다. `github.com/leechis7/tuivory/go` 하나로 새 API를 사용하며, 후보 토큰을 `CandidateTokens → Palette → Resolve`로 해석해 뷰에 전달합니다. 기존 LazyOra 추출 스타일 전체와 같은 데이터라는 의미는 아닙니다.
 
 ```go
 tabs, err := tuivory.NewTabs([]tuivory.TabItem{
@@ -105,3 +105,5 @@ Go `PanelView`는 [공통 두 칸 문자 보정](overlay-drawing.md)을 자동 �
 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
 
 0.5.0 TVR-19는 기본 끄기의 공통 팝업 그림자를 제공합니다. `off/auto/solid/dim`, 카드와 그림자를 포함한 위치 계산, 그림자를 제외한 입력 판정과 두 칸 문자 경계 보호를 지원합니다. 앱이 배경 다시 그리기와 열기·닫기를 결정합니다. [API·실행 예제·12팔레트 화면](popup-shadows.md).
+
+0.6.0 TVR-22~25는 테두리 없는 Surface, 독립/암호 컨트롤, 텍스트 편집·뷰어와 행·열·격자·레이어 컨테이너를 제공합니다. [사용법·제공 상태·예제](controls.md).

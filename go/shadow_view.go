@@ -53,6 +53,7 @@ func (v *ShadowView) StyleChildren() []tview.Primitive     { return []tview.Prim
 func (v *ShadowView) HasFocus() bool                       { return v.Child.HasFocus() }
 func (v *ShadowView) Focus(delegate func(tview.Primitive)) { delegate(v.Child) }
 func (v *ShadowView) Blur()                                { v.Child.Blur() }
+func (v *ShadowView) AtTabBoundary(previous bool) bool     { return tabBoundary(v.Child, previous) }
 
 // InRect deliberately excludes the visual shadow, including for host hit tests.
 func (v *ShadowView) InRect(x, y int) bool {

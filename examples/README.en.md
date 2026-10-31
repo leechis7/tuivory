@@ -51,3 +51,5 @@ See [overlay drawing](../docs/overlay-drawing.en.md) for Go popup/external-card 
 [Host composition](../docs/component-boundary.en.md): pass `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x` to the existing workspace. Both default and alternative hosts use the same public Go/Rust components; new host options are unreleased source.
 
 [Shared menus](../docs/menus.en.md): Go/Rust hierarchy, bar/back navigation, shortcuts/disabled state, popup/caller-context requests and bilingual database-free hosts. Unreleased source, absent from v0.2.0 tags.
+
+[Controls, surfaces, editor and containers](../docs/controls.en.md): Go/Rust controls examples; unreleased source.

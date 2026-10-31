@@ -56,6 +56,10 @@ jobs:
                 python3 tools/smoke_playground.py "$directory/bin/$lang/tuivory-linux-x86_64" --lang "$ui" --resize
                 python3 tools/smoke_catalog.py "$directory/bin/$lang/tuivory-catalog-linux-x86_64" --lang "$ui"
                 python3 tools/smoke_menu.py "$directory/bin/$lang/tuivory-menu-linux-x86_64" --lang "$ui"
+                if test -x "$directory/bin/$lang/tuivory-controls-linux-x86_64"; then
+                  python3 tools/smoke_controls.py "$directory/bin/$lang/tuivory-controls-linux-x86_64" --lang "$ui"
+                  python3 tools/smoke_controls.py "$directory/bin/$lang/tuivory-controls-linux-x86_64" --lang "$ui" --ascii
+                fi
               done
             done
           done

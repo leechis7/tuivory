@@ -16,6 +16,8 @@
 
 pub mod collections;
 pub mod components;
+pub mod containers;
+pub mod controls;
 pub mod feedback;
 pub mod forms;
 pub mod grid;
@@ -23,6 +25,8 @@ pub mod interaction;
 pub mod layout;
 pub mod menu;
 pub mod popup;
+pub mod text;
+pub mod text_markup;
 mod tokens;
 pub mod tree;
 mod types;

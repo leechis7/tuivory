@@ -1,6 +1,6 @@
 [package]
 name = "tuivory"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2024"
 rust-version = "1.85"
 description = "Reusable TUI component models, design tokens, styles and optional renderers"
@@ -9,6 +9,11 @@ repository = "https://github.com/leechis7/tuivory"
 readme = "README.en.md"
 publish = false
 include = ["src/**", "examples/**", "tests/**", "Cargo.toml", "Cargo.lock", "README*.md", "NOTICE*.md", "LICENSE"]
+
+[[example]]
+name = "controls"
+path = "examples/controls/main.rs"
+required-features = ["playground"]
 
 [features]
 default = []

@@ -87,7 +87,7 @@ for ident, meta in public_paths.items():
 rust_body='\n'.join(body for name,body in sorted(entries))
 for language, body in [('go',go_body),('rust',rust_body)]:
     for suffix in ['', '.en']:
-        title=f'# {language.title()} API — {version}\n\n'
+        title=f'# {language.title()} API — source ({version})\n\n'
         intro=(f'**한국어 (기본)** · [English]({language}.en.md)\n\n[API 안내](README.md) · [컴포넌트 사용법](../components.md)\n\n실제 소스에서 생성한 공개 선언과 원문 주석입니다. 코드·심볼·원문 주석은 두 언어판에서 동일하게 유지합니다. 기본값·오류·이벤트 의미는 API 안내의 컴포넌트별 명세를 참고하세요. 외부 프레임워크의 상속/trait API는 해당 프레임워크 문서를 참고합니다.\n\n' if not suffix else f'[한국어 (default)]({language}.md) · **English**\n\n[API guide](README.en.md) · [Component guides](../components.en.md)\n\nGenerated public declarations and original source comments. Code, symbols and original comments are identical across language editions. See the API guide for component defaults, errors and event semantics. Inherited/trait APIs from external frameworks are documented by those frameworks.\n\n')
         result=title+intro+body
         target=ROOT/'docs/api'/f'{language}{suffix}.md'

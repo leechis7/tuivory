@@ -2,12 +2,12 @@
 
 [한국어 (default)](installation.md) · **English**
 
-Current version: **0.5.0**. Go 1.24+, Rust core 1.85+, Rust UI/examples 1.88+.
+Current version: **0.6.0**. Go 1.24+, Rust core 1.85+, Rust UI/examples 1.88+.
 
 ## Go
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.5.0
+go get github.com/leechis7/tuivory/go@v0.6.0
 ```
 
 ```go
@@ -24,7 +24,7 @@ Use your host-created tview button. The Go module lives under go/, not the repos
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.5.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.6.0", features = ["ratatui"] }
 ```
 
 Rust is distributed through Git tags, not crates.io. Omit ratatui for models/tokens only; a local checkout can use a path dependency to rust/.
@@ -46,4 +46,4 @@ Korean is the default; use --lang en for English. Examples require no database. 
 
 The release provides Linux ARM64/x86_64 static Go/Rust executables. Local make build creates only the Go ARM64 binary; make build-rust explicitly builds Rust ARM64. Binaries live under bin/<language>/ with OS/architecture in their names. CentOS is not validated. Python/JavaScript currently provide token-reading examples, not UI packages.
 
-[API](api/README.en.md) · [Components](components.en.md) · [Release](release-0.5.0.en.md) · [Static builds](static-build.en.md)
+[API](api/README.en.md) · [Components](components.en.md) · [Release](release-0.6.0.en.md) · [Static builds](static-build.en.md)

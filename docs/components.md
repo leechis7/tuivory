@@ -17,5 +17,6 @@
 | [Layout](layout.md) | 배치·밀도·배지·단축키 안내 |
 | [Shadows](popup-shadows.md) | 팝업 그림자·위치·입력 범위 |
 | [Drawing](overlay-drawing.md) | 두 칸 문자·영역 그리기 |
+| [Surface·독립 입력·편집기·배치 컨테이너](controls.md) | 0.6.0 TVR-22~25, Go·Rust |
 
 [API 명세](api/README.md) · [전체 예제](../examples/README.md)

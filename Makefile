@@ -32,6 +32,12 @@ run-rust:
 build-rust:
 	$(MAKE) -C rust build
 
+.PHONY: run-controls-go run-controls-rust
+run-controls-go:
+	go -C go run ./examples/controls $(ARGS)
+run-controls-rust:
+	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example controls -- $(ARGS)
+
 .PHONY: build-go-x86_64 build-rust-x86_64
 build-go-x86_64:
 	$(MAKE) -C go build-x86_64
