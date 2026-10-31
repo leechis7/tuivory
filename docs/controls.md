@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](controls.en.md)
 
-0.6.0에 TVR-22~25 기능을 제공합니다. Go·Rust의 공통 규칙은 [언어 중립 명세](../design/controls.md), 전체 선언은 [API 명세](api/README.md)를 참고하세요. 기존 Form·상태·배치 계산·팔레트·그림자를 재사용합니다. 전체 backend 파사드 TVR-26은 포함하지 않습니다.
+0.6.0에 TVR-22~25 기능을 제공합니다. Go·Rust의 공통 규칙은 [언어 중립 명세](../design/controls.md), 전체 선언은 [API 명세](api/README.md)를 참고하세요. 기존 Form·상태·배치 계산·팔레트·그림자를 재사용합니다. 0.7.0의 SDK 호환 경로는 [TVR-26 안내](ui-facade.md)를 참고하세요.
 
 ## 실행과 화면
 
@@ -68,7 +68,7 @@ Go는 `NewEditor(text)`, `NewTextView(text)`로 `TextDocument`를 만들고 `New
 
 Go는 ContainerChild에 컴포넌트를 연결합니다. `SetChildren`은 잘못된 변경을 거부하고 살아 있는 ID의 상태를 유지합니다. `SetOptions`는 배치 설정을 검증해 교체합니다. `StyleChildren` 순회로 테마를 재적용할 수 있습니다. 기본 Tab 순환은 폼의 내부 경계를 존중합니다. CycleFocus=false와 FocusID/MoveFocus로 앱의 명시적 정책을 사용할 수 있습니다. 컨테이너가 자식의 기존 입력 캡처를 덮어쓰지 않습니다.
 
-Rust `ContainerWidget`의 render_child는 **받은 ID로 위젯을 선택**합니다. SDK가 영역 계산·그리기 순서·자식 클리핑을 담당합니다. `ContainerState`의 focus/move/hit/pointer 결과 ID로 해당 모델에 입력을 전달합니다. 현재 Rust 어댑터는 Widget/Buffer를 사용하며 Go도 Primitive를 받습니다. 이 backend 표면 전체를 감추는 일은 TVR-26입니다.
+Rust `ContainerWidget`의 render_child는 **받은 ID로 위젯을 선택**합니다. SDK가 영역 계산·그리기 순서·자식 클리핑을 담당합니다. `ContainerState`의 focus/move/hit/pointer 결과 ID로 해당 모델에 입력을 전달합니다. 현재 Rust 어댑터는 Widget/Buffer를 사용하며 Go도 Primitive를 받습니다. 0.7.0 TVR-26의 SDK 경로로 이 타입을 사용할 수 있습니다.
 
 가장자리에 붙는 레이어는 LayoutItem.Drawer/drawer를 "left" 또는 "right"로 지정하며 기존 DrawerLayout/drawer_layout을 재사용합니다. Centered와 Drawer는 함께 지정할 수 없습니다.
 
@@ -81,3 +81,5 @@ Rust `ContainerWidget`의 render_child는 **받은 ID로 위젯을 선택**합�
 [공통 시나리오](../design/controls-cases.json)는 두 언어가 같은 편집 이벤트·원문·커서·배치 결과를 확인합니다. 12팔레트, Unicode/ASCII, Go Show 이후 출력과 Rust Buffer, 암호 비노출, 드래그·모달·작은/0크기·원문 복사·외부 import·정적 배포를 검증합니다. 실제 결과는 [검증 기록](../evidence/controls-results.json)에 기록하며 원격 CI·게시와 구분합니다. CentOS 검증은 수행하지 않습니다.
 
 현재 구현은 Go·Rust입니다. Python·JavaScript/TypeScript·C·C++ 구현과 전체 언어별 backend 파사드는 제공 완료로 주장하지 않습니다.
+
+0.7.0 TVR-26: Go·Rust에서 Tuivory 경로만 사용하는 UI 구성, 공통 입력·바이트 span 변환과 터미널 수명을 제공합니다. [API 대응·예제·현재 제공 상태](ui-facade.md).

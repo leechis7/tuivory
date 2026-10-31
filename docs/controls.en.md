@@ -2,7 +2,7 @@
 
 [Korean (default)](controls.md) · **English**
 
-Version 0.6.0 provides TVR-22–25. See the [language-neutral specification](../design/controls.en.md) and [API reference](api/README.en.md). Existing forms, state, geometry, palettes and shadows are reused. The complete backend facade, TVR-26, remains separate.
+Version 0.6.0 provides TVR-22–25. See the [language-neutral specification](../design/controls.en.md) and [API reference](api/README.en.md). Existing forms, state, geometry, palettes and shadows are reused. See [TVR-26](ui-facade.en.md) for SDK compatibility paths in 0.7.0.
 
 ## Run and inspect
 
@@ -68,7 +68,7 @@ Existing SplitView and geometry remain available. Layout Grid is distinct from d
 
 Go ContainerChild connects primitives. SetChildren rejects invalid updates while retaining surviving-ID state. SetOptions validates replacement configuration. StyleChildren supports palette traversal. Default Tab cycling respects nested form boundaries; CycleFocus=false and FocusID/MoveFocus allow explicit host policy. Existing child input captures are not overwritten.
 
-Rust ContainerWidget's render_child chooses a widget **by the supplied ID**. The SDK computes rectangles, rendering order and clipping. Route input by ContainerState focus/move/hit/pointer IDs. Rust still uses Widget/Buffer and Go accepts Primitive; hiding the entire backend surface belongs to TVR-26.
+Rust ContainerWidget's render_child chooses a widget **by the supplied ID**. The SDK computes rectangles, rendering order and clipping. Route input by ContainerState focus/move/hit/pointer IDs. Rust still uses Widget/Buffer and Go accepts Primitive; 0.7.0 TVR-26 exposes these types through SDK paths.
 
 Use LayoutItem Drawer/drawer = "left" or "right" for edge-attached layers, reusing DrawerLayout/drawer_layout. Centered and Drawer are mutually exclusive.
 
@@ -81,3 +81,5 @@ Hosts declare components/slots, global keys, close approval and business data/ac
 [Shared scenarios](../design/controls-cases.json) compare editing events, original content, cursor positions and layout results across languages. Validate twelve palettes, Unicode/ASCII, Go post-Show output and Rust buffers, secrets, drag/modal behavior, tiny/zero layouts, original copying, external imports and static builds. See the [validation record](../evidence/controls-results.json) for actual results, separate from remote CI/publication. No CentOS validation.
 
 Implemented languages are Go and Rust. Python, JavaScript/TypeScript, C/C++ and the complete per-language backend facade are not claimed implemented.
+
+0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](ui-facade.en.md).

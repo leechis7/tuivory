@@ -1,4 +1,4 @@
-# Go API — source (0.6.0)
+# Go API — source (0.7.0)
 
 [한국어 (default)](go.md) · **English**
 
@@ -66,6 +66,10 @@ func DimRegion(screen tcell.Screen, rect CellRect)
     glyphs and clearing wide glyphs crossing either horizontal boundary. Outside
     styles are preserved; the caller draws the card afterwards and owns redraws.
 
+func GraphemeIndex(text string, byteOffset int) (int, error)
+    GraphemeIndex converts an exact UTF-8 byte boundary to a grapheme index.
+    Offsets inside a combining sequence or wide/emoji cluster are rejected.
+
 func GridKey(e *tcell.EventKey) string
 func MenuKey(e *tcell.EventKey) (string, string)
     MenuKey maps component-local keys only. Hosts assign F10, Alt and global
@@ -128,6 +132,16 @@ func (v *BreadcrumbView) Draw(screen tcell.Screen)
 func (v *BreadcrumbView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
 
 func (v *BreadcrumbView) SetPalette(palette Palette) error
+```
+
+## ByteSyntaxSpan
+
+```go
+type ByteSyntaxSpan struct {
+	Start, End int
+	Role       string
+}
+    ByteSyntaxSpan is a host lexer range in original UTF-8 bytes, [Start,End).
 ```
 
 ## CellRect
@@ -769,6 +783,40 @@ type Help struct {
 func NewHelp(items []Shortcut) (*Help, error)
 
 func (h *Help) Layout(width, height int) []ComponentLine
+```
+
+## InputEvent
+
+```go
+type InputEvent struct {
+	Kind      string   `json:"kind"`
+	Key       string   `json:"key,omitempty"`
+	Text      string   `json:"text,omitempty"`
+	Modifiers []string `json:"modifiers,omitempty"`
+	Phase     string   `json:"phase,omitempty"`
+	X         int      `json:"x,omitempty"`
+	Y         int      `json:"y,omitempty"`
+	Button    string   `json:"button,omitempty"`
+	Width     int      `json:"width,omitempty"`
+	Height    int      `json:"height,omitempty"`
+}
+    InputEvent is the language-neutral terminal input envelope. Positions are
+    screen cells; text is original UTF-8. Modifiers use shift,ctrl,alt,meta
+    order. Applications handle global keys before forwarding EditingAction to a
+    model.
+
+func InputFromKey(e *terminal.EventKey) InputEvent
+
+func InputFromMouse(action ui.MouseAction, e *terminal.EventMouse) InputEvent
+
+func PasteInput(text string) InputEvent
+
+func ResizeInput(width, height int) InputEvent
+
+func (e InputEvent) EditingAction() (string, string)
+    EditingAction returns a model action/request, never clipboard or business
+    I/O. Enter inserts a newline; a form host can map enter to activate/submit
+    instead.
 ```
 
 ## InputRoute
@@ -1916,6 +1964,11 @@ func (d *TextDocument) Point(x, y, width, height int, extend bool)
     keeps the selection anchor for a captured drag, even outside the viewport.
 
 func (d *TextDocument) RevealCursor()
+
+func (d *TextDocument) SetByteSyntax(spans []ByteSyntaxSpan) error
+    SetByteSyntax adapts host lexer ranges without copying a backend editor
+    fork. Invalid ranges/roles leave the previous syntax configuration
+    unchanged.
 
 func (d *TextDocument) SetMarkup(markup string) error
 

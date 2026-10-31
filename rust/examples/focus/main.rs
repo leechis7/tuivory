@@ -1,7 +1,12 @@
 //! Host connecting public modal scopes and shared control-state styles.
 #[path = "../playground/snapshot.rs"]
 mod snapshot;
-use crossterm::{
+use std::{
+    error::Error,
+    io::{self, IsTerminal},
+    time::Duration,
+};
+use tuivory::ui::terminal::{
     cursor::Show,
     event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
@@ -10,21 +15,16 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use ratatui::{
+use tuivory::ui::{
     Frame, Terminal,
     backend::{CrosstermBackend, TestBackend},
     layout::Rect,
     widgets::{Clear, Paragraph},
 };
-use std::{
-    error::Error,
-    io::{self, IsTerminal},
-    time::Duration,
-};
 use tuivory::{
     ColorProfile, Theme,
     interaction::{ControlState, FocusStack, FocusTarget},
-    ratatui::Styles,
+    ui::components::Styles,
 };
 fn targets(level: usize) -> Vec<FocusTarget> {
     let item = |id: &str, state: ControlState| FocusTarget {

@@ -8,6 +8,7 @@ test:
 	python3 -m unittest discover -s tests -v
 check:
 	$(MAKE) -C go check
+	python3 tools/check_ui_facade.py
 	python3 tools/check_api_lifecycle.py
 	python3 tools/export_tokens.py --check
 	python3 tools/export_tree_cases.py --check

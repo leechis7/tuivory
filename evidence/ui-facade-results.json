@@ -1,0 +1,105 @@
+{
+  "issue": "TVR-26",
+  "date": "2026-10-31",
+  "status": "implementation and local validation complete",
+  "branch": "codex/TVR-26-ui-facade",
+  "baseline": "c47b13b6c513e163ec30ee182f9e9878ec33e332",
+  "baseline_release": "0.6.0",
+  "committed": false,
+  "published": false,
+  "remote_ci": "not run for these working changes",
+  "availability": "SDK ui/terminal/input and byte-span APIs are working-source only; public 0.6.0 lacks them. No downstream app migration or new release claimed.",
+  "supported": [
+    "Go",
+    "Rust"
+  ],
+  "planned_only": [
+    "Python",
+    "TypeScript/JavaScript",
+    "C",
+    "C++",
+    "FFI/ABI"
+  ],
+  "compatibility": {
+    "go_ui": "tview v0.42.0, 262 package symbols with SDK aliases/forwarders or explicit global setters",
+    "go_terminal": "tcell v2.13.10, 701 Linux package symbols; NewDevTtyFromDev has Unix build constraints",
+    "rust": "Ratatui 0.30.2/Crossterm 0.29 via SDK paths; no direct renderer dependency in external consumer manifest",
+    "identity": "Pinned backend type/method/trait identity retained; no backend interchangeability or transparent mutable-global alias promise",
+    "consumer_map": "evidence/ui-facade-consumer-map.json (read-only audit: 52 tview and 93 tcell package symbols; 231 first-party Go source/test files)",
+    "fork_path": "Fork focus fields -> shared panel/state rendering; byte-style callback -> shared editor and byte syntax spans; no consumer fork edited"
+  },
+  "validation": [
+    {
+      "command": "make test check build",
+      "result": "passed",
+      "coverage": "Go race/vet, Python tooling, SDK-only import/pinned export checks, lifecycle/tokens/shared fixtures/palette/links, default ARM64 static build"
+    },
+    {
+      "command": "make test-rust check-rust",
+      "toolchain": "1.85.1",
+      "result": "passed",
+      "coverage": "core all-targets/doc tests, rustfmt/clippy"
+    },
+    {
+      "command": "make test-rust-ui check-rust-ui",
+      "toolchain": "1.88.0",
+      "result": "passed",
+      "coverage": "all-feature all-targets/doc tests, rustfmt/clippy -D warnings"
+    },
+    {
+      "command": "python3 tools/check_go_module.py",
+      "result": "passed",
+      "coverage": "isolated module, SDK-only external Go consumer, no repository design directory"
+    },
+    {
+      "command": "python3 tools/check_rust_module.py --terminal-output <native test host>",
+      "result": "passed",
+      "coverage": "packaged standalone crate, SDK-only renderer/terminal consumer, no direct Ratatui/Crossterm dependency, existing deprecation rejection checks"
+    },
+    {
+      "command": "python3 tools/check_ui_session.py <native test host>",
+      "result": "passed",
+      "coverage": "non-TTY init failure twice without lock leak; explicit finish/re-entry; duplicate SDK session rejection; existing manual raw-mode ownership retained; panic unwind restores termios/alternate-screen/bracketed paste"
+    },
+    {
+      "command": "python3 tools/smoke_controls.py <Go/Rust ARM64 static controls host> --lang <ko|en> [--ascii]",
+      "result": "passed",
+      "cases": 8,
+      "coverage": "masking, scope traversal, paste, undo/redo, copy, read-only, modal isolation, resize, captured mouse selection and terminal restoration"
+    },
+    {
+      "command": "python3 tools/build_rust.py --arch arm64 --examples",
+      "result": "passed",
+      "coverage": "static ARM64 examples; existing default sample path retained"
+    },
+    {
+      "command": "python3 tools/check_static_elf.py --arch arm64 <Go/Rust default and controls hosts>",
+      "result": "passed",
+      "coverage": "machine=183, no PT_INTERP/DT_NEEDED"
+    },
+    {
+      "command": "python3 tools/snapshot_controls.py <native controls> --output <private images>",
+      "result": "passed",
+      "images": 10,
+      "coverage": "All KO/EN dark/light/blackwhite/ASCII/popup SVGs match 0.6.0 references byte-for-byte; no visual/theme redesign"
+    },
+    {
+      "command": "python3 tools/generate_api_reference.py --rust-json rust/target/doc/tuivory.json --check",
+      "result": "passed",
+      "coverage": "paired root/ui/terminal Go and Rust API declarations, Rust 1.88 JSON generated with warnings denied"
+    }
+  ],
+  "fixtures": {
+    "input": "design/ui-input-cases.json",
+    "input_cases": 14,
+    "byte_boundaries": 5,
+    "invalid_byte_offsets": 4,
+    "byte_coverage": "CJK, combining and emoji boundaries; invalid updates retain prior highlighting",
+    "existing_regressions": "existing 12-palette, wide/overlay/focus/form/editor/layout/state tests preserved"
+  },
+  "centos": "not run per user instruction",
+  "architecture": "local Linux ARM64 only; no new x86_64 build or GitHub CI claimed",
+  "local_logs": "bin/validation/TVR-26 (ignored private artifacts)",
+  "record_scope": "Historical implementation-time local validation snapshot, before the 0.7.0 release",
+  "release_validation": "https://github.com/leechis7/tuivory/releases/tag/go/v0.7.0"
+}

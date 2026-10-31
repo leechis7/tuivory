@@ -1,7 +1,12 @@
 //! Database-free host using Tuivory's public tree model and Ratatui widget.
 #[path = "../playground/snapshot.rs"]
 mod snapshot;
-use crossterm::{
+use std::{
+    error::Error,
+    io::{self, IsTerminal},
+    time::Duration,
+};
+use tuivory::ui::terminal::{
     cursor::Show,
     event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
@@ -10,21 +15,16 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use ratatui::{
+use tuivory::ui::{
     Frame, Terminal,
     backend::{CrosstermBackend, TestBackend},
     layout::{Constraint, Layout, Rect},
     widgets::Paragraph,
 };
-use std::{
-    error::Error,
-    io::{self, IsTerminal},
-    time::Duration,
-};
 use tuivory::{
     ColorProfile, Theme,
-    ratatui::{Styles, TreeWidget},
     tree::{Tree, TreeAction, TreeNode, TreeState},
+    ui::components::{Styles, TreeWidget},
 };
 
 struct App {

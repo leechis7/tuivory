@@ -1,7 +1,11 @@
 //! Host-owned composition/global keys around the public menu components.
 #[path = "../playground/snapshot.rs"]
 mod snapshot;
-use crossterm::{
+use std::{
+    error::Error,
+    io::{self, IsTerminal},
+};
+use tuivory::ui::terminal::{
     cursor::Show,
     event::{
         self, DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture,
@@ -10,15 +14,11 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use ratatui::{
+use tuivory::ui::{
     Terminal,
     backend::{CrosstermBackend, TestBackend},
     layout::Rect,
     widgets::Paragraph,
-};
-use std::{
-    error::Error,
-    io::{self, IsTerminal},
 };
 use tuivory::{
     ColorProfile, Theme,
@@ -26,7 +26,7 @@ use tuivory::{
     layout::CellRect,
     menu::{Menu, MenuEvent, MenuItem},
     popup::{ShadowMode, ShadowOptions, popup_placement},
-    ratatui::{FormWidget, MenuBarWidget, MenuPopupWidget, Styles},
+    ui::components::{FormWidget, MenuBarWidget, MenuPopupWidget, Styles},
 };
 fn tr(en: bool, ko: &str, english: &str) -> String {
     if en { english } else { ko }.into()
@@ -137,7 +137,7 @@ impl App {
         }
         self.status = format!("{}: {} / origin={}", e.kind, e.id, e.return_id);
     }
-    fn draw(&mut self, f: &mut ratatui::Frame<'_>) {
+    fn draw(&mut self, f: &mut tuivory::ui::Frame<'_>) {
         let a = f.area();
         f.render_widget(
             Paragraph::new("").style(self.styles.role("surface").unwrap()),

@@ -1,9 +1,9 @@
-use ratatui::{
+use std::{fmt::Write, path::Path};
+use tuivory::ui::{
     buffer::Buffer,
     style::{Color, Modifier},
     text::Span,
 };
-use std::{fmt::Write, path::Path};
 
 fn color(c: Color) -> String {
     let (r, g, b) = match c {

@@ -20,3 +20,5 @@ Choose a component for models, state, events, language usage and runnable exampl
 | [Surface, controls, editor and containers](controls.en.md) | 0.6.0 TVR-22–25, Go/Rust |
 
 [API reference](api/README.en.md) · [All examples](../examples/README.en.md)
+
+0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](ui-facade.en.md).

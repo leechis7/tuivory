@@ -1,12 +1,14 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
-use ratatui::{
+use tuivory::ui::components::Styles;
+use tuivory::ui::terminal::event::{
+    KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
+};
+use tuivory::ui::{
     Frame,
     layout::{Constraint, Layout, Rect},
     style::Modifier,
     text::Line,
     widgets::{Clear, List, ListItem, ListState, Paragraph, Row, Table, TableState, Wrap},
 };
-use tuivory::ratatui::Styles;
 use tuivory::{ColorProfile, Error, Theme};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -123,10 +125,10 @@ impl App {
     fn text<'a>(&self, ko: &'a str, en: &'a str) -> &'a str {
         self.language.text(ko, en)
     }
-    fn role(&self, name: &str) -> ratatui::style::Style {
+    fn role(&self, name: &str) -> tuivory::ui::style::Style {
         self.styles.role(name).expect("bundled semantic role")
     }
-    fn block<'a>(&self, title: &'a str, focused: bool) -> ratatui::widgets::Block<'a> {
+    fn block<'a>(&self, title: &'a str, focused: bool) -> tuivory::ui::widgets::Block<'a> {
         self.styles
             .block(title, focused)
             .expect("bundled semantic role")
@@ -823,7 +825,7 @@ impl App {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ratatui::{Terminal, backend::TestBackend};
+    use tuivory::ui::{Terminal, backend::TestBackend};
 
     fn key(app: &mut App, code: KeyCode) {
         app.key(KeyEvent::new(code, KeyModifiers::NONE)).unwrap();

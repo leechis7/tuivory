@@ -1,21 +1,6 @@
 mod grid_demo;
 #[path = "../playground/snapshot.rs"]
 mod snapshot;
-use crossterm::{
-    cursor::Show,
-    event::{
-        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
-        MouseButton, MouseEventKind,
-    },
-    execute,
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
-};
-use ratatui::{
-    Terminal,
-    backend::{CrosstermBackend, TestBackend},
-    layout::Rect,
-    widgets::Paragraph,
-};
 use std::{
     error::Error,
     io::{self, IsTerminal},
@@ -24,11 +9,26 @@ use std::{
 use tuivory::collections::{ListItem, SearchPicker};
 use tuivory::feedback::{DataState, Notice, NoticeAction, NoticeEvent, NoticeQueue, Progress};
 use tuivory::grid::{Grid, GridColumn, GridRecord, GridSource};
+use tuivory::ui::terminal::{
+    cursor::Show,
+    event::{
+        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
+        MouseButton, MouseEventKind,
+    },
+    execute,
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+};
+use tuivory::ui::{
+    Terminal,
+    backend::{CrosstermBackend, TestBackend},
+    layout::Rect,
+    widgets::Paragraph,
+};
 use tuivory::{
     ColorProfile, Theme,
     forms::{Form, FormEvent, FormField, FormOption},
     interaction::ControlState,
-    ratatui::{FormWidget, RowsWidget, Styles},
+    ui::components::{FormWidget, RowsWidget, Styles},
 };
 fn text(en: bool, ko: &str, english: &str) -> String {
     if en { english } else { ko }.into()
@@ -343,7 +343,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "Tab move / Enter confirm / Esc cancel / Ctrl+Q quit",
     );
     let mut body = Rect::default();
-    let draw = |f: &mut ratatui::Frame<'_>,
+    let draw = |f: &mut tuivory::ui::Frame<'_>,
                 form: &Form,
                 picker: &SearchPicker,
                 grid: &Grid,
@@ -397,7 +397,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             );
         } else if mode == "grid" {
             f.render_widget(
-                tuivory::ratatui::GridWidget {
+                tuivory::ui::components::GridWidget {
                     model: grid,
                     styles,
                     focused: true,

@@ -6,12 +6,12 @@
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
-Product version is **0.6.0** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.6.0`. [Release guide](../docs/release-0.6.0.en.md).
+Product version is **0.7.0** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.7.0`. [Release guide](../docs/release-0.7.0.en.md).
 
 All Go implementation code and module configuration live in this directory. The module path is `github.com/leechis7/tuivory/go`; the package name is `tuivory`. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.6.0
+go get github.com/leechis7/tuivory/go@v0.7.0
 ```
 
 ```go
@@ -22,7 +22,7 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-The current release is `v0.6.0`, tagged `go/v0.6.0` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
+The current release is `v0.7.0`, tagged `go/v0.7.0` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
 
 From the repository root:
 
@@ -62,3 +62,5 @@ Version 0.5.0 TextOnSurface / Styles::text_on_surface and ControlStyleOnSurface 
 TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/solid/dim`, placement including the full footprint, card-only hit testing and wide-glyph boundary protection. Hosts own backdrop redraws and opening/closing. [APIs, runnable examples and 12-palette views](../docs/popup-shadows.en.md).
 
 0.6.0 TVR-22–25 adds borderless Surface, standalone/secret controls, text editing/viewing and row/column/grid/layer containers. [Usage, source availability and examples](../docs/controls.en.md).
+
+0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](../docs/ui-facade.en.md).
