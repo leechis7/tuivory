@@ -125,6 +125,9 @@ impl Styles {
 
     /// Resolve a semantic role without replacing ANSI indices with RGB values.
     pub fn role(&self, name: &str) -> Result<Style, Error> {
+        if name.starts_with("syntax.") {
+            return self.text_on_surface(crate::syntax::palette_role(name), "surface");
+        }
         let alias = match name {
             "grid.active" | "grid.range" => "selection",
             "grid.edited" => "edited",

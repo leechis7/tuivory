@@ -60,6 +60,10 @@ jobs:
                   python3 tools/smoke_controls.py "$directory/bin/$lang/tuivory-controls-linux-x86_64" --lang "$ui"
                   python3 tools/smoke_controls.py "$directory/bin/$lang/tuivory-controls-linux-x86_64" --lang "$ui" --ascii
                 fi
+                if test -x "$directory/bin/$lang/tuivory-syntax-linux-x86_64"; then
+                  python3 tools/smoke_syntax.py "$directory/bin/$lang/tuivory-syntax-linux-x86_64" --lang "$ui"
+                  python3 tools/smoke_syntax.py "$directory/bin/$lang/tuivory-syntax-linux-x86_64" --lang "$ui" --ascii
+                fi
               done
             done
           done

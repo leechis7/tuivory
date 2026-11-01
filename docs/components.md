@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](components.en.md)
 
+**0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다. 공개 0.8.0에는 없습니다.
+
 컴포넌트를 선택하면 모델·상태·이벤트·언어별 사용법과 실행 예제를 볼 수 있습니다.
 
 | 컴포넌트 | 내용 |

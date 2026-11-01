@@ -20,6 +20,13 @@ pub(crate) fn text_role(role: &str) -> bool {
         "button",
         "disabled",
         "edited",
+        "syntax.keyword",
+        "syntax.function",
+        "syntax.type",
+        "syntax.string",
+        "syntax.number",
+        "syntax.comment",
+        "syntax.parameter",
     ]
     .contains(&role)
 }
@@ -58,6 +65,68 @@ impl fmt::Debug for TextBuffer {
     }
 }
 impl TextBuffer {
+    /// Exact original byte ranges, preserving anchor direction. Split graphemes
+    /// are rejected atomically instead of being interpreted as display cells.
+    pub fn select_bytes(&mut self, anchor: usize, cursor: usize) -> Result<(), crate::Error> {
+        let a = crate::text_offsets::grapheme_index(&self.text, anchor)?;
+        let c = crate::text_offsets::grapheme_index(&self.text, cursor)?;
+        self.select(a, c);
+        Ok(())
+    }
+    pub fn selection_bytes(&mut self) -> (usize, usize) {
+        let (lo, hi) = self.selection();
+        let mut start = 0;
+        let mut end = self.text.len();
+        for (i, (offset, _)) in self.text.grapheme_indices(true).enumerate() {
+            if i == lo {
+                start = offset
+            }
+            if i == hi {
+                end = offset;
+                break;
+            }
+        }
+        if lo == hi && (lo == self.text.graphemes(true).count()) {
+            (end, end)
+        } else {
+            (start, end)
+        }
+    }
+    /// Literal programmatic replacement with undo/redo; no tag insertion,
+    /// newline normalization, keymap changes or history reset.
+    pub fn replace_bytes(
+        &mut self,
+        start: usize,
+        end: usize,
+        text: &str,
+    ) -> Result<TextEvent, crate::Error> {
+        if start > end {
+            return Err(crate::Error::Invalid("reversed byte range".into()));
+        }
+        crate::text_offsets::grapheme_index(&self.text, start)?;
+        crate::text_offsets::grapheme_index(&self.text, end)?;
+        if !self.state.visual().editable || start == end && text.is_empty() {
+            return Ok(TextEvent::default());
+        }
+        self.save();
+        let prefix = self.text[..start].to_owned() + text;
+        self.text = prefix.clone() + &self.text[end..];
+        let mut offset = 0;
+        let mut cursor = 0;
+        for g in self.text.graphemes(true) {
+            if offset >= prefix.len() {
+                break;
+            }
+            offset += g.len();
+            cursor += 1
+        }
+        self.select(cursor, cursor);
+        self.state.edited = true;
+        Ok(TextEvent {
+            kind: "change".into(),
+            text: String::new(),
+        })
+    }
     pub fn new(text: &str) -> Self {
         let n = text.graphemes(true).count();
         Self {
@@ -295,12 +364,18 @@ pub struct SyntaxSpan {
     pub end: usize,
     pub role: String,
 }
+/// Original grapheme range for host-provided search matches, not byte/cell offsets.
+#[derive(Clone, Debug)]
+pub struct TextRange {
+    pub start: usize,
+    pub end: usize,
+}
 #[derive(Clone, Debug)]
 struct Hit {
     x: isize,
     index: usize,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct TextDocument {
     pub buffer: TextBuffer,
     pub wrap: bool,
@@ -312,14 +387,46 @@ pub struct TextDocument {
     hits: Vec<Vec<Hit>>,
     reveal: bool,
     view_height: usize,
+    pub(crate) syntax_analyzer: Option<crate::syntax::SyntaxBinding>,
+    search_matches: Vec<TextRange>,
+    search_source: String,
+}
+impl fmt::Debug for TextDocument {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TextDocument")
+            .field("buffer", &self.buffer)
+            .field("wrap", &self.wrap)
+            .field("line_numbers", &self.line_numbers)
+            .field("scroll_x", &self.scroll_x)
+            .field("scroll_y", &self.scroll_y)
+            .field("syntax", &self.syntax)
+            .finish_non_exhaustive()
+    }
 }
 impl TextDocument {
+    /// Search expires on source changes; disabled/selection override it, and it
+    /// overrides syntax. Searching itself remains a host decision.
+    pub fn set_search_matches(&mut self, matches: Vec<TextRange>) -> Result<(), crate::Error> {
+        let n = self.buffer.text().graphemes(true).count();
+        if matches.iter().any(|m| m.end < m.start || m.end > n) {
+            return Err(crate::Error::Invalid(
+                "invalid search grapheme range".into(),
+            ));
+        }
+        self.search_matches = matches;
+        self.search_source = self.buffer.text().into();
+        Ok(())
+    }
     pub fn set_text(&mut self, text: &str) {
         self.buffer.set_text(text);
         self.syntax.clear();
         self.scroll_x = 0;
         self.scroll_y = 0;
-        self.reveal = !self.buffer.state.read_only
+        self.reveal = !self.buffer.state.read_only;
+        if let Some(binding) = &mut self.syntax_analyzer {
+            binding.dirty = true;
+        }
+        let _ = self.refresh_syntax();
     }
     pub fn reveal_cursor(&mut self) {
         self.reveal = true
@@ -347,6 +454,9 @@ impl TextDocument {
             hits: vec![],
             reveal: true,
             view_height: 0,
+            syntax_analyzer: None,
+            search_matches: vec![],
+            search_source: String::new(),
         }
     }
     pub fn viewer(text: &str) -> Self {
@@ -372,12 +482,16 @@ impl TextDocument {
                 if ["select", "change", "cut"].contains(&event.kind.as_str()) {
                     self.reveal = true
                 }
+                if ["change", "cut"].contains(&event.kind.as_str()) {
+                    let _ = self.refresh_syntax();
+                }
                 return event;
             }
         };
         TextEvent::default()
     }
     pub fn layout(&mut self, width: usize, height: usize) -> Vec<ComponentLine> {
+        let _ = self.refresh_syntax();
         self.view_height = height;
         self.buffer.select(self.buffer.anchor, self.buffer.cursor);
         if width == 0 || height == 0 {
@@ -386,6 +500,24 @@ impl TextDocument {
         }
         let display = self.buffer.display();
         let g: Vec<_> = display.graphemes(true).collect();
+        if self.search_source != self.buffer.text() {
+            self.search_matches.clear();
+            self.search_source.clear()
+        }
+        let mut search = vec![false; g.len()];
+        for m in &self.search_matches {
+            for value in search.iter_mut().take(m.end).skip(m.start) {
+                *value = true
+            }
+        }
+        let mut syntax_roles = vec!["body"; g.len()];
+        for span in &self.syntax {
+            if text_role(&span.role) {
+                for role in syntax_roles.iter_mut().take(span.end).skip(span.start) {
+                    *role = &span.role;
+                }
+            }
+        }
         self.scroll_x = self.scroll_x.min(cells(&display));
         if self.reveal && !self.wrap {
             let mut start = self.buffer.cursor.min(g.len());
@@ -452,11 +584,9 @@ impl TextDocument {
                         row.text.push_str(&" ".repeat(x - old))
                     }
                     row.text.push_str(c);
-                    let mut role = "body";
-                    for s in &self.syntax {
-                        if at >= s.start && at < s.end && text_role(&s.role) {
-                            role = &s.role
-                        }
+                    let mut role = syntax_roles[at];
+                    if search[at] {
+                        role = "edited"
                     }
                     if at >= lo && at < hi {
                         role = "selection"

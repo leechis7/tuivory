@@ -32,7 +32,7 @@ InputEvent contains kind and optional key/text/modifiers/phase/x/y/button/width/
 
 ## Original text and highlighting
 
-Original content is UTF-8; Cursor/Anchor/default SyntaxSpan use half-open grapheme indices. GraphemeIndex/grapheme_index accepts exact byte boundaries and rejects offsets inside combining/CJK/emoji clusters. SetByteSyntax/set_byte_syntax indexes boundaries once, converts and validates complete lexer ranges before applying them atomically. Errors retain previous highlighting. Hosts retain lexing, SQL interpretation and execution.
+Original content is UTF-8; Cursor/Anchor/default SyntaxSpan use half-open grapheme indices. GraphemeIndex/grapheme_index accepts exact byte boundaries and rejects offsets inside combining/CJK/emoji clusters. SetByteSyntax/set_byte_syntax indexes boundaries once, converts and validates complete lexer ranges before applying them atomically. Errors retain previous highlighting. Hosts retain SQL execution/safety; highlighting can use an [optional SDK analyzer](../docs/syntax.en.md) or a host implementation.
 
 ## Lifetimes and execution
 
@@ -49,3 +49,5 @@ Hosts explicitly choose terminal lifetime. Rust's terminal-feature Session confi
 | C/C++ | Opaque handles, length-delimited UTF-8, explicit results/releases, C++ RAII | ABI versions, integer ranges, allocator ownership, callback/thread rules |
 
 These are not implemented. FFI should use copies/explicit ownership rather than exposing borrowed Rust/Go pointers as a shared ABI. New adapters must conform to shared ID/state/input/width/offset/layout scenarios. Document model changes separately from compatibility adapters and follow the [API lifecycle policy](../docs/api-lifecycle.en.md).
+
+The 0.9.0 TVR-24 [optional highlighting analyzer](../docs/syntax.en.md) is separate from common tokens/rendering. Custom host analyzers remain supported; execution/dangerous-SQL/transaction policy stays in the host.

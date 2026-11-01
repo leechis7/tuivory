@@ -236,6 +236,8 @@ func textRoleSupported(role string) bool {
 	switch role {
 	case "body", "hint", "info", "success", "warning", "error", "header", "field", "selection", "button", "disabled", "edited":
 		return true
+	case "syntax.keyword", "syntax.function", "syntax.type", "syntax.string", "syntax.number", "syntax.comment", "syntax.parameter":
+		return true
 	}
 	return false
 }
@@ -258,8 +260,21 @@ type TextDocument struct {
 	hits                     [][]textHit
 	reveal                   bool
 	viewHeight               int
+	syntaxAnalyzer           *syntaxBinding
+	searchMatches            []TextRange
+	searchSource             string
 }
 type textHit struct{ x, index int }
+
+// Format keeps analyzer/search source caches out of diagnostics, particularly
+// when a host switches an existing document into secret mode.
+func (d TextDocument) Format(s fmt.State, _ rune) {
+	if d.Buffer == nil {
+		_, _ = fmt.Fprint(s, "TextDocument{Buffer:nil}")
+		return
+	}
+	_, _ = fmt.Fprintf(s, "TextDocument{Text:%q Cursor:%d Anchor:%d}", d.Buffer.display(), d.Buffer.Cursor, d.Buffer.Anchor)
+}
 
 func (d *TextDocument) SetText(text string) {
 	d.Buffer.SetText(text)
@@ -267,6 +282,10 @@ func (d *TextDocument) SetText(text string) {
 	d.ScrollX = 0
 	d.ScrollY = 0
 	d.reveal = !d.Buffer.State.ReadOnly
+	if d.syntaxAnalyzer != nil {
+		d.syntaxAnalyzer.dirty = true
+		_ = d.RefreshSyntax()
+	}
 }
 func (d *TextDocument) RevealCursor() { d.reveal = true }
 
@@ -310,12 +329,17 @@ func (d *TextDocument) Handle(action, text string) TextEvent {
 	if e.Kind == "select" || e.Kind == "change" || e.Kind == "cut" {
 		d.reveal = true
 	}
+	if e.Kind == "change" || e.Kind == "cut" {
+		_ = d.RefreshSyntax()
+	}
 	return e
 }
 
 // Layout renders literal text; markup is not inferred. Call SetText to replace
-// data and provide syntax roles separately. No lexer, clipboard or file I/O.
+// data and provide syntax roles separately or attach an optional analyzer.
+// Clipboard, filesystem, database execution and safety policy remain outside it.
 func (d *TextDocument) Layout(width, height int) []ComponentLine {
+	_ = d.RefreshSyntax()
 	d.viewHeight = max(0, height)
 	d.Buffer.Select(d.Buffer.Anchor, d.Buffer.Cursor)
 	if width <= 0 || height <= 0 {
@@ -323,6 +347,26 @@ func (d *TextDocument) Layout(width, height int) []ComponentLine {
 		return nil
 	}
 	g := clusters(d.Buffer.display())
+	if d.searchSource != d.Buffer.Text() {
+		d.searchMatches = nil
+		d.searchSource = ""
+	}
+	search := make([]bool, len(g))
+	for _, match := range d.searchMatches {
+		for i := max(0, match.Start); i < min(len(g), match.End); i++ {
+			search[i] = true
+		}
+	}
+	// Token spans are normally disjoint. Expand once instead of scanning every
+	// token for every character; later overlapping manual spans still win.
+	syntaxRoles := make([]string, len(g))
+	for _, span := range d.Syntax {
+		if textRoleSupported(span.Role) {
+			for i := max(0, span.Start); i < min(len(g), span.End); i++ {
+				syntaxRoles[i] = span.Role
+			}
+		}
+	}
 	if d.reveal && !d.Wrap {
 		start := min(d.Buffer.Cursor, len(g))
 		for start > 0 && !textBreak(g[start-1]) {
@@ -403,10 +447,11 @@ func (d *TextDocument) Layout(width, height int) []ComponentLine {
 			}
 			row.Text += cluster
 			role := "body"
-			for _, span := range d.Syntax {
-				if index >= span.Start && index < span.End && textRoleSupported(span.Role) {
-					role = span.Role
-				}
+			if syntaxRoles[index] != "" {
+				role = syntaxRoles[index]
+			}
+			if search[index] {
+				role = "edited"
 			}
 			if index >= lo && index < hi {
 				role = "selection"

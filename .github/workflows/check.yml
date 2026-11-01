@@ -33,6 +33,8 @@ jobs:
         run: python3 tools/export_tokens.py --check
       - name: Validate shared tree navigation contract
         run: python3 tools/export_tree_cases.py --check
+      - name: Validate shared optional SQL vocabulary
+        run: python3 tools/export_syntax_words.py --check
       - name: Validate API lifecycle metadata and migration guides
         run: python3 tools/check_api_lifecycle.py
       - name: Validate local document targets
@@ -106,6 +108,13 @@ jobs:
             python3 tools/smoke_controls.py "$RUNNER_TEMP/tuivory-controls" --lang "$lang"
             python3 tools/smoke_controls.py "$RUNNER_TEMP/tuivory-controls" --lang "$lang" --ascii
           done
+      - name: Check optional SQL highlighting through the single Go import
+        run: |
+          go build -C go -o "$RUNNER_TEMP/tuivory-syntax" ./examples/syntax
+          for lang in ko en; do
+            python3 tools/smoke_syntax.py "$RUNNER_TEMP/tuivory-syntax" --lang "$lang"
+            python3 tools/smoke_syntax.py "$RUNNER_TEMP/tuivory-syntax" --lang "$lang" --ascii
+          done
   rust-core:
     runs-on: ubuntu-24.04
     steps:
@@ -118,6 +127,8 @@ jobs:
         run: python3 tools/export_tokens.py --check
       - name: Test and lint Rust core
         run: make test-rust check-rust
+      - name: Verify optional SQL analysis at the core MSRV
+        run: cargo test --manifest-path rust/Cargo.toml --locked --features syntax-sql --test syntax
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: '1.26.9'
@@ -191,8 +202,16 @@ jobs:
           python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --output "$RUNNER_TEMP/catalog-images"
       - name: Verify adapter from an external packaged dependency
         run: |
-          python3 tools/check_rust_module.py --terminal-output "$RUNNER_TEMP/tuivory-session"
+          python3 tools/check_rust_module.py --terminal-output "$RUNNER_TEMP/tuivory-session" --syntax-sql
           python3 tools/check_ui_session.py "$RUNNER_TEMP/tuivory-session"
+      - name: Check optional SQL highlighting and reference rendering
+        run: |
+          cargo build --manifest-path rust/Cargo.toml --locked --features playground,syntax-sql --example syntax
+          for lang in ko en; do
+            python3 tools/smoke_syntax.py "$CARGO_TARGET_DIR/debug/examples/syntax" --lang "$lang"
+            python3 tools/smoke_syntax.py "$CARGO_TARGET_DIR/debug/examples/syntax" --lang "$lang" --ascii
+          done
+          python3 tools/snapshot_syntax.py "$CARGO_TARGET_DIR/debug/examples/syntax" --output "$RUNNER_TEMP/syntax-images"
   static-builds:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -212,7 +231,9 @@ jobs:
       - name: Check default ARM64 static builds and explicit x86_64 builds
         run: |
           make build build-rust build-go-x86_64 build-rust-x86_64
+          make build-syntax-go build-syntax-rust
           python3 tools/build_rust.py --arch x86_64 --examples
+          python3 tools/build_rust.py --arch x86_64 --syntax
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-tree" ./examples/tree
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-workspace" ./examples/workspace
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-focus" ./examples/focus

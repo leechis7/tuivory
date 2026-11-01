@@ -2,6 +2,8 @@
 
 [한국어 (default)](components.md) · **English**
 
+**0.9.0 TVR-24:** [optional Oracle SQL/PLSQL analysis, common tokens and editor migration](syntax.en.md). Go uses one root import; Rust opts in with syntax-sql. Not available in public 0.8.0.
+
 Choose a component for models, state, events, language usage and runnable examples.
 
 | Component | Scope |
