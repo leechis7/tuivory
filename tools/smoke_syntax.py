@@ -3,10 +3,10 @@
 import argparse,fcntl,os,pty,select,signal,struct,subprocess,termios,time
 from pathlib import Path
 from smoke_focus import Screen
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('binary',type=Path);p.add_argument('--lang',choices=['ko','en'],default='en');p.add_argument('--ascii',action='store_true');a=p.parse_args()
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('binary',type=Path); p.add_argument('--demo', help='select an example from the unified executable');p.add_argument('--lang',choices=['ko','en'],default='en');p.add_argument('--ascii',action='store_true');a=p.parse_args()
 master,slave=pty.openpty();fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',26,100,0,0))
 def terminal():os.setsid();fcntl.ioctl(0,termios.TIOCSCTTY,0)
-process=subprocess.Popen([str(a.binary.resolve()),'--lang',a.lang]+(['--ascii'] if a.ascii else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave)
+process=subprocess.Popen([str(a.binary.resolve()), *(['--demo', a.demo] if a.demo else []),'--lang',a.lang]+(['--ascii'] if a.ascii else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave)
 screen=Screen();captured=bytearray();reports=0
 def drain(seconds=.2):
     global reports

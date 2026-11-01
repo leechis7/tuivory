@@ -78,7 +78,7 @@ Rust `ContainerWidget`의 render_child는 **받은 ID로 위젯을 선택**합�
 
 ## 검증과 제공 범위
 
-[공통 시나리오](../design/controls-cases.json)는 두 언어가 같은 편집 이벤트·원문·커서·배치 결과를 확인합니다. 12팔레트, Unicode/ASCII, Go Show 이후 출력과 Rust Buffer, 암호 비노출, 드래그·모달·작은/0크기·원문 복사·외부 import·정적 배포를 검증합니다. 실제 결과는 [검증 기록](../evidence/controls-results.json)에 기록하며 원격 CI·게시와 구분합니다. CentOS 검증은 수행하지 않습니다.
+[공통 시나리오](../design/controls-cases.json)는 두 언어가 같은 편집 이벤트·원문·커서·배치 결과를 확인합니다. 12팔레트, Unicode/ASCII, Go Show 이후 출력과 Rust Buffer, 암호 비노출, 드래그·모달·작은/0크기·원문 복사·외부 import·정적 배포를 검증합니다. 실제 결과는 [검증 기록](evidence/controls-results.json)에 기록하며 원격 CI·게시와 구분합니다. CentOS 검증은 수행하지 않습니다.
 
 현재 구현은 Go·Rust입니다. Python·JavaScript/TypeScript·C·C++ 구현과 전체 언어별 backend 파사드는 제공 완료로 주장하지 않습니다.
 

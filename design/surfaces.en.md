@@ -33,7 +33,7 @@ Direct Go Styler.DropDown/Choice binds the default panel box/label together; App
 
 ## Completion checks
 
-Use physical Go Runes/Bytes/Styles after Show and Rust TestBackend across twelve palettes for plain/secondary/state text, fields, selection, edits and custom roles. Include breadcrumb/status, Badge/Chip, raw grid preservation, foreground correction and state-preserving theme reapplication. Refresh Korean/English host and documentation UI references together. [Implementation evidence](../evidence/background-fix.en.md).
+Use physical Go Runes/Bytes/Styles after Show and Rust TestBackend across twelve palettes for plain/secondary/state text, fields, selection, edits and custom roles. Include breadcrumb/status, Badge/Chip, raw grid preservation, foreground correction and state-preserving theme reapplication. Refresh Korean/English host and documentation UI references together. [Implementation evidence](../docs/evidence/background-fix.en.md).
 
 ## Live reference
 

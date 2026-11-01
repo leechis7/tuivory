@@ -85,7 +85,7 @@ class Screen:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('binary', type=Path)
+    parser.add_argument('binary', type=Path); parser.add_argument('--demo', help='select an example from the unified executable')
     parser.add_argument('--lang', choices=['ko', 'en'], default='en')
     args = parser.parse_args()
     master, slave = pty.openpty()
@@ -95,7 +95,7 @@ def main():
         os.setsid()
         fcntl.ioctl(0, termios.TIOCSCTTY, 0)
 
-    process = subprocess.Popen([str(args.binary.resolve()), '--lang', args.lang], stdin=slave,
+    process = subprocess.Popen([str(args.binary.resolve()), *(['--demo', args.demo] if args.demo else []), '--lang', args.lang], stdin=slave,
                                stdout=slave, stderr=slave, preexec_fn=terminal,
                                env=dict(os.environ, TERM='xterm-256color'))
     os.close(slave)

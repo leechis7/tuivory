@@ -27,7 +27,7 @@ Actual Rust TestBackend 120×36 reference, not a Go capture or physical/SSH term
 
 [Backlog](components-backlog.en.md) · [Static distribution](static-build.en.md)
 
-In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
+In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](evidence/background-fix.en.md).
 
 ## Disabled state
 

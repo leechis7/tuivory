@@ -23,6 +23,6 @@ Requires Go 1.24+, Rust core 1.85+, or Rust UI/terminal 1.88+. Rust default feat
 
 The [GitHub Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.9.0) provides **20** static Go/Rust Linux ARM64/x86_64 playground/catalog/menu/controls/syntax executables, a Rust crate, SHA256SUMS and RELEASE-MANIFEST.json. Run `bin/<language>/tuivory-syntax-linux-<architecture>` from the matching archive with `--lang ko` or `--lang en`, optionally `--ascii`.
 
-The final manifest records source identity, static ELF inspection, public-tag installation, downloaded executable checks and GitHub CI. The [local implementation snapshot](../evidence/syntax-results.json) predates publication. Long documents use full analysis, with no incremental-analysis latency guarantee.
+The final manifest records source identity, static ELF inspection, public-tag installation, downloaded executable checks and GitHub CI. The [local implementation snapshot](evidence/syntax-results.json) predates publication. Long documents use full analysis, with no incremental-analysis latency guarantee.
 
 SQL execution, safety policy, DB connections, actual LazyOra adoption and Go/Rust source analyzers are outside this release. CentOS validation is not performed. TVR-7 remains open.

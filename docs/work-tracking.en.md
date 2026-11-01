@@ -24,7 +24,7 @@ Automatic GitHub development activity depends on GitHub for Atlassian repository
 
 ## Static distribution follow-up
 
-TVR-5/TVR-6 now cover static distribution and host-linking requirements for Go, Rust and future languages. CentOS 7.4 x86_64 guest-kernel/external-host/bilingual playground checks and local ARM64 checks passed. See [evidence](../evidence/static-build.en.md). Source publication is authorized. Record remote CI, PR and merge results in TVR-5/TVR-6 comments; existing v0.1.0 tags/assets remain unchanged. Epics remain open.
+TVR-5/TVR-6 now cover static distribution and host-linking requirements for Go, Rust and future languages. CentOS 7.4 x86_64 guest-kernel/external-host/bilingual playground checks and local ARM64 checks passed. See [evidence](evidence/static-build.en.md). Source publication is authorized. Record remote CI, PR and merge results in TVR-5/TVR-6 comments; existing v0.1.0 tags/assets remain unchanged. Epics remain open.
 
 ## Shared component expansion backlog
 

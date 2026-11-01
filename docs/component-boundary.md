@@ -55,7 +55,7 @@ Rust TestBackend 120×32의 한국어 참조입니다. Go 캡처·SSH 화면·�
 
 후속 요청에 따라 중첩 메뉴를 [공통 Menu](menus.md)로 보완했습니다. 0.3.0부터 포함하며 기존 v0.2.0의 평면 목록 지원과 구분합니다. 앱 고유 자동 그룹 기준·메뉴 분류·SQL/세션·완성 도움말 화면은 계속 호스트 책임입니다. 공통 기능 추가를 이유로 앱 전체 화면 이전을 요구하지 않습니다.
 
-[작업/검증 기록](../evidence/component-boundary.md) · [예제 사용법](workspace.md)
+[작업/검증 기록](evidence/component-boundary.md) · [예제 사용법](workspace.md)
 
 ## 배치 실행과 신규 컨트롤
 

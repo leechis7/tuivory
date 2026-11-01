@@ -25,7 +25,7 @@ make -C go check
 python3 tools/check_go_module.py
 ```
 
-The default local product build is `make build`, which creates one Linux ARM64 binary at `bin/go/tuivory-linux-arm64`. Put playground executables in `bin/<language>/`, with OS and architecture in each filename.
+The default local product build is `make build`, which creates one unified Go executable for the current Linux host architecture. Put playground executables in `bin/<language>/`, with OS and architecture in each filename.
 
 For Rust changes, use Rust 1.85 or later and run `make test-rust check-rust`, `make check-rust-consumers`, and `python3 tools/check_rust_module.py`. For optional Ratatui adapter/example changes, also run `make test-rust-ui check-rust-ui`, `python3 tools/check_rust_module.py --ratatui`, and Korean/English PTY checks with Rust 1.88+. Update the [Rust playground guide](docs/rust-playground.en.md) and images together. Keep Cargo.toml and Rust source in rust/. Regenerate token copies through the exporter and keep framework types/terminal I/O out of the core. See [current Rust scope](rust/README.en.md).
 
@@ -41,7 +41,7 @@ sh -n shell/examples/terminal-colors.sh
 
 For shared-data changes, also run `make check-consumers` to compare Go, Python, and Node.js output. Node.js 18 or later is required; the Python and Node.js examples have no external dependencies. This check builds a temporary Go validation program for the current host and removes it afterward.
 
-The link checker verifies local file targets only. External URLs and Markdown fragments require separate checks. Use the [terminal evidence template](evidence/README.en.md) for real terminal observations; do not report an untested environment as passing. Distinguish local results from GitHub CI and publication status.
+The link checker verifies local file targets only. External URLs and Markdown fragments require separate checks. Use the [terminal evidence template](docs/evidence/README.en.md) for real terminal observations; do not report an untested environment as passing. Distinguish local results from GitHub CI and publication status.
 
 ## Documentation language
 
@@ -76,3 +76,6 @@ Python, TypeScript and JavaScript are user-authorized exceptions delivered as no
 ## Component stages
 
 Follow [TVR-8–13 in order](docs/components-backlog.en.md). For interaction changes, synchronize `design/interaction-cases.json` and module copies with `tools/export_tree_cases.py`; check Go/Rust specifications, twelve palettes, external imports, static linking and bilingual PTYs. Run `python3 tools/smoke_focus.py BINARY --lang ko|en` and `python3 tools/snapshot_focus.py RUST_BINARY`. Report each completed stage and request approval before committing/publishing it.
+
+
+Keep temporary build/validation outputs and local release archives in ignored `.cache/`. Reserve `bin/` for unified executables. [Layout](docs/architecture.en.md) · [Run examples](docs/examples.en.md).

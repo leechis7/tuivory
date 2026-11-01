@@ -50,7 +50,7 @@ Inspected [yelog/lazydb](https://github.com/yelog/lazydb) at pinned commit `9c54
 3. **Panels/splitters**: explicit titles, padding, focus, minimum sizes, keyboard resizing and dragging, narrow-screen alternatives; separate preferred sizes from actual layout.
 4. **Status/breadcrumbs**: retain current location when shortening paths, prioritize critical status, and define contextual shortcut/message priorities and omitted counts. Apply semantic roles, non-color cues, and Unicode/ASCII conventions throughout.
 
-Phases 1–4 now provide public Go/Rust APIs, database-free bilingual examples, related guides, and local validation. See the [integrated guide](workspace.en.md) and [examples](../examples/README.en.md). Tree is local commit 2005164; subsequent work is also saved in local commits with approval. CI/publication evidence is recorded in TVR; remote terminals and actual LazyOra/LazyBeaver integration require separate checks. TVR-7 stays open.
+Phases 1–4 now provide public Go/Rust APIs, database-free bilingual examples, related guides, and local validation. See the [integrated guide](workspace.en.md) and [examples](examples.en.md). Tree is local commit 2005164; subsequent work is also saved in local commits with approval. CI/publication evidence is recorded in TVR; remote terminals and actual LazyOra/LazyBeaver integration require separate checks. TVR-7 stays open.
 
 ## 2026-10-28 follow-up
 
@@ -66,4 +66,4 @@ Public Go/Rust [forms](forms.en.md), [lists/menus/search](collections.en.md), [v
 
 ## TVR-7 shared menus (0.3.0)
 
-[Menu APIs](menus.en.md) add Go/Rust hierarchy, bar/back navigation, separators/disabled/shortcuts, popup placement and original-context requests. This addresses the audited gap after the user’s subsequent instruction without transferring host screen/business ownership. [Validation](../evidence/menu.en.md).
+[Menu APIs](menus.en.md) add Go/Rust hierarchy, bar/back navigation, separators/disabled/shortcuts, popup placement and original-context requests. This addresses the audited gap after the user’s subsequent instruction without transferring host screen/business ownership. [Validation](evidence/menu.en.md).

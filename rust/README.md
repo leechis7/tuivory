@@ -2,23 +2,25 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+**0.9.1 TVR-27:** [통합 예제 실행파일](../docs/examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
+
 **0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](../docs/syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다.
 
 [공개 API 명세](../docs/api/rust.md)
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-crate 버전은 **0.9.0**이며 루트 `VERSION`과 일치합니다. `rust/v0.9.0` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.9.0.md).
+crate 버전은 **0.9.1**이며 루트 `VERSION`과 일치합니다. `rust/v0.9.1` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.9.1.md).
 
 공통 컴포넌트 모델·후보 토큰·스타일 코어, 선택적 Ratatui 렌더러와 DB 없는 대화형 예제를 제공합니다. 기본 코어는 Rust 1.85 이상(1.85.1 검증), Ratatui 0.30.2 어댑터와 Crossterm 0.29 예제는 Rust 1.88 이상(1.88.0 검증)입니다. 코어와 어댑터는 Go 코드·단말 I/O·DB에 의존하지 않습니다.
 
 ## 사용
 
-버전 0.9.0은 `rust/v0.9.0` Git 태그로 배포하며 crates.io에는 게시하지 않습니다. 외부 프로젝트의 Cargo.toml에서 Git 의존성을 지정하거나 로컬 체크아웃의 rust/를 path 의존성으로 사용합니다.
+버전 0.9.1은 `rust/v0.9.1` Git 태그로 배포하며 crates.io에는 게시하지 않습니다. 외부 프로젝트의 Cargo.toml에서 Git 의존성을 지정하거나 로컬 체크아웃의 rust/를 path 의존성으로 사용합니다.
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.9.0" }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.9.1" }
 # Ratatui 사용 시 features = ["ratatui"] 추가
 ```
 
@@ -74,7 +76,7 @@ fn main() -> Result<(), tuivory::Error> {
 
 `Styles::from_palette()`로 검증된 사용자 팔레트를 사용할 수 있습니다. `role()`은 Ratatui Style을 반환하고, `block(title, focused)`는 역할 색상과 포커스 시 이중 테두리를 적용합니다. 코어 Color/Style의 `Into` 변환은 ANSI 인덱스·RGB·굵기를 보존합니다. 테마 변경 시 호스트가 Styles만 교체하고 위젯 상태를 유지합니다.
 
-기존 [playground](../docs/rust-playground.md)의 입력·목록·표·모달은 호스트 구현입니다. 별도로 0.2.0은 `forms`·`collections`·`grid`·`feedback`·`layout` 모델과 공개 Ratatui 위젯을 제공합니다. [카탈로그와 API](../docs/release-0.9.0.md)를 참고하세요.
+기존 [playground](../docs/rust-playground.md)의 입력·목록·표·모달은 호스트 구현입니다. 별도로 0.2.0은 `forms`·`collections`·`grid`·`feedback`·`layout` 모델과 공개 Ratatui 위젯을 제공합니다. [카탈로그와 API](../docs/release-0.9.1.md)를 참고하세요.
 
 ## 예제와 검증
 
@@ -98,7 +100,7 @@ make build-rust
 ./bin/rust/tuivory-linux-arm64 --lang en
 ```
 
-`rustup target add aarch64-unknown-linux-musl` 후 `make build-rust`로 Linux ARM64 정적 실행파일 하나를 만듭니다. rustup의 musl 표준 라이브러리와 번들 `rust-lld`를 사용합니다. x86_64 대상은 `rustup target add x86_64-unknown-linux-musl` 후 `make build-rust-x86_64`입니다. 패키지는 적용 앱의 정적 링크를 막는 필수 네이티브 의존성을 추가하지 않습니다. [정적 배포·CentOS 검증·기존 자산과의 차이](../docs/static-build.md) 기본 `make build`는 계속 Go 하나만 만듭니다. [한국어 화면·조작법](../docs/rust-playground.md)
+`make build-rust`는 현재 호스트 아키텍처의 통합 정적 실행파일 하나를 만듭니다. 호스트에 맞는 musl 표준 라이브러리와 번들 rust-lld를 사용하며 필수 네이티브 런타임 의존성은 추가하지 않습니다. [빌드·예제 선택](../docs/examples.md) · [정적 배포](../docs/static-build.md).
 
 `make check-rust-consumers`는 Go·Python·Node.js·Rust가 같은 공통 토큰을 읽는지 비교하므로 각 도구가 필요합니다. `make check-consumers`는 기존 Go·Python·Node.js 검사입니다. Rust fmt/clippy 컴포넌트는 `rustup component add rustfmt clippy`로 설치합니다.
 
@@ -106,7 +108,7 @@ make build-rust
 
 공통 원본은 [design/tokens](https://github.com/leechis7/tuivory/blob/main/design/tokens/README.md)입니다. `src/data/candidate.json`은 `python3 tools/export_tokens.py`로 생성한 배포용 사본이며 수동 편집하지 않습니다. `include_str!`로 포함하므로 외부 Rust 프로젝트에 design/이나 생성 도구가 필요하지 않습니다.
 
-현재 Cargo 버전은 0.9.0이며 Git 배포를 위해 `publish = false`를 유지합니다. crates.io 게시는 수행하지 않았습니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
+현재 Cargo 버전은 0.9.1이며 Git 배포를 위해 `publish = false`를 유지합니다. crates.io 게시는 수행하지 않았습니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
 
 ## 공통 Tree
 

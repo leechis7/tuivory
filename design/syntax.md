@@ -51,4 +51,4 @@ source는 원문 그대로이며 토큰은 정렬된 비중첩 양의 길이 byt
 
 ## 검증·성능
 
-공통 fixture는 현재 SQL 토큰의 정확한 byte/역할, 모든 UTF-8 경계의 미완성 입력, 17개 역할 fallback과 후속 언어 예제를 구분합니다. Go/Rust에서 같은 fixture를 사용합니다. 1만 줄 분류·적용·원문 보존 및 스크롤을 검증하고 실제 측정값은 [검증 기록](../evidence/syntax-results.json)에 남깁니다. 전체 분석/전체 Layout이며 증분 처리·rope는 아닙니다. Go Show/Rust TestBackend와 실제 PTY 검증·미실행 원격 CI/게시는 구분합니다.
+공통 fixture는 현재 SQL 토큰의 정확한 byte/역할, 모든 UTF-8 경계의 미완성 입력, 17개 역할 fallback과 후속 언어 예제를 구분합니다. Go/Rust에서 같은 fixture를 사용합니다. 1만 줄 분류·적용·원문 보존 및 스크롤을 검증하고 실제 측정값은 [검증 기록](../docs/evidence/syntax-results.json)에 남깁니다. 전체 분석/전체 Layout이며 증분 처리·rope는 아닙니다. Go Show/Rust TestBackend와 실제 PTY 검증·미실행 원격 CI/게시는 구분합니다.

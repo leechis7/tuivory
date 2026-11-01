@@ -18,6 +18,6 @@ go get github.com/leechis7/tuivory/go@v0.6.0
 tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.6.0", features = ["ratatui"] }
 ```
 
-Go 1.24+, Rust 코어 1.85+, UI/예제 1.88+입니다. Go·Rust Linux ARM64/x86_64 정적 playground/catalog/menu/**controls** 실행파일, Rust crate, SHA256SUMS와 RELEASE-MANIFEST.json을 제공합니다. crates.io에는 게시하지 않습니다. 실제 빌드·태그·CI 검증 결과는 [GitHub Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.6.0)의 manifest에서 확인하세요. [구현 당시 로컬 검증](../evidence/controls-results.json)은 배포 검증과 구분합니다.
+Go 1.24+, Rust 코어 1.85+, UI/예제 1.88+입니다. Go·Rust Linux ARM64/x86_64 정적 playground/catalog/menu/**controls** 실행파일, Rust crate, SHA256SUMS와 RELEASE-MANIFEST.json을 제공합니다. crates.io에는 게시하지 않습니다. 실제 빌드·태그·CI 검증 결과는 [GitHub Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.6.0)의 manifest에서 확인하세요. [구현 당시 로컬 검증](evidence/controls-results.json)은 배포 검증과 구분합니다.
 
 새 예제는 `make run-controls-go` / `make run-controls-rust`, 영어는 `ARGS="--lang en"`입니다. TVR-26 전체 backend 파사드는 포함하지 않으며 현재 언어별 렌더러 타입은 공개 API에 남습니다. Python·JS/TS·C·C++ 구현은 이번 릴리스에 포함하지 않습니다. Text Layout은 원문 전체를 순회하며 1만 줄 회귀 검사를 제공합니다. CentOS 검증은 수행하지 않았고 TVR-7 에픽은 열어둡니다.

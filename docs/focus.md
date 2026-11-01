@@ -79,7 +79,7 @@ make run-focus-rust ARGS="--lang en --ascii"
 
 ## 검증과 경계
 
-`design/interaction-cases.json`을 두 모듈의 테스트 자산으로 복제해 상태 합성·이동·중첩·빈 팝업·배경 차단·복귀·잘못된 요청을 같은 시나리오로 검사합니다. 12팔레트의 역할·포커스 표현, 외부 import·정적 앱, 한영 PTY의 실제 키/클릭·테마 왕복·40×16 리사이즈·정상 종료를 검사합니다. [검증 기록](../evidence/focus.md)
+`design/interaction-cases.json`을 두 모듈의 테스트 자산으로 복제해 상태 합성·이동·중첩·빈 팝업·배경 차단·복귀·잘못된 요청을 같은 시나리오로 검사합니다. 12팔레트의 역할·포커스 표현, 외부 import·정적 앱, 한영 PTY의 실제 키/클릭·테마 왕복·40×16 리사이즈·정상 종료를 검사합니다. [검증 기록](evidence/focus.md)
 
 입력 편집기·폼 검증 엔진·완성 Dialog 위젯·비동기 작업·단말 이벤트 루프는 이번 기반에 포함하지 않습니다. 호스트는 실제 위젯 포커스와 레이어 배치·클리핑·가시성·업무 동작을 연결합니다. 예제는 기존 공개 패널을 재사용하는 호스트 구현이며 실제 LazyOra/LazyBeaver 통합은 별도 검증입니다. [정적 배포 조건](static-build.md)
 
@@ -87,6 +87,6 @@ Go 팝업의 한글·CJK·이모지 경계 보호는 [WideSafeScreen·DimRegion]
 
 앱이 스코프의 항목·순서와 컴포넌트 사이 이동을 정합니다. FocusStack은 전달받은 스코프 안에서 탐색·차단·복귀를 계산하는 도구이며 앱 전역 Tab 정책을 소유하지 않습니다. [책임 범위와 다른 호스트 구성 예제](component-boundary.md).
 
-0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
+0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](evidence/background-fix.md)을 참고하세요.
 
 Visual().Markers의 `-`는 기존 저수준 상태 정보입니다. 기본 컴포넌트와 예제는 이를 일반 비활성 접두사로 출력하지 않습니다. 체크박스·라디오의 선택 표식과 구분합니다.

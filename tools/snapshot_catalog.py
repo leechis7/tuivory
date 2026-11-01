@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import xml.etree.ElementTree as ET
 parser=argparse.ArgumentParser(description=__doc__)
-parser.add_argument('binary',type=Path)
+parser.add_argument('binary',type=Path); parser.add_argument('--demo', help='select an example from the unified executable')
 parser.add_argument('--mode',default='forms')
 parser.add_argument('--grid-preset',choices=['simple','data'])
 parser.add_argument('--grid-sample',action='store_true')
@@ -16,7 +16,7 @@ args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
 for lang in ('ko','en'):
  for theme in ('dark','light','blackwhite'):
   path=args.output/f'{args.name or args.mode}-{theme}{"-en" if lang=="en" else ""}.svg'
-  subprocess.run([str(args.binary.resolve()),'--mode',args.mode,'--lang',lang,'--theme',theme,'--colors','256','--snapshot',str(path)]+(['--grid-preset',args.grid_preset] if args.grid_preset else [])+(['--grid-sample'] if args.grid_sample else [])+(['--ascii'] if args.ascii else []),check=True)
+  subprocess.run([str(args.binary.resolve()), *(['--demo', args.demo] if args.demo else []),'--mode',args.mode,'--lang',lang,'--theme',theme,'--colors','256','--snapshot',str(path)]+(['--grid-preset',args.grid_preset] if args.grid_preset else [])+(['--grid-sample'] if args.grid_sample else [])+(['--ascii'] if args.ascii else []),check=True)
   text=''.join(ET.parse(path).getroot().itertext())
   assert any('\uac00'<=c<='\ud7a3' for c in text)==(lang=='ko'),path
 print(f'{args.mode}: six localized references generated')

@@ -33,7 +33,7 @@ Go의 직접 Styler.DropDown/Choice는 기본 panel 바탕·라벨을 함께 지
 
 ## 완료 검사
 
-Go Show 이후 실제 Runes/Bytes/Styles와 Rust TestBackend로 12팔레트의 평문·보조 설명·상태·입력·선택·수정·사용자 역할을 확인합니다. 경로/상태줄, Badge/Chip, 그리드 raw 보존, 대비 보정, 테마 재적용과 상태 보존을 포함합니다. 견본·문서 UI 이미지는 한국어/영어를 함께 갱신합니다. [구현 검증](../evidence/background-fix.md).
+Go Show 이후 실제 Runes/Bytes/Styles와 Rust TestBackend로 12팔레트의 평문·보조 설명·상태·입력·선택·수정·사용자 역할을 확인합니다. 경로/상태줄, Badge/Chip, 그리드 raw 보존, 대비 보정, 테마 재적용과 상태 보존을 포함합니다. 견본·문서 UI 이미지는 한국어/영어를 함께 갱신합니다. [구현 검증](../docs/evidence/background-fix.md).
 
 ## 실제 표시 예
 

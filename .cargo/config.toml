@@ -1,0 +1,3 @@
+# Keep repository build outputs out of the language source directories.
+[build]
+target-dir = ".cache/rust"

@@ -78,7 +78,7 @@ Hosts declare components/slots, global keys, close approval and business data/ac
 
 ## Validation and availability
 
-[Shared scenarios](../design/controls-cases.json) compare editing events, original content, cursor positions and layout results across languages. Validate twelve palettes, Unicode/ASCII, Go post-Show output and Rust buffers, secrets, drag/modal behavior, tiny/zero layouts, original copying, external imports and static builds. See the [validation record](../evidence/controls-results.json) for actual results, separate from remote CI/publication. No CentOS validation.
+[Shared scenarios](../design/controls-cases.json) compare editing events, original content, cursor positions and layout results across languages. Validate twelve palettes, Unicode/ASCII, Go post-Show output and Rust buffers, secrets, drag/modal behavior, tiny/zero layouts, original copying, external imports and static builds. See the [validation record](evidence/controls-results.json) for actual results, separate from remote CI/publication. No CentOS validation.
 
 Implemented languages are Go and Rust. Python, JavaScript/TypeScript, C/C++ and the complete per-language backend facade are not claimed implemented.
 

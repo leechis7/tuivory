@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](rust-playground.en.md)
 
+**0.9.1 TVR-27:** [통합 예제 실행파일](examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
+
 [Rust 패키지](../rust/README.md)의 Ratatui 어댑터를 사용하는 DB 없는 호스트 예제입니다. Ratatui 0.30.2·Crossterm 0.29, Rust 1.88 이상이 필요합니다. 입력·선택·표 편집은 메모리에만 남으며 파일이나 DB에 저장하지 않습니다. 공통 후보 팔레트를 사용하므로 Go의 실제 추출 스타일 전체와 같지는 않습니다.
 
 ## 실행
@@ -15,7 +17,7 @@ make build-rust
 ./bin/rust/tuivory-linux-arm64 --lang ko
 ```
 
-`rustup target add aarch64-unknown-linux-musl` 후 `make build-rust`는 musl과 번들 `rust-lld`로 정적 `bin/rust/tuivory-linux-arm64` 하나를 만듭니다. x86_64는 `rustup target add x86_64-unknown-linux-musl` 후 `make build-rust-x86_64`입니다. [정적 배포·CentOS 검증·기존 릴리스와의 차이](static-build.md)를 확인하세요. 기본 `make build`는 계속 Go 실행파일 하나만 생성합니다.
+`make build-rust`는 현재 호스트 아키텍처의 통합 정적 실행파일 하나를 만듭니다. 호스트에 맞는 musl 표준 라이브러리와 번들 rust-lld를 사용하며 필수 네이티브 런타임 의존성은 추가하지 않습니다. [빌드·예제 선택](examples.md) · [정적 배포](static-build.md).
 
 `--theme`는 dark/light/blackwhite, `--colors`는 auto/8/16/256/truecolor입니다. auto는 Crossterm이 보고한 색상 수를 사용합니다. 명시적 프로필 선택은 미리보기이며 단말의 실제 능력이나 사용자 팔레트를 바꾸지 않습니다. 대화형 실행에는 TTY가 필요합니다.
 

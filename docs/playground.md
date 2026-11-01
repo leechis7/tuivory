@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](playground.en.md)
 
+**0.9.1 TVR-27:** [통합 예제 실행파일](examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
+
 이 화면에서 ‘규칙을 적용하면 어떻게 보이는가’를 직접 확인합니다. 데이터는 합성 예시이며 DB·네트워크 서비스에 접속하거나 설정/입력값을 저장하지 않습니다.
 
 ## 실행
@@ -17,7 +19,7 @@ make build
 ./bin/go/tuivory-linux-arm64
 ```
 
-`make build`는 Linux ARM64만 만듭니다. 다른 환경에서는 `go -C go run ./cmd/tuivory`로 현재 환경에서 실행할 수 있습니다.
+`make build`는 현재 Linux 호스트 아키텍처의 통합 실행파일 하나만 만듭니다. 위 경로는 ARM64 서버의 예입니다. [다른 예제 선택](examples.md).
 
 ```sh
 go -C go run ./cmd/tuivory --theme light --colors 16
@@ -65,7 +67,7 @@ go -C go run ./cmd/tuivory --lang en
 
 영어 UI: [다크](images/playground-dark-en.svg) · [라이트](images/playground-light-en.svg) · [흑백](images/playground-blackwhite-en.svg) · [팝업](images/playground-popup-en.svg)
 
-이미지는 실제 앱 위젯을 tcell 모의 화면에 그린 뒤 셀에서 생성한 참조 이미지입니다. 실제 SecureCRT/MobaXterm 캡처나 지원 보장으로 해석하지 않습니다. 별도 단말 검증은 [양식](../evidence/README.md)을 사용합니다.
+이미지는 실제 앱 위젯을 tcell 모의 화면에 그린 뒤 셀에서 생성한 참조 이미지입니다. 실제 SecureCRT/MobaXterm 캡처나 지원 보장으로 해석하지 않습니다. 별도 단말 검증은 [양식](evidence/README.md)을 사용합니다.
 
 ```sh
 make -C go test
@@ -89,6 +91,6 @@ Go 견본 팝업·선택박스는 [TVR-14 공통 그리기](overlay-drawing.md)�
 
 [탐색 영역](images/playground-explorer.svg) · [그리드](images/playground-grid.svg) · [편집 팝업](images/playground-edit.svg)
 
-위 한영 화면은 실제 Go 위젯의 SimulationScreen 출력입니다. Rust도 공통 패널의 같은 이중선 규칙을 사용합니다. [공통 규칙과 검증](../evidence/focus-borders.md).
+위 한영 화면은 실제 Go 위젯의 SimulationScreen 출력입니다. Rust도 공통 패널의 같은 이중선 규칙을 사용합니다. [공통 규칙과 검증](evidence/focus-borders.md).
 
 크기 변경은 UI 갱신 큐에서 처리해 그리기 잠금 안에서 페이지/포커스를 재설정하지 않습니다. `python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang ko --resize`로 실제 터미널 리사이즈 후 종료까지 확인합니다. CI도 한영 견본에 같은 회귀를 실행합니다.

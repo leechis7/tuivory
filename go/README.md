@@ -2,15 +2,17 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+**0.9.1 TVR-27:** [통합 예제 실행파일](../docs/examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
+
 **0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](../docs/syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다.
 
-**0.9.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
+**0.9.1:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
 
 [공개 API 명세](../docs/api/go.md)
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-제품 버전은 루트 `VERSION`의 **0.9.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.9.0`으로 배포합니다. [릴리스 안내](../docs/release-0.9.0.md).
+제품 버전은 루트 `VERSION`의 **0.9.1**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.9.1`으로 배포합니다. [릴리스 안내](../docs/release-0.9.1.md).
 
 Go 모듈과 모든 Go 구현은 이 디렉터리에 있습니다. 모듈 경로는 `github.com/leechis7/tuivory/go`, 패키지 이름은 `tuivory`이며 한 번만 import합니다.
 
@@ -22,10 +24,10 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-현재 버전은 `v0.9.0`이며 Go 하위 모듈 태그는 `go/v0.9.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
+현재 버전은 `v0.9.1`이며 Go 하위 모듈 태그는 `go/v0.9.1`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.9.0
+go get github.com/leechis7/tuivory/go@v0.9.1
 ```
 
 저장소 루트에서:
@@ -37,7 +39,7 @@ make test
 make check
 ```
 
-이 디렉터리에서는 `go run ./cmd/tuivory`, `go run ./examples/starter`, `go test -race ./...`를 실행할 수 있습니다. `make build`는 Linux ARM64 제품 바이너리 하나를 저장소의 `bin/go/`에 만듭니다.
+이 디렉터리에서는 `go run ./cmd/tuivory`, `go run ./examples/starter`, `go test -race ./...`를 실행할 수 있습니다. `make build`는 현재 Linux 호스트 아키텍처의 통합 예제 하나를 저장소의 `bin/go/`에 만듭니다.
 
 아래 언어 선택은 `v0.2.0`에 포함합니다. 견본 UI는 한국어가 기본이며, `go run ./cmd/tuivory --lang en` 또는 빌드한 바이너리의 `--lang en` 옵션으로 영어를 선택합니다. `--lang ko`로 한국어를 명시할 수 있습니다. 시작 템플릿의 예시 문구는 한국어입니다.
 

@@ -53,6 +53,6 @@ Release 첨부와 로컬 `bin/releases/v0.2.0/`의 파일명은 아래와 같습
 
 ## 검증과 게시 기록
 
-[준비 검증 기록](../evidence/release-0.2.0.md)은 게시 전 dirty 후보를 검사한 과거 기록입니다. 최종 배포 자산의 SHA256은 Release 첨부 `SHA256SUMS`·`RELEASE-MANIFEST.json`을 기준으로 확인하세요. PR/main/dev CI·확정 커밋·실제 태그 설치·업로드 자산 재다운로드 검증 결과는 [TVR-7](https://leechis7.atlassian.net/browse/TVR-7)과 TVR-5/6 댓글에 기록합니다. 이전 준비 후보의 해시나 CI를 최종 자산의 근거로 사용하지 않습니다.
+[준비 검증 기록](evidence/release-0.2.0.md)은 게시 전 dirty 후보를 검사한 과거 기록입니다. 최종 배포 자산의 SHA256은 Release 첨부 `SHA256SUMS`·`RELEASE-MANIFEST.json`을 기준으로 확인하세요. PR/main/dev CI·확정 커밋·실제 태그 설치·업로드 자산 재다운로드 검증 결과는 [TVR-7](https://leechis7.atlassian.net/browse/TVR-7)과 TVR-5/6 댓글에 기록합니다. 이전 준비 후보의 해시나 CI를 최종 자산의 근거로 사용하지 않습니다.
 
 검증 범위는 정적 ELF·외부 Go/Rust import·한영 native PTY와 CentOS 7.4 커널 실행입니다. VM catalog 시작은 기본 forms 모드이며 다른 모드의 입력은 native PTY로 확인합니다. 실제 고객 서버 SSH·폰트별 물리 단말·LazyOra/LazyBeaver 앱 통합은 별도입니다.

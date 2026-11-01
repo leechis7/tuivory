@@ -51,4 +51,4 @@ Future fixtures cover generics, raw/multiline strings, fake keywords in comments
 
 ## Validation and performance
 
-Shared fixtures separate exact SQL byte/role expectations, valid UTF-8 incomplete prefixes, seventeen role fallbacks and future-language examples. Both SDKs consume the same fixtures. Validate 10,000-line analysis/application/scroll/original preservation and record actual measurements in [evidence](../evidence/syntax-results.json). Analysis and Layout visit the full source; no incremental parser/rope. Distinguish Go post-Show/Rust TestBackend/real PTY checks from unrun remote CI/publication.
+Shared fixtures separate exact SQL byte/role expectations, valid UTF-8 incomplete prefixes, seventeen role fallbacks and future-language examples. Both SDKs consume the same fixtures. Validate 10,000-line analysis/application/scroll/original preservation and record actual measurements in [evidence](../docs/evidence/syntax-results.json). Analysis and Layout visit the full source; no incremental parser/rope. Distinguish Go post-Show/Rust TestBackend/real PTY checks from unrun remote CI/publication.

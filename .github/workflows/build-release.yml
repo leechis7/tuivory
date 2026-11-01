@@ -1,0 +1,38 @@
+name: Build release on native host
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Expected clean source commit
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  linux-x86_64:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check source identity
+        env:
+          EXPECTED_SHA: ${{ inputs.source_sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.9'
+          cache-dependency-path: go/go.sum
+      - name: Install host static toolchain
+        run: |
+          rustup toolchain install 1.88.0 --profile minimal
+          rustup default 1.88.0
+          rustup target add x86_64-unknown-linux-musl
+      - name: Package one executable per language on the runner
+        run: python3 tools/package_release.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-linux-x86_64
+          path: .cache/releases/v*/*
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

@@ -54,7 +54,7 @@ grid.set_cell_info(|_, column| GridCellInfo {
 });
 ```
 
-실제 import·데이터·키 입력 연결은 [Go 카탈로그](../go/examples/catalog/main.go), [Go 구성](../go/examples/catalog/grid.go), [Rust 카탈로그](../rust/examples/catalog/main.rs), [Rust 구성](../rust/examples/catalog/grid_demo.rs)에 있습니다. Rust는 `grid::grid_preset`, `GridOptions`, `GridColumnOptions`, `GridCellInfo`와 `set_options / set_column_options / set_cell_info`를 사용합니다. 기존 `GridColumn`, `GridRecord`, `GridEvent` 필드는 유지합니다.
+실제 import·데이터·키 입력 연결은 [Go 카탈로그](../go/examples/catalog/main.go), [Go 구성](../go/internal/showcase/catalog/grid.go), [Rust 카탈로그](../rust/examples/catalog/main.rs), [Rust 구성](../rust/examples/catalog/grid_demo.rs)에 있습니다. Rust는 `grid::grid_preset`, `GridOptions`, `GridColumnOptions`, `GridCellInfo`와 `set_options / set_column_options / set_cell_info`를 사용합니다. 기존 `GridColumn`, `GridRecord`, `GridEvent` 필드는 유지합니다.
 
 | Go 필드 (Rust는 snake_case) | 기본값·의미 |
 | --- | --- |
@@ -100,6 +100,6 @@ grid.set_cell_info(|_, column| GridCellInfo {
 
 [검증 기록](grid-validation.md) · [정적 배포](static-build.md) · [출처 LazyOra v0.11.2](https://github.com/leechis7/lazyora/blob/98a2f47e8621838101d5db781232a699dba382f3/internal/ui/grid.go). 외형·조작 원칙을 참고했으며 DB·Oracle 구현은 포함하지 않습니다.
 
-NewGridView는 RowsView.PreserveBackgrounds를 켜며 Rust GridWidget도 같은 보존 경로를 사용합니다. 직접 그리드 행을 그릴 때는 RowsWidget.preserve_backgrounds()를 사용합니다. simple/data 배경 옵션과 사용자 grid.* 역할은 그대로 유지합니다. 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
+NewGridView는 RowsView.PreserveBackgrounds를 켜며 Rust GridWidget도 같은 보존 경로를 사용합니다. 직접 그리드 행을 그릴 때는 RowsWidget.preserve_backgrounds()를 사용합니다. simple/data 배경 옵션과 사용자 grid.* 역할은 그대로 유지합니다. 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](evidence/background-fix.md)을 참고하세요.
 
 0.5.0의 Deprecated API와 전환 코드는 [지원 상태 안내](api-lifecycle.md)를 참고하세요. 기존 태그의 API는 바꾸지 않으며 호환 경로는 유지합니다.

@@ -29,7 +29,7 @@ make run-catalog-rust ARGS="--mode forms --lang en"
 
 [Backlog](components-backlog.md) · [Static distribution](static-build.md)
 
-0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
+0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](evidence/background-fix.md)을 참고하세요.
 
 ## 비활성 상태
 

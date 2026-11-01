@@ -294,7 +294,7 @@ impl Drop for Session {
         );
     }
 }
-fn main() -> Result<(), Box<dyn Error>> {
+pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut en = false;
     let mut ascii = false;
     let mut theme = Theme::Dark;
@@ -303,7 +303,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut opened = false;
     let mut shadow = ShadowOptions::default();
     let mut open_id = "file".to_string();
-    let mut args = std::env::args().skip(1);
+    let mut args = arguments.into_iter();
     while let Some(a) = args.next() {
         match a.as_str() {
             "--lang" => {
@@ -564,4 +564,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    run(std::env::args().skip(1).collect())
 }

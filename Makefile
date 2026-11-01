@@ -1,6 +1,6 @@
 .PHONY: run build test check check-consumers test-rust check-rust check-rust-consumers test-rust-ui check-rust-ui run-rust build-rust
 run:
-	$(MAKE) -C go run
+	$(MAKE) -C go run ARGS="$(ARGS)"
 build:
 	$(MAKE) -C go build
 .PHONY: run-syntax-go run-syntax-rust
@@ -9,11 +9,8 @@ run-syntax-go:
 run-syntax-rust:
 	cargo run --manifest-path rust/Cargo.toml --features playground,syntax-sql --example syntax -- $(ARGS)
 .PHONY: build-syntax-go build-syntax-rust
-build-syntax-go:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go -C go build -trimpath -o ../bin/go/tuivory-syntax-linux-arm64 ./examples/syntax
-	python3 tools/check_static_elf.py --arch arm64 bin/go/tuivory-syntax-linux-arm64
-build-syntax-rust:
-	python3 tools/build_rust.py --syntax
+build-syntax-go: build
+build-syntax-rust: build-rust
 test:
 	$(MAKE) -C go test
 	python3 -m unittest discover -s tests -v
@@ -50,12 +47,6 @@ run-controls-go:
 	go -C go run ./examples/controls $(ARGS)
 run-controls-rust:
 	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example controls -- $(ARGS)
-
-.PHONY: build-go-x86_64 build-rust-x86_64
-build-go-x86_64:
-	$(MAKE) -C go build-x86_64
-build-rust-x86_64:
-	$(MAKE) -C rust build-x86_64
 
 .PHONY: run-focus-go run-focus-rust
 run-focus-go:
