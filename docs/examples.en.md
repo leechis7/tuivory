@@ -49,6 +49,8 @@ python3 tools/snapshot_tree.py bin/rust/tuivory-linux-arm64 --demo tree --output
 [Example sources](examples.en.md) · [Static distribution](static-build.en.md) · [Local validation record](evidence/showcase-results.json). Passed 24 bilingual PTY scenarios per language, static ELF checks and 20 unchanged reference images. Remote CI/publication, x86_64 execution and CentOS validation were not performed.
 
 
+Go is the reference for the examples. Rust also provides the default playground navigation, theme/color selectors, password, disabled button, and focus order. Tree title/button alignment and SQL editor padding/pointer coordinates follow Go. Both unified executables accept value options such as `--lang=en`, `--theme=light`, and `--colors=16`. Terminal backends and automatic color detection remain language-specific, so actual terminal output can vary. [Rust screens and controls](rust-playground.en.md).
+
 ## Example sources and component guides
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](component-boundary.en.md).

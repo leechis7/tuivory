@@ -37,7 +37,7 @@ impl App {
         } else {
             "SQL 문법 강조"
         };
-        let block = self.styles.panel(title, true, 0, self.ascii).unwrap();
+        let block = self.styles.panel(title, true, 1, self.ascii).unwrap();
         let inner = block.inner(panel);
         block.render(panel, buf);
         TextWidget {
@@ -152,14 +152,22 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             }
             Event::Mouse(mouse) => {
                 let size = terminal.size()?;
+                let editor = Rect::new(
+                    2,
+                    2,
+                    size.width.saturating_sub(4),
+                    size.height.saturating_sub(6),
+                );
                 match mouse.kind {
-                    MouseEventKind::Down(MouseButton::Left) => {
+                    MouseEventKind::Down(MouseButton::Left)
+                        if editor.contains((mouse.column, mouse.row).into()) =>
+                    {
                         dragging = true;
                         app.doc.point(
-                            mouse.column as isize - 1,
-                            mouse.row as isize - 1,
-                            usize::from(size.width.saturating_sub(2)),
-                            usize::from(size.height.saturating_sub(4)),
+                            mouse.column as isize - isize::try_from(editor.x).unwrap(),
+                            mouse.row as isize - isize::try_from(editor.y).unwrap(),
+                            usize::from(editor.width),
+                            usize::from(editor.height),
                             false,
                         )
                     }
@@ -168,10 +176,10 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                         if dragging =>
                     {
                         app.doc.point(
-                            mouse.column as isize - 1,
-                            mouse.row as isize - 1,
-                            usize::from(size.width.saturating_sub(2)),
-                            usize::from(size.height.saturating_sub(4)),
+                            mouse.column as isize - isize::try_from(editor.x).unwrap(),
+                            mouse.row as isize - isize::try_from(editor.y).unwrap(),
+                            usize::from(editor.width),
+                            usize::from(editor.height),
                             true,
                         );
                         if matches!(mouse.kind, MouseEventKind::Up(_)) {

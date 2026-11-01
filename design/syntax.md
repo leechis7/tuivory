@@ -32,7 +32,7 @@ source는 원문 그대로이며 토큰은 정렬된 비중첩 양의 길이 byt
 | parameter, lifetime | syntax.parameter | error |
 | identifier, operator, punctuation, 미지원 역할 | body | body |
 
-전경은 대비 규칙을 거쳐 실제 surface 배경과 결합합니다. 언어별 새 팔레트는 만들지 않습니다. 기존 Go 7종 SyntaxKind 숫자/색상은 바꾸지 않으며 선택적 SyntaxStyleFunc 어댑터로 유지할 수 있습니다. 우선순위는 비활성 > 선택 > 검색 일치(edited) > 문법 > 본문이고, 커서는 선택된 배경을 유지하며 포커스 표시를 더합니다. 원문 변경은 검색 결과를 만료시킵니다. 다크/라이트/흑백 × 8/16/256/True Color, Unicode/ASCII를 같은 원칙으로 처리합니다.
+전경은 대비 규칙을 거쳐 실제 surface 배경과 결합합니다. 언어별 새 팔레트는 만들지 않습니다. 기존 Go 7종 SyntaxKind 숫자는 유지합니다. 0.9.2는 다크/8색의 색상·속성 조합을 개선하며 기본 Go/Rust 편집기와 SyntaxStyleFunc에 같은 원칙을 적용합니다. 우선순위는 비활성 > 선택 > 검색 일치(edited) > 문법 > 본문이고, 커서는 선택된 배경을 유지하며 포커스 표시를 더합니다. 원문 변경은 검색 결과를 만료시킵니다. 다크/라이트/흑백 × 8/16/256/True Color, Unicode/ASCII를 같은 원칙으로 처리합니다.
 
 ## 현재 구현: Oracle SQL/PLSQL
 
@@ -52,3 +52,5 @@ source는 원문 그대로이며 토큰은 정렬된 비중첩 양의 길이 byt
 ## 검증·성능
 
 공통 fixture는 현재 SQL 토큰의 정확한 byte/역할, 모든 UTF-8 경계의 미완성 입력, 17개 역할 fallback과 후속 언어 예제를 구분합니다. Go/Rust에서 같은 fixture를 사용합니다. 1만 줄 분류·적용·원문 보존 및 스크롤을 검증하고 실제 측정값은 [검증 기록](../docs/evidence/syntax-results.json)에 남깁니다. 전체 분석/전체 Layout이며 증분 처리·rope는 아닙니다. Go Show/Rust TestBackend와 실제 PTY 검증·미실행 원격 CI/게시는 구분합니다.
+
+0.9.2의 다크/8색은 참조 대비 >=4.5:1인 7종 전경·속성 조합을 Go/Rust 기본 렌더러와 Go 기존 어댑터에 공통 적용합니다. 역할별 표현과 단말 제약은 [사용법](../docs/syntax.md)을 참고하세요.

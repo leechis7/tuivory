@@ -54,6 +54,18 @@ func (s Styles) SyntaxStyle(kind SyntaxKind, base tcell.Style) tcell.Style {
 	r, g, b := bg.RGB()
 	dark := r >= 0 && 299*r+587*g+114*b < 128000
 	if p == "8" {
+		if dark {
+			// Two readable ANSI foregrounds; attributes distinguish roles without
+			// requesting bright indices, RGB, dim text or token backgrounds.
+			accent := kind == SyntaxKeyword || kind == SyntaxFunction || kind == SyntaxString || kind == SyntaxParameter
+			fg := indexed(7)
+			if accent {
+				fg = indexed(3)
+			}
+			return base.Foreground(fg).Bold(kind == SyntaxKeyword || kind == SyntaxNumber).
+				Underline(kind == SyntaxKeyword || kind == SyntaxType || kind == SyntaxParameter).
+				Italic(kind == SyntaxString || kind == SyntaxComment)
+		}
 		fg := indexed(7)
 		if !dark {
 			fg = indexed(0)

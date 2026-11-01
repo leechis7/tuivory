@@ -96,17 +96,17 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     let Some(options) = options(arguments)? else {
         return Ok(());
     };
-    let profile = options.profile.unwrap_or_else(|| {
-        if options.snapshot.is_some() {
-            ColorProfile::Truecolor
-        } else {
-            profile_for_colors(
-                i32::from(tuivory::ui::terminal::style::available_color_count()),
-                false,
-            )
-        }
-    });
+    let detected = if options.snapshot.is_some() {
+        ColorProfile::Truecolor
+    } else {
+        profile_for_colors(
+            i32::from(tuivory::ui::terminal::style::available_color_count()),
+            false,
+        )
+    };
+    let profile = options.profile.unwrap_or(detected);
     let mut app = App::new(options.language, options.theme, profile)?;
+    app.set_profile_mode(options.profile.is_none(), detected);
     if let Some(path) = options.snapshot {
         if options.popup {
             app.preview();

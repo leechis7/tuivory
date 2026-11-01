@@ -19,7 +19,7 @@ func (s Styler) DropDown(field *tview.DropDown) {
 	field.SetLabelStyle(p.TextStyle(style.Panel, style.Body))
 	normal := p.DropDownStyle()
 	field.SetFieldStyle(normal).SetFocusedStyle(p.SelectionStyle().Underline(true)).
-		SetListStyles(normal, p.SelectionStyle()).SetPrefixStyle(normal)
+		SetListStyles(normal, p.SelectionStyle()).SetPrefixStyle(normal).SetDisabledStyle(p.DisabledStyle())
 }
 
 // Choice preserves its own colors when a Form reapplies shared input attributes.

@@ -32,7 +32,7 @@ Initial binding failures preserve existing state. Failures after edits clear sta
 | parameter, lifetime | syntax.parameter | error |
 | identifier, operator, punctuation, unsupported | body | body |
 
-Apply contrast rules and bind foregrounds to the actual surface. No per-language palette. Preserve existing Go SyntaxKind numbers/colors via the optional SyntaxStyleFunc adapter. Precedence: disabled > selection > search (edited) > syntax > body; cursor focus decoration retains the winning background. Source changes expire search matches. Apply consistent dark/light/monochrome × 8/16/256/True Color and Unicode/ASCII behavior.
+Apply contrast rules and bind foregrounds to the actual surface. No per-language palette. Preserve existing Go SyntaxKind numbers; 0.9.2 improves dark/8 colors/attributes in Go/Rust semantic editors and the Go SyntaxStyleFunc adapter. Precedence: disabled > selection > search (edited) > syntax > body; cursor focus decoration retains the winning background. Source changes expire search matches. Apply consistent dark/light/monochrome × 8/16/256/True Color and Unicode/ASCII behavior.
 
 ## Implemented: Oracle SQL/PLSQL
 

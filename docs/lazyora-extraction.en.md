@@ -60,3 +60,10 @@ python3 tools/capture_lazyora_matrix.py /path/to/lazyora
 Syntax style calculations work with stock tcell. Stock tview TextArea lacks the LazyOra fork's `SetTextStyleFunc`, so Tuivory does not reproduce that hook. Actual LazyOra integration calls Tuivory's `SyntaxStyle` from the host lexer and hooks. The template does not claim complete syntax-highlighted rendering.
 
 Following the disabled-state refinement, Go DisabledStyle() applies the shared disabled foreground/Dim policy. The extracted Disabled field and original comparison JSON retain historical colors; separate twelve-palette output tests validate the new adapter. Explicit custom Disabled colors remain intact. [Current rules](disabled-states.en.md).
+
+
+## TVR-7 table and splitter contrast fixes
+
+Original palette fields and historical extraction fixtures remain unchanged. Current `Styles.SplitterStyle()` uses a muted foreground on the canvas instead of the button fill, checked at 3:1 or higher across twelve reference palettes. This corrects identical light/8 colors and low contrast in light/16, 256 and True Color.
+
+`ComparisonHeaderStyle` keeps the panel background. Accent text and an underline identify the current column; other headers use body text. This avoids Field/Selection header fills matching the shared vertical separator color while retaining selected data-cell styling. Actual post-Show `Styler.Comparison` output is checked after selection changes for separator contrast of at least 3:1 and header text contrast of at least 4.5:1. [Text repaint rules and validation](overlay-drawing.en.md).

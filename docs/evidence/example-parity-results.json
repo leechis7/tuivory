@@ -1,0 +1,80 @@
+{
+  "issue": "TVR-27",
+  "date": "2026-11-02",
+  "source_base_commit": "fba55123f548b1b5e96fb837b7c57cfd4518679c",
+  "worktree_uncommitted": true,
+  "published": false,
+  "github_ci": "not run for this follow-up",
+  "architecture": "Linux ARM64",
+  "reference": "Go example executable; public Rust SDK candidate styles unchanged",
+  "changes": [
+    "Go first-paint page styling: card padding/spacers match themes before and after switching themes",
+    "Rust playground navigation/theme/color selectors, masked password, disabled button, focus order, Auto profile cycle, Go palette and bilingual guide parity",
+    "Rust tree title/button centering",
+    "Rust SQL example panel padding and pointer coordinates",
+    "Rust unified launcher accepts Go-style --option=value for value options"
+  ],
+  "binaries": {
+    "bin/go/tuivory-linux-arm64": {
+      "sha256": "8c458d9a30e3e4ba79d83c1136d099b5ee9d87cfe8ae4e76999e2be5e1531ab3",
+      "bytes": 6610791,
+      "static_elf": true
+    },
+    "bin/rust/tuivory-linux-arm64": {
+      "sha256": "5987b8e0c808a8a598d9180c7c4d3995b0469b1a57be3f5e235e6d25147ae435",
+      "bytes": 2769984,
+      "static_elf": true
+    }
+  },
+  "checks": {
+    "go": "make test check: race, vet, Python, shared fixtures/facade/lifecycle/palettes and documentation links passed; final palette/guide check passed",
+    "rust": "all-target/all-feature tests and doctests passed; fmt and clippy -D warnings passed; six playground regression tests",
+    "binary_demo_interactions": {
+      "passed": 48,
+      "languages": [
+        "ko",
+        "en"
+      ],
+      "demos": 8,
+      "log": ".cache/validation/TVR-27-parity/final-pty.log"
+    },
+    "binary_theme_color_screens": {
+      "passed": 48,
+      "themes": [
+        "dark",
+        "light",
+        "blackwhite"
+      ],
+      "profiles": [
+        "8",
+        "16",
+        "256",
+        "truecolor"
+      ],
+      "languages": [
+        "ko",
+        "en"
+      ],
+      "implementations": [
+        "go",
+        "rust"
+      ],
+      "assertions": [
+        "password masking",
+        "navigation visible",
+        "input/disabled foreground and background match Go palette using terminal ANSI indices"
+      ],
+      "log": ".cache/validation/TVR-27-parity/matrix-final.log"
+    },
+    "reference_images": "18 bilingual SVGs regenerated from bin/rust: playground 8, tree 2, syntax 8",
+    "crate_contents": "cargo package --allow-dirty --offline --list includes examples/playground/go-palette.json",
+    "scope_limits": [
+      "terminal fonts, configured ANSI colors and backend color detection may differ",
+      "name/password text editing in the Rust playground appends at the end; the public SDK editor is separate",
+      "no GitHub CI or other architecture run for this follow-up",
+      "no CentOS verification"
+    ],
+    "go_first_paint": "12 palettes, physical Show buffer before/after theme round trip; race test passed",
+    "go_final_binary": "rebuilt after first-paint fix; 24 Go matrix screens recaptured; Korean/English resize/start/exit PTY checks passed"
+  }
+}

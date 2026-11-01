@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](static-build.en.md)
 
-현재 공개 릴리스는 **0.9.1**입니다. [자산과 검증](release-0.9.1.md). 아래 0.2.0/CentOS 내용은 과거 이력입니다.
+현재 공개 릴리스는 **0.9.2**입니다. [자산과 검증](release-0.9.2.md). 아래 0.2.0/CentOS 내용은 과거 이력입니다.
 
 2026-10-29 사용자 지시에 따라 앞으로 CentOS 검증을 수행하지 않습니다. CI의 CentOS VM 단계도 제거합니다. 정적 배포 조건·ELF 검사·사용 가능한 환경의 실행 검증은 유지합니다. 아래 CentOS 명령과 기존 결과는 과거 검증의 재현 이력이며 현재 필수 절차가 아닙니다.
 
@@ -33,7 +33,7 @@ python3 tools/check_static_elf.py --arch arm64 bin/go/tuivory-linux-arm64 bin/ru
 python3 tools/check_showcase.py bin/go/tuivory-linux-arm64 bin/rust/tuivory-linux-arm64
 ```
 
-기존 0.9.0 자산은 보존합니다. 0.9.1부터 언어·아키텍처별 압축파일 안에 통합 실행파일 하나를 제공합니다. 한 서버에서 다른 아키텍처를 교차 빌드하지 않습니다.
+기존 0.9.0 자산은 보존합니다. 0.9.2부터 언어·아키텍처별 압축파일 안에 통합 실행파일 하나를 제공합니다. 한 서버에서 다른 아키텍처를 교차 빌드하지 않습니다.
 
 ## 과거 CentOS 커널 검증 (현재 수행하지 않음)
 

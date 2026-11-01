@@ -126,7 +126,31 @@ impl Styles {
     /// Resolve a semantic role without replacing ANSI indices with RGB values.
     pub fn role(&self, name: &str) -> Result<Style, Error> {
         if name.starts_with("syntax.") {
-            return self.text_on_surface(crate::syntax::palette_role(name), "surface");
+            let style = self.text_on_surface(crate::syntax::palette_role(name), "surface")?;
+            let dark_eight = self.palette.style("surface")?.background == crate::Color::Indexed(0)
+                && self.palette.style("warning")?.foreground == crate::Color::Indexed(3)
+                && self.palette.styles().values().all(|s| {
+                    matches!(s.foreground, crate::Color::Indexed(0..=7))
+                        && matches!(s.background, crate::Color::Indexed(0..=7))
+                });
+            if dark_eight {
+                let role = name.trim_start_matches("syntax.");
+                let accent = matches!(role, "keyword" | "function" | "string" | "parameter");
+                let mut style = style
+                    .fg(Color::Indexed(if accent { 3 } else { 7 }))
+                    .remove_modifier(Modifier::BOLD | Modifier::UNDERLINED | Modifier::ITALIC);
+                if matches!(role, "keyword" | "number") {
+                    style = style.add_modifier(Modifier::BOLD);
+                }
+                if matches!(role, "keyword" | "type" | "parameter") {
+                    style = style.add_modifier(Modifier::UNDERLINED);
+                }
+                if matches!(role, "string" | "comment") {
+                    style = style.add_modifier(Modifier::ITALIC);
+                }
+                return Ok(style);
+            }
+            return Ok(style);
         }
         let alias = match name {
             "grid.active" | "grid.range" => "selection",
