@@ -86,11 +86,11 @@ Go는 `NewPanelView(menuView, palette)`로 감싸고 계산한 사각형에 그�
 
 앱은 메뉴가 열린 동안 배경 키/붙여넣기·마우스를 차단하고, 바깥 클릭의 닫기 정책과 호출 패널 복귀를 연결해야 합니다. 예제는 같은 클릭을 배경 작업으로 다시 전달하지 않습니다. 테마/색상/문자 표시를 바꿀 때 메뉴 객체와 원문을 유지합니다. 자동 그룹 임계값·화면별 명령·실제 업무 동작을 공통 코어에 넣지 않습니다. [책임 범위](component-boundary.md).
 
-[검증 기록](../evidence/menu.md) · [공유 탐색 시나리오](../design/menu-cases.json)
+[검증 기록](evidence/menu.md) · [공유 탐색 시나리오](../design/menu-cases.json)
 
-[단일선 메뉴 후속 검증](../evidence/menu-single-border.md)
+[단일선 메뉴 후속 검증](evidence/menu-single-border.md)
 
-0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
+0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](evidence/background-fix.md)을 참고하세요.
 
 비활성 메뉴·메뉴 바는 색상/명암으로 구분하며 별도 비활성 접두사를 붙이지 않습니다. 체크·라디오 선택 표식은 유지합니다.
 

@@ -14,13 +14,13 @@ from pathlib import Path
 from smoke_focus import Screen
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('binary', type=Path)
+parser.add_argument('binary', type=Path); parser.add_argument('--demo', help='select an example from the unified executable')
 parser.add_argument('--host-policy', choices=['default','alternate'], default='default')
 parser.add_argument('--lang', choices=['ko','en'], default='en')
 args = parser.parse_args()
 # Invalid app policy must fail before any terminal setup, not just fail for a missing TTY.
 for option,value in [('--layout','diagonal'),('--quit-key','ctrl-c'),('--focus-order','tabs,tree'),('--focus-order','tabs,tabs,content'),('--focus-order','tabs,tree,unknown')]:
-    invalid=subprocess.run([str(args.binary.resolve()),option,value],stdin=subprocess.DEVNULL,capture_output=True,timeout=5)
+    invalid=subprocess.run([str(args.binary.resolve()), *(['--demo', args.demo] if args.demo else []),option,value],stdin=subprocess.DEVNULL,capture_output=True,timeout=5)
     if invalid.returncode==0 or option.encode() not in invalid.stderr or b'\x1b[?1049h' in invalid.stdout:
         raise RuntimeError(f'Invalid policy reached terminal setup: {option}={value}: {invalid.stderr!r}')
 master, slave = pty.openpty()
@@ -60,7 +60,7 @@ def visible(): return ''.join(''.join(row) for row in screen.rows).replace(' ','
 
 try:
     options=['--layout','rows','--focus-order','content,tree,tabs','--quit-key','ctrl-x'] if args.host_policy=='alternate' else []
-    process = subprocess.Popen([str(args.binary.resolve()), '--lang', args.lang]+options, stdin=slave, stdout=slave,
+    process = subprocess.Popen([str(args.binary.resolve()), *(['--demo', args.demo] if args.demo else []), '--lang', args.lang]+options, stdin=slave, stdout=slave,
                                stderr=slave, preexec_fn=terminal,
                                env=dict(os.environ, TERM='xterm-256color'))
     os.close(slave)

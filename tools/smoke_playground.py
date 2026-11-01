@@ -14,7 +14,7 @@ from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('binary', type=Path)
+    parser.add_argument('binary', type=Path); parser.add_argument('--demo', help='select an example from the unified executable')
     parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
     parser.add_argument('--resize', action='store_true', help='exercise resize and redraw before exit')
     args = parser.parse_args()
@@ -46,7 +46,7 @@ def main():
                     break
 
     try:
-        process = subprocess.Popen([str(args.binary.resolve()), '--lang', args.lang], stdin=slave, stdout=slave,
+        process = subprocess.Popen([str(args.binary.resolve()), *(['--demo', args.demo] if args.demo else []), '--lang', args.lang], stdin=slave, stdout=slave,
                                    stderr=slave, env=dict(os.environ, TERM='xterm-256color'),
                                    preexec_fn=controlling_terminal)
         os.close(slave)

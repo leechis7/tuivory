@@ -20,7 +20,7 @@ jobs:
       - name: Check generated public API references
         run: |
           RUSTC_BOOTSTRAP=1 cargo +1.88.0 rustdoc --manifest-path rust/Cargo.toml --locked --all-features --lib -- -Z unstable-options --output-format json
-          python3 tools/generate_api_reference.py --rust-json rust/target/doc/tuivory.json --check
+          python3 tools/generate_api_reference.py --rust-json .cache/rust/doc/tuivory.json --check
   validate:
     runs-on: ubuntu-24.04
     steps:
@@ -62,58 +62,50 @@ jobs:
         run: make check-consumers
       - name: Verify isolated Go module
         run: python3 tools/check_go_module.py
-      - name: Build Linux ARM64 playground
+      - name: Build one static Go showcase for the runner
         run: |
           make build
-          test -x bin/go/tuivory-linux-arm64
-      - name: Build native executable for terminal smoke check
-        run: go build -C go -o "$RUNNER_TEMP/tuivory" ./cmd/tuivory
+          test -x bin/go/tuivory-linux-x86_64
       - name: Check actual PTY startup and exit
         run: |
-          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang ko --resize
-          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory" --lang en --resize
+          python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --lang ko --resize
+          python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --lang en --resize
       - name: Check public Tree example terminal lifecycle
         run: |
-          go build -C go -o "$RUNNER_TEMP/tuivory-tree" ./examples/tree
-          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-tree" --lang ko
-          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-tree" --lang en
+          python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --demo tree --lang ko
+          python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --demo tree --lang en
       - name: Check public workspace example terminal lifecycle
         run: |
-          go build -C go -o "$RUNNER_TEMP/tuivory-workspace" ./examples/workspace
-          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-workspace" --lang ko
-          python3 tools/smoke_playground.py "$RUNNER_TEMP/tuivory-workspace" --lang en
-          python3 tools/smoke_workspace.py "$RUNNER_TEMP/tuivory-workspace"
+          python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --demo workspace --lang ko
+          python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --demo workspace --lang en
+          python3 tools/smoke_workspace.py bin/go/tuivory-linux-x86_64 --demo workspace
       - name: Check public catalog widgets
         run: |
-          go build -C go -o "$RUNNER_TEMP/tuivory-catalog" ./examples/catalog
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --lang ko
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --lang en
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode collections --lang ko
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode collections --lang en
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode grid --lang ko
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode grid --lang en
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode feedback --lang ko
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode feedback --lang en
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode layout --lang ko
-          python3 tools/smoke_catalog.py "$RUNNER_TEMP/tuivory-catalog" --mode layout --lang en
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --lang ko
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --lang en
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --mode collections --lang ko
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --mode collections --lang en
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --mode grid --lang ko
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --mode grid --lang en
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --mode feedback --lang ko
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --mode feedback --lang en
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --mode layout --lang ko
+          python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --mode layout --lang en
       - name: Check public focus and nested popup example
         run: |
-          go build -C go -o "$RUNNER_TEMP/tuivory-focus" ./examples/focus
-          python3 tools/smoke_focus.py "$RUNNER_TEMP/tuivory-focus" --lang ko
-          python3 tools/smoke_focus.py "$RUNNER_TEMP/tuivory-focus" --lang en
+          python3 tools/smoke_focus.py bin/go/tuivory-linux-x86_64 --demo focus --lang ko
+          python3 tools/smoke_focus.py bin/go/tuivory-linux-x86_64 --demo focus --lang en
       - name: Check controls, editing and containers through terminal input
         run: |
-          go build -C go -o "$RUNNER_TEMP/tuivory-controls" ./examples/controls
           for lang in ko en; do
-            python3 tools/smoke_controls.py "$RUNNER_TEMP/tuivory-controls" --lang "$lang"
-            python3 tools/smoke_controls.py "$RUNNER_TEMP/tuivory-controls" --lang "$lang" --ascii
+            python3 tools/smoke_controls.py bin/go/tuivory-linux-x86_64 --demo controls --lang "$lang"
+            python3 tools/smoke_controls.py bin/go/tuivory-linux-x86_64 --demo controls --lang "$lang" --ascii
           done
       - name: Check optional SQL highlighting through the single Go import
         run: |
-          go build -C go -o "$RUNNER_TEMP/tuivory-syntax" ./examples/syntax
           for lang in ko en; do
-            python3 tools/smoke_syntax.py "$RUNNER_TEMP/tuivory-syntax" --lang "$lang"
-            python3 tools/smoke_syntax.py "$RUNNER_TEMP/tuivory-syntax" --lang "$lang" --ascii
+            python3 tools/smoke_syntax.py bin/go/tuivory-linux-x86_64 --demo syntax --lang "$lang"
+            python3 tools/smoke_syntax.py bin/go/tuivory-linux-x86_64 --demo syntax --lang "$lang" --ascii
           done
   rust-core:
     runs-on: ubuntu-24.04
@@ -153,65 +145,64 @@ jobs:
       - name: Test and lint adapter and interactive host
         run: make test-rust-ui check-rust-ui
       - name: Build native executable for terminal checks
-        run: cargo build --manifest-path rust/Cargo.toml --locked --features playground --examples
+        run: cargo build --manifest-path rust/Cargo.toml --locked --features playground,syntax-sql --example showcase
       - name: Check Korean and English terminal lifecycle
         run: |
-          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/playground" --lang ko
-          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/playground" --lang en
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo playground --lang ko
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo playground --lang en
       - name: Check controls, editing and containers through terminal input
         run: |
           for lang in ko en; do
-            python3 tools/smoke_controls.py "$CARGO_TARGET_DIR/debug/examples/controls" --lang "$lang"
-            python3 tools/smoke_controls.py "$CARGO_TARGET_DIR/debug/examples/controls" --lang "$lang" --ascii
+            python3 tools/smoke_controls.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo controls --lang "$lang"
+            python3 tools/smoke_controls.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo controls --lang "$lang" --ascii
           done
-          python3 tools/snapshot_controls.py "$CARGO_TARGET_DIR/debug/examples/controls" --output "$RUNNER_TEMP/controls-images"
+          python3 tools/snapshot_controls.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo controls --output "$RUNNER_TEMP/controls-images"
       - name: Verify reference rendering
-        run: python3 tools/snapshot_rust.py "$CARGO_TARGET_DIR/debug/examples/playground" --output "$RUNNER_TEMP/tuivory-rust-images"
+        run: python3 tools/snapshot_rust.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo playground --output "$RUNNER_TEMP/tuivory-rust-images"
       - name: Check public Tree example and reference views
         run: |
-          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/tree" --lang ko
-          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/tree" --lang en
-          python3 tools/snapshot_tree.py "$CARGO_TARGET_DIR/debug/examples/tree" --output "$RUNNER_TEMP/tuivory-tree-images"
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo tree --lang ko
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo tree --lang en
+          python3 tools/snapshot_tree.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo tree --output "$RUNNER_TEMP/tuivory-tree-images"
       - name: Check public workspace example and reference views
         run: |
-          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/workspace" --lang ko
-          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/workspace" --lang en
-          python3 tools/smoke_workspace.py "$CARGO_TARGET_DIR/debug/examples/workspace"
-          python3 tools/snapshot_workspace.py "$CARGO_TARGET_DIR/debug/examples/workspace" --output "$RUNNER_TEMP/tuivory-workspace-images"
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --lang ko
+          python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --lang en
+          python3 tools/smoke_workspace.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace
+          python3 tools/snapshot_workspace.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --output "$RUNNER_TEMP/tuivory-workspace-images"
       - name: Check public focus scopes, popups and reference views
         run: |
-          python3 tools/smoke_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --lang ko
-          python3 tools/smoke_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --lang en
-          python3 tools/snapshot_focus.py "$CARGO_TARGET_DIR/debug/examples/focus" --output "$RUNNER_TEMP/tuivory-focus-images"
+          python3 tools/smoke_focus.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo focus --lang ko
+          python3 tools/smoke_focus.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo focus --lang en
+          python3 tools/snapshot_focus.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo focus --output "$RUNNER_TEMP/tuivory-focus-images"
       - name: Check public catalog widgets and references
         run: |
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --lang ko
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --lang en
-          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --output "$RUNNER_TEMP/catalog-images"
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --lang ko
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --lang en
-          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode collections --output "$RUNNER_TEMP/catalog-images"
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode grid --lang ko
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode grid --lang en
-          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode grid --output "$RUNNER_TEMP/catalog-images"
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode feedback --lang ko
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode feedback --lang en
-          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode feedback --output "$RUNNER_TEMP/catalog-images"
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --lang ko
-          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --lang en
-          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/catalog" --mode layout --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode collections --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode collections --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode collections --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode grid --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode grid --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode grid --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode feedback --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode feedback --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode feedback --output "$RUNNER_TEMP/catalog-images"
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode layout --lang ko
+          python3 tools/smoke_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode layout --lang en
+          python3 tools/snapshot_catalog.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo catalog --mode layout --output "$RUNNER_TEMP/catalog-images"
       - name: Verify adapter from an external packaged dependency
         run: |
           python3 tools/check_rust_module.py --terminal-output "$RUNNER_TEMP/tuivory-session" --syntax-sql
           python3 tools/check_ui_session.py "$RUNNER_TEMP/tuivory-session"
       - name: Check optional SQL highlighting and reference rendering
         run: |
-          cargo build --manifest-path rust/Cargo.toml --locked --features playground,syntax-sql --example syntax
           for lang in ko en; do
-            python3 tools/smoke_syntax.py "$CARGO_TARGET_DIR/debug/examples/syntax" --lang "$lang"
-            python3 tools/smoke_syntax.py "$CARGO_TARGET_DIR/debug/examples/syntax" --lang "$lang" --ascii
+            python3 tools/smoke_syntax.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo syntax --lang "$lang"
+            python3 tools/smoke_syntax.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo syntax --lang "$lang" --ascii
           done
-          python3 tools/snapshot_syntax.py "$CARGO_TARGET_DIR/debug/examples/syntax" --output "$RUNNER_TEMP/syntax-images"
+          python3 tools/snapshot_syntax.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo syntax --output "$RUNNER_TEMP/syntax-images"
   static-builds:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -227,17 +218,11 @@ jobs:
         run: |
           rustup toolchain install 1.88.0 --profile minimal
           rustup default 1.88.0
-          rustup target add aarch64-unknown-linux-musl x86_64-unknown-linux-musl
-      - name: Check default ARM64 static builds and explicit x86_64 builds
+          rustup target add x86_64-unknown-linux-musl
+      - name: Check single static executable per language on the runner architecture
         run: |
-          make build build-rust build-go-x86_64 build-rust-x86_64
-          make build-syntax-go build-syntax-rust
-          python3 tools/build_rust.py --arch x86_64 --examples
-          python3 tools/build_rust.py --arch x86_64 --syntax
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-tree" ./examples/tree
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-workspace" ./examples/workspace
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-focus" ./examples/focus
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C go -trimpath -o "$RUNNER_TEMP/go-catalog" ./examples/catalog
+          make build build-rust
+          python3 tools/check_showcase.py bin/go/tuivory-linux-x86_64 bin/rust/tuivory-linux-x86_64
       - name: Export static external application checks
         run: |
           python3 tools/check_go_module.py --static-output "$RUNNER_TEMP/go-host"

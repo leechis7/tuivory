@@ -94,8 +94,8 @@ cargo run --manifest-path rust/Cargo.toml --features ratatui --example shadows -
   --lang ko --shadow dim --snapshot popup-shadows.svg
 ```
 
-메뉴의 열기·원래 호출 위치·전역 단축키는 예제 앱이 연결합니다. 현재 문맥 메뉴 견본의 호출점은 고정 좌표이며 우클릭 위치 연결을 새로 구현한 것은 아닙니다. shadows는 DB·대화형 단말 없이 실제 공통 위젯을 TestBackend에 그리는 비교 예제입니다. 색상 수/모드·Unicode/ASCII·위치 보정·배경/그림자 경계, Go Show 이후 출력과 Rust TestBackend를 검사합니다. 로컬 결과·원격 CI·게시 여부는 [검증 결과](../evidence/popup-shadow-results.json)에서 구분합니다. CentOS 검증은 수행하지 않습니다.
+메뉴의 열기·원래 호출 위치·전역 단축키는 예제 앱이 연결합니다. 현재 문맥 메뉴 견본의 호출점은 고정 좌표이며 우클릭 위치 연결을 새로 구현한 것은 아닙니다. shadows는 DB·대화형 단말 없이 실제 공통 위젯을 TestBackend에 그리는 비교 예제입니다. 색상 수/모드·Unicode/ASCII·위치 보정·배경/그림자 경계, Go Show 이후 출력과 Rust TestBackend를 검사합니다. 로컬 결과·원격 CI·게시 여부는 [검증 결과](evidence/popup-shadow-results.json)에서 구분합니다. CentOS 검증은 수행하지 않습니다.
 
 ```sh
-python3 tools/snapshot_popup_shadows.py rust/target/debug/examples/shadows
+python3 tools/snapshot_popup_shadows.py .cache/rust/debug/examples/shadows
 ```

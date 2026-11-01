@@ -6,18 +6,22 @@ Tuivory provides reusable TUI components and styles across languages. Shared des
 
 ```text
 tuivory/
-├── design/       Shared specifications, JSON tokens, schemas, CSV candidates
-├── docs/         Shared documentation and language usage guides
-├── go/           Go module, public API, internal implementation, examples
-├── rust/         Rust core, Ratatui adapter, independent Cargo package, examples
-├── python/       Python token reading example
-├── javascript/   Node.js token reading example
-├── shell/        POSIX ANSI output example
-├── examples/     Example index and shared static layouts
-├── bin/          Git-ignored playground executables in bin/go/ and bin/rust/
-├── tools/        Data generation, checks, isolated module validation
-└── evidence/     Validation records
+├── design/       Shared specifications, tokens and themes
+├── docs/         Usage, API, examples and validation records (evidence/)
+├── go/           Go module, public API, internals and source examples
+├── rust/         Rust crate, renderer and source examples
+├── python/       Python reference examples
+├── javascript/   JavaScript reference examples
+├── shell/        Shell reference examples
+├── tools/        Build, generation and validation tools
+├── tests/        Shared tooling tests
+├── bin/          Unified host executables only (go/, rust/)
+└── .cache/       Temporary builds, checks, release archives and old worktrees (ignored)
 ```
+
+The 0.9.1 TVR-28 layout moves root `evidence/` into `docs/evidence/` and merges the root `examples/` index into the [unified example guide](examples.en.md). Language sources and public import paths stay unchanged. `bin/` contains executables only; temporary outputs belong in `.cache/`. Rust defaults to `.cache/rust/`, overridable with `CARGO_TARGET_DIR`. `.cargo/config.toml` only configures repository development output and is not required by the distributed crate. Historical worktrees move to `.cache/worktrees/` with Git registration, branches and commits preserved.
+
+[Local layout validation](evidence/layout-results.json) covers host static builds, source entrypoints, API references, tool tests, document links and terminal interaction. This is the pre-release implementation snapshot; final publication checks are in the [0.9.1 release](https://github.com/leechis7/tuivory/releases/tag/go/v0.9.1) manifest.
 
 Go and Rust provide shared component models, tokens/styles and tview/Ratatui renderers. Rust core requires 1.85+, while the Ratatui adapter/interactive examples require 1.88+. Models calculate internal state, selection, scrolling and requests. Hosts connect terminals, event loops, screen composition, global focus and business actions. [Boundary](component-boundary.en.md). Other languages currently provide token-reading/reference examples, with missing UI-package scope stated in their READMEs; they are not required to call Go.
 
@@ -54,7 +58,7 @@ The Rust check copies only rust/, verifies a Cargo package, and runs an external
 
 ## Further implementations
 
-Maintain Go usability and validate LazyOra integration, then extend APIs, distribution, and UI templates for Python, JavaScript, and Shell through separate work items. [Shared specification](../design/README.en.md) · [Examples](../examples/README.en.md) · [Roadmap](roadmap.en.md)
+Maintain Go usability and validate LazyOra integration, then extend APIs, distribution, and UI templates for Python, JavaScript, and Shell through separate work items. [Shared specification](../design/README.en.md) · [Examples](examples.en.md) · [Roadmap](roadmap.en.md)
 
 The new shared component API is documented in the [Go/Rust Tree guide](tree.en.md). This candidate-palette implementation is separate from the existing Go-derived styles and stock `Styler.Tree`, and is included in v0.1.0. The [TVR-7 audit](component-audit.en.md) distinguishes state/controls, host responsibilities, and remaining phases.
 

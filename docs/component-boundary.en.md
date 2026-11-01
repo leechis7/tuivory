@@ -55,7 +55,7 @@ English reference from Rust TestBackend at 120×32. This is not a Go/SSH capture
 
 A subsequent user request adds nested menus through [shared Menu](menus.en.md). This is available since 0.3.0, separate from the older flat-list support. App-specific automatic grouping, taxonomy, SQL/sessions and complete help screens remain host-owned. Adding generic capabilities does not require migrating entire application screens.
 
-[Work/validation evidence](../evidence/component-boundary.en.md) · [Example usage](workspace.en.md)
+[Work/validation evidence](evidence/component-boundary.en.md) · [Example usage](workspace.en.md)
 
 ## Layout execution and new controls
 

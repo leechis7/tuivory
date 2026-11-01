@@ -6,18 +6,22 @@ Tuivory는 여러 언어에서 사용할 TUI 컴포넌트 라이브러리입니�
 
 ```text
 tuivory/
-├── design/       공통 명세·JSON 토큰·스키마·CSV 후보
-├── docs/         공통 문서와 언어별 사용법
-├── go/           Go 모듈·공개 API·내부 구현·Go 예제
-├── rust/         Rust 코어·Ratatui 어댑터·독립 Cargo 패키지·예제
-├── python/       Python 토큰 읽기 예제
-├── javascript/   Node.js 토큰 읽기 예제
-├── shell/        POSIX ANSI 출력 예제
-├── examples/     예제 색인과 공통 정적 배치
-├── bin/          언어별 견본 실행파일. Git 제외, Go는 bin/go/, Rust는 bin/rust/
-├── tools/        데이터 생성·검사·단독 모듈 검증
-└── evidence/     검증 기록
+├── design/       공통 규격·토큰·테마
+├── docs/         사용법·API·예제 안내·검증 기록(evidence/)
+├── go/           Go 모듈·공개 API·내부 구현·소스 예제
+├── rust/         Rust crate·렌더러·소스 예제
+├── python/       Python 참조 예제
+├── javascript/   JavaScript 참조 예제
+├── shell/        Shell 참조 예제
+├── tools/        빌드·생성·검증 도구
+├── tests/        공통 도구 테스트
+├── bin/          현재 호스트 통합 실행파일만(go/, rust/)
+└── .cache/       임시 빌드·검증·릴리스 보관·예전 worktree (Git 제외)
 ```
+
+0.9.1 TVR-28 변경으로 루트 `evidence/`는 `docs/evidence/`로 옮기고 `examples/` 안내는 [통합 예제 안내](examples.md)에 합쳤습니다. 언어별 소스·공개 import 경로는 유지합니다. `bin/`에는 실행파일만 두며 임시 산출물은 `.cache/`로 분리합니다. Rust 기본 빌드 경로는 `.cache/rust/`이고 `CARGO_TARGET_DIR`로 덮어쓸 수 있습니다. `.cargo/config.toml`은 저장소 개발 빌드의 출력 위치만 지정하며 배포 crate의 필수 설정이 아닙니다. 예전 worktree는 Git 등록·브랜치·커밋을 유지한 채 `.cache/worktrees/`로 옮겼습니다.
+
+[로컬 정리 검증](evidence/layout-results.json): 호스트 정적 빌드·소스 실행 진입점·API 명세·도구 테스트·문서 링크·터미널 조작을 확인했습니다. 구현 당시 게시 전 기록이며 최종 배포 검증은 [0.9.1 릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.9.1)의 manifest에 기록합니다.
 
 Go·Rust는 공통 컴포넌트 모델·토큰·스타일과 tview/Ratatui 렌더러를 제공합니다. Rust 코어는 1.85 이상, Ratatui 어댑터·대화형 예제는 1.88 이상입니다. 공통 모델은 내부 상태·선택·스크롤·요청을 계산하고, 앱은 단말·이벤트 루프·화면 조합·전역 포커스·업무 동작을 연결합니다. [책임 범위](component-boundary.md). 다른 언어는 현재 토큰 읽기·참조 예제이며 UI 패키지 미구현 범위를 각 README에 명시합니다. 다른 언어에서 Go를 호출하도록 강제하지 않습니다.
 
@@ -54,7 +58,7 @@ Rust 검사는 rust/만 복사해 Cargo 패키지를 검증하고 외부 path �
 
 ## 다음 구현
 
-LazyOra 적용 검증과 Go 사용성을 유지하면서 Python·JavaScript·Shell의 각 환경에 맞는 API·배포·UI 템플릿을 별도 일감으로 확장합니다. [공통 명세](../design/README.md) · [언어별 예제](../examples/README.md) · [로드맵](roadmap.md)
+LazyOra 적용 검증과 Go 사용성을 유지하면서 Python·JavaScript·Shell의 각 환경에 맞는 API·배포·UI 템플릿을 별도 일감으로 확장합니다. [공통 명세](../design/README.md) · [언어별 예제](examples.md) · [로드맵](roadmap.md)
 
 공통 컴포넌트의 신규 Tree API는 [Go·Rust Tree 사용법](tree.md)에서 설명합니다. 기존 Go 추출 스타일·stock `Styler.Tree`와 별도의 후보 팔레트 기반 구현이며 v0.1.0 태그에 포함합니다. [TVR-7 지원 범위 점검](component-audit.md)에서 상태·조작·앱 책임과 남은 단계를 구분합니다.
 

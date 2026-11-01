@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](grid-validation.en.md)
 
+**0.9.1 TVR-27:** [통합 예제 실행파일](examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
+
 게시 상태 갱신: PR #16으로 dev에 통합했으며 0.3.0에 포함합니다. 아래 로컬 검증은 커밋 전 과거 기록이며 현재 릴리스 검증은 [릴리스 안내](release-0.3.0.md)를 따릅니다.
 
 2026-10-29, `codex/TVR-17-grid-options` 작업 소스 기준입니다. 선행 문서 변경은 `c1a9b9a`로 커밋했으며 TVR-17은 검증 당시 미커밋 소스였으며 이 로컬 커밋에 포함합니다. GitHub에는 미게시입니다. v0.2.0 태그/Release에는 TVR-17이 없습니다. 원격 CI·LazyOra 실제 연결·실제 DB 편집·SSH/SecureCRT/MobaXterm 확인과 아래 로컬 검증을 구분합니다.
@@ -20,7 +22,7 @@
 - Go CGO 비활성·Rust musl: ARM64/x86_64 정적 ELF에 PT_INTERP/DT_NEEDED 없음. 별도 x86_64 외부 앱도 동일 검사.
 - 한영 비교 SVG 14장, 공통 토큰/테스트 데이터 동등성, Python 검사 도구 테스트 7개와 로컬 문서 링크.
 
-실행 로그와 임시 산출물은 Git에서 제외한 `bin/release-validation/`에 둡니다. 기존 태그·자산은 변경하지 않습니다.
+실행 로그와 임시 산출물은 Git에서 제외한 `.cache/release-validation/`에 둡니다. 기존 태그·자산은 변경하지 않습니다.
 
 ## 재현 명령
 
@@ -30,19 +32,17 @@ go -C go vet ./...
 make check-rust-ui test-rust-ui
 # 코어는 Rust 1.85.1 환경에서 별도 실행
 cargo test --manifest-path rust/Cargo.toml --locked
-python3 tools/check_go_module.py --static-output bin/release-validation/go-grid-host-linux-x86_64
-python3 tools/check_rust_module.py --ratatui --static-output bin/release-validation/rust-grid-host-linux-x86_64
-make build build-go-x86_64
-python3 tools/build_rust.py --arch x86_64 --examples
-python3 tools/build_rust.py --arch arm64
-python3 tools/smoke_catalog.py /PATH/TO/catalog --mode grid --lang ko --grid-preset data
-python3 tools/smoke_catalog.py /PATH/TO/catalog --mode grid --lang en --ascii --grid-preset data
-python3 tools/snapshot_catalog.py /PATH/TO/RUST/catalog --mode grid --grid-sample --grid-preset data --name grid-data
-python3 tools/snapshot_catalog.py /PATH/TO/RUST/catalog --mode grid --grid-sample --grid-preset simple --name grid-simple
+python3 tools/check_go_module.py --static-output .cache/release-validation/go-grid-host-linux-x86_64
+python3 tools/check_rust_module.py --ratatui --static-output .cache/release-validation/rust-grid-host-linux-x86_64
+make build build-rust
+python3 tools/smoke_catalog.py /PATH/TO/tuivory --demo catalog --mode grid --lang ko --grid-preset data
+python3 tools/smoke_catalog.py /PATH/TO/tuivory --demo catalog --mode grid --lang en --ascii --grid-preset data
+python3 tools/snapshot_catalog.py /PATH/TO/RUST/tuivory --demo catalog --mode grid --grid-sample --grid-preset data --name grid-data
+python3 tools/snapshot_catalog.py /PATH/TO/RUST/tuivory --demo catalog --mode grid --grid-sample --grid-preset simple --name grid-simple
 ```
 
-`/PATH/TO/catalog`은 각 언어의 호스트 아키텍처 검증 실행파일입니다. 임시 빌드 공간이 부족하면 `TMPDIR`와 Go 캐시를 여유 있는 작업 경로로 지정합니다. 정적 검사와 대상 커널 실행 방법은 [정적 배포](static-build.md)를 참고하세요.
+`/PATH/TO/tuivory --demo catalog`은 각 언어의 호스트 아키텍처 검증 실행파일입니다. 임시 빌드 공간이 부족하면 `TMPDIR`와 Go 캐시를 여유 있는 작업 경로로 지정합니다. 정적 검사와 대상 커널 실행 방법은 [정적 배포](static-build.md)를 참고하세요.
 
-CentOS 7.4.1708 x86_64 / 커널 `3.10.0-693.el7.x86_64` / glibc `2.17-196.el7.x86_64`에서 Go·Rust 정적 견본의 한영 시작·종료와 두 외부 그리드 앱 실행을 모두 통과했습니다. QEMU TCG로 실제 구형 커널/사용자 공간을 부팅한 결과이며 물리 서버·SSH 검증은 아닙니다. ARM64 CentOS 실행 검증으로 확대하지 않습니다. [환경·산출물 해시](../evidence/grid-options-results.json).
+CentOS 7.4.1708 x86_64 / 커널 `3.10.0-693.el7.x86_64` / glibc `2.17-196.el7.x86_64`에서 Go·Rust 정적 견본의 한영 시작·종료와 두 외부 그리드 앱 실행을 모두 통과했습니다. QEMU TCG로 실제 구형 커널/사용자 공간을 부팅한 결과이며 물리 서버·SSH 검증은 아닙니다. ARM64 CentOS 실행 검증으로 확대하지 않습니다. [환경·산출물 해시](evidence/grid-options-results.json).
 
 [그리드 API·지원 범위](grid.md)

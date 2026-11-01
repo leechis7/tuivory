@@ -57,13 +57,13 @@ impl App {
             .render(footer, buf);
     }
 }
-fn main() -> Result<(), Box<dyn Error>> {
+pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut en = false;
     let mut ascii = false;
     let mut theme = Theme::Dark;
     let mut profile = ColorProfile::Indexed256;
     let mut output = None;
-    let mut args = std::env::args().skip(1);
+    let mut args = arguments.into_iter();
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--lang" => {
@@ -192,4 +192,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     session.finish()?;
     Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    run(std::env::args().skip(1).collect())
 }

@@ -191,7 +191,7 @@ impl Drop for Session {
         );
     }
 }
-fn main() -> Result<(), Box<dyn Error>> {
+pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut en = false;
     let mut ascii = false;
     let mut theme = Theme::Dark;
@@ -201,7 +201,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut grid_preset = "simple".to_string();
     let mut grid_sample = false;
     let mut density = tuivory::layout::Density::Auto;
-    let mut args = std::env::args().skip(1);
+    let mut args = arguments.into_iter();
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--lang" => {
@@ -955,4 +955,8 @@ impl LayoutDemo {
         }
         FormEvent::default()
     }
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    run(std::env::args().skip(1).collect())
 }

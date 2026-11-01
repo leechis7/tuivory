@@ -3,11 +3,11 @@
 import argparse,fcntl,os,pty,select,signal,struct,subprocess,termios,time
 from pathlib import Path
 from smoke_focus import Screen
-parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('binary',type=Path);parser.add_argument('--mode',default='forms');parser.add_argument('--lang',choices=['ko','en'],default='en');parser.add_argument('--ascii',action='store_true');parser.add_argument('--grid-preset',choices=['simple','data']);args=parser.parse_args()
+parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('binary',type=Path); parser.add_argument('--demo', help='select an example from the unified executable');parser.add_argument('--mode',default='forms');parser.add_argument('--lang',choices=['ko','en'],default='en');parser.add_argument('--ascii',action='store_true');parser.add_argument('--grid-preset',choices=['simple','data']);args=parser.parse_args()
 master,slave=pty.openpty();fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',36,120,0,0))
 def terminal():
  os.setsid();fcntl.ioctl(0,termios.TIOCSCTTY,0)
-p=subprocess.Popen([str(args.binary.resolve()),'--mode',args.mode,'--lang',args.lang]+(['--ascii'] if args.ascii else [])+(['--grid-preset',args.grid_preset] if args.grid_preset else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave);screen=Screen();captured=bytearray();reports=0
+p=subprocess.Popen([str(args.binary.resolve()), *(['--demo', args.demo] if args.demo else []),'--mode',args.mode,'--lang',args.lang]+(['--ascii'] if args.ascii else [])+(['--grid-preset',args.grid_preset] if args.grid_preset else []),stdin=slave,stdout=slave,stderr=slave,preexec_fn=terminal,env=dict(os.environ,TERM='xterm-256color'));os.close(slave);screen=Screen();captured=bytearray();reports=0
 def drain(seconds=.25):
  global reports
  end=time.monotonic()+seconds

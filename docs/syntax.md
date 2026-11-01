@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](syntax.en.md)
 
+**0.9.1 TVR-27:** [통합 예제 실행파일](examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
+
 **0.9.0부터 제공하는 문법 분석기와 편집 API입니다.** [릴리스·설치](release-0.9.0.md)를 참고하세요. [공통 규격](../design/syntax.md) · [Go API](api/go.md) · [Rust API](api/rust.md).
 
 Tuivory는 선택적 강조용 분석기, 공통 토큰과 렌더러를 제공합니다. 앱은 제공 분석기를 선택하거나 자체 분석기를 주입합니다. **분석 결과는 실행 가능성·위험 DDL/DML·권한·트랜잭션 안전성을 판단하지 않습니다.** DB 연결·SQL 실행·Oracle 메타데이터·전역 키는 앱 책임입니다.
@@ -102,7 +104,7 @@ make run-syntax-go ARGS="--lang ko"
 make run-syntax-rust ARGS="--lang en"
 ```
 
-선택적 Linux ARM64 정적 예제는 `make build-syntax-go build-syntax-rust`로 만듭니다. 실행파일은 `bin/go/tuivory-syntax-linux-arm64`, `bin/rust/tuivory-syntax-linux-arm64`이며 기본 `make build`의 단일 견본 정책은 유지합니다.
+`make build build-rust`로 현재 호스트의 통합 정적 실행파일을 만들고 `--demo syntax`로 실행합니다. 별도 SQL 실행파일은 만들지 않습니다. [빌드·예제 선택](examples.md).
 
 F2 테마, F3 색상 수, Ctrl+Q 종료. Ctrl+C는 복사 요청이며 DB·클립보드를 실행하지 않습니다. `--ascii`로 장식 대체를 확인합니다.
 
@@ -111,4 +113,4 @@ F2 테마, F3 색상 수, Ctrl+Q 종료. Ctrl+C는 복사 요청이며 DB·클�
 ![흑백 SQL 강조](images/syntax-blackwhite.svg)
 ![ASCII SQL 강조](images/syntax-ascii.svg)
 
-화면은 실제 Rust SDK 위젯의 TestBackend 참조이며 원격 단말 캡처와 구분합니다. Go Show 이후 버퍼와 Rust TestBackend로 12팔레트·상태 우선순위를 검사하고, 별도로 실제 PTY의 편집·크기 변경·마우스·복원을 검사합니다. [공통 fixture](../design/syntax-cases.json) · [검증 기록](../evidence/syntax-results.json). 분석기·사전은 이 저장소의 AGPL-3.0-only 구현이며 추가 타사 렉서/라이선스는 도입하지 않습니다. CentOS 검증은 하지 않습니다.
+화면은 실제 Rust SDK 위젯의 TestBackend 참조이며 원격 단말 캡처와 구분합니다. Go Show 이후 버퍼와 Rust TestBackend로 12팔레트·상태 우선순위를 검사하고, 별도로 실제 PTY의 편집·크기 변경·마우스·복원을 검사합니다. [공통 fixture](../design/syntax-cases.json) · [검증 기록](evidence/syntax-results.json). 분석기·사전은 이 저장소의 AGPL-3.0-only 구현이며 추가 타사 렉서/라이선스는 도입하지 않습니다. CentOS 검증은 하지 않습니다.

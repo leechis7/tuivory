@@ -2,6 +2,7 @@
 """Check local Markdown file targets; external URLs and fragments are not fetched."""
 import re
 import sys
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -9,10 +10,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     missing = []
-    files = list(ROOT.rglob('*.md'))
+    files = []
+    for directory, children, names in os.walk(ROOT):
+        children[:] = [name for name in children if name not in {'.git', '.cache', '.venv', 'node_modules', 'target', 'bin', '__pycache__'}]
+        files.extend(Path(directory) / name for name in names if name.endswith('.md'))
     for path in files:
-        if set(path.relative_to(ROOT).parts) & {'.git', '.venv', 'node_modules', 'target', 'bin'}:
-            continue
         for target in re.findall(r'\]\(([^)]+)\)', path.read_text(encoding='utf-8')):
             if '://' in target or target.startswith(('mailto:', '#')):
                 continue

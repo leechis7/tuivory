@@ -3,12 +3,9 @@
 import argparse
 import os
 from pathlib import Path
-import shutil
 import subprocess
-from check_static_elf import inspect
 
 ROOT = Path(__file__).resolve().parents[1]
-TARGETS = {'arm64': 'aarch64-unknown-linux-musl', 'x86_64': 'x86_64-unknown-linux-musl'}
 
 
 def linker_environment(target):
@@ -24,38 +21,9 @@ def linker_environment(target):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--arch', choices=TARGETS, default='arm64')
-    parser.add_argument('--examples', action='store_true', help='also build component validation examples')
-    parser.add_argument('--syntax', action='store_true', help='build the optional SQL example only')
-    args = parser.parse_args()
-    target = TARGETS[args.arch]
-    directory = Path(os.environ.get('CARGO_TARGET_DIR', 'target'))
-    if not directory.is_absolute():
-        directory = ROOT / 'rust' / directory
-    env = linker_environment(target)
-    if args.syntax:
-        subprocess.run(['cargo', 'build', '--manifest-path', str(ROOT / 'rust/Cargo.toml'),
-                        '--locked', '--release', '--target', target, '--target-dir', str(directory), '--features', 'playground,syntax-sql',
-                        '--example', 'syntax'], env=env, check=True)
-        binary=directory / target / 'release/examples/syntax'
-        inspect(binary,args.arch)
-        destination=ROOT/'bin/rust'/f'tuivory-syntax-linux-{args.arch}'
-        destination.parent.mkdir(parents=True,exist_ok=True)
-        shutil.copy2(binary,destination)
-        print(f'Static optional SQL example: {destination}')
-        return
-    command = ['cargo', 'build', '--manifest-path', str(ROOT / 'rust/Cargo.toml'), '--locked',
-               '--release', '--target', target, '--target-dir', str(directory), '--features', 'playground']
-    command += ['--examples'] if args.examples else ['--example', 'playground']
-    subprocess.run(command, env=env, check=True)
-    names = ('playground', 'tree', 'workspace', 'focus', 'catalog', 'tokens', 'menu', 'controls') if args.examples else ('playground',)
-    for name in names:
-        inspect(directory / target / 'release/examples' / name, args.arch)
-    destination = ROOT / 'bin/rust' / f'tuivory-linux-{args.arch}'
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(directory / target / 'release/examples/playground', destination)
-    print(f'Static {target}: {destination}')
+    parser = argparse.ArgumentParser(description='Build the single Rust showcase for the Linux host.')
+    parser.parse_args()
+    subprocess.run([__import__('sys').executable, str(ROOT / 'tools/build_examples.py'), 'rust'], check=True)
 
 
 if __name__ == '__main__':

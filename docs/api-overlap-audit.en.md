@@ -40,4 +40,4 @@ In total, **10** public methods/fields are deprecated in 0.5.0. Existing behavio
 
 This audit does not promise permanent support for every current API. Update the registry and decisions when replacements or real host migration evidence become available. TVR-19 options now exist in 0.5.0 for popup composition; they do not replace arbitrary-region drawing or host-owned screens.
 
-See the [TVR-20 results](../evidence/api-lifecycle-results.json) for validation, public declaration/item inventories and source hashes. Go 751 declarations and Rust 159 public item pages use different counting units and are not comparable API counts. Validation is local; no commit, publication or remote CI was performed.
+See the [TVR-20 results](evidence/api-lifecycle-results.json) for validation, public declaration/item inventories and source hashes. Go 751 declarations and Rust 159 public item pages use different counting units and are not comparable API counts. Validation is local; no commit, publication or remote CI was performed.

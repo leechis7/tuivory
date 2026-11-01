@@ -33,7 +33,7 @@ Actual Rust TestBackend 120×36 reference, not a Go capture or physical/SSH term
 
 Stack/Drawer are geometry tools for host-supplied areas/items/minimum sizes. They do not mandate application-wide panel order, hiding priorities or screen breakpoints. Help renders supplied shortcut descriptions; hosts own whole help screens, contents and global command registration. [Boundary](component-boundary.en.md).
 
-In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
+In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](evidence/background-fix.en.md).
 
 ## Disabled state
 

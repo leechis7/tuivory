@@ -1,5 +1,5 @@
-.PHONY: test check tokens test-ui check-ui run build build-x86_64
-CARGO_TARGET_DIR ?= target
+.PHONY: test check tokens test-ui check-ui run build
+CARGO_TARGET_DIR ?= $(abspath ../.cache/rust)
 test:
 	cargo test --locked --all-targets
 	cargo test --locked --doc
@@ -15,8 +15,6 @@ check-ui:
 	cargo fmt --all -- --check
 	cargo clippy --locked --all-targets --all-features -- -D warnings
 run:
-	cargo run --locked --features playground --example playground -- $(ARGS)
+	cargo run --locked --features playground,syntax-sql --example showcase -- $(ARGS)
 build:
-	CARGO_TARGET_DIR="$(CARGO_TARGET_DIR)" python3 ../tools/build_rust.py --arch arm64
-build-x86_64:
-	CARGO_TARGET_DIR="$(CARGO_TARGET_DIR)" python3 ../tools/build_rust.py --arch x86_64
+	CARGO_TARGET_DIR="$(CARGO_TARGET_DIR)" python3 ../tools/build_rust.py

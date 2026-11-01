@@ -2,9 +2,9 @@
 
 [한국어 (default)](background-audit.md) · **English**
 
-Follow-up: user authorized fixes under the [surface design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md). The audit below is historical pre-fix evidence; preserve its hashes and observations.
+Follow-up: user authorized fixes under the [surface design rules](../design/surfaces.en.md) and [fix evidence](evidence/background-fix.en.md). The audit below is historical pre-fix evidence; preserve its hashes and observations.
 
-Audited on 2026-10-29, including uncommitted menu/focus changes after 0.3.0. **Text backgrounds differing from their component surfaces are confirmed.** This request is an audit: no renderer, token or host implementation was fixed. Existing work is preserved. [Exact results/source hashes](../evidence/background-audit-results.json).
+Audited on 2026-10-29, including uncommitted menu/focus changes after 0.3.0. **Text backgrounds differing from their component surfaces are confirmed.** This request is an audit: no renderer, token or host implementation was fixed. Existing work is preserved. [Exact results/source hashes](evidence/background-audit-results.json).
 
 ## Scope and method
 
@@ -71,4 +71,4 @@ Example: dark-256 Help `[Enter] Run` has BG 236 while trailing space has 237. Pl
 
 ## Limits and preservation
 
-No physical servers/SSH/fonts, remote CI, CentOS validation, commits, publication or release. Rendering/differing-cell counts are not bug counts. Audit the extracted Go Styler and shared candidate palette as distinct color systems. Probes/raw logs/156 references remain in local ignored bin/validation/background-audit/; the tracked results JSON records summaries, representative cells and source/evidence hashes.
+No physical servers/SSH/fonts, remote CI, CentOS validation, commits, publication or release. Rendering/differing-cell counts are not bug counts. Audit the extracted Go Styler and shared candidate palette as distinct color systems. Probes/raw logs/156 references remain in local ignored .cache/validation/background-audit/; the tracked results JSON records summaries, representative cells and source/evidence hashes.

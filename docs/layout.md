@@ -33,7 +33,7 @@ make run-catalog-rust ARGS="--mode layout --lang en"
 
 Stack/Drawer는 호스트가 지정한 영역·항목·최소 크기에 대한 배치 도구입니다. 앱 전체의 패널 순서·숨김 우선순위·화면별 breakpoint를 강제하지 않습니다. Help는 제공된 단축키 설명의 표시이며 도움말 화면 전체·목차·전역 명령 등록은 앱 책임입니다. [책임 범위](component-boundary.md).
 
-0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](../evidence/background-fix.md)을 참고하세요.
+0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](evidence/background-fix.md)을 참고하세요.
 
 ## 비활성 상태
 

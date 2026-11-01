@@ -134,10 +134,10 @@ Rust uses text_offsets::ByteSyntaxSpan, TextDocument::set_byte_syntax and graphe
 
 tools/check_ui_facade.py rejects direct backend imports in all public Go examples/root external tests and all Rust examples/UI conformance tests. Validate pinned Go exports, bilingual API declarations, shared input/byte-boundary scenarios and SDK-only isolated Go/packaged Rust consumers. Session PTY tests cover non-TTY initialization failure, duplicate entry, finish/re-entry and panic restoration.
 
-Retain bilingual Unicode/ASCII, twelve-palette, popup/focus/selection/undo/redo/clipboard-request/resize regressions and static ARM64 checks. The [local validation snapshot](../evidence/ui-facade-results.json) is distinct from the [release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0). No CentOS validation. Python/JS/TS/C/C++ and ABI implementations remain [future work](../design/ui-facade.en.md).
+Retain bilingual Unicode/ASCII, twelve-palette, popup/focus/selection/undo/redo/clipboard-request/resize regressions and static ARM64 checks. The [local validation snapshot](evidence/ui-facade-results.json) is distinct from the [release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0). No CentOS validation. Python/JS/TS/C/C++ and ABI implementations remain [future work](../design/ui-facade.en.md).
 
-[LazyOra package-symbol mappings](../evidence/ui-facade-consumer-map.json) audit first-party Go source/tests read-only; they do not claim app migration/build success. Compatibility widgets retain upstream diagnostic behavior; use shared password models for secret-safe display/diagnostic projections.
+[LazyOra package-symbol mappings](evidence/ui-facade-consumer-map.json) audit first-party Go source/tests read-only; they do not claim app migration/build success. Compatibility widgets retain upstream diagnostic behavior; use shared password models for secret-safe display/diagnostic projections.
 
-The [single-import local validation record](../evidence/go-single-import-results.json) is distinct from the [0.8.0 release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0).
+The [single-import local validation record](evidence/go-single-import-results.json) is distinct from the [0.8.0 release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0).
 
 The 0.9.0 TVR-24 [optional highlighting analyzer](syntax.en.md) is separate from common tokens/rendering. Custom host analyzers remain supported; execution/dangerous-SQL/transaction policy stays in the host.
