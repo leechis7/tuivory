@@ -23,6 +23,6 @@ tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.8.0", fe
 
 Requires Go 1.24+, Rust core 1.85+, UI/terminal 1.88+. Rendering-only Rust apps can use the `ratatui` feature. Not published to crates.io.
 
-The [GitHub Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0) provides Go/Rust Linux ARM64/x86_64 static playground/catalog/menu/controls executables, the Rust crate, SHA256SUMS and RELEASE-MANIFEST.json. The final manifest records source identity, static ELF inspection, public-tag installation, downloaded execution and GitHub CI results. The [implementation-time local snapshot](../evidence/go-single-import-results.json) remains separate historical evidence.
+The [GitHub Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0) provides Go/Rust Linux ARM64/x86_64 static playground/catalog/menu/controls executables, the Rust crate, SHA256SUMS and RELEASE-MANIFEST.json. The final manifest records source identity, static ELF inspection, public-tag installation, downloaded execution and GitHub CI results. The [implementation-time local snapshot](evidence/go-single-import-results.json) remains separate historical evidence.
 
 Actual LazyOra migration, DB integration and future language implementations are outside this release. CentOS is not validated. TVR-7 stays open.

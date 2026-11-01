@@ -15,6 +15,6 @@ The reference checker uses tcell's nominal RGB for the initial 16 colors, the 16
 
 Compare both bold models: font weight only, and foreground indices 0–7 becoming 8–15. Do not assume every terminal follows either model exactly. Record reverse video, Dim, underline, and character width as separate capabilities.
 
-TERM alone does not establish color, mouse, or extended key support. Record reported capability, terminal/version, SSH/tmux path, palette, and bold settings in the [evidence template](../evidence/README.en.md).
+TERM alone does not establish color, mouse, or extended key support. Record reported capability, terminal/version, SSH/tmux path, palette, and bold settings in the [evidence template](evidence/README.en.md).
 
 Product-specific function keys and database confirmation policies remain application rules. This guide defines no new terminal input protocol.

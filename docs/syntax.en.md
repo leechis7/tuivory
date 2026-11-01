@@ -2,6 +2,8 @@
 
 [한국어 (default)](syntax.md) · **English**
 
+**0.9.1 TVR-27:** [Unified example executables](examples.en.md) provide one file per language, built only for the current Linux host architecture. Select examples with `--demo tree`, `--demo menu`, `--demo syntax`, etc.
+
 **Syntax analyzers and editing APIs available since 0.9.0.** See [release and installation](release-0.9.0.en.md). [Shared specification](../design/syntax.en.md) · [Go API](api/go.en.md) · [Rust API](api/rust.en.md).
 
 Tuivory provides optional highlighting analyzers, common tokens and rendering. Hosts select a supplied analyzer or inject their own. **Highlighting does not decide executable syntax, dangerous DDL/DML, permissions or transaction safety.** Database access, SQL execution, Oracle metadata and global keys remain host responsibilities.
@@ -102,7 +104,7 @@ make run-syntax-go ARGS="--lang ko"
 make run-syntax-rust ARGS="--lang en"
 ```
 
-Build optional Linux ARM64 static examples with `make build-syntax-go build-syntax-rust`: `bin/go/tuivory-syntax-linux-arm64` and `bin/rust/tuivory-syntax-linux-arm64`. Default `make build` still produces its single playground.
+Build the unified static executables for the host with `make build build-rust`, then select `--demo syntax`. No separate SQL executable is produced. [Build and demo selection](examples.en.md).
 
 F2 theme, F3 profile, Ctrl+Q exit. Ctrl+C emits a copy request; no database/clipboard execution. --ascii switches decorations.
 
@@ -111,4 +113,4 @@ F2 theme, F3 profile, Ctrl+Q exit. Ctrl+C emits a copy request; no database/clip
 ![Monochrome SQL highlighting](images/syntax-blackwhite-en.svg)
 ![ASCII SQL highlighting](images/syntax-ascii-en.svg)
 
-References render real Rust SDK widgets through TestBackend, separately from remote-terminal captures. Tests inspect Go post-Show buffers and Rust TestBackend across twelve palettes/state precedence, plus real PTY editing/resize/mouse/restoration. [Shared fixtures](../design/syntax-cases.json) · [Validation record](../evidence/syntax-results.json). Analyzer/vocabulary code is this repository's AGPL-3.0-only implementation; no third-party lexer/license was added. No CentOS checks.
+References render real Rust SDK widgets through TestBackend, separately from remote-terminal captures. Tests inspect Go post-Show buffers and Rust TestBackend across twelve palettes/state precedence, plus real PTY editing/resize/mouse/restoration. [Shared fixtures](../design/syntax-cases.json) · [Validation record](evidence/syntax-results.json). Analyzer/vocabulary code is this repository's AGPL-3.0-only implementation; no third-party lexer/license was added. No CentOS checks.

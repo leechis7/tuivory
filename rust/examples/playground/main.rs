@@ -28,7 +28,7 @@ struct Options {
     snapshot: Option<PathBuf>,
     popup: bool,
 }
-fn options() -> Result<Option<Options>, Box<dyn Error>> {
+fn options(arguments: Vec<String>) -> Result<Option<Options>, Box<dyn Error>> {
     let mut result = Options {
         language: Language::Ko,
         theme: Theme::Dark,
@@ -37,7 +37,7 @@ fn options() -> Result<Option<Options>, Box<dyn Error>> {
         snapshot: None,
         popup: false,
     };
-    let mut args = std::env::args().skip(1);
+    let mut args = arguments.into_iter();
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--help" | "-h" => {
@@ -92,8 +92,8 @@ impl Drop for Session {
     }
 }
 
-fn run() -> Result<(), Box<dyn Error>> {
-    let Some(options) = options()? else {
+pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
+    let Some(options) = options(arguments)? else {
         return Ok(());
     };
     let profile = options.profile.unwrap_or_else(|| {
@@ -146,7 +146,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 fn main() {
-    if let Err(error) = run() {
+    if let Err(error) = run(std::env::args().skip(1).collect()) {
         eprintln!("TUIVORY: {error}");
         std::process::exit(1);
     }

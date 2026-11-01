@@ -2,6 +2,8 @@
 
 [한국어 (default)](grid-validation.md) · **English**
 
+**0.9.1 TVR-27:** [Unified example executables](examples.en.md) provide one file per language, built only for the current Linux host architecture. Select examples with `--demo tree`, `--demo menu`, `--demo syntax`, etc.
+
 Publication update: integrated into dev in PR #16; included in 0.3.0. The local checks below are historical pre-commit evidence; current release validation is documented in [the release guide](release-0.3.0.en.md).
 
 Validated against `codex/TVR-17-grid-options` working source on 2026-10-29. Prior documentation changes were committed as `c1a9b9a`; TVR-17 was uncommitted during validation and is included in this local commit; it remains unpublished on GitHub. TVR-17 is absent from the v0.2.0 tags/Release. These local checks are separate from remote CI, actual LazyOra/DB integration and SSH/SecureCRT/MobaXterm validation.
@@ -20,7 +22,7 @@ Validated against `codex/TVR-17-grid-options` working source on 2026-10-29. Prio
 - CGO-free Go/musl Rust ARM64 and x86_64 ELF artifacts without PT_INTERP/DT_NEEDED; separate x86_64 external apps satisfy the same checks.
 - Fourteen localized comparison SVGs, shared token/fixture equivalence, seven Python tooling tests and local Markdown links.
 
-Local logs/temporary outputs live in ignored `bin/release-validation/`. Existing tags/assets remain unchanged.
+Local logs/temporary outputs live in ignored `.cache/release-validation/`. Existing tags/assets remain unchanged.
 
 ## Reproduce
 
@@ -30,19 +32,17 @@ go -C go vet ./...
 make check-rust-ui test-rust-ui
 # Run the core separately under Rust 1.85.1
 cargo test --manifest-path rust/Cargo.toml --locked
-python3 tools/check_go_module.py --static-output bin/release-validation/go-grid-host-linux-x86_64
-python3 tools/check_rust_module.py --ratatui --static-output bin/release-validation/rust-grid-host-linux-x86_64
-make build build-go-x86_64
-python3 tools/build_rust.py --arch x86_64 --examples
-python3 tools/build_rust.py --arch arm64
-python3 tools/smoke_catalog.py /PATH/TO/catalog --mode grid --lang ko --grid-preset data
-python3 tools/smoke_catalog.py /PATH/TO/catalog --mode grid --lang en --ascii --grid-preset data
-python3 tools/snapshot_catalog.py /PATH/TO/RUST/catalog --mode grid --grid-sample --grid-preset data --name grid-data
-python3 tools/snapshot_catalog.py /PATH/TO/RUST/catalog --mode grid --grid-sample --grid-preset simple --name grid-simple
+python3 tools/check_go_module.py --static-output .cache/release-validation/go-grid-host-linux-x86_64
+python3 tools/check_rust_module.py --ratatui --static-output .cache/release-validation/rust-grid-host-linux-x86_64
+make build build-rust
+python3 tools/smoke_catalog.py /PATH/TO/tuivory --demo catalog --mode grid --lang ko --grid-preset data
+python3 tools/smoke_catalog.py /PATH/TO/tuivory --demo catalog --mode grid --lang en --ascii --grid-preset data
+python3 tools/snapshot_catalog.py /PATH/TO/RUST/tuivory --demo catalog --mode grid --grid-sample --grid-preset data --name grid-data
+python3 tools/snapshot_catalog.py /PATH/TO/RUST/tuivory --demo catalog --mode grid --grid-sample --grid-preset simple --name grid-simple
 ```
 
-`/PATH/TO/catalog` is each language's host-architecture validation executable. When temporary storage is limited, point TMPDIR and the Go cache at a workspace with sufficient capacity. See [static distribution](static-build.en.md) for ELF/target-kernel validation.
+`/PATH/TO/tuivory --demo catalog` is each language's host-architecture validation executable. When temporary storage is limited, point TMPDIR and the Go cache at a workspace with sufficient capacity. See [static distribution](static-build.en.md) for ELF/target-kernel validation.
 
-Go/Rust static demos started/exited in both languages and both external grid apps passed on CentOS 7.4.1708 x86_64, kernel `3.10.0-693.el7.x86_64`, glibc `2.17-196.el7.x86_64`. QEMU TCG boots the actual legacy kernel/userspace; this does not establish physical-server/SSH results or ARM64 CentOS execution. [Environment/artifact hashes](../evidence/grid-options-results.json).
+Go/Rust static demos started/exited in both languages and both external grid apps passed on CentOS 7.4.1708 x86_64, kernel `3.10.0-693.el7.x86_64`, glibc `2.17-196.el7.x86_64`. QEMU TCG boots the actual legacy kernel/userspace; this does not establish physical-server/SSH results or ARM64 CentOS execution. [Environment/artifact hashes](evidence/grid-options-results.json).
 
 [Grid API and support](grid.en.md)

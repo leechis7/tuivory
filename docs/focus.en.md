@@ -79,7 +79,7 @@ These are actual Rust example TestBackend references at 120×32, not Go captures
 
 ## Validation and boundaries
 
-`design/interaction-cases.json` is mirrored into both modules' tests for matching state composition, navigation, nesting, empty popups, routing, restoration and invalid requests. Checks cover all twelve palettes, external imports/static hosts and bilingual PTY keys/clicks, theme changes, 40×16 resizing and normal exit. [Evidence](../evidence/focus.en.md)
+`design/interaction-cases.json` is mirrored into both modules' tests for matching state composition, navigation, nesting, empty popups, routing, restoration and invalid requests. Checks cover all twelve palettes, external imports/static hosts and bilingual PTY keys/clicks, theme changes, 40×16 resizing and normal exit. [Evidence](evidence/focus.en.md)
 
 This foundation does not provide an input editor, validation engine, complete Dialog widget, asynchronous operation or terminal event loop. The host connects actual widget focus, layer layout/clipping/visibility and business actions. Examples reuse public panels as host implementations; LazyOra/LazyBeaver integration remains separate. [Static distribution requirements](static-build.en.md)
 
@@ -87,6 +87,6 @@ Use [WideSafeScreen and DimRegion](overlay-drawing.en.md) for Go popup edges cro
 
 Hosts define scope contents/order and cross-component traversal. FocusStack calculates navigation, blocking and restoration within supplied scopes; it does not own the global application Tab policy. [Boundary and alternative host composition](component-boundary.en.md).
 
-In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
+In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](evidence/background-fix.en.md).
 
 The `-` in Visual().Markers is existing low-level state metadata. Default components and examples do not render it as an ordinary disabled prefix. Checkbox/radio selection indicators remain separate.

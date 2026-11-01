@@ -43,8 +43,8 @@ Go 1.24 이상, Rust 코어 1.85 이상, Ratatui/실행 예제 1.88 이상입니
 
 ## 검증과 게시 근거
 
-선행 구현과 dev 통합은 [PR #16](https://github.com/leechis7/tuivory/pull/16), [메뉴 검증](../evidence/menu.md), [그리드 검증](grid-validation.md)에 기록합니다. 릴리스 준비·main CI, 최종 커밋의 자산 빌드·정적 ELF, 한영 ARM64 PTY, 실제 공개 태그의 외부 Go/Rust 설치·API·렌더링, 업로드 자산 재다운로드/체크섬 결과는 Release의 `RELEASE-MANIFEST.json`과 [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) 댓글을 기준으로 확인합니다. 미실행 항목을 통과로 간주하지 않습니다.
+선행 구현과 dev 통합은 [PR #16](https://github.com/leechis7/tuivory/pull/16), [메뉴 검증](evidence/menu.md), [그리드 검증](grid-validation.md)에 기록합니다. 릴리스 준비·main CI, 최종 커밋의 자산 빌드·정적 ELF, 한영 ARM64 PTY, 실제 공개 태그의 외부 Go/Rust 설치·API·렌더링, 업로드 자산 재다운로드/체크섬 결과는 Release의 `RELEASE-MANIFEST.json`과 [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) 댓글을 기준으로 확인합니다. 미실행 항목을 통과로 간주하지 않습니다.
 
 CentOS·고객 SSH·폰트별 물리 단말·실제 LazyOra/LazyBeaver·DB 편집 통합은 이번 릴리스 검증에 포함하지 않습니다. 기존 태그·릴리스 자산은 보존합니다.
 
-0.4.0 표시·입력 검증의 상세 내역은 [비활성 상태](disabled-states.md), [배경 수정](../evidence/background-fix.md), [현재 결과 JSON](../evidence/disabled-colors-results.json)에 있습니다. 다운로드한 ARM64 실행파일은 로컬 PTY에서, x86_64 실행파일은 별도 GitHub Actions `Validate release assets`에서 실행합니다. 릴리스 자산 검증은 소스 커밋과 체크섬을 확인하며 CentOS를 사용하지 않습니다.
+0.4.0 표시·입력 검증의 상세 내역은 [비활성 상태](disabled-states.md), [배경 수정](evidence/background-fix.md), [현재 결과 JSON](evidence/disabled-colors-results.json)에 있습니다. 다운로드한 ARM64 실행파일은 로컬 PTY에서, x86_64 실행파일은 별도 GitHub Actions `Validate release assets`에서 실행합니다. 릴리스 자산 검증은 소스 커밋과 체크섬을 확인하며 CentOS를 사용하지 않습니다.

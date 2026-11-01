@@ -2,7 +2,7 @@
 
 [한국어 (default)](patterns.md) · **English**
 
-These are draft shared design specifications. Adapters implement framework-specific key events and focus. See the [static layout example](../examples/components.txt).
+These are draft shared design specifications. Adapters implement framework-specific key events and focus. See the [static layout example](examples-components.txt).
 
 | Component | Base state | Focus and selection | Input handling rules |
 | --- | --- | --- | --- |

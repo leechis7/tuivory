@@ -43,6 +43,6 @@ Executables are located at `bin/<language>/tuivory[-catalog|-menu]-linux-<archit
 
 ## Validation and publication evidence
 
-Implementation and dev integration are recorded in [PR #16](https://github.com/leechis7/tuivory/pull/16), [menu evidence](../evidence/menu.en.md) and [grid evidence](grid-validation.en.md). Consult the Release `RELEASE-MANIFEST.json` and [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) comments for release/main CI, final-commit asset builds/static ELF inspection, bilingual ARM64 PTYs, external Go/Rust installation/API/rendering from actual public tags, and uploaded-asset download/checksum results. Unexecuted checks are not considered passed.
+Implementation and dev integration are recorded in [PR #16](https://github.com/leechis7/tuivory/pull/16), [menu evidence](evidence/menu.en.md) and [grid evidence](grid-validation.en.md). Consult the Release `RELEASE-MANIFEST.json` and [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) comments for release/main CI, final-commit asset builds/static ELF inspection, bilingual ARM64 PTYs, external Go/Rust installation/API/rendering from actual public tags, and uploaded-asset download/checksum results. Unexecuted checks are not considered passed.
 
 CentOS, customer SSH, physical terminals/fonts, actual LazyOra/LazyBeaver and DB editing integration are outside this release validation. Existing tags/assets are preserved.

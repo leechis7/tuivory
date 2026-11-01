@@ -53,6 +53,6 @@ Assets are statically rebuilt and checked from the finalized commit. Attached `R
 
 ## Validation and publication records
 
-The [preparation evidence](../evidence/release-0.2.0.en.md) is a historical record of pre-publication dirty candidates. Use the Release attachments SHA256SUMS and RELEASE-MANIFEST.json for final asset hashes. PR/main/dev CI, final commit, actual tag installation and downloaded-asset checks are recorded in [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) and TVR-5/6 comments. Earlier candidate hashes or CI do not validate final assets.
+The [preparation evidence](evidence/release-0.2.0.en.md) is a historical record of pre-publication dirty candidates. Use the Release attachments SHA256SUMS and RELEASE-MANIFEST.json for final asset hashes. PR/main/dev CI, final commit, actual tag installation and downloaded-asset checks are recorded in [TVR-7](https://leechis7.atlassian.net/browse/TVR-7) and TVR-5/6 comments. Earlier candidate hashes or CI do not validate final assets.
 
 Validation covers static ELF, external Go/Rust imports, bilingual native PTYs and actual CentOS 7.4 kernel execution. VM catalog startup uses default forms mode; other modes' input is checked with native PTYs. Customer SSH, font-specific physical terminals and LazyOra/LazyBeaver integration remain separate.

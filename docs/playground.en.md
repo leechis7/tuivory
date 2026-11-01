@@ -2,6 +2,8 @@
 
 [한국어 (default)](playground.md) · **English**
 
+**0.9.1 TVR-27:** [Unified example executables](examples.en.md) provide one file per language, built only for the current Linux host architecture. Select examples with `--demo tree`, `--demo menu`, `--demo syntax`, etc.
+
 Explore how the style rules look in interactive widgets. Data is synthetic. The playground connects to no database or network service and does not save settings or inputs.
 
 ## Run
@@ -17,7 +19,7 @@ make build
 ./bin/go/tuivory-linux-arm64 --lang en
 ```
 
-`make build` creates only Linux ARM64. On other hosts, run source with `go -C go run ./cmd/tuivory --lang en`.
+`make build` creates one unified executable for the current Linux host architecture. The path above is for ARM64. [Select other demos](examples.en.md).
 
 ```sh
 go -C go run ./cmd/tuivory --lang en --theme light --colors 16
@@ -62,7 +64,7 @@ Normal views need at least 80×24 cells. Below 100 columns the left menu is hidd
 
 [Korean dark](images/playground-dark.svg) · [Korean light](images/playground-light.svg) · [Korean monochrome](images/playground-blackwhite.svg) · [Korean popup](images/playground-popup.svg)
 
-These reference images are generated from actual application widget cells on a tcell SimulationScreen. They are not SecureCRT/MobaXterm captures or support guarantees. Use the [evidence template](../evidence/README.en.md) for separate terminal observations.
+These reference images are generated from actual application widget cells on a tcell SimulationScreen. They are not SecureCRT/MobaXterm captures or support guarantees. Use the [evidence template](evidence/README.en.md) for separate terminal observations.
 
 ```sh
 make -C go test
@@ -84,6 +86,6 @@ Explorer/input/list/grid/token/help areas and normal dialogs use double borders 
 
 [Explorer](images/playground-explorer-en.svg) · [Grid](images/playground-grid-en.svg) · [Editing dialog](images/playground-edit-en.svg)
 
-These localized references are actual Go SimulationScreen widget output. Rust shared panels use the same double-border rule. [Rules and validation](../evidence/focus-borders.en.md).
+These localized references are actual Go SimulationScreen widget output. Rust shared panels use the same double-border rule. [Rules and validation](evidence/focus-borders.en.md).
 
 Resize reflow runs through the UI update queue, avoiding page/focus changes while the draw lock is held. Use `python3 tools/smoke_playground.py bin/go/tuivory-linux-arm64 --lang en --resize` to verify actual PTY resize and exit. CI runs this regression for both UI languages.

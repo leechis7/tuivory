@@ -2,6 +2,8 @@
 
 [한국어 (default)](development.md) · **English**
 
+Keep one local executable in each of `bin/go/` and `bin/rust/`. Temporary builds/checks and local release archives belong in ignored `.cache/`; Rust defaults to `.cache/rust/`. [Current layout](architecture.en.md).
+
 Audit and evidence pages describe their recorded versions. Use installation and API guides for current application development.
 
 - [Architecture](architecture.en.md)
@@ -11,7 +13,7 @@ Audit and evidence pages describe their recorded versions. Use installation and 
 - [Component audit](component-audit.en.md)
 - [Backlog](components-backlog.en.md)
 - [Static builds](static-build.en.md)
-- [Evidence](../evidence/README.en.md)
+- [Evidence](evidence/README.en.md)
 - [Background audit](background-audit.en.md)
 - [API audit](api-overlap-audit.en.md)
 - [Grid validation](grid-validation.en.md)

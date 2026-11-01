@@ -272,7 +272,7 @@ impl Drop for Session {
         );
     }
 }
-fn main() -> Result<(), Box<dyn Error>> {
+pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut en = false;
     let mut ascii = false;
     let mut theme = Theme::Dark;
@@ -282,7 +282,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut focus_order = [0, 1, 2];
     let mut quit_key = 'q';
     let mut snapshot = None;
-    let mut args = std::env::args().skip(1);
+    let mut args = arguments.into_iter();
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--lang" => {
@@ -607,4 +607,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    run(std::env::args().skip(1).collect())
 }

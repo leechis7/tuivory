@@ -1,14 +1,8 @@
-.PHONY: run build build-x86_64 test check
+.PHONY: run build test check
 run:
-	go run ./cmd/tuivory
+	go run ./cmd/tuivory $(ARGS)
 build:
-	mkdir -p ../bin/go
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -o ../bin/go/tuivory-linux-arm64 ./cmd/tuivory
-	python3 ../tools/check_static_elf.py --arch arm64 ../bin/go/tuivory-linux-arm64
-build-x86_64:
-	mkdir -p ../bin/go
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o ../bin/go/tuivory-linux-x86_64 ./cmd/tuivory
-	python3 ../tools/check_static_elf.py --arch x86_64 ../bin/go/tuivory-linux-x86_64
+	python3 ../tools/build_examples.py go
 test:
 	go test -race ./...
 check:

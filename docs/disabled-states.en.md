@@ -20,6 +20,6 @@ cargo run --manifest-path rust/Cargo.toml --features ratatui --example states --
 cargo run --manifest-path rust/Cargo.toml --features ratatui --example states -- --lang en --snapshot docs/images/disabled-states-en.svg
 ```
 
-The states example renders a comparison without a DB or interactive terminal. Use the existing catalog/menu examples for interactive forms, lists, and menus. [Surface design](../design/surfaces.en.md) · [validation record](../evidence/disabled-colors-results.json).
+The states example renders a comparison without a DB or interactive terminal. Use the existing catalog/menu examples for interactive forms, lists, and menus. [Surface design](../design/surfaces.en.md) · [validation record](evidence/disabled-colors-results.json).
 
 Validation: 948 Go/Rust renders have zero target plain-text/tail background mismatches. The minimum reference contrast is ~4.504:1 across 802 active plain runs and ~2.171:1 before Dim across 48 disabled runs. Separate checks verify the 8-color Dim attribute and active/disabled style distinction in all twelve palettes. Go race/vet, Rust all-feature/all-target checks, isolated package consumers, and 44 native ARM64 PTY cases passed. These are pre-release local results; see the [0.4.0 release](release-0.4.0.en.md) for remote CI/publication evidence. CentOS validation is not performed.

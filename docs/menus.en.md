@@ -86,11 +86,11 @@ Go wraps `NewPanelView(menuView, palette)` and draws the computed rectangle. Cha
 
 Hosts must block background key/paste/mouse events while open, choose outside-click dismissal and restore the caller. The example does not forward the same click into background work. Keep the menu object/original values across theme/profile/character changes. Automatic grouping thresholds, contextual commands and real business operations stay out of the core. [Boundary](component-boundary.en.md).
 
-[Validation](../evidence/menu.en.md) · [Shared navigation scenarios](../design/menu-cases.json)
+[Validation](evidence/menu.en.md) · [Shared navigation scenarios](../design/menu-cases.json)
 
-[Single-border menu follow-up validation](../evidence/menu-single-border.en.md)
+[Single-border menu follow-up validation](evidence/menu-single-border.en.md)
 
-In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](../evidence/background-fix.en.md).
+In 0.4.0, plain text follows the actual surface while explicit field/selection/edit backgrounds remain. See [surface/contrast design rules](../design/surfaces.en.md) and [fix evidence](evidence/background-fix.en.md).
 
 Disabled menus and menu bars use color/brightness without an extra disabled prefix. Check/radio selection indicators remain.
 

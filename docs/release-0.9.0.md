@@ -23,6 +23,6 @@ Go 1.24+, Rust 코어 1.85+, UI/터미널 1.88+입니다. Rust의 기본 기능�
 
 [GitHub Release](https://github.com/leechis7/tuivory/releases/tag/go/v0.9.0)는 Go·Rust Linux ARM64/x86_64용 playground/catalog/menu/controls/syntax 실행파일 **20개**, Rust crate, SHA256SUMS와 RELEASE-MANIFEST.json을 제공합니다. 각 언어·아키텍처 압축파일의 `bin/<언어>/tuivory-syntax-linux-<아키텍처>`로 SQL 예제를 실행합니다. `--lang ko` 또는 `--lang en`, `--ascii`를 사용할 수 있습니다.
 
-최종 manifest는 소스 커밋, 정적 ELF 검사, 공개 태그 설치, 다운로드 실행 및 GitHub CI 결과를 기록합니다. [구현 당시 로컬 검증](../evidence/syntax-results.json)은 게시 전 이력입니다. 긴 문서는 전체 분석하므로 증분 분석기의 지연 시간을 보장하지 않습니다.
+최종 manifest는 소스 커밋, 정적 ELF 검사, 공개 태그 설치, 다운로드 실행 및 GitHub CI 결과를 기록합니다. [구현 당시 로컬 검증](evidence/syntax-results.json)은 게시 전 이력입니다. 긴 문서는 전체 분석하므로 증분 분석기의 지연 시간을 보장하지 않습니다.
 
 SQL 실행·안전성 판단·DB 연결, 실제 LazyOra 앱 전환, Go/Rust 소스 분석기는 포함하지 않습니다. CentOS 검증은 수행하지 않습니다. TVR-7 에픽은 열어둡니다.

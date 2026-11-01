@@ -92,10 +92,10 @@ cargo run --manifest-path rust/Cargo.toml --features ratatui --example shadows -
   --lang en --shadow dim --snapshot popup-shadows.svg
 ```
 
-The example host chooses opening, caller restoration and global shortcuts. Its context-menu anchor remains fixed; this task does not newly wire right-click coordinates. The shadows example renders real shared widgets to TestBackend without a DB or interactive terminal. Validate modes/profiles, Unicode/ASCII, geometry/backdrop edges, Go post-Show output and Rust TestBackend. Separate local results, remote CI and publication in the [validation record](../evidence/popup-shadow-results.json). No CentOS checks are performed.
+The example host chooses opening, caller restoration and global shortcuts. Its context-menu anchor remains fixed; this task does not newly wire right-click coordinates. The shadows example renders real shared widgets to TestBackend without a DB or interactive terminal. Validate modes/profiles, Unicode/ASCII, geometry/backdrop edges, Go post-Show output and Rust TestBackend. Separate local results, remote CI and publication in the [validation record](evidence/popup-shadow-results.json). No CentOS checks are performed.
 
 ```sh
-python3 tools/snapshot_popup_shadows.py rust/target/debug/examples/shadows
+python3 tools/snapshot_popup_shadows.py .cache/rust/debug/examples/shadows
 ```
 
 Auto uses 80% of surface RGB brightness in True Color and a nearby quantized gray in 256 colors for a subtle shadow. The 8/16-color and black-surface pattern fallbacks remain coarser because of palette limits.

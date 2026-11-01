@@ -134,10 +134,10 @@ Rust는 `text_offsets::ByteSyntaxSpan`, `TextDocument::set_byte_syntax`와 `grap
 
 Go 모든 공개 예제와 루트 외부 API 테스트, Rust 모든 예제 및 UI 적합성 테스트에 backend 직접 import가 없는지 `tools/check_ui_facade.py`로 검사합니다. Go 고정 버전 심볼·한영 API 명세·공통 입력/바이트 경계 시나리오, 격리 Go 모듈/실제 패키징 Rust crate의 SDK 전용 외부 프로젝트를 검증합니다. Rust Session은 비TTY 초기화 실패·중복 진입·정상 종료/재진입·panic 복원을 실제 PTY로 검사합니다.
 
-한영 Unicode/ASCII, 12팔레트, 팝업·포커스·선택·Undo/Redo·클립보드 요청·resize 회귀와 ARM64 정적 산출물 검증을 유지합니다. [구현 당시 로컬 검증](../evidence/ui-facade-results.json)과 [릴리스 검증 manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0)를 구분합니다. CentOS 검증은 수행하지 않습니다. Python·JS/TS·C·C++ 및 ABI 구현은 [후속 설계](../design/ui-facade.md)이며 제공 완료가 아닙니다.
+한영 Unicode/ASCII, 12팔레트, 팝업·포커스·선택·Undo/Redo·클립보드 요청·resize 회귀와 ARM64 정적 산출물 검증을 유지합니다. [구현 당시 로컬 검증](evidence/ui-facade-results.json)과 [릴리스 검증 manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0)를 구분합니다. CentOS 검증은 수행하지 않습니다. Python·JS/TS·C·C++ 및 ABI 구현은 [후속 설계](../design/ui-facade.md)이며 제공 완료가 아닙니다.
 
-[LazyOra의 패키지 심볼 대응 기록](../evidence/ui-facade-consumer-map.json)은 first-party Go 소스/테스트를 읽기 전용으로 점검한 결과입니다. 실제 앱 전환·빌드 결과가 아닙니다. 호환 위젯은 upstream의 진단 동작도 유지하므로 비밀값의 표시/진단 보호에는 공통 password 모델을 사용합니다.
+[LazyOra의 패키지 심볼 대응 기록](evidence/ui-facade-consumer-map.json)은 first-party Go 소스/테스트를 읽기 전용으로 점검한 결과입니다. 실제 앱 전환·빌드 결과가 아닙니다. 호환 위젯은 upstream의 진단 동작도 유지하므로 비밀값의 표시/진단 보호에는 공통 password 모델을 사용합니다.
 
-[단일 import 후속 로컬 검증](../evidence/go-single-import-results.json)은 공개 [0.8.0 릴리스 검증 manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0)와 구분합니다.
+[단일 import 후속 로컬 검증](evidence/go-single-import-results.json)은 공개 [0.8.0 릴리스 검증 manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0)와 구분합니다.
 
 0.9.0 TVR-24 후속의 [선택적 강조 분석기](syntax.md)는 공통 토큰/렌더링과 분리됩니다. 앱 자체 분석기도 연결하며 DB 실행·위험 SQL/트랜잭션 판단은 앱 책임입니다.

@@ -2,6 +2,8 @@
 
 [한국어 (default)](rust-playground.md) · **English**
 
+**0.9.1 TVR-27:** [Unified example executables](examples.en.md) provide one file per language, built only for the current Linux host architecture. Select examples with `--demo tree`, `--demo menu`, `--demo syntax`, etc.
+
 This database-free host example uses the [Rust package](../rust/README.en.md)'s Ratatui adapter. It requires Ratatui 0.30.2, Crossterm 0.29, and Rust 1.88+. Inputs, selections, and table edits remain in memory and are never saved to files or databases. Shared candidate colors do not claim parity with the full Go-derived widget styles.
 
 ## Run
@@ -15,7 +17,7 @@ make build-rust
 ./bin/rust/tuivory-linux-arm64 --lang en
 ```
 
-After `rustup target add aarch64-unknown-linux-musl`, `make build-rust` uses musl and bundled `rust-lld` to produce one static `bin/rust/tuivory-linux-arm64`. For x86_64, run `rustup target add x86_64-unknown-linux-musl` and `make build-rust-x86_64`. See [static distribution, CentOS checks and existing release differences](static-build.en.md). Default `make build` still produces only the Go executable.
+`make build-rust` produces one unified static executable matching the host architecture, using the matching musl standard library and bundled rust-lld without mandatory native runtime dependencies. [Build and demo selection](examples.en.md) · [Static distribution](static-build.en.md).
 
 `--theme` accepts dark/light/blackwhite; `--colors` accepts auto/8/16/256/truecolor. Auto uses the color count reported by Crossterm. Explicit profile selection is a preview, not a change to terminal capabilities or user palettes. Interactive execution requires a TTY.
 

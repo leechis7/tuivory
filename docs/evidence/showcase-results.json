@@ -1,0 +1,72 @@
+{
+  "issue": "TVR-27",
+  "source_base_commit": "3aadb547a40f8be58b55268300dc613b6f1b8db1",
+  "worktree_uncommitted": true,
+  "published": false,
+  "github_ci": "not run for this change",
+  "architecture": "Linux ARM64 (aarch64 host)",
+  "other_architectures_built": false,
+  "demos": [
+    "playground",
+    "tree",
+    "workspace",
+    "focus",
+    "catalog",
+    "menu",
+    "controls",
+    "syntax"
+  ],
+  "binaries": {
+    "bin/go/tuivory-linux-arm64": {
+      "sha256": "36f5f5a8a4e6f46cc84279c6fabf7b51557f1082f0448529206f28913b30190c",
+      "bytes": 6610511
+    },
+    "bin/rust/tuivory-linux-arm64": {
+      "sha256": "786f9fea62996a661ef950a18cea55d1a9468a4423d2c7001e9302f70553f0b6",
+      "bytes": 2679104
+    }
+  },
+  "checks": {
+    "go": "all-package race tests, vet and 13 Python tests passed",
+    "rust": "all-target/all-feature tests, clippy -D warnings and fmt passed",
+    "shared": "facade exports, lifecycle, SQL vocabulary, token/fixture copies, 192 palette pairs and local documentation links passed",
+    "pty": {
+      "go": 24,
+      "rust": 24,
+      "languages": [
+        "ko",
+        "en"
+      ],
+      "result": "passed"
+    },
+    "reference_images": {
+      "syntax": 8,
+      "tree": 2,
+      "controls": 10,
+      "result": "unified Rust snapshots byte-identical to existing references"
+    },
+    "static_elf": "both executables match ARM64; no PT_INTERP or DT_NEEDED",
+    "cli": "all demo help, bilingual list, invalid/missing/duplicate selector checks passed",
+    "output_layout": "exactly one executable in each bin/go and bin/rust"
+  },
+  "not_run": [
+    "GitHub CI/publication",
+    "x86_64 execution (no cross build requested)",
+    "CentOS (user instruction)",
+    "actual LazyOra/LazyBeaver integration"
+  ],
+  "cleanup": {
+    "user_approved": true,
+    "removed_obsolete_executable_paths": 354,
+    "preserved": [
+      "current ARM64 Go/Rust unified executables",
+      "source files",
+      "validation logs",
+      "release archives",
+      "build tools/caches"
+    ],
+    "verification": "All approved paths absent; both current binary SHA256 values unchanged; --list and static ELF checks passed."
+  },
+  "record_scope": "Historical pre-release local validation snapshot; publication is recorded in the release manifest.",
+  "release_validation": "https://github.com/leechis7/tuivory/releases/tag/go/v0.9.1"
+}

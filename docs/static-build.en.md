@@ -2,7 +2,7 @@
 
 [한국어 (default)](static-build.md) · **English**
 
-Current release: **0.3.0**. [Assets and validation](release-0.3.0.en.md). The 0.2.0/CentOS details below are historical.
+Current public release: **0.9.1**. [Assets and validation](release-0.9.1.en.md). The 0.2.0/CentOS details below are historical.
 
 Per the user instruction on 2026-10-29, CentOS validation is no longer performed, including the CI VM job. Static distribution requirements, ELF inspection and execution checks in available environments remain. The CentOS commands and previous results below are historical reproduction records, not current required procedures.
 
@@ -16,30 +16,24 @@ Shell currently provides interpreter-based references. Any future independent Sh
 
 ## Build
 
-The default build produces one Linux ARM64 artifact; choose other targets explicitly. Go requires 1.24+, Rust examples require 1.88+, and build tools require Python 3.
+The 0.9.1 TVR-27 change builds one unified executable per language, only for the current Linux host architecture. See [unified demos, architecture detection and options](examples.en.md). Requires Go 1.24+, Rust examples 1.88+, and Python 3.
 
 ```sh
-make build                    # bin/go/tuivory-linux-arm64, CGO_ENABLED=0
-rustup target add aarch64-unknown-linux-musl
-make build-rust               # bin/rust/tuivory-linux-arm64
-
-# Requested CentOS 7.4 x86_64 target
-make build-go-x86_64           # bin/go/tuivory-linux-x86_64
-rustup target add x86_64-unknown-linux-musl
-make build-rust-x86_64         # bin/rust/tuivory-linux-x86_64
+make build                    # bin/go/tuivory-linux-<host architecture>
+make build-rust               # bin/rust/tuivory-linux-<host architecture>
 ```
 
-Rust uses rustup's musl standard library and the host toolchain's bundled `rust-lld`. No separate GNU target linker or target glibc is needed. These are development tools, not executable runtime dependencies. Both languages select the UI language with `--lang ko|en`.
+Rust uses the host-matching musl standard library and rustup's bundled `rust-lld`. Run `rustup target add aarch64-unknown-linux-musl` on ARM64 or `rustup target add x86_64-unknown-linux-musl` on x86_64. No separate GNU linker or target glibc is required. These tools are needed only during development.
 
-Builds check the ELF architecture and reject `PT_INTERP` and `DT_NEEDED`. Rust static PIE may retain `PT_DYNAMIC` for self-relocation. ELF checks and execution checks complement each other: even statically linked code can open runtime files. Check any additional dependencies in the final host application too.
+Builds verify ELF architecture and reject `PT_INTERP` and `DT_NEEDED`. Rust static PIE may retain `PT_DYNAMIC` for self-relocation. ELF inspection cannot guarantee absence of runtime file access, so execution checks are also required. Check any extra dependencies in the final host application.
 
 ```sh
-python3 tools/check_static_elf.py --arch x86_64 bin/go/tuivory-linux-x86_64 bin/rust/tuivory-linux-x86_64
-python3 tools/check_go_module.py --static-output /tmp/tuivory-go-consumer
-python3 tools/check_rust_module.py --ratatui --static-output /tmp/tuivory-rust-consumer
+# Current ARM64 server
+python3 tools/check_static_elf.py --arch arm64 bin/go/tuivory-linux-arm64 bin/rust/tuivory-linux-arm64
+python3 tools/check_showcase.py bin/go/tuivory-linux-arm64 bin/rust/tuivory-linux-arm64
 ```
 
-External host checks use the standalone Go module and packaged Rust crate without the repository's shared design directory. They check public APIs and rendering, then export static x86_64 executables.
+Existing public 0.9.0 assets are preserved. Starting with 0.9.1, language/architecture archives contain one unified executable each. No server cross compiles other architectures.
 
 ## Historical CentOS kernel validation (no longer performed)
 
@@ -56,8 +50,8 @@ python3 tools/check_centos74.py --kernel /tmp/tuivory-centos74-vmlinuz \
   --consumer rust-host=/tmp/tuivory-rust-consumer
 ```
 
-Checks cover Korean/English startup, Ctrl+Q exit, alternate-screen restoration and external host APIs/rendering. Add Tree/workspace examples using additional `--binary` arguments. Physical servers, SSH, user terminals and LazyOra/LazyBeaver integration remain separate checks. ARM64 static artifacts are checked separately; x86_64 results do not establish ARM64 CentOS compatibility. See the [validation record](../evidence/static-build.en.md).
+Checks cover Korean/English startup, Ctrl+Q exit, alternate-screen restoration and external host APIs/rendering. Add Tree/workspace examples using additional `--binary` arguments. Physical servers, SSH, user terminals and LazyOra/LazyBeaver integration remain separate checks. ARM64 static artifacts are checked separately; x86_64 results do not establish ARM64 CentOS compatibility. See the [validation record](evidence/static-build.en.md).
 
-## Publication status
+## Historical 0.2.0 publication
 
 These static builds are included in the v0.2.0 tagged release. The existing `v0.1.0` Rust ARM64 release binary uses GNU/glibc 2.39 and differs from the new static artifacts. Existing tags and assets have not been changed. The previous Go ARM64 artifact is already static but is not a CentOS 7.4 x86_64 artifact. Record new commits, publication and remote CI results separately.

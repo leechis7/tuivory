@@ -1,0 +1,124 @@
+{
+  "issue": "TVR-28",
+  "source_base_commit": "3aadb547a40f8be58b55268300dc613b6f1b8db1",
+  "worktree_uncommitted": true,
+  "published": false,
+  "github_ci": "not run for this change",
+  "prior_TVR_27_changes": "preserved without committing",
+  "visible_root_directories": {
+    "before": 12,
+    "after": 10
+  },
+  "bin_directories": {
+    "before": 7,
+    "after": [
+      "go",
+      "rust"
+    ]
+  },
+  "relocated_document_paths": {
+    "evidence/popup-shadows.md": "docs/evidence/popup-shadows.md",
+    "evidence/background-audit-results.json": "docs/evidence/background-audit-results.json",
+    "evidence/components.en.md": "docs/evidence/components.en.md",
+    "evidence/disabled-colors-results.json": "docs/evidence/disabled-colors-results.json",
+    "evidence/syntax-results.json": "docs/evidence/syntax-results.json",
+    "evidence/component-boundary.en.md": "docs/evidence/component-boundary.en.md",
+    "evidence/component-boundary-results.json": "docs/evidence/component-boundary-results.json",
+    "evidence/release-0.2.0.en.md": "docs/evidence/release-0.2.0.en.md",
+    "evidence/menu.en.md": "docs/evidence/menu.en.md",
+    "evidence/popup-shadows.en.md": "docs/evidence/popup-shadows.en.md",
+    "evidence/menu-single-border-results.json": "docs/evidence/menu-single-border-results.json",
+    "evidence/focus.en.md": "docs/evidence/focus.en.md",
+    "evidence/background-fix.en.md": "docs/evidence/background-fix.en.md",
+    "evidence/focus-borders.en.md": "docs/evidence/focus-borders.en.md",
+    "evidence/background-fix.md": "docs/evidence/background-fix.md",
+    "evidence/README.md": "docs/evidence/README.md",
+    "evidence/menu-results.json": "docs/evidence/menu-results.json",
+    "evidence/components.md": "docs/evidence/components.md",
+    "evidence/background-fix-results.json": "docs/evidence/background-fix-results.json",
+    "evidence/focus.md": "docs/evidence/focus.md",
+    "evidence/showcase-results.json": "docs/evidence/showcase-results.json",
+    "evidence/static-build.en.md": "docs/evidence/static-build.en.md",
+    "evidence/component-boundary.md": "docs/evidence/component-boundary.md",
+    "evidence/controls-results.json": "docs/evidence/controls-results.json",
+    "evidence/initial-migration.md": "docs/evidence/initial-migration.md",
+    "evidence/overlay-drawing.en.md": "docs/evidence/overlay-drawing.en.md",
+    "evidence/release-0.2.0-results.json": "docs/evidence/release-0.2.0-results.json",
+    "evidence/focus-borders-results.json": "docs/evidence/focus-borders-results.json",
+    "evidence/api-lifecycle-results.json": "docs/evidence/api-lifecycle-results.json",
+    "evidence/focus-borders.md": "docs/evidence/focus-borders.md",
+    "evidence/static-build.md": "docs/evidence/static-build.md",
+    "evidence/initial-migration.en.md": "docs/evidence/initial-migration.en.md",
+    "evidence/ui-facade-consumer-map.json": "docs/evidence/ui-facade-consumer-map.json",
+    "evidence/README.en.md": "docs/evidence/README.en.md",
+    "evidence/popup-shadow-results.json": "docs/evidence/popup-shadow-results.json",
+    "evidence/focus-results.json": "docs/evidence/focus-results.json",
+    "evidence/static-build-results.json": "docs/evidence/static-build-results.json",
+    "evidence/release-0.2.0.md": "docs/evidence/release-0.2.0.md",
+    "evidence/ui-facade-results.json": "docs/evidence/ui-facade-results.json",
+    "evidence/menu-single-border.en.md": "docs/evidence/menu-single-border.en.md",
+    "evidence/overlay-drawing.md": "docs/evidence/overlay-drawing.md",
+    "evidence/go-single-import-results.json": "docs/evidence/go-single-import-results.json",
+    "evidence/grid-options-results.json": "docs/evidence/grid-options-results.json",
+    "evidence/menu.md": "docs/evidence/menu.md",
+    "evidence/menu-single-border.md": "docs/evidence/menu-single-border.md",
+    "examples/README.md": "docs/examples.md",
+    "examples/README.en.md": "docs/examples.en.md",
+    "examples/components.txt": "docs/examples-components.txt"
+  },
+  "worktrees": [
+    {
+      "old": "bin/worktrees/TVR-17",
+      "new": ".cache/worktrees/TVR-17",
+      "head": "e34b824d7a806e691f333e85b1937f5f6be1a1a0"
+    },
+    {
+      "old": "bin/worktrees/TVR-7-component-boundary",
+      "new": ".cache/worktrees/TVR-7-component-boundary",
+      "head": "50bf212f4bf2cb9ce60558b806e6d190a35b32cb"
+    },
+    {
+      "old": "bin/worktrees/TVR-7-menus",
+      "new": ".cache/worktrees/TVR-7-menus",
+      "head": "27e6019f4ca496f3164def0a489254a488eff128"
+    },
+    {
+      "old": "bin/worktrees/TVR-7-release-0.3.0",
+      "new": ".cache/worktrees/TVR-7-release-0.3.0",
+      "head": "dabab8b8d9b23e9c641231b5358301e3fbb45431"
+    }
+  ],
+  "cache": ".cache (ignored)",
+  "cargo_default_target": ".cache/rust",
+  "checks": {
+    "go_and_rust_host_static_builds": "passed on Linux ARM64",
+    "make_check": "Go vet, facade/token/fixture/lifecycle/palette/link checks passed",
+    "generated_api": "79 Go aliases and 151 Rust public entries synchronized; API unchanged by layout moves",
+    "tool_unit_tests": 13,
+    "source_entrypoints": "make run and make run-rust --list passed",
+    "pty": "Go/Rust Korean playground resize/restore and English SQL editing/undo/redo/mouse/restore passed (4 scenarios)",
+    "historical_json": "18 pre-existing validation JSON records byte-identical after relocation",
+    "worktrees": "4 registered worktrees retain source/HEAD and clean status",
+    "output_layout": "bin contains only go/rust with one ARM64 executable each; rust/target and root evidence/examples absent",
+    "workflow_yaml": "parsed",
+    "static_elf": "both ARM64 binaries have no PT_INTERP/DT_NEEDED"
+  },
+  "binaries": {
+    "bin/go/tuivory-linux-arm64": {
+      "sha256": "36f5f5a8a4e6f46cc84279c6fabf7b51557f1082f0448529206f28913b30190c",
+      "bytes": 6610511
+    },
+    "bin/rust/tuivory-linux-arm64": {
+      "sha256": "5438ef8cbb4469d1447ad0f8c95a4d70f47290e3a15f56a6c2dde08c404913c2",
+      "bytes": 2679424
+    }
+  },
+  "not_run": [
+    "GitHub CI/publication",
+    "CentOS (user instruction)",
+    "x86_64 build/execution (host-only policy)",
+    "actual LazyOra/LazyBeaver integration"
+  ],
+  "record_scope": "Historical pre-release local validation snapshot; publication is recorded in the release manifest.",
+  "release_validation": "https://github.com/leechis7/tuivory/releases/tag/go/v0.9.1"
+}
