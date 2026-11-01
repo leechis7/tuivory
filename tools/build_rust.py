@@ -27,12 +27,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--arch', choices=TARGETS, default='arm64')
     parser.add_argument('--examples', action='store_true', help='also build component validation examples')
+    parser.add_argument('--syntax', action='store_true', help='build the optional SQL example only')
     args = parser.parse_args()
     target = TARGETS[args.arch]
     directory = Path(os.environ.get('CARGO_TARGET_DIR', 'target'))
     if not directory.is_absolute():
         directory = ROOT / 'rust' / directory
     env = linker_environment(target)
+    if args.syntax:
+        subprocess.run(['cargo', 'build', '--manifest-path', str(ROOT / 'rust/Cargo.toml'),
+                        '--locked', '--release', '--target', target, '--target-dir', str(directory), '--features', 'playground,syntax-sql',
+                        '--example', 'syntax'], env=env, check=True)
+        binary=directory / target / 'release/examples/syntax'
+        inspect(binary,args.arch)
+        destination=ROOT/'bin/rust'/f'tuivory-syntax-linux-{args.arch}'
+        destination.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(binary,destination)
+        print(f'Static optional SQL example: {destination}')
+        return
     command = ['cargo', 'build', '--manifest-path', str(ROOT / 'rust/Cargo.toml'), '--locked',
                '--release', '--target', target, '--target-dir', str(directory), '--features', 'playground']
     command += ['--examples'] if args.examples else ['--example', 'playground']

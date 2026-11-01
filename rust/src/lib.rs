@@ -27,6 +27,9 @@ pub mod interaction;
 pub mod layout;
 pub mod menu;
 pub mod popup;
+pub mod syntax;
+#[cfg(feature = "syntax-sql")]
+pub mod syntax_sql;
 pub mod text;
 pub mod text_markup;
 pub mod text_offsets;

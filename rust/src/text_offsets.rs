@@ -27,7 +27,7 @@ pub struct ByteSyntaxSpan {
 impl TextDocument {
     /// Convert byte ranges atomically; host lexing/business semantics remain outside the SDK.
     pub fn set_byte_syntax(&mut self, spans: &[ByteSyntaxSpan]) -> Result<(), Error> {
-        let mut boundaries = std::collections::BTreeMap::new();
+        let mut boundaries = std::collections::HashMap::new();
         for (index, (offset, _)) in self.buffer.text().grapheme_indices(true).enumerate() {
             boundaries.insert(offset, index);
         }

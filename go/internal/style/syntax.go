@@ -2,7 +2,8 @@ package style
 
 import "github.com/gdamore/tcell/v2"
 
-// SyntaxKind is supplied by the host lexer; TUIVORY does not parse source code.
+// SyntaxKind adapts supplied or host highlighting tokens to existing colors.
+// Optional source tokenizers are separate from this renderer and never execute code.
 type SyntaxKind uint8
 
 const (

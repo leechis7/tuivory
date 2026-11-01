@@ -1,6 +1,6 @@
 [package]
 name = "tuivory"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2024"
 rust-version = "1.85"
 description = "Reusable TUI component models, design tokens, styles and optional renderers"
@@ -11,12 +11,18 @@ publish = false
 include = ["src/**", "examples/**", "tests/**", "Cargo.toml", "Cargo.lock", "README*.md", "NOTICE*.md", "LICENSE"]
 
 [[example]]
+name = "syntax"
+path = "examples/syntax/main.rs"
+required-features = ["playground", "syntax-sql"]
+
+[[example]]
 name = "controls"
 path = "examples/controls/main.rs"
 required-features = ["playground"]
 
 [features]
 default = []
+syntax-sql = []
 ratatui = ["dep:ratatui"]
 terminal = ["ratatui", "ratatui/crossterm", "dep:crossterm"]
 playground = ["terminal"]

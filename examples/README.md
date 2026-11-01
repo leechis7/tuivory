@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+**0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](../docs/syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다.
+
 **0.8.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).

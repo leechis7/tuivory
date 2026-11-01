@@ -22,6 +22,9 @@ type RowsView struct {
 	// PreserveBackgrounds keeps explicit row/span backgrounds for grid or custom composition.
 	PreserveBackgrounds bool
 	Mouse               func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
+	// SyntaxStyle optionally preserves a host's existing seven-role syntax styles.
+	// Selection/disabled spans have already replaced syntax roles before drawing.
+	SyntaxStyle func(string, tcell.Style) tcell.Style
 }
 
 func (v *RowsView) AtTabBoundary(previous bool) bool {
@@ -59,15 +62,27 @@ func (v *RowsView) Draw(screen tcell.Screen) {
 		for _, span := range line.Spans {
 			start := max(0, min(w, span.Start))
 			width := min(max(0, span.Width), w-start)
-			pair, ok := v.palette[span.Role]
+			role := span.Role
+			if strings.HasPrefix(role, "syntax.") {
+				role = SyntaxPaletteRole(role)
+			}
+			pair, ok := v.palette[role]
 			if !ok {
 				panic("component: missing span role " + span.Role)
 			}
-			style := disabledCue(v.palette, span.Role, pair.Style())
+			style := disabledCue(v.palette, role, pair.Style())
 			if !v.PreserveBackgrounds {
-				style = componentStyle(v.palette, span.Role)
+				style = componentStyle(v.palette, role)
 			}
-			style = style.Underline(span.Focused && !v.hideFocus && v.HasFocus())
+			if strings.HasPrefix(span.Role, "syntax.") {
+				style, _ = TextOnSurface(v.palette, role, "surface")
+				if v.SyntaxStyle != nil {
+					style = v.SyntaxStyle(span.Role, componentStyle(v.palette, "body"))
+				}
+			}
+			if span.Focused && !v.hideFocus && v.HasFocus() {
+				style = style.Underline(true)
+			}
 			fillComponent(screen, x+start, y+i, width, 1, style)
 			drawTreeText(screen, x+start, y+i, width, 0, span.Text, style)
 		}

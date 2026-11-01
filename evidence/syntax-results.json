@@ -1,0 +1,120 @@
+{
+  "issue": "TVR-24",
+  "date": "2026-11-01",
+  "status": "implementation and local validation complete; unreleased",
+  "baseline": "46cc506d0e9234cdd1c7f1b0a2033269e39476c7",
+  "baseline_release": "0.8.0",
+  "branch": "codex/TVR-24-syntax-analysis",
+  "committed": false,
+  "published": false,
+  "remote_ci": "not run",
+  "supported_source": [
+    "Oracle SQL",
+    "PL/SQL"
+  ],
+  "sdk_implementations": [
+    "Go root import",
+    "Rust optional syntax-sql feature"
+  ],
+  "planned_only_source": [
+    "Go",
+    "Rust"
+  ],
+  "fixtures": "design/syntax-cases.json",
+  "vocabulary": "design/sql-syntax-words.json",
+  "license": "AGPL-3.0-only own implementation; no added third-party lexer",
+  "centos": "not run per user instruction",
+  "fixture_counts": {
+    "sql_cases": 19,
+    "role_fallbacks": 17,
+    "incomplete_input": "all valid UTF-8 prefix boundaries of every SQL fixture"
+  },
+  "validation": [
+    {
+      "command": "make test check build",
+      "result": "passed",
+      "coverage": "Go race/vet, existing component regressions, default ARM64 static ELF, shared fixtures/vocabulary/palettes/lifecycle/links and SDK-only examples"
+    },
+    {
+      "command": "make test-rust check-rust; cargo test --features syntax-sql --test syntax",
+      "toolchain": "1.85.1",
+      "result": "passed",
+      "coverage": "core MSRV, optional SQL without renderers, core fmt/clippy/doc tests"
+    },
+    {
+      "command": "make test-rust-ui check-rust-ui",
+      "toolchain": "1.88.0",
+      "result": "passed",
+      "coverage": "all-feature all-targets/doc tests and clippy -D warnings, SQL/range/source-tag/state precedence and long document regressions"
+    },
+    {
+      "command": "python3 tools/check_go_module.py",
+      "result": "passed",
+      "coverage": "isolated distributable module and root-only external analyzer/editor consumer without repository design directory"
+    },
+    {
+      "command": "python3 tools/check_rust_module.py --ratatui --syntax-sql",
+      "result": "passed",
+      "coverage": "packaged standalone crate, single dependency external analyzer/editor/rendering consumer, existing four deprecation rejection checks"
+    },
+    {
+      "command": "make build-syntax-go build-syntax-rust",
+      "result": "passed",
+      "coverage": "ARM64 static SQL example hosts; no PT_INTERP or DT_NEEDED"
+    },
+    {
+      "command": "python3 tools/smoke_syntax.py <Go|Rust ARM64 static example> --lang <ko|en> [--ascii]",
+      "result": "passed",
+      "cases": 8,
+      "coverage": "literal paste, copy request, undo/redo, theme/profile, resize, captured mouse and terminal restoration"
+    },
+    {
+      "command": "python3 tools/snapshot_syntax.py <ARM64 static Rust example>",
+      "result": "passed",
+      "images": 8,
+      "coverage": "KO/EN dark/light/blackwhite/ASCII widget references; generated static outputs match working-tree documentation references byte-for-byte"
+    },
+    {
+      "command": "go tool nm bin/go/tuivory-linux-arm64",
+      "result": "passed",
+      "coverage": "default playground has no internal/sqlsyntax symbols: optional analyzer is omitted when unused"
+    },
+    {
+      "command": "go test -race -run 'TestSyntaxBinding|TestSuppliedSyntax' .",
+      "result": "passed",
+      "coverage": "final source-tagged supplied-result expiration, search and masked pointer/value diagnostics after the final formatter refinement"
+    },
+    {
+      "command": "generate_api_reference.py --check; make check; py_compile; workflow YAML parsing; git diff --check",
+      "result": "passed",
+      "coverage": "final generated API/fixtures/vocabulary/links, Go vet, tool syntax and six-job workflow structure"
+    }
+  ],
+  "performance": {
+    "environment": "local Linux ARM64; illustrative measurements, not latency guarantees or a direct language comparison",
+    "source_bytes": 560000,
+    "lines": 10000,
+    "go_analysis_only": {
+      "iterations": 3,
+      "ns_per_operation": 303349339,
+      "bytes_per_operation": 44786928,
+      "allocations_per_operation": 60,
+      "mode": "go benchmark, optimized normal build"
+    },
+    "rust_two_analyses_binding_layout": {
+      "milliseconds": 509.679726,
+      "mode": "release test, Rust 1.88.0; test explicitly analyzes once and automatic binding analyzes again"
+    },
+    "complexity": "whole-source tokenizer and whole-document Layout; no incremental parser/rope/scheduler"
+  },
+  "not_run": [
+    "GitHub CI/publication for this working change",
+    "new x86_64 build",
+    "actual LazyOra migration/fork removal",
+    "physical remote terminals/SSH",
+    "CentOS (user instruction)"
+  ],
+  "local_logs": "bin/validation/TVR-24-* (ignored artifacts)",
+  "record_scope": "Pre-release local validation snapshot; publication is recorded in the 0.9.0 release manifest.",
+  "release_validation": "https://github.com/leechis7/tuivory/releases/tag/go/v0.9.0"
+}

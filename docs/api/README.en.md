@@ -2,11 +2,13 @@
 
 [한국어 (default)](README.md) · **English**
 
-**0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../ui-facade.en.md).
+**Includes 0.9.0 TVR-24 APIs:** [optional syntax analysis and new editing APIs](../syntax.en.md) are available since 0.9.0.
 
-This reference follows 0.8.0 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
+**0.9.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../ui-facade.en.md).
 
-Reference version: **0.8.0**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
+This reference follows 0.9.0 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
+
+Reference version: **0.9.0**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
 
 - [Go public declarations](go.en.md)
 - [Rust public declarations](rust.en.md)
@@ -50,3 +52,5 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 ```
 
 0.8.0 TVR-26: [shared UI APIs](../ui-facade.en.md) · [Go ui](go-ui.en.md) · [Go terminal](go-terminal.en.md). Rust ui::components aliases existing renderer APIs; new InputEvent/Session/byte-span APIs are in the Rust reference.
+
+[Syntax analysis/highlighting APIs and editor migration](../syntax.en.md): 0.9.0 TVR-24 follow-up.

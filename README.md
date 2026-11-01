@@ -2,21 +2,23 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
-**0.8.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](docs/ui-facade.md).
+**0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](docs/syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다.
+
+**0.9.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](docs/ui-facade.md).
 
 **Go/tview와 Rust/Ratatui**를 위한 TUI 컴포넌트 라이브러리입니다. 앱이 화면 구성·데이터·업무 동작을 연결합니다. Python·JavaScript는 현재 토큰 읽기 예제를 제공하며 UI 패키지는 계획 단계입니다.
 
-**0.8.0** · [릴리스](docs/release-0.8.0.md) · [문서](docs/README.md) · [API](docs/api/README.md)
+**0.9.0** · [릴리스](docs/release-0.9.0.md) · [문서](docs/README.md) · [API](docs/api/README.md)
 
 ## 설치
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.8.0
+go get github.com/leechis7/tuivory/go@v0.9.0
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.8.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.9.0", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [설치 상세](docs/installation.md)

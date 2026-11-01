@@ -1,4 +1,4 @@
-# Rust API — source (0.8.0)
+# Rust API — source (0.9.0)
 
 **한국어 (기본)** · [English](rust.en.md)
 
@@ -3096,6 +3096,98 @@ pub fn stack_rects(
 Convert shared terminal-cell geometry into Ratatui rectangles.
 
 
+### tuivory::syntax::SyntaxAnalysis
+
+```rust
+pub struct SyntaxAnalysis {
+    pub source: String,
+    pub language: String,
+    pub dialect: String,
+    pub tokens: Vec<SyntaxToken>,
+}
+```
+
+
+
+#### tuivory::syntax::SyntaxAnalysis::validate
+
+```rust
+pub fn validate(&self, text: &str) -> Result<(), Error>;
+```
+
+
+
+### tuivory::syntax::SyntaxAnalyzer
+
+```rust
+pub trait SyntaxAnalyzer: Send + Sync {
+    fn analyze_syntax(&self, text: &str, request: &SyntaxRequest) -> Result<SyntaxAnalysis, Error>;
+}
+```
+
+
+
+
+### tuivory::syntax::SyntaxRequest
+
+```rust
+pub struct SyntaxRequest {
+    pub language: String,
+    pub dialect: String,
+}
+```
+
+
+
+
+### tuivory::syntax::SyntaxToken
+
+```rust
+pub struct SyntaxToken {
+    pub start: usize,
+    pub end: usize,
+    pub role: String,
+}
+```
+
+
+
+
+### tuivory::syntax::palette_role
+
+```rust
+pub fn palette_role(role: &str) -> &str;
+```
+
+
+
+
+### tuivory::syntax::role_style
+
+```rust
+pub fn role_style(role: &str) -> &str;
+```
+
+Unknown roles/identifiers fall back to body; extended roles reuse the seven
+existing syntax families. No source language creates its own palette.
+
+
+### tuivory::syntax_sql::SQLAnalyzer
+
+```rust
+pub struct SQLAnalyzer;
+```
+
+
+
+#### tuivory::syntax_sql::SQLAnalyzer::new
+
+```rust
+pub fn new() -> Self;
+```
+
+
+
 ### tuivory::text::SyntaxSpan
 
 ```rust
@@ -3123,6 +3215,37 @@ pub struct TextBuffer {
 ```
 
 
+
+#### tuivory::text::TextBuffer::select_bytes
+
+```rust
+pub fn select_bytes(&mut self, anchor: usize, cursor: usize) -> Result<(), crate::Error>;
+```
+
+Exact original byte ranges, preserving anchor direction. Split graphemes
+are rejected atomically instead of being interpreted as display cells.
+
+#### tuivory::text::TextBuffer::selection_bytes
+
+```rust
+pub fn selection_bytes(&mut self) -> (usize, usize);
+```
+
+
+
+#### tuivory::text::TextBuffer::replace_bytes
+
+```rust
+pub fn replace_bytes(
+        &mut self,
+        start: usize,
+        end: usize,
+        text: &str,
+    ) -> Result<TextEvent, crate::Error>;
+```
+
+Literal programmatic replacement with undo/redo; no tag insertion,
+newline normalization, keymap changes or history reset.
 
 #### tuivory::text::TextBuffer::new
 
@@ -3204,6 +3327,53 @@ pub struct TextDocument {
 ```
 
 
+
+#### tuivory::text::TextDocument::set_syntax_analysis
+
+```rust
+pub fn set_syntax_analysis(&mut self, analysis: SyntaxAnalysis) -> Result<(), Error>;
+```
+
+Apply a source-tagged result atomically, switching from automatic to
+supplied analysis. Stale or invalid results preserve existing state.
+
+#### tuivory::text::TextDocument::set_syntax_analyzer
+
+```rust
+pub fn set_syntax_analyzer(
+        &mut self,
+        analyzer: Option<Arc<dyn SyntaxAnalyzer>>,
+        request: SyntaxRequest,
+    ) -> Result<(), Error>;
+```
+
+Attach supplied or custom analysis atomically; None detaches it. Analysis
+runs on changed source, never on every scroll/theme-only render.
+
+#### tuivory::text::TextDocument::refresh_syntax
+
+```rust
+pub fn refresh_syntax(&mut self) -> Result<(), Error>;
+```
+
+Clear stale styles on failure. Existing editor/selection/history survives.
+
+#### tuivory::text::TextDocument::syntax_error
+
+```rust
+pub fn syntax_error(&self) -> Option<&str>;
+```
+
+
+
+#### tuivory::text::TextDocument::set_search_matches
+
+```rust
+pub fn set_search_matches(&mut self, matches: Vec<TextRange>) -> Result<(), crate::Error>;
+```
+
+Search expires on source changes; disabled/selection override it, and it
+overrides syntax. Searching itself remains a host decision.
 
 #### tuivory::text::TextDocument::set_text
 
@@ -3295,6 +3465,18 @@ pub struct TextEvent {
 ```
 
 
+
+
+### tuivory::text::TextRange
+
+```rust
+pub struct TextRange {
+    pub start: usize,
+    pub end: usize,
+}
+```
+
+Original grapheme range for host-provided search matches, not byte/cell offsets.
 
 
 ### tuivory::text_markup::parse_markup
