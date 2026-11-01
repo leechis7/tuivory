@@ -46,7 +46,7 @@ Go는 `NewEditor(text)`, `NewTextView(text)`로 `TextDocument`를 만들고 `New
 - Cursor와 Anchor, SyntaxSpan의 Start/End는 **전체 원문의 확장 grapheme 인덱스**입니다. 범위는 반열림이며 줄바꿈도 한 묶음으로 셉니다. CRLF는 한 grapheme입니다. `CursorByte/cursor_byte`는 원문 UTF-8 바이트 위치입니다. 셀 좌표와 혼용하지 않습니다.
 - `Handle/handle`은 insert/paste/newline/backspace/delete, left/right/up/down/home/end, select_이동/select_all, copy/cut, undo/redo를 받습니다. 선택 범위는 삽입 시 교체됩니다. Undo 이력은 최근 128회 편집이며 파일에 저장하지 않습니다.
 - Wrap/LineNumbers와 ScrollX/Y를 설정합니다. 가로 스크롤은 셀 단위이고 두 칸 문자를 반쪽으로 그리지 않습니다. 선택·편집 후 커서를 보이게 이동합니다. 수동 스크롤은 다음 편집/선택 전까지 유지합니다. `Point/point`는 내용 뷰포트의 셀 좌표를 원문 선택으로 변환하며 extend=true로 드래그 선택을 이어갑니다.
-- `SetSyntax/set_syntax`는 호스트 렉서가 만든 grapheme 범위와 의미 역할을 받습니다. 지원 역할은 body/hint/info/success/warning/error/header/field/selection/button/disabled/edited입니다. 잘못된 범위·역할은 오류이며 이전 설정을 유지합니다. SQL 렉서나 실행기는 제공하지 않습니다.
+- `SetSyntax/set_syntax`는 호스트 렉서가 만든 grapheme 범위와 의미 역할을 받습니다. 지원 역할은 body/hint/info/success/warning/error/header/field/selection/button/disabled/edited와 0.9.0의 syntax.* 7종입니다. 잘못된 범위·역할은 오류이며 이전 설정을 유지합니다. 0.9.0의 [선택적 SQL 분석기](syntax.md)는 별도이며 실행기는 제공하지 않습니다.
 - 일반 텍스트 API는 `[info]` 같은 문자열을 그대로 표시합니다. **명시적** `ParseMarkup/parse_markup`와 `SetMarkup/set_markup`만 `[role]내용[/]`을 해석합니다. `[[`는 `[` 이스케이프이며 중첩 태그를 지원합니다. 잘못된/닫히지 않은 태그는 오류입니다. 파싱 결과와 복사는 태그를 뺀 논리 평문이며 원본 마크업 문자열이 필요하면 앱이 별도로 보존합니다.
 
 `TextEvent`의 change/select는 상태 변경 안내, copy/cut의 Text는 앱 클립보드 요청입니다. 키/파일/DB/클립보드 정책을 강제하지 않습니다. TextBuffer의 Secret을 켜면 화면·Go JSON/포맷·Rust Debug와 복사 요청에서 원문을 숨깁니다. 원문과 Undo 이력은 메모리에 유지합니다.

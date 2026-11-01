@@ -32,7 +32,7 @@ InputEvent는 kind와 선택적 key/text/modifiers/phase/x/y/button/width/height
 
 ## 원문과 구문 강조
 
-원문은 UTF-8이며 Cursor/Anchor/기본 SyntaxSpan은 grapheme 인덱스, 범위는 반열림입니다. GraphemeIndex/grapheme_index는 정확한 바이트 경계만 변환합니다. 결합 문자·CJK·이모지의 중간을 가리키면 오류입니다. SetByteSyntax/set_byte_syntax는 바이트 기반 렉서 결과를 한 번의 경계 인덱싱으로 변환하고 전체를 검증한 뒤 적용합니다. 실패 시 이전 강조를 보존합니다. SQL 해석·실행과 렉서 자체는 앱에 남습니다.
+원문은 UTF-8이며 Cursor/Anchor/기본 SyntaxSpan은 grapheme 인덱스, 범위는 반열림입니다. GraphemeIndex/grapheme_index는 정확한 바이트 경계만 변환합니다. 결합 문자·CJK·이모지의 중간을 가리키면 오류입니다. SetByteSyntax/set_byte_syntax는 바이트 기반 렉서 결과를 한 번의 경계 인덱싱으로 변환하고 전체를 검증한 뒤 적용합니다. 실패 시 이전 강조를 보존합니다. SQL 실행·안전성은 앱에 남으며 강조용 렉서는 [선택적 SDK 분석기](../docs/syntax.md) 또는 호스트 구현을 사용합니다.
 
 ## 수명과 실행
 
@@ -49,3 +49,5 @@ Go 문자열/이벤트는 값이며 자식 컴포넌트는 동일 인스턴스�
 | C/C++ | opaque 모델 핸들·길이 지정 UTF-8 버퍼, 명시적 결과/해제, C++ RAII | ABI 버전, 정수 범위, 할당/해제 주체, 콜백·스레드 규칙 |
 
 이들은 구현 완료가 아닙니다. FFI는 빌린 Rust 포인터나 Go 포인터를 공통 ABI로 직접 넘기지 않고 복사/명시적 소유권으로 연결하도록 설계합니다. 새 어댑터는 같은 ID·상태·입력·문자 폭·오프셋·배치 시나리오에 적합해야 합니다. 공통 모델 변경과 backend 호환 어댑터 변경을 구분해 문서화하며 Deprecated/제거는 [API 수명 정책](../docs/api-lifecycle.md)을 따릅니다.
+
+0.9.0 TVR-24 후속의 [선택적 강조 분석기](../docs/syntax.md)는 공통 토큰/렌더링과 분리됩니다. 앱 자체 분석기도 연결하며 DB 실행·위험 SQL/트랜잭션 판단은 앱 책임입니다.

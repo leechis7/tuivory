@@ -3,12 +3,24 @@ run:
 	$(MAKE) -C go run
 build:
 	$(MAKE) -C go build
+.PHONY: run-syntax-go run-syntax-rust
+run-syntax-go:
+	go -C go run ./examples/syntax $(ARGS)
+run-syntax-rust:
+	cargo run --manifest-path rust/Cargo.toml --features playground,syntax-sql --example syntax -- $(ARGS)
+.PHONY: build-syntax-go build-syntax-rust
+build-syntax-go:
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go -C go build -trimpath -o ../bin/go/tuivory-syntax-linux-arm64 ./examples/syntax
+	python3 tools/check_static_elf.py --arch arm64 bin/go/tuivory-syntax-linux-arm64
+build-syntax-rust:
+	python3 tools/build_rust.py --syntax
 test:
 	$(MAKE) -C go test
 	python3 -m unittest discover -s tests -v
 check:
 	$(MAKE) -C go check
 	python3 tools/check_ui_facade.py
+	python3 tools/export_syntax_words.py --check
 	python3 tools/check_api_lifecycle.py
 	python3 tools/export_tokens.py --check
 	python3 tools/export_tree_cases.py --check

@@ -147,6 +147,10 @@ func TestIsolatedModule(t *testing.T) {
 ''')
         (consumer / 'single_import_test.go').write_text(
             (module / 'single_import_test.go').read_text().replace('package tuivory_test', 'package consumer_test'))
+        (consumer / 'syntax_test.go').write_text(
+            (module / 'syntax_test.go').read_text().replace('package tuivory_test', 'package consumer_test'))
+        (consumer / 'testdata').mkdir(exist_ok=True)
+        shutil.copyfile(module / 'testdata/syntax-cases.json', consumer / 'testdata/syntax-cases.json')
         subprocess.run(['go', 'test', '-mod=mod', './...'], cwd=consumer, env=env, check=True)
         if args.static_output:
             output = args.static_output.resolve()

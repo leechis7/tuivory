@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ratatui', action='store_true', help='also verify the optional Ratatui adapter externally')
+    parser.add_argument('--syntax-sql', action='store_true', help='verify the optional SQL analyzer and editor byte APIs')
     parser.add_argument('--terminal-output', type=Path, help='export SDK-only terminal lifecycle test host')
     parser.add_argument('--static-output', type=Path, help='also export a static x86_64 external host')
     args = parser.parse_args()
@@ -37,10 +38,11 @@ def main():
         consumer = base / 'consumer'
         (consumer / 'src').mkdir(parents=True)
         # JSON quoting is valid for these TOML basic strings and escapes paths.
+        features = (['terminal'] if args.terminal_output else ['ratatui'] if args.ratatui else []) + (['syntax-sql'] if args.syntax_sql else [])
         manifest = ('[package]\nname = "tuivory-external-check"\nversion = "0.0.0"\n'
                     'edition = "2024"\n\n[dependencies]\n'
                     'tuivory = { path = ' + json.dumps(str(dependency)) +
-                    (', features = ["terminal"]' if args.terminal_output else ', features = ["ratatui"]' if args.ratatui else '') + ' }\n')
+                    (', features = ' + json.dumps(features) if features else '') + ' }\n')
         (consumer / 'Cargo.toml').write_text(manifest)
         source = '''#![deny(deprecated)]
 use tuivory::{Color, ColorProfile, Theme, TokenDocument};
@@ -128,6 +130,17 @@ fn main() {
     terminal.draw(|f| f.render_widget(tuivory::ui::components::LineWidget::new(runs.clone(),&styles).unwrap(),f.area())).unwrap();
     terminal.draw(|f| f.render_widget(styles.panel("External",true,1,true).unwrap(),f.area())).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), "+");
+    let doc =''')
+        if args.syntax_sql:
+            source=source.replace('    let doc =', '''    use tuivory::syntax::SyntaxAnalyzer as _;
+    let analyzer=tuivory::syntax_sql::SQLAnalyzer::new();
+    let analysis=analyzer.analyze_syntax("SELECT NVL(:id, q'[Unicode]') FROM dual", &Default::default()).unwrap();
+    assert_eq!(analysis.tokens[0].role,"keyword");
+    let mut sql=tuivory::text::TextDocument::editor(&analysis.source);
+    sql.set_syntax_analyzer(Some(std::sync::Arc::new(analyzer)),Default::default()).unwrap();
+    sql.buffer.select_bytes(0,6).unwrap();assert_eq!(sql.buffer.selection_bytes(),(0,6));
+    sql.buffer.replace_bytes(0,6,"select").unwrap();sql.refresh_syntax().unwrap();
+    sql.handle("undo","");assert_eq!(sql.buffer.text(),analysis.source);
     let doc =''')
         if args.terminal_output:
             source=source.replace('fn main() {', '''fn main() {

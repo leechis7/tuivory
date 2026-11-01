@@ -1,0 +1,683 @@
+{
+  "format": 1,
+  "cases": [
+    {
+      "name": "basic",
+      "source": "SELECT COUNT(*) AS total, NVL(:name, '가나다') FROM \"Order\" WHERE id>=1.2e-3D;",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 6,
+          "role": "keyword"
+        },
+        {
+          "start": 7,
+          "end": 12,
+          "role": "function"
+        },
+        {
+          "start": 12,
+          "end": 13,
+          "role": "punctuation"
+        },
+        {
+          "start": 13,
+          "end": 14,
+          "role": "operator"
+        },
+        {
+          "start": 14,
+          "end": 15,
+          "role": "punctuation"
+        },
+        {
+          "start": 16,
+          "end": 18,
+          "role": "keyword"
+        },
+        {
+          "start": 19,
+          "end": 24,
+          "role": "identifier"
+        },
+        {
+          "start": 24,
+          "end": 25,
+          "role": "punctuation"
+        },
+        {
+          "start": 26,
+          "end": 29,
+          "role": "function"
+        },
+        {
+          "start": 29,
+          "end": 30,
+          "role": "punctuation"
+        },
+        {
+          "start": 30,
+          "end": 35,
+          "role": "parameter"
+        },
+        {
+          "start": 35,
+          "end": 36,
+          "role": "punctuation"
+        },
+        {
+          "start": 37,
+          "end": 48,
+          "role": "string"
+        },
+        {
+          "start": 48,
+          "end": 49,
+          "role": "punctuation"
+        },
+        {
+          "start": 50,
+          "end": 54,
+          "role": "keyword"
+        },
+        {
+          "start": 55,
+          "end": 62,
+          "role": "identifier"
+        },
+        {
+          "start": 63,
+          "end": 68,
+          "role": "keyword"
+        },
+        {
+          "start": 69,
+          "end": 71,
+          "role": "identifier"
+        },
+        {
+          "start": 71,
+          "end": 73,
+          "role": "operator"
+        },
+        {
+          "start": 73,
+          "end": 80,
+          "role": "number"
+        },
+        {
+          "start": 80,
+          "end": 81,
+          "role": "punctuation"
+        }
+      ]
+    },
+    {
+      "name": "quote-1",
+      "source": "q'[SELECT '' 가😀]'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 22,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-2",
+      "source": "nq'{BEGIN :id}'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 15,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-3",
+      "source": "Q'<end>'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 8,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-4",
+      "source": "q'(x)'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 6,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-5",
+      "source": "q'!a''b!'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 9,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-6",
+      "source": "q'界한국어界'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 18,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-7",
+      "source": "N'한''글'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 11,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-8",
+      "source": "'a''SELECT'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 11,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-9",
+      "source": "q'!SELECT",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 9,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-10",
+      "source": "'unfinished",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 11,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "quote-11",
+      "source": "\"quoted SELECT",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 14,
+          "role": "identifier"
+        }
+      ]
+    },
+    {
+      "name": "quote-12",
+      "source": "q'\"name like [\"'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 16,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "comments",
+      "source": "-- SELECT :id\r\n/*+ INDEX(t) 가😀 */ SELECT /* unfinished",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 13,
+          "role": "comment"
+        },
+        {
+          "start": 15,
+          "end": 38,
+          "role": "comment"
+        },
+        {
+          "start": 39,
+          "end": 45,
+          "role": "keyword"
+        },
+        {
+          "start": 46,
+          "end": 59,
+          "role": "comment"
+        }
+      ]
+    },
+    {
+      "name": "plsql",
+      "source": "DECLARE v NUMBER := .5; BEGIN v := :1 + 1..10; END;",
+      "language": "plsql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 7,
+          "role": "keyword"
+        },
+        {
+          "start": 8,
+          "end": 9,
+          "role": "identifier"
+        },
+        {
+          "start": 10,
+          "end": 16,
+          "role": "type"
+        },
+        {
+          "start": 17,
+          "end": 19,
+          "role": "operator"
+        },
+        {
+          "start": 20,
+          "end": 22,
+          "role": "number"
+        },
+        {
+          "start": 22,
+          "end": 23,
+          "role": "punctuation"
+        },
+        {
+          "start": 24,
+          "end": 29,
+          "role": "keyword"
+        },
+        {
+          "start": 30,
+          "end": 31,
+          "role": "identifier"
+        },
+        {
+          "start": 32,
+          "end": 34,
+          "role": "operator"
+        },
+        {
+          "start": 35,
+          "end": 37,
+          "role": "parameter"
+        },
+        {
+          "start": 38,
+          "end": 39,
+          "role": "operator"
+        },
+        {
+          "start": 40,
+          "end": 41,
+          "role": "number"
+        },
+        {
+          "start": 41,
+          "end": 43,
+          "role": "operator"
+        },
+        {
+          "start": 43,
+          "end": 45,
+          "role": "number"
+        },
+        {
+          "start": 45,
+          "end": 46,
+          "role": "punctuation"
+        },
+        {
+          "start": 47,
+          "end": 50,
+          "role": "keyword"
+        },
+        {
+          "start": 50,
+          "end": 51,
+          "role": "punctuation"
+        }
+      ]
+    },
+    {
+      "name": "unicode",
+      "source": "select 한글é, 👩‍💻, \"a\"́ from 표 where 값=:\"한\";",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 6,
+          "role": "keyword"
+        },
+        {
+          "start": 7,
+          "end": 16,
+          "role": "identifier"
+        },
+        {
+          "start": 16,
+          "end": 17,
+          "role": "punctuation"
+        },
+        {
+          "start": 18,
+          "end": 29,
+          "role": "punctuation"
+        },
+        {
+          "start": 29,
+          "end": 30,
+          "role": "punctuation"
+        },
+        {
+          "start": 31,
+          "end": 36,
+          "role": "identifier"
+        },
+        {
+          "start": 37,
+          "end": 41,
+          "role": "keyword"
+        },
+        {
+          "start": 42,
+          "end": 45,
+          "role": "identifier"
+        },
+        {
+          "start": 46,
+          "end": 51,
+          "role": "keyword"
+        },
+        {
+          "start": 52,
+          "end": 55,
+          "role": "identifier"
+        },
+        {
+          "start": 55,
+          "end": 56,
+          "role": "operator"
+        },
+        {
+          "start": 56,
+          "end": 62,
+          "role": "parameter"
+        },
+        {
+          "start": 62,
+          "end": 63,
+          "role": "punctuation"
+        }
+      ]
+    },
+    {
+      "name": "no-semantic-guess",
+      "source": "foo(x) + select_name + ſelect + 1e+",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 3,
+          "role": "identifier"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "role": "punctuation"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "role": "identifier"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "role": "punctuation"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "role": "operator"
+        },
+        {
+          "start": 9,
+          "end": 20,
+          "role": "identifier"
+        },
+        {
+          "start": 21,
+          "end": 22,
+          "role": "operator"
+        },
+        {
+          "start": 23,
+          "end": 30,
+          "role": "identifier"
+        },
+        {
+          "start": 31,
+          "end": 32,
+          "role": "operator"
+        },
+        {
+          "start": 33,
+          "end": 34,
+          "role": "number"
+        },
+        {
+          "start": 34,
+          "end": 35,
+          "role": "identifier"
+        },
+        {
+          "start": 35,
+          "end": 36,
+          "role": "operator"
+        }
+      ]
+    },
+    {
+      "name": "bind-vs-assignment",
+      "source": ":id := :123; :\"a\"\"b\" || nvl(:한글, NULL)",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 3,
+          "role": "parameter"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "role": "operator"
+        },
+        {
+          "start": 7,
+          "end": 11,
+          "role": "parameter"
+        },
+        {
+          "start": 11,
+          "end": 12,
+          "role": "punctuation"
+        },
+        {
+          "start": 13,
+          "end": 20,
+          "role": "parameter"
+        },
+        {
+          "start": 21,
+          "end": 23,
+          "role": "operator"
+        },
+        {
+          "start": 24,
+          "end": 27,
+          "role": "function"
+        },
+        {
+          "start": 27,
+          "end": 28,
+          "role": "punctuation"
+        },
+        {
+          "start": 28,
+          "end": 35,
+          "role": "parameter"
+        },
+        {
+          "start": 35,
+          "end": 36,
+          "role": "punctuation"
+        },
+        {
+          "start": 37,
+          "end": 41,
+          "role": "keyword"
+        },
+        {
+          "start": 41,
+          "end": 42,
+          "role": "punctuation"
+        }
+      ]
+    },
+    {
+      "name": "numbers",
+      "source": "-42 + 6.02E+23f / 10. + .25D",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 1,
+          "role": "operator"
+        },
+        {
+          "start": 1,
+          "end": 3,
+          "role": "number"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "role": "operator"
+        },
+        {
+          "start": 6,
+          "end": 15,
+          "role": "number"
+        },
+        {
+          "start": 16,
+          "end": 17,
+          "role": "operator"
+        },
+        {
+          "start": 18,
+          "end": 21,
+          "role": "number"
+        },
+        {
+          "start": 22,
+          "end": 23,
+          "role": "operator"
+        },
+        {
+          "start": 24,
+          "end": 28,
+          "role": "number"
+        }
+      ]
+    }
+  ],
+  "role_fallbacks": {
+    "keyword": "syntax.keyword",
+    "function": "syntax.function",
+    "type": "syntax.type",
+    "string": "syntax.string",
+    "number": "syntax.number",
+    "comment": "syntax.comment",
+    "parameter": "syntax.parameter",
+    "identifier": "body",
+    "constant": "syntax.number",
+    "character": "syntax.string",
+    "operator": "body",
+    "punctuation": "body",
+    "attribute": "syntax.function",
+    "macro": "syntax.function",
+    "lifetime": "syntax.parameter",
+    "directive": "syntax.comment",
+    "unknown": "body"
+  },
+  "future_languages": {
+    "go": {
+      "status": "specification only",
+      "source": "func f[T any](x T) { println(`한글`); _ = true; _ = nil; _ = 1i }\n//go:build linux",
+      "rules": "Contextual function/type/parameter; identifier otherwise; true/false/nil constants; rune character; raw string; imaginary number; build directive -> comment fallback."
+    },
+    "rust": {
+      "status": "specification only",
+      "source": "#[derive(Debug)] fn f<'a>(x: &'a str) { println!(r#\"한글\"#); let r#type = '가'; /* /* nested */ */ }",
+      "rules": "Contextual function/type; raw identifiers; booleans constants; byte/raw string/character; macro, attribute and lifetime distinguished from character; nested comments."
+    }
+  }
+}

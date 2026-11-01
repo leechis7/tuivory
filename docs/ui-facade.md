@@ -128,7 +128,7 @@ err := editor.SetByteSyntax([]tuivory.ByteSyntaxSpan{
 })
 ```
 
-Rust는 `text_offsets::ByteSyntaxSpan`, `TextDocument::set_byte_syntax`와 `grapheme_index`를 사용합니다. 렉서·SQL 실행·Vim/Toad 키맵은 SDK로 옮기지 않습니다. 기존 Undo/Redo·원문·마스킹·복사·포커스와 DB 데이터 의미는 적용 앱의 회귀 검사로 확인해야 합니다.
+Rust는 `text_offsets::ByteSyntaxSpan`, `TextDocument::set_byte_syntax`와 `grapheme_index`를 사용합니다. 강조용 분류는 [선택적 SDK 분석기](syntax.md)도 사용할 수 있습니다. SQL 실행·Vim/Toad 전역 키맵은 앱에 남습니다. 기존 Undo/Redo·원문·마스킹·복사·포커스와 DB 데이터 의미는 적용 앱의 회귀 검사로 확인해야 합니다.
 
 ## 검증과 제공 상태
 
@@ -139,3 +139,5 @@ Go 모든 공개 예제와 루트 외부 API 테스트, Rust 모든 예제 및 U
 [LazyOra의 패키지 심볼 대응 기록](../evidence/ui-facade-consumer-map.json)은 first-party Go 소스/테스트를 읽기 전용으로 점검한 결과입니다. 실제 앱 전환·빌드 결과가 아닙니다. 호환 위젯은 upstream의 진단 동작도 유지하므로 비밀값의 표시/진단 보호에는 공통 password 모델을 사용합니다.
 
 [단일 import 후속 로컬 검증](../evidence/go-single-import-results.json)은 공개 [0.8.0 릴리스 검증 manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0)와 구분합니다.
+
+0.9.0 TVR-24 후속의 [선택적 강조 분석기](syntax.md)는 공통 토큰/렌더링과 분리됩니다. 앱 자체 분석기도 연결하며 DB 실행·위험 SQL/트랜잭션 판단은 앱 책임입니다.

@@ -1,4 +1,4 @@
-# Go API — source (0.8.0)
+# Go API — source (0.9.0)
 
 **한국어 (기본)** · [English](go.en.md)
 
@@ -1035,6 +1035,19 @@ func SetTabSize(value int)
 
 func SetWidgetStyles(value WidgetTheme)
     SetWidgetStyles forwards to the SDK compatibility API.
+
+func SyntaxPaletteRole(role string) string
+    SyntaxPaletteRole maps semantic syntax styles to existing shared role
+    colors. Rendering binds these foregrounds to the actual surface, never a
+    token box.
+
+func SyntaxRoleStyle(role string) string
+    SyntaxRoleStyle returns the shared palette fallback for a semantic token.
+    Unknown roles and identifiers use body. This never changes the source text.
+
+func SyntaxStyleFunc(styles Styles) func(string, Style) Style
+    SyntaxStyleFunc adapts the existing seven-role Go syntax colors, including
+    monochrome and limited-color attributes, to a shared editor's optional hook.
 
 func TaggedStringWidth(text string) (width int)
     TaggedStringWidth forwards to the SDK compatibility API.
@@ -2811,6 +2824,9 @@ type RowsView struct {
 	// PreserveBackgrounds keeps explicit row/span backgrounds for grid or custom composition.
 	PreserveBackgrounds bool
 	Mouse               func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
+	// SyntaxStyle optionally preserves a host's existing seven-role syntax styles.
+	// Selection/disabled spans have already replaced syntax roles before drawing.
+	SyntaxStyle func(string, tcell.Style) tcell.Style
 	// Has unexported fields.
 }
     RowsView renders literal, cell-clipped semantic lines and delegates actions.
@@ -3424,6 +3440,56 @@ type SurfaceView = PanelView
 func NewSurfaceView(child tview.Primitive, palette Palette) (*SurfaceView, error)
 ```
 
+## SyntaxAnalysis
+
+```go
+type SyntaxAnalysis = highlight.Analysis
+
+// Public alias: underlying declaration and methods.
+package highlight // import "github.com/leechis7/tuivory/go/internal/highlight"
+
+type Analysis struct {
+	Source   string  `json:"source"`
+	Language string  `json:"language"`
+	Dialect  string  `json:"dialect"`
+	Tokens   []Token `json:"tokens"`
+}
+    Analysis retains the exact source so stale results cannot style another
+    edit.
+
+func (a Analysis) Validate(text string) error
+```
+
+## SyntaxAnalyzer
+
+```go
+type SyntaxAnalyzer = highlight.Analyzer
+
+func NewSQLAnalyzer() SyntaxAnalyzer
+    NewSQLAnalyzer opts into the built-in Oracle SQL/PLSQL highlighting lexer.
+    It has no runtime, database, native or execution-safety dependency.
+
+// Public alias: underlying declaration and methods.
+package highlight // import "github.com/leechis7/tuivory/go/internal/highlight"
+
+type Analyzer interface {
+	AnalyzeSyntax(string, Request) (Analysis, error)
+}
+```
+
+## SyntaxAnalyzerFunc
+
+```go
+type SyntaxAnalyzerFunc = highlight.AnalyzerFunc
+
+// Public alias: underlying declaration and methods.
+package highlight // import "github.com/leechis7/tuivory/go/internal/highlight"
+
+type AnalyzerFunc func(string, Request) (Analysis, error)
+
+func (f AnalyzerFunc) AnalyzeSyntax(text string, r Request) (Analysis, error)
+```
+
 ## SyntaxKind
 
 ```go
@@ -3434,7 +3500,8 @@ type SyntaxKind = style.SyntaxKind
 package style // import "github.com/leechis7/tuivory/go/internal/style"
 
 type SyntaxKind uint8
-    SyntaxKind is supplied by the host lexer; TUIVORY does not parse source
+    SyntaxKind adapts supplied or host highlighting tokens to existing colors.
+    Optional source tokenizers are separate from this renderer and never execute
     code.
 
 const (
@@ -3446,6 +3513,20 @@ const (
 	SyntaxComment
 	SyntaxParameter
 )
+```
+
+## SyntaxRequest
+
+```go
+type SyntaxRequest = highlight.Request
+
+// Public alias: underlying declaration and methods.
+package highlight // import "github.com/leechis7/tuivory/go/internal/highlight"
+
+type Request struct {
+	Language string `json:"language"`
+	Dialect  string `json:"dialect"`
+}
 ```
 
 ## SyntaxSpan
@@ -3461,6 +3542,22 @@ func ParseMarkup(markup string) (string, []SyntaxSpan, error)
     ParseMarkup is an explicit opt-in to [role]text[/] styling. [[ escapes [.
     It returns plain logical text and grapheme spans; ordinary SetText/Layout
     never interprets markup. Unknown/unbalanced tags return an error atomically.
+```
+
+## SyntaxToken
+
+```go
+type SyntaxToken = highlight.Token
+
+// Public alias: underlying declaration and methods.
+package highlight // import "github.com/leechis7/tuivory/go/internal/highlight"
+
+type Token struct {
+	Start int    `json:"start"`
+	End   int    `json:"end"`
+	Role  string `json:"role"`
+}
+    Token is a half-open range in original UTF-8 bytes, never display cells.
 ```
 
 ## TabAction
@@ -3682,9 +3779,20 @@ func (b *TextBuffer) Handle(action, text string) TextEvent
 
 func (b *TextBuffer) MarshalJSON() ([]byte, error)
 
+func (b *TextBuffer) ReplaceBytes(start, end int, text string) (TextEvent, error)
+    ReplaceBytes is a literal programmatic edit with undo/redo. It does not
+    normalize newlines, inject tags or clear history like SetText does.
+
 func (b *TextBuffer) Select(anchor, cursor int)
 
+func (b *TextBuffer) SelectBytes(anchor, cursor int) error
+    SelectBytes uses exact original UTF-8/grapheme boundaries and preserves
+    state on error. Anchor/cursor direction is retained; raw offsets are not
+    cell widths.
+
 func (b *TextBuffer) Selection() (int, int)
+
+func (b *TextBuffer) SelectionBytes() (start, end int)
 
 func (b *TextBuffer) SetText(text string)
 
@@ -3709,16 +3817,27 @@ func NewEditor(text string) *TextDocument
 
 func NewTextView(text string) *TextDocument
 
+func (d TextDocument) Format(s fmt.State, _ rune)
+    Format keeps analyzer/search source caches out of diagnostics, particularly
+    when a host switches an existing document into secret mode.
+
 func (d *TextDocument) Handle(action, text string) TextEvent
     Handle adds viewport scrolling; copy/cut are host clipboard requests.
 
 func (d *TextDocument) Layout(width, height int) []ComponentLine
     Layout renders literal text; markup is not inferred. Call SetText to replace
-    data and provide syntax roles separately. No lexer, clipboard or file I/O.
+    data and provide syntax roles separately or attach an optional analyzer.
+    Clipboard, filesystem, database execution and safety policy remain outside
+    it.
 
 func (d *TextDocument) Point(x, y, width, height int, extend bool)
     Point hit-tests a cell coordinate relative to the content viewport. Extend
     keeps the selection anchor for a captured drag, even outside the viewport.
+
+func (d *TextDocument) RefreshSyntax() error
+    RefreshSyntax analyzes changed source only; scrolling/theme changes reuse
+    it. Failure clears stale highlighting and remains observable through
+    SyntaxError.
 
 func (d *TextDocument) RevealCursor()
 
@@ -3729,9 +3848,25 @@ func (d *TextDocument) SetByteSyntax(spans []ByteSyntaxSpan) error
 
 func (d *TextDocument) SetMarkup(markup string) error
 
+func (d *TextDocument) SetSearchMatches(matches []TextRange) error
+    SetSearchMatches applies host search results without changing
+    syntax/editing. They expire when source changes. Priority: disabled >
+    selection > search > syntax.
+
 func (d *TextDocument) SetSyntax(spans []SyntaxSpan) error
 
+func (d *TextDocument) SetSyntaxAnalysis(a SyntaxAnalysis) error
+    SetSyntaxAnalysis atomically applies a source-tagged result, including
+    results computed by a host worker, and switches from automatic to supplied
+    analysis.
+
+func (d *TextDocument) SetSyntaxAnalyzer(analyzer SyntaxAnalyzer, request SyntaxRequest) error
+    SetSyntaxAnalyzer attaches optional analysis without changing editing state.
+    Nil detaches analysis. Invalid initial results preserve the prior binding.
+
 func (d *TextDocument) SetText(text string)
+
+func (d *TextDocument) SyntaxError() error
 ```
 
 ## TextEvent
@@ -3740,6 +3875,13 @@ func (d *TextDocument) SetText(text string)
 type TextEvent struct{ Kind, Text string }
     TextEvent carries requests only. Text is populated only for non-secret
     copy/cut.
+```
+
+## TextRange
+
+```go
+type TextRange struct{ Start, End int }
+    TextRange uses original grapheme indices, not UTF-8 bytes or display cells.
 ```
 
 ## TextRole

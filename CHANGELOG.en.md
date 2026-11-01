@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.9.0 — 2026-11-01
+
+- TVR-24 follow-up: optional Oracle SQL/PLSQL highlighting analyzer, shared byte tokens/role fallbacks, custom analysis and source-tagged worker results. Add edit/undo refresh, search/selection/disabled precedence, byte selection/replacement, existing Go syntax-color adapter, linear span application and 10,000-line validation. Update root-only Go/Rust feature examples, bilingual previews/APIs/specifications. Go/Rust source analyzers remain planned; SQL execution/safety and actual LazyOra migration are excluded.
+
 ## 0.8.0 — 2026-10-31
 
 - TVR-26 follow-up: compose apps, screens, events, colors and shared components through the single Go root package. Keep semantic model names; distinguish conflicting compatibility widgets with Widget names. Preserve /ui and /terminal paths; update public examples, external consumer checks and bilingual APIs/guides.

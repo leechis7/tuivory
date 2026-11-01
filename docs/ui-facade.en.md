@@ -128,7 +128,7 @@ err := editor.SetByteSyntax([]tuivory.ByteSyntaxSpan{
 })
 ```
 
-Rust uses text_offsets::ByteSyntaxSpan, TextDocument::set_byte_syntax and grapheme_index. Lexers, SQL execution and Vim/Toad keymaps remain host-owned. Downstream tests must preserve undo/redo/original text/masking/copy/focus and database-value semantics.
+Rust uses text_offsets::ByteSyntaxSpan, TextDocument::set_byte_syntax and grapheme_index. Highlighting may use the [optional SDK analyzer](syntax.en.md); SQL execution and application-wide Vim/Toad keymaps stay host-owned. Downstream tests must preserve undo/redo/original text/masking/copy/focus and database-value semantics.
 
 ## Validation and availability
 
@@ -139,3 +139,5 @@ Retain bilingual Unicode/ASCII, twelve-palette, popup/focus/selection/undo/redo/
 [LazyOra package-symbol mappings](../evidence/ui-facade-consumer-map.json) audit first-party Go source/tests read-only; they do not claim app migration/build success. Compatibility widgets retain upstream diagnostic behavior; use shared password models for secret-safe display/diagnostic projections.
 
 The [single-import local validation record](../evidence/go-single-import-results.json) is distinct from the [0.8.0 release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0).
+
+The 0.9.0 TVR-24 [optional highlighting analyzer](syntax.en.md) is separate from common tokens/rendering. Custom host analyzers remain supported; execution/dangerous-SQL/transaction policy stays in the host.
