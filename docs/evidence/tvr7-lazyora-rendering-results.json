@@ -1,0 +1,277 @@
+{
+  "issue": "TVR-7",
+  "source_report_comment": "10947",
+  "date": "2026-11-02",
+  "source_base_commit": "fba55123f548b1b5e96fb837b7c57cfd4518679c",
+  "branch": "codex/TVR-7-lazyora-rendering-defects",
+  "worktree_uncommitted": true,
+  "published": false,
+  "github_ci": "not run",
+  "epic": "kept open/in progress",
+  "fixes": [
+    "read/modify/write style-only updates preserve complete wide graphemes through WideSafeScreen, Table, SurfaceView and ShadowView",
+    "actual replacements, explicit erases and overlay boundaries retain overlap repair",
+    "SplitterStyle: muted foreground on canvas corrects all four light profiles",
+    "ComparisonHeaderStyle: panel background and accent/underline current column keep dividers visible"
+  ],
+  "additional_review": {
+    "dark_8_syntax": "existing seven-role colors unchanged; editor text contrast >=4.5:1, indices <8, keyword underline verified; few reference ANSI colors meet text contrast on black"
+  },
+  "checks": {
+    "go": "make test check build: all-package race/vet, public facade/lifecycle/fixtures/palettes/link checks, Python tests, native ARM64 static build passed",
+    "drawing": "36 theme/profile/wrapper combinations × selection 0/1/0; post-Show source/style checks and Sync; direct wide restyling, explicit erasure, stale-read invalidation and existing overlay boundary regressions passed",
+    "contrast": "12 palettes: splitter >=3:1; comparison physical post-Show dividers >=3:1 and header text >=4.5:1",
+    "rust": "surface and popup_shadow: seven tests passed, including new 12-palette wrapped Table selection/redraw check; all-target/all-feature fmt/clippy passed; no Rust rendering implementation change",
+    "api_reference": "generated Korean/English Go declarations and --check passed",
+    "external_host": "clean independent module, SDK root import only, local replace to this uncommitted checkout explicitly used; no app-local rendering workaround",
+    "external_host_pty": {
+      "initial_screens": 24,
+      "post_selection_screens": 24,
+      "normal_exits": 24,
+      "cases": [
+        {
+          "language": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "divider_contrast_min": 7.46,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "divider_contrast_min": 9.398,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "divider_contrast_min": 5.989,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "divider_contrast_min": 7.031,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "light",
+          "colors": "8",
+          "divider_contrast_min": 7.46,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "light",
+          "colors": "16",
+          "divider_contrast_min": 9.398,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "light",
+          "colors": "256",
+          "divider_contrast_min": 6.545,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "divider_contrast_min": 6.026,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "divider_contrast_min": 16.671,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "divider_contrast_min": 16.671,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "divider_contrast_min": 16.671,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "divider_contrast_min": 16.671,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "dark",
+          "colors": "8",
+          "divider_contrast_min": 7.46,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "dark",
+          "colors": "16",
+          "divider_contrast_min": 9.398,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "dark",
+          "colors": "256",
+          "divider_contrast_min": 5.989,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "divider_contrast_min": 7.031,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "light",
+          "colors": "8",
+          "divider_contrast_min": 7.46,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "light",
+          "colors": "16",
+          "divider_contrast_min": 9.398,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "light",
+          "colors": "256",
+          "divider_contrast_min": 6.545,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "divider_contrast_min": 6.026,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "divider_contrast_min": 16.671,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "divider_contrast_min": 16.671,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "divider_contrast_min": 16.671,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        },
+        {
+          "language": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "divider_contrast_min": 16.671,
+          "selection_moved": true,
+          "wide_text_preserved": true,
+          "exit_code": 0
+        }
+      ]
+    },
+    "unified_go_examples": {
+      "scenarios": 24,
+      "languages": [
+        "ko",
+        "en"
+      ],
+      "status": "passed",
+      "log": "/tmp/tuivory-tvr7-showcase.log"
+    }
+  },
+  "binaries": {
+    "bin/go/tuivory-linux-arm64": {
+      "sha256": "5583bca660ffbffea62291a9bca68081a57f28ce3de8ddb62cc65f18ee0ebaec",
+      "static_elf": true
+    },
+    ".cache/validation/TVR-7-rendering/consumer/consumer-linux-arm64": {
+      "sha256": "9501becda7af2d792b71c32efa8a27bd6a073e59c965467b49ca3aaf202c7752",
+      "static_elf": true
+    }
+  },
+  "consumer_source_sha256": "170d004022e54e5049d7f84da8a15994f8fedaf9c3bba0b585e9299aee89c100",
+  "private_artifacts": ".cache/validation/TVR-7-rendering",
+  "limits": [
+    "reference ANSI palette and simulated buffer checks do not guarantee arbitrary terminal palette/font behavior",
+    "Go defect reproduced; Rust counterpart validated, not claimed to reproduce the same defect",
+    "not committed or published; no remote CI, other architecture or CentOS verification"
+  ]
+}

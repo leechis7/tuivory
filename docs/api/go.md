@@ -1,4 +1,4 @@
-# Go API — source (0.9.1)
+# Go API — source (0.9.2)
 
 **한국어 (기본)** · [English](go.en.md)
 
@@ -1072,7 +1072,10 @@ func WideSafeScreen(screen tcell.Screen) tcell.Screen
     Show, Sync, input and terminal ownership are forwarded to the host screen.
     An intersected glyph is replaced by spaces, including its cell just outside
     the drawn area, retaining its old style there. Redraw the background on
-    close. Draw on the host UI goroutine; cell repairs are not a concurrent
+    close. An immediate Get/GetContent followed by writing the same cell text
+    updates the whole grapheme's style, including when the cell is a wide
+    continuation. SetCell with no characters explicitly erases even after a
+    read. Draw on the host UI goroutine; cell repairs are not a concurrent
     transaction.
 
 func WordWrap(text string, width int) (lines []string)
@@ -3337,7 +3340,9 @@ func (s Styles) ButtonStyle() tcell.Style
 
 func (s Styles) ComparisonHeaderStyle(current bool) tcell.Style
     ComparisonHeaderStyle is the generic selected-column header used in
-    LazyOra's keymap comparison. The host supplies which column is current.
+    LazyOra's keymap comparison. Headers share the panel background so column
+    separators remain visible; the current column uses accent text and an
+    underline. The host supplies which column is current.
 
 func (s Styles) DisabledStyle() tcell.Style
 
@@ -3393,6 +3398,8 @@ func (s Styles) Profile() string
 func (s Styles) SelectionStyle() tcell.Style
 
 func (s Styles) SplitterStyle() tcell.Style
+    SplitterStyle uses muted text on the canvas; button fills can match the
+    canvas.
 
 func (s Styles) SurfaceColor(surface Surface) tcell.Color
 

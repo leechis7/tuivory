@@ -30,7 +30,17 @@ Both cells of an intersected old wide glyph become spaces. If its start lies jus
 
 **Repaint the background from host data** when closing, moving or resizing a popup. This API neither saves background snapshots nor automatically restores clipped text. Call it on the UI drawing goroutine, as with tview; multi-cell repairs are not concurrent transactions.
 
+## Repainting table backgrounds and selection
+
+The TVR-7 follow-up preserves text when a table reads a cell with `GetContent` and writes the same text with `SetContent` to change only its background, foreground or attributes. `Get`/`Put` follow the same rule. Restyling a wide continuation updates the entire grapheme instead of erasing CJK, ZWJ emoji, flags or combining characters. This applies only to an immediate repaint whose read coordinates, text and style are still current.
+
+Writing different text or a border retains the existing overlap repair at both edges. Write a space without a preceding read, or call `safe.SetCell(x, y, style)` with no characters, to explicitly erase. Calls to `Show`, `Sync`, `Clear` and `Fill` through the wrapper discard its preceding read. Use `Table.Draw(WideSafeScreen(screen))` or wrap the table in `SurfaceView`/`ShadowView`; no application-local table rendering workaround is required.
+
+Across languages, style updates must preserve source text while actual replacements repair intersected wide glyphs. This defect and fix concern Go/tcell. Separate twelve-palette selection/redraw regressions verify the existing Rust Table → SurfaceWidget → ShadowWidget path; they do not claim the same Rust defect was reproduced.
+
 ## Validation
+
+TVR-7 follow-up: Go checks twelve palettes across safe-screen/Surface/Shadow combinations, selection 0→1→0, Show/Sync, and actual output runes/bytes, foreground/background and attributes. Explicit blank erasure and stale-read invalidation are also covered. Rust passes twelve-palette wrapped-Table selection/redraw and existing shadow-boundary tests. An independent host provides 24 initial and 24 post-selection bilingual PTY screens verifying original text, selection changes, splitter/separator contrast and normal exit. [Local validation record](evidence/tvr7-lazyora-rendering-results.json). This local record is historical pre-release evidence; final CI/publication checks are recorded in the [0.9.2 release](release-0.9.2.en.md) asset manifest. CentOS is not checked.
 
 `go/drawing_test.go` inspects **output Runes and Bytes from `GetContents()` after `SimulationScreen.Show()`**. Testing only `GetContent()` misses borders omitted during presentation. Coverage includes:
 

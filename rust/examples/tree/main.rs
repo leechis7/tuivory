@@ -18,7 +18,7 @@ use tuivory::ui::terminal::{
 use tuivory::ui::{
     Frame, Terminal,
     backend::{CrosstermBackend, TestBackend},
-    layout::{Constraint, Layout, Rect},
+    layout::{Alignment, Constraint, Layout, Rect},
     widgets::Paragraph,
 };
 use tuivory::{
@@ -69,7 +69,8 @@ impl App {
         let block = self
             .styles
             .block(self.text(" 트리 ", " Tree "), self.focused)
-            .unwrap();
+            .unwrap()
+            .title_alignment(Alignment::Center);
         self.inner = block.inner(layout[1]);
         frame.render_widget(block, layout[1]);
         let mut widget = TreeWidget::new(&self.tree, &self.styles).unwrap();
@@ -78,7 +79,7 @@ impl App {
         frame.render_stateful_widget(widget, self.inner, &mut self.state);
         let button = self.text("포커스 비교: Enter", "Focus comparison: Enter");
         frame.render_widget(
-            Paragraph::new(button).style(if self.focused {
+            Paragraph::new(button).centered().style(if self.focused {
                 self.styles.text_on_surface("body", "surface").unwrap()
             } else {
                 self.styles.role("selection").unwrap()

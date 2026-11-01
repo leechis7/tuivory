@@ -4,7 +4,7 @@
 
 **0.9.1 TVR-27:** [Unified example executables](examples.en.md) provide one file per language, built only for the current Linux host architecture. Select examples with `--demo tree`, `--demo menu`, `--demo syntax`, etc.
 
-This database-free host example uses the [Rust package](../rust/README.en.md)'s Ratatui adapter. It requires Ratatui 0.30.2, Crossterm 0.29, and Rust 1.88+. Inputs, selections, and table edits remain in memory and are never saved to files or databases. Shared candidate colors do not claim parity with the full Go-derived widget styles.
+This database-free host example uses the [Rust package](../rust/README.en.md)'s Ratatui adapter. It requires Ratatui 0.30.2, Crossterm 0.29, and Rust 1.88+. Inputs, selections, and table edits remain in memory and are never saved to files or databases. The default playground follows the Go example for layout, labels, themes/colors, and focus order. It embeds an example-only copy of the Go palette; Go regression tests check all twelve palettes and both localized guides. The public Rust SDK continues to use the shared candidate palette.
 
 ## Run
 
@@ -25,7 +25,7 @@ make build-rust
 
 | Key/action | Result |
 | --- | --- |
-| Tab / Shift+Tab | Move focus among name, choice, checkbox, buttons, list, and table |
+| Tab / Shift+Tab | Move through theme, colors, navigation, name, password, choice, checkbox, buttons, list, and table; skip disabled buttons |
 | Arrows | Navigate lists, tables, and choice popup; scroll help/token views |
 | Enter | Activate, open choices, or edit a table cell |
 | Space | Toggle the checkbox |
@@ -36,11 +36,17 @@ make build-rust
 | Ctrl+Q | Exit and restore the previous screen and terminal mode |
 | Click/wheel | Focus inputs, select items, activate buttons, navigate lists/tables |
 
-Name input appends characters and deletes with Backspace; long input scrolls horizontally. Press Enter on the table to edit, then Enter or Tab to focus Save and Enter to save. Esc cancels. Changed rows show `* Edited`. Popups block background clicks and retain focus internally. F2/F3 also work inside popups, preserving inputs, selections, edits, and focus.
+Click or press Enter on the top theme/color selectors. F3 cycles Auto → 8 → 16 → 256 → True Color. Left navigation appears at 100 columns or wider and supports clicks, arrows, and Enter. Passwords use `*` and are omitted from previews. Disabled buttons ignore clicks and are skipped by Tab. Name/password input appends characters and removes them with Backspace. Long input scrolls horizontally. Press Enter on the table to edit, then Enter or Tab to focus Save and Enter to save. Esc cancels. Changed rows show `* Edited`. Popups block background clicks and retain focus internally. F2/F3 also work inside popups, preserving inputs, selections, edits, and focus.
 
 Below 80×24 cells, a resize notice replaces the view and all input except Ctrl+Q is suspended. Resizing back restores the prior state. Selection markers differ from focus borders; warning, error, and edited states also have text labels.
 
 ## Views and validation
+
+Go styles the page tree before its first layout, keeping card padding consistent before and after a theme round trip.
+
+The TVR-27 follow-up directly exercised both `bin/` executables through 48 bilingual demo interaction scenarios and 48 theme/color screens. Checks compare name-input and disabled-text foreground/background colors against Go, and verify password masking and navigation. Rust buffer regressions also cover disabled Dim, click blocking, focus order, and Auto color round trips. [Local validation record](evidence/example-parity-results.json). Remote CI, publication, and release were not run for this change.
+
+The example-only palette copy is generated from Go. After changing Go styles, update it with `TUIVORY_UPDATE_GO_PLAYGROUND_PALETTE=1 go -C go test ./internal/playground -run TestRustPlaygroundPaletteMatchesGo -count=1`. Normal tests fail if the twelve palettes or either localized guide drift from Go. This cross-repository check is skipped when only the Go module has been downloaded.
 
 ![Rust playground in English, dark theme](images/rust-playground-dark-en.svg)
 

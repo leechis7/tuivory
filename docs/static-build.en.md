@@ -2,7 +2,7 @@
 
 [한국어 (default)](static-build.md) · **English**
 
-Current public release: **0.9.1**. [Assets and validation](release-0.9.1.en.md). The 0.2.0/CentOS details below are historical.
+Current public release: **0.9.2**. [Assets and validation](release-0.9.2.en.md). The 0.2.0/CentOS details below are historical.
 
 Per the user instruction on 2026-10-29, CentOS validation is no longer performed, including the CI VM job. Static distribution requirements, ELF inspection and execution checks in available environments remain. The CentOS commands and previous results below are historical reproduction records, not current required procedures.
 
@@ -33,7 +33,7 @@ python3 tools/check_static_elf.py --arch arm64 bin/go/tuivory-linux-arm64 bin/ru
 python3 tools/check_showcase.py bin/go/tuivory-linux-arm64 bin/rust/tuivory-linux-arm64
 ```
 
-Existing public 0.9.0 assets are preserved. Starting with 0.9.1, language/architecture archives contain one unified executable each. No server cross compiles other architectures.
+Existing public 0.9.0 assets are preserved. Starting with 0.9.2, language/architecture archives contain one unified executable each. No server cross compiles other architectures.
 
 ## Historical CentOS kernel validation (no longer performed)
 

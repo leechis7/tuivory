@@ -52,7 +52,31 @@ fn run() -> Result<(), Box<dyn Error>> {
             list = true;
         } else {
             help |= arg == "--help" || arg == "-h";
-            forwarded.push(arg);
+            // Go's flag parser accepts both --name=value and --name value.
+            // Boolean switches retain their =value spelling for example parsers.
+            if let Some((name, value)) = arg.split_once('=') {
+                if matches!(
+                    name,
+                    "--lang"
+                        | "--theme"
+                        | "--colors"
+                        | "--layout"
+                        | "--focus-order"
+                        | "--quit-key"
+                        | "--mode"
+                        | "--grid-preset"
+                        | "--density"
+                        | "--shadow"
+                        | "--menu-id"
+                        | "--snapshot"
+                ) {
+                    forwarded.extend([name.to_owned(), value.to_owned()]);
+                } else {
+                    forwarded.push(arg);
+                }
+            } else {
+                forwarded.push(arg);
+            }
         }
     }
     if list || help && !selected {
@@ -74,8 +98,13 @@ fn run() -> Result<(), Box<dyn Error>> {
         if !DEMOS.split(", ").any(|name| name == demo) {
             return Err(format!("unknown demo {demo:?}; choose {DEMOS}").into());
         }
+        let profiles = if demo == "playground" {
+            "auto|8|16|256|truecolor"
+        } else {
+            "8|16|256|truecolor"
+        };
         println!(
-            "Tuivory --demo {demo}\n--lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor"
+            "Tuivory --demo {demo}\n--lang ko|en --theme dark|light|blackwhite --colors {profiles}"
         );
         if demo == "playground" {
             println!("--mouse=false --snapshot FILE.svg --popup");

@@ -6,7 +6,16 @@ import (
 	"github.com/rivo/uniseg"
 )
 
-type safeScreen struct{ tcell.Screen }
+type cellRead struct {
+	x, y  int
+	glyph string
+	style tcell.Style
+	valid bool
+}
+type safeScreen struct {
+	tcell.Screen
+	read cellRead
+}
 
 // SafeScreen wraps all positioned cell-writing entry points. Hosts must draw
 // on their UI goroutine, as with tview; multiple cell updates are not atomic.
@@ -14,10 +23,32 @@ func SafeScreen(screen tcell.Screen) tcell.Screen {
 	if _, ok := screen.(*safeScreen); ok {
 		return screen
 	}
-	return &safeScreen{screen}
+	return &safeScreen{Screen: screen}
+}
+
+func (s *safeScreen) Get(x, y int) (string, tcell.Style, int) {
+	glyph, style, width := s.Screen.Get(x, y)
+	s.read = cellRead{x: x, y: y, glyph: glyph, style: style, valid: true}
+	return glyph, style, width
+}
+
+func (s *safeScreen) GetContent(x, y int) (rune, []rune, tcell.Style, int) {
+	main, combining, style, width := s.Screen.GetContent(x, y)
+	s.read = cellRead{x: x, y: y, glyph: string(append([]rune{main}, combining...)), style: style, valid: true}
+	return main, combining, style, width
+}
+
+func (s *safeScreen) Show()  { s.read.valid = false; s.Screen.Show() }
+func (s *safeScreen) Sync()  { s.read.valid = false; s.Screen.Sync() }
+func (s *safeScreen) Clear() { s.read.valid = false; s.Screen.Clear() }
+func (s *safeScreen) Fill(primary rune, style tcell.Style) {
+	s.read.valid = false
+	s.Screen.Fill(primary, style)
 }
 
 func (s *safeScreen) Put(x, y int, text string, style tcell.Style) (string, int) {
+	read := s.read
+	s.read.valid = false
 	cols, rows := s.Size()
 	if x < 0 || y < 0 || x >= cols || y >= rows {
 		return text, 0
@@ -34,6 +65,30 @@ func (s *safeScreen) Put(x, y int, text string, style tcell.Style) (string, int)
 	// Match tcell's output at the last column and leave no hidden wide start.
 	if width > cols-x {
 		glyph, width = " ", 1
+	}
+	// Table and other backend widgets read a cell and write its unchanged
+	// text back to apply backgrounds/selection. A continuation is logically a
+	// space, but restyling it must not erase the wide glyph on its left.
+	// Require a matching, still-current read; ordinary replacement writes keep
+	// the overlap repair below, including writes of spaces over wide tails.
+	if read.valid && read.x == x && read.y == y && read.glyph == glyph {
+		current, oldStyle, oldWidth := s.Screen.Get(x, y)
+		if current == read.glyph && oldStyle == read.style {
+			start, wide, span := x, current, oldWidth
+			if x > 0 {
+				if left, _, n := s.Screen.Get(x-1, y); n > 1 {
+					start, wide, span = x-1, left, n
+				}
+			}
+			if span > 1 {
+				s.Screen.Put(start, y, wide, style)
+				_, resolved, _ := s.Screen.Get(start, y)
+				for n := 1; n < span && start+n < cols; n++ {
+					s.Screen.Put(start+n, y, " ", resolved)
+				}
+				return remaining, width
+			}
+		}
 	}
 	// A write can cover the tail on its left, the start on its right, or
 	// several old glyphs. Remove each intersecting old glyph in its entirety.
@@ -58,6 +113,8 @@ func (s *safeScreen) SetContent(x, y int, primary rune, combining []rune, style 
 }
 func (s *safeScreen) SetCell(x, y int, style tcell.Style, chars ...rune) {
 	if len(chars) == 0 {
+		// An explicit erase, rather than read/modify/write of a continuation.
+		s.read.valid = false
 		s.Put(x, y, " ", style)
 		return
 	}

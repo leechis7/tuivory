@@ -1,0 +1,53 @@
+{
+  "issue": "TVR-8",
+  "base_commit": "fba55123f548b1b5e96fb837b7c57cfd4518679c",
+  "worktree_uncommitted": true,
+  "published": false,
+  "scope": [
+    "Go playground disabled token sample",
+    "Styler.DropDown disabled field",
+    "Styler.Choice disabled field",
+    "Styler.Form dropdown disabled field"
+  ],
+  "reproduction": {
+    "eight_color_token": "foreground/background copied without Dim; active and disabled samples had identical styles",
+    "dropdown": "backend default yellow/black remained across all 12 theme/profile combinations"
+  },
+  "fix": "Use Styles.DisabledStyle for token samples and the dropdown disabled field on each style reapplication",
+  "validation": {
+    "themes": [
+      "dark",
+      "light",
+      "blackwhite"
+    ],
+    "profiles": [
+      "8",
+      "16",
+      "256",
+      "truecolor"
+    ],
+    "actual_post_Show_buffer": true,
+    "theme_round_trip": "dark -> light -> blackwhite -> dark",
+    "regression_render_cases": {
+      "playground_token": 16,
+      "dropdown_choice_form": 48
+    },
+    "disabled_enter_and_mouse": "blocked; no focus callback or opened dropdown",
+    "go_all_race": "passed",
+    "go_vet": "passed",
+    "make_check": "passed",
+    "targeted_race_after_extended_tests": "passed",
+    "static_host_build": "Linux ARM64 passed",
+    "pty": "Korean/English playground startup, resize and terminal restore passed",
+    "images": [
+      "docs/images/go-disabled-states.svg",
+      "docs/images/go-disabled-states-en.svg"
+    ]
+  },
+  "limits": [
+    "8-color distinction still depends on physical terminal Dim support; SVG uses 0.45 opacity approximation",
+    "Rust implementation unchanged",
+    "GitHub CI/commit/publication not run for this change",
+    "CentOS not run per user instruction"
+  ]
+}

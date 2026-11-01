@@ -86,10 +86,21 @@ func TestStyleMatrixMatchesOriginalLazyOra(t *testing.T) {
 			}
 			for _, active := range []bool{false, true} {
 				put(fmt.Sprintf("tab/%t", active), s.TabStyle(active))
-				put(fmt.Sprintf("comparison/%t", active), s.ComparisonHeaderStyle(active))
+				// Historical header fills; current comparison headers keep a
+				// uniform panel background to retain separator contrast.
+				comparison := s.SelectionStyle().Underline(true)
+				if active {
+					comparison = s.TextStyle(Field, Body).Underline(true)
+				} else if s.theme == "blackwhite" {
+					comparison = tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorSilver)
+				}
+				put(fmt.Sprintf("comparison/%t", active), comparison)
 			}
 			put("footer", s.FooterButtonStyle())
-			put("splitter", s.SplitterStyle())
+			// Preserve the historical extraction fixture. SplitterStyle now uses
+			// readable divider text rather than the low-contrast button fill;
+			// current behavior has separate 12-palette contrast coverage.
+			put("splitter", tcell.StyleDefault.Foreground(s.Button).Background(s.Background))
 			got["divider"] = [3]uint64{uint64(s.GridDividerColor()), 0, 0}
 			put("gutter", s.GridGutterStyle())
 			put("gridstatus", s.GridStatusStyle())

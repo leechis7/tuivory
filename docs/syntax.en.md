@@ -77,6 +77,10 @@ legacy, err := ui.NewStyles(theme, profile)
 view.SyntaxStyle = ui.SyntaxStyleFunc(legacy)
 ```
 
+### Syntax colors with eight colors
+
+The TVR-7 LazyOra report prompted a review of the existing Go `SyntaxStyle` dark/8 path. Few reference ANSI colors on black meet the 4.5:1 text target, so most roles use silver (7), parameters use olive (3), and keywords have an underline. Shared colors do not mean the monochrome theme was selected incorrectly. Regression tests check all seven roles for the eight-color range, contrast and keyword underline. This fix does not change syntax colors, classification or selection precedence. Actual ANSI colors and underline support depend on terminal settings.
+
 ## Oracle scope
 
 Defaults are sql/oracle; plsql is also accepted. Handles an explicit case-insensitive keyword/builtin/type vocabulary, normal/N strings and doubled quotes, q/nq paired/same/multibyte delimiters, quoted identifiers/binds, numeric fractions/exponents/f-d suffixes, line/block/hint comments and incomplete input. It does not rewrite whitespace/CRLF/source or insert color tags.

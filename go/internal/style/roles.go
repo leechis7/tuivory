@@ -98,19 +98,19 @@ func (s Styles) FooterButtonStyle() tcell.Style {
 }
 
 // ComparisonHeaderStyle is the generic selected-column header used in LazyOra's
-// keymap comparison. The host supplies which column is current.
+// keymap comparison. Headers share the panel background so column separators
+// remain visible; the current column uses accent text and an underline.
+// The host supplies which column is current.
 func (s Styles) ComparisonHeaderStyle(current bool) tcell.Style {
 	if current {
-		return s.TextStyle(Field, Body).Underline(true)
+		return s.TextStyle(Panel, Accent).Underline(true)
 	}
-	if s.theme == "blackwhite" {
-		return tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorSilver)
-	}
-	return s.SelectionStyle().Underline(true)
+	return s.TextStyle(Panel, Body)
 }
 
+// SplitterStyle uses muted text on the canvas; button fills can match the canvas.
 func (s Styles) SplitterStyle() tcell.Style {
-	return tcell.StyleDefault.Foreground(s.Button).Background(s.Background)
+	return tcell.StyleDefault.Foreground(s.Muted).Background(s.Background)
 }
 
 // PopupBackdrop preserves the original attributes and the original limited-mode

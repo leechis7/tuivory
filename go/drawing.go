@@ -11,6 +11,9 @@ import (
 // Show, Sync, input and terminal ownership are forwarded to the host screen.
 // An intersected glyph is replaced by spaces, including its cell just outside
 // the drawn area, retaining its old style there. Redraw the background on close.
+// An immediate Get/GetContent followed by writing the same cell text updates
+// the whole grapheme's style, including when the cell is a wide continuation.
+// SetCell with no characters explicitly erases even after a read.
 // Draw on the host UI goroutine; cell repairs are not a concurrent transaction.
 func WideSafeScreen(screen tcell.Screen) tcell.Screen { return drawing.SafeScreen(screen) }
 
