@@ -76,6 +76,7 @@ func (v *RowsView) Draw(screen tcell.Screen) {
 			}
 			if strings.HasPrefix(span.Role, "syntax.") {
 				style, _ = TextOnSurface(v.palette, role, "surface")
+				style = lowColorSyntaxStyle(v.palette, span.Role, style)
 				if v.SyntaxStyle != nil {
 					style = v.SyntaxStyle(span.Role, componentStyle(v.palette, "body"))
 				}

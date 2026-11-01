@@ -74,3 +74,5 @@ TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/soli
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](../docs/ui-facade.en.md).
 
 The unreleased TVR-8 follow-up fixes missing Dim on eight-color Go token samples and missing themed disabled dropdown field styling. [Go twelve-palette views and validation](../docs/disabled-states.en.md).
+
+0.9.2 also improves dark/8 SQL highlighting with seven foreground/attribute combinations shared by Go/Rust, retaining >=4.5:1 reference text contrast. [Rules and terminal limitations](../docs/syntax.en.md).

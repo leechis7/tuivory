@@ -151,3 +151,5 @@ TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/soli
 0.6.0 TVR-22–25 adds borderless Surface, standalone/secret controls, text editing/viewing and row/column/grid/layer containers. [Usage, source availability and examples](../docs/controls.en.md).
 
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](../docs/ui-facade.en.md).
+
+0.9.2 also improves dark/8 SQL highlighting with seven foreground/attribute combinations shared by Go/Rust, retaining >=4.5:1 reference text contrast. [Rules and terminal limitations](../docs/syntax.en.md).

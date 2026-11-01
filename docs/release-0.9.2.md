@@ -29,3 +29,5 @@ playground/tree/workspace/focus/catalog/menu/controls/syntax를 같은 파일에
 RELEASE-MANIFEST.json과 SHA256SUMS에 최종 소스 커밋·정적 ELF·공개 태그 설치·다운로드 실행·CI 결과를 기록합니다. 기존 릴리스 자산은 보존하며 CentOS 검증은 수행하지 않습니다.
 
 검증: Show/Sync 이후 실제 버퍼, 전체 grapheme 재칠과 덮어쓰기 복구, 12팔레트, 단일 import 독립 Go 적용 앱, Rust TestBackend, 한영 PTY 예제, API 생성과 정적 ELF를 검사합니다. 구현 당시 검증은 게시 전 이력으로 보존합니다: [TVR-7](evidence/tvr7-lazyora-rendering-results.json), [비활성 상태](evidence/go-disabled-followup-results.json), [예제 일치](evidence/example-parity-results.json). 최종 게시 근거는 릴리스 자산 명세에 기록합니다.
+
+0.9.2는 다크/8색 SQL 강조를 Go/Rust 공통 7종 전경·속성 조합으로 개선하고 참조 본문 대비 >=4.5:1을 유지합니다. [규칙·단말 제약](syntax.md).

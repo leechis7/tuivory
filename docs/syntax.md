@@ -79,7 +79,7 @@ view.SyntaxStyle = ui.SyntaxStyleFunc(legacy)
 
 ### 8색의 구문 색상
 
-TVR-7의 LazyOra 보고에 따라 기존 Go `SyntaxStyle`의 dark/8 경로를 검토했습니다. 참조 ANSI의 검정 배경에서 일반 텍스트 대비 4.5:1을 만족하는 색이 제한되므로 주로 silver(7), parameter는 olive(3), keyword는 밑줄을 사용합니다. 여러 역할이 같은 색인 것은 흑백 테마 설정 오류가 아닙니다. 7종 역할의 8색 범위·대비·키워드 밑줄을 회귀 검사하며, 이번 수정은 기존 구문 색상·분류·선택 우선순위를 바꾸지 않습니다. 실제 ANSI 팔레트·밑줄 지원은 단말 설정을 따릅니다.
+0.9.2는 기존 대부분 silver인 다크/8색 정책을 실제로 개선합니다. keyword/function/string/parameter는 olive(3), type/number/comment는 silver(7)이며 keyword는 굵게+밑줄, function은 일반, type은 밑줄, string은 기울임, number는 굵게, comment는 기울임, parameter는 밑줄로 7종 전경·속성 조합을 구분합니다. 검정 배경의 참조 본문 대비 >=4.5:1을 유지하며 밝은 색 인덱스·RGB·Dim·반전·토큰 배경을 요구하지 않습니다. Go 기존 SyntaxStyle과 기본 Go/Rust 의미 기반 편집기에 같은 원칙을 적용합니다. 선택·검색·비활성 우선순위와 흑백 표현은 유지합니다. 굵기·기울임·밑줄의 실제 지원은 단말을 따르며 일부 단말은 굵기를 밝은 ANSI 색으로 표시합니다.
 
 ## Oracle 지원 범위
 
@@ -118,3 +118,5 @@ F2 테마, F3 색상 수, Ctrl+Q 종료. Ctrl+C는 복사 요청이며 DB·클�
 ![ASCII SQL 강조](images/syntax-ascii.svg)
 
 화면은 실제 Rust SDK 위젯의 TestBackend 참조이며 원격 단말 캡처와 구분합니다. Go Show 이후 버퍼와 Rust TestBackend로 12팔레트·상태 우선순위를 검사하고, 별도로 실제 PTY의 편집·크기 변경·마우스·복원을 검사합니다. [공통 fixture](../design/syntax-cases.json) · [검증 기록](evidence/syntax-results.json). 분석기·사전은 이 저장소의 AGPL-3.0-only 구현이며 추가 타사 렉서/라이선스는 도입하지 않습니다. CentOS 검증은 하지 않습니다.
+
+![다크 8색 SQL 강조](images/syntax-dark8.svg)

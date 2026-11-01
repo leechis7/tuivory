@@ -29,3 +29,5 @@ Select playground/tree/workspace/focus/catalog/menu/controls/syntax within the s
 RELEASE-MANIFEST.json and SHA256SUMS record the final source commit, static ELF checks, public-tag installation, downloaded execution and CI. Existing release assets are preserved. CentOS is not validated.
 
 Validation: post-Show/Sync physical buffers, whole-grapheme styling and overwrite recovery, all twelve palettes, independent single-import Go consumer, Rust TestBackend, bilingual PTY examples, API generation and static ELF checks. Implementation evidence remains pre-release history: [TVR-7](evidence/tvr7-lazyora-rendering-results.json), [disabled states](evidence/go-disabled-followup-results.json), [example parity](evidence/example-parity-results.json). Final publication evidence is recorded in the release asset manifest.
+
+0.9.2 also improves dark/8 SQL highlighting with seven foreground/attribute combinations shared by Go/Rust, retaining >=4.5:1 reference text contrast. [Rules and terminal limitations](syntax.en.md).

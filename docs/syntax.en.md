@@ -79,7 +79,7 @@ view.SyntaxStyle = ui.SyntaxStyleFunc(legacy)
 
 ### Syntax colors with eight colors
 
-The TVR-7 LazyOra report prompted a review of the existing Go `SyntaxStyle` dark/8 path. Few reference ANSI colors on black meet the 4.5:1 text target, so most roles use silver (7), parameters use olive (3), and keywords have an underline. Shared colors do not mean the monochrome theme was selected incorrectly. Regression tests check all seven roles for the eight-color range, contrast and keyword underline. This fix does not change syntax colors, classification or selection precedence. Actual ANSI colors and underline support depend on terminal settings.
+Version 0.9.2 improves dark/8 syntax with seven foreground/attribute combinations. Keyword/function/string/parameter use olive (3); type/number/comment use silver (7). Keyword is bold+underlined, function plain, type underlined, string italic, number bold, comment italic, and parameter underlined. Reference text contrast remains >=4.5:1 on black, without requesting bright indices, RGB, Dim, reverse or colored token backgrounds. Go legacy SyntaxStyle and default Go/Rust semantic editors share these rules; selection/search/disabled precedence and monochrome behavior remain intact. Bold/italic/underline support varies by terminal; some terminals render bold with brighter ANSI colors.
 
 ## Oracle scope
 
@@ -118,3 +118,5 @@ F2 theme, F3 profile, Ctrl+Q exit. Ctrl+C emits a copy request; no database/clip
 ![ASCII SQL highlighting](images/syntax-ascii-en.svg)
 
 References render real Rust SDK widgets through TestBackend, separately from remote-terminal captures. Tests inspect Go post-Show buffers and Rust TestBackend across twelve palettes/state precedence, plus real PTY editing/resize/mouse/restoration. [Shared fixtures](../design/syntax-cases.json) · [Validation record](evidence/syntax-results.json). Analyzer/vocabulary code is this repository's AGPL-3.0-only implementation; no third-party lexer/license was added. No CentOS checks.
+
+![Dark eight-color SQL highlighting](images/syntax-dark8-en.svg)

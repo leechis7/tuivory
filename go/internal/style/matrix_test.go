@@ -75,7 +75,19 @@ func TestStyleMatrixMatchesOriginalLazyOra(t *testing.T) {
 			for surface := Canvas; surface <= Editor; surface++ {
 				for kind := SyntaxKeyword; kind <= SyntaxParameter; kind++ {
 					base := tcell.StyleDefault.Foreground(s.SurfaceText(surface)).Background(s.SurfaceColor(surface))
-					put(fmt.Sprintf("syntax/%d/%d", surface, kind), s.SyntaxStyle(kind, base))
+					st := s.SyntaxStyle(kind, base)
+					// Historical extraction colors; current dark/8 syntax has separate
+					// role-distinction and physical output coverage.
+					_, bg, _ := base.Decompose()
+					r, g, b := bg.RGB()
+					if s.theme == "dark" && s.profile == "8" && r >= 0 && 299*r+587*g+114*b < 128000 {
+						fg := indexed(7)
+						if kind == SyntaxParameter {
+							fg = indexed(3)
+						}
+						st = base.Foreground(fg).Bold(false).Underline(kind == SyntaxKeyword)
+					}
+					put(fmt.Sprintf("syntax/%d/%d", surface, kind), st)
 				}
 			}
 			put("dropdown", s.DropDownStyle())

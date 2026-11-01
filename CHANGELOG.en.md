@@ -4,7 +4,9 @@
 
 ## 0.9.2 — 2026-11-02
 
-- TVR-7 LazyOra defects: preserve CJK/emoji when a Table repaints backgrounds, selection or attributes through WideSafeScreen while retaining true-overlap repair. Fix twelve-palette splitter and comparison header/separator contrast; validate Go Show/Sync, the corresponding Rust path and an independent host. Review and document the existing eight-color syntax policy.
+- TVR-7: improve dark/8 SQL highlighting with seven readable foreground/attribute combinations shared by Go/Rust and the Go legacy adapter; add physical rendering regressions and bilingual references.
+
+- TVR-7 LazyOra defects: preserve CJK/emoji when a Table repaints backgrounds, selection or attributes through WideSafeScreen while retaining true-overlap repair. Fix twelve-palette splitter and comparison header/separator contrast; validate Go Show/Sync, the corresponding Rust path and an independent host. Improve the eight-color syntax policy.
 
 - TVR-27 follow-up: fix first-paint styling so Go card padding does not retain the terminal background. align the Rust default playground with Go navigation, theme/color selectors, password, disabled button, and Auto color cycling; check example-only parity for twelve palettes and both localized guides. Align tree positioning and SQL editor padding/pointer coordinates, support `--option=value` through the unified launcher, and refresh bilingual docs and reference screens.
 
