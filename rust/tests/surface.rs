@@ -9,6 +9,92 @@ use tuivory::{
     ColorProfile, Theme,
     ratatui::{Styles, SurfaceWidget},
 };
+
+#[test]
+fn wrapped_tables_preserve_wide_text_across_selection_and_repaint() {
+    use ratatui::{
+        Terminal,
+        backend::TestBackend,
+        layout::Constraint,
+        widgets::{Row, StatefulWidget, Table, TableState},
+    };
+    use tuivory::{
+        popup::{ShadowMode, ShadowOptions},
+        ratatui::ShadowWidget,
+    };
+    use unicode_segmentation::UnicodeSegmentation;
+    use unicode_width::UnicodeWidthStr;
+    struct SelectedTable<'a> {
+        styles: &'a Styles,
+        selected: usize,
+    }
+    impl Widget for SelectedTable<'_> {
+        fn render(self, area: Rect, buffer: &mut Buffer) {
+            let rows = ["한글 SQL 전체 선택", "界面 é 👩‍💻 🇰🇷 😀"].map(|text| Row::new([text]));
+            StatefulWidget::render(
+                Table::new(rows, [Constraint::Min(0)])
+                    .style(self.styles.role("field").unwrap())
+                    .row_highlight_style(self.styles.role("selection").unwrap()),
+                area,
+                buffer,
+                &mut TableState::default().with_selected(Some(self.selected)),
+            );
+        }
+    }
+    for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {
+        for profile in [
+            ColorProfile::Ansi8,
+            ColorProfile::Ansi16,
+            ColorProfile::Indexed256,
+            ColorProfile::Truecolor,
+        ] {
+            let styles = Styles::new(theme, profile).unwrap();
+            let mut terminal = Terminal::new(TestBackend::new(80, 18)).unwrap();
+            for selected in [0, 1, 0] {
+                terminal
+                    .draw(|frame| {
+                        frame.render_widget(
+                            ShadowWidget::new(
+                                SurfaceWidget::new(
+                                    SelectedTable {
+                                        styles: &styles,
+                                        selected,
+                                    },
+                                    &styles,
+                                ),
+                                &styles,
+                                ShadowOptions {
+                                    mode: ShadowMode::Dim,
+                                    ..ShadowOptions::default()
+                                },
+                            ),
+                            Rect::new(3, 2, 60, 10),
+                        )
+                    })
+                    .unwrap();
+                let buffer = terminal.backend().buffer();
+                for (row, text) in ["한글 SQL 전체 선택", "界面 é 👩‍💻 🇰🇷 😀"].iter().enumerate()
+                {
+                    let expected = styles
+                        .role(if row == selected {
+                            "selection"
+                        } else {
+                            "field"
+                        })
+                        .unwrap();
+                    let mut x = 3;
+                    for glyph in text.graphemes(true) {
+                        let cell = &buffer[(x, 2 + row as u16)];
+                        assert_eq!(cell.symbol(), glyph);
+                        assert_eq!(Some(cell.fg), expected.fg);
+                        assert_eq!(Some(cell.bg), expected.bg);
+                        x += glyph.width() as u16;
+                    }
+                }
+            }
+        }
+    }
+}
 #[test]
 fn opaque_surface_preserves_wide_edges_and_fills_padding() {
     for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {

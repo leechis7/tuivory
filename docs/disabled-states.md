@@ -2,6 +2,16 @@
 
 **한국어 (기본)** · [English](disabled-states.en.md)
 
+## Go 화면 후속 수정 (TVR-8, 0.9.2)
+
+0.9.1의 Go 기본 playground 토큰 표는 8색 비활성 견본에서 `Dim`을 누락했고, `Styler.DropDown`·`Styler.Choice`는 비활성 필드에 테마 스타일을 지정하지 않아 backend의 기본 노랑/검정이 남았습니다. 0.9.2는 토큰 견본과 드롭다운에 `Styles.DisabledStyle()`을 적용합니다. 다크·라이트·흑백 × 8/16/256/True Color와 테마 왕복 후 실제 `Show()` 출력 버퍼를 검사하며, 비활성 드롭다운의 Enter·마우스 입력 차단도 확인합니다.
+
+![Go 버튼·드롭다운·토큰 표의 12팔레트 비활성 비교](images/go-disabled-states.svg)
+
+이 그림은 실제 Go 위젯과 토큰 표의 출력 버퍼로 만든 참조 이미지입니다. 각 칸은 활성 버튼, 비활성 버튼, 비활성 드롭다운 값, 토큰 표 견본입니다. `Dim`은 SVG에서 0.45 불투명도로 근사하며 물리 터미널 지원 여부와는 구분합니다. 공개 0.9.1의 수정 완료를 뜻하지 않습니다.
+
+## 공통 상태 규칙
+
 일반 텍스트·목록·탭·메뉴·버튼·입력값·단축키 안내에는 비활성 접두사를 자동으로 붙이지 않습니다. 체크박스·라디오·체크 메뉴처럼 선택 상태가 있는 컨트롤의 표식은 유지합니다. 아래는 공개 ListWidget·FormWidget·HelpWidget을 실제 Ratatui TestBackend에 그린 한글 화면입니다. 각 칸은 동일한 컴포넌트와 데이터를 사용합니다.
 
 ![다크·라이트·흑백과 8·16·256·True Color 비교](images/disabled-states.svg)
@@ -23,3 +33,5 @@ cargo run --manifest-path rust/Cargo.toml --features ratatui --example states --
 states는 DB·대화형 터미널 없이 비교 화면만 만드는 예제입니다. 실제 폼/목록/메뉴 조작은 기존 catalog/menu 견본을 사용합니다. [표면 디자인](../design/surfaces.md) · [검증 기록](evidence/disabled-colors-results.json).
 
 검증: Go/Rust 948회 렌더링에서 대상 평문의 글자/행 끝 배경 불일치 0. 활성 평문 802구간의 최소 참조 대비 약 4.504:1, 비활성 48구간의 Dim 적용 전 최소값 약 2.171:1입니다. 8색 Dim 속성과 12팔레트의 활성/비활성 스타일 차이를 별도 검사했습니다. 전체 Go race/vet·Rust 전체 대상/기능 및 독립 패키지 적용 검증, 실제 ARM64 PTY 44사례가 통과했습니다. 이는 릴리스 전 로컬 검증 기록이며 원격 CI·게시 결과는 [0.4.0 릴리스](release-0.4.0.md)에서 구분합니다. CentOS 검증은 수행하지 않습니다.
+
+[Go 후속 로컬 검증 기록](evidence/go-disabled-followup-results.json). 커밋·원격 CI·게시는 수행하지 않았습니다.

@@ -9,6 +9,79 @@ use tuivory::{
     text::TextDocument,
 };
 
+#[cfg(feature = "ratatui")]
+#[test]
+fn dark_eight_syntax_roles_after_draw() {
+    use tuivory::{
+        ColorProfile, Theme,
+        text::SyntaxSpan,
+        ui::{
+            Terminal,
+            backend::TestBackend,
+            components::{Styles, TextWidget},
+            style::{Color, Modifier},
+        },
+    };
+    let styles = Styles::new(Theme::Dark, ColorProfile::Ansi8).unwrap();
+    let roles = [
+        "keyword",
+        "function",
+        "type",
+        "string",
+        "number",
+        "comment",
+        "parameter",
+    ];
+    let mut doc = TextDocument::editor("xKFTSNCP");
+    doc.line_numbers = false;
+    doc.buffer.select(0, 0);
+    doc.set_syntax(
+        roles
+            .iter()
+            .enumerate()
+            .map(|(i, r)| SyntaxSpan {
+                start: i + 1,
+                end: i + 2,
+                role: format!("syntax.{r}"),
+            })
+            .collect(),
+    )
+    .unwrap();
+    let mut terminal = Terminal::new(TestBackend::new(20, 3)).unwrap();
+    terminal
+        .draw(|f| {
+            f.render_widget(
+                TextWidget {
+                    model: &mut doc,
+                    styles: &styles,
+                    focused: false,
+                },
+                f.area(),
+            )
+        })
+        .unwrap();
+    let mut seen = Vec::new();
+    for (i, role) in roles.iter().enumerate() {
+        let cell = &terminal.backend().buffer()[(i as u16 + 1, 0)];
+        let expected = styles.role(&format!("syntax.{role}")).unwrap();
+        assert_eq!(Some(cell.fg), expected.fg, "{role}");
+        assert_eq!(Some(cell.bg), expected.bg, "{role}");
+        assert_eq!(cell.modifier, expected.add_modifier, "{role}");
+        assert_eq!(cell.bg, Color::Indexed(0));
+        assert!(matches!(cell.fg, Color::Indexed(3 | 7)));
+        assert!(!cell.modifier.intersects(Modifier::DIM | Modifier::REVERSED));
+        seen.push((cell.fg, cell.modifier));
+    }
+    seen.sort_by_key(|x| format!("{x:?}"));
+    seen.dedup();
+    assert_eq!(seen.len(), 7);
+    let mono = Styles::new(Theme::Blackwhite, ColorProfile::Ansi8).unwrap();
+    assert_eq!(
+        mono.role("syntax.keyword").unwrap().fg,
+        mono.role("syntax.function").unwrap().fg
+    );
+}
+
 #[test]
 fn role_fallback_and_injection() {
     let fixture: serde_json::Value =

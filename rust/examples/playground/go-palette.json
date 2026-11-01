@@ -1,0 +1,2071 @@
+{
+  "format": "tuivory.tokens.draft",
+  "palettes": {
+    "blackwhite-16": {
+      "body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "button": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button.focus": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "disabled": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "8",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#808080"
+      },
+      "edited": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "error": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "field": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "focus.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "hint": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "info": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border.focus": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.dropdown": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.current": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.divider": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.stripe": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "selection": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "success": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "surface": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "warning": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      }
+    },
+    "blackwhite-256": {
+      "body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "button": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button.focus": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "disabled": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "244",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#808080"
+      },
+      "edited": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "error": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "field": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "focus.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "hint": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "info": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border.focus": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.dropdown": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.current": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.divider": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.stripe": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "selection": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "success": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "surface": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "warning": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      }
+    },
+    "blackwhite-8": {
+      "body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "button": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button.focus": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "disabled": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "edited": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "error": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "field": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "focus.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "hint": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "info": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border.focus": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.dropdown": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.current": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.divider": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.stripe": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "selection": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "success": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "surface": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "warning": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      }
+    },
+    "blackwhite-truecolor": {
+      "body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "button": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button.focus": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "disabled": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "#808080",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#808080"
+      },
+      "edited": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "error": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "field": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "focus.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "hint": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "info": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border.focus": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.dropdown": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.current": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.divider": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.stripe": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "selection": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "success": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "surface": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "warning": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      }
+    },
+    "dark-16": {
+      "body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "button": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button.focus": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#ffffff"
+      },
+      "disabled": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "8",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#808080"
+      },
+      "edited": {
+        "background": "3",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#808000",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "error": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "field": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "focus.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "14",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#00ffff"
+      },
+      "hint": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "info": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "14",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#00ffff"
+      },
+      "sample.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border.focus": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#ffffff"
+      },
+      "sample.dropdown": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#ffffff"
+      },
+      "sample.grid.body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.current": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.divider": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "6",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#008080"
+      },
+      "sample.grid.header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.stripe": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "selection": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#ffffff"
+      },
+      "success": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "surface": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "warning": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "11",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#ffff00"
+      }
+    },
+    "dark-256": {
+      "body": {
+        "background": "236",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#303030",
+        "referenceForeground": "#d0d0d0"
+      },
+      "button": {
+        "background": "153",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#afd7ff",
+        "referenceForeground": "#262626"
+      },
+      "button.focus": {
+        "background": "24",
+        "fontWeight": "none",
+        "foreground": "255",
+        "referenceBackground": "#005f87",
+        "referenceForeground": "#eeeeee"
+      },
+      "disabled": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "245",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#8a8a8a"
+      },
+      "edited": {
+        "background": "180",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#d7af87",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "236",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#303030",
+        "referenceForeground": "#d0d0d0"
+      },
+      "error": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#d0d0d0"
+      },
+      "field": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#262626"
+      },
+      "focus.border": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "117",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#87d7ff"
+      },
+      "header": {
+        "background": "236",
+        "fontWeight": "none",
+        "foreground": "117",
+        "referenceBackground": "#303030",
+        "referenceForeground": "#87d7ff"
+      },
+      "hint": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "250",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#bcbcbc"
+      },
+      "info": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "117",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#87d7ff"
+      },
+      "sample.border": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "244",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#808080"
+      },
+      "sample.border.focus": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "117",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#87d7ff"
+      },
+      "sample.dropdown": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#d0d0d0"
+      },
+      "sample.grid.body": {
+        "background": "236",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#303030",
+        "referenceForeground": "#d0d0d0"
+      },
+      "sample.grid.current": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#d0d0d0"
+      },
+      "sample.grid.divider": {
+        "background": "236",
+        "fontWeight": "none",
+        "foreground": "250",
+        "referenceBackground": "#303030",
+        "referenceForeground": "#bcbcbc"
+      },
+      "sample.grid.header": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#d0d0d0"
+      },
+      "sample.grid.stripe": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#d0d0d0"
+      },
+      "selection": {
+        "background": "24",
+        "fontWeight": "none",
+        "foreground": "255",
+        "referenceBackground": "#005f87",
+        "referenceForeground": "#eeeeee"
+      },
+      "success": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#d0d0d0"
+      },
+      "surface": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "252",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#d0d0d0"
+      },
+      "warning": {
+        "background": "237",
+        "fontWeight": "none",
+        "foreground": "222",
+        "referenceBackground": "#3a3a3a",
+        "referenceForeground": "#ffd787"
+      }
+    },
+    "dark-8": {
+      "body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "button": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button.focus": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#c0c0c0"
+      },
+      "disabled": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "edited": {
+        "background": "3",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#808000",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "error": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "field": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "focus.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "3",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#808000"
+      },
+      "hint": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "info": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "3",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#808000"
+      },
+      "sample.border": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.border.focus": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "3",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#808000"
+      },
+      "sample.dropdown": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.body": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.current": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.divider": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "6",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#008080"
+      },
+      "sample.grid.header": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.stripe": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "selection": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#c0c0c0"
+      },
+      "success": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "surface": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "warning": {
+        "background": "0",
+        "fontWeight": "none",
+        "foreground": "3",
+        "referenceBackground": "#000000",
+        "referenceForeground": "#808000"
+      }
+    },
+    "dark-truecolor": {
+      "body": {
+        "background": "#2E3440",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#2e3440",
+        "referenceForeground": "#eceff4"
+      },
+      "button": {
+        "background": "#81A1C1",
+        "fontWeight": "none",
+        "foreground": "#2E3440",
+        "referenceBackground": "#81a1c1",
+        "referenceForeground": "#2e3440"
+      },
+      "button.focus": {
+        "background": "#005F87",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#005f87",
+        "referenceForeground": "#ffffff"
+      },
+      "disabled": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#929292",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#929292"
+      },
+      "edited": {
+        "background": "#D7AF87",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#d7af87",
+        "referenceForeground": "#202a36"
+      },
+      "editor": {
+        "background": "#242D3A",
+        "fontWeight": "none",
+        "foreground": "#E5EDF5",
+        "referenceBackground": "#242d3a",
+        "referenceForeground": "#e5edf5"
+      },
+      "error": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#eceff4"
+      },
+      "field": {
+        "background": "#ECEFF4",
+        "fontWeight": "none",
+        "foreground": "#2E3440",
+        "referenceBackground": "#eceff4",
+        "referenceForeground": "#2e3440"
+      },
+      "focus.border": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#88C0D0",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#88c0d0"
+      },
+      "header": {
+        "background": "#2E3440",
+        "fontWeight": "none",
+        "foreground": "#88C0D0",
+        "referenceBackground": "#2e3440",
+        "referenceForeground": "#88c0d0"
+      },
+      "hint": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#D8DEE9",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#d8dee9"
+      },
+      "info": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#88C0D0",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#88c0d0"
+      },
+      "sample.border": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#8190A4",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#8190a4"
+      },
+      "sample.border.focus": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#88C0D0",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#88c0d0"
+      },
+      "sample.dropdown": {
+        "background": "#434C5E",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#434c5e",
+        "referenceForeground": "#eceff4"
+      },
+      "sample.grid.body": {
+        "background": "#232B38",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#232b38",
+        "referenceForeground": "#eceff4"
+      },
+      "sample.grid.current": {
+        "background": "#35485F",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#35485f",
+        "referenceForeground": "#eceff4"
+      },
+      "sample.grid.divider": {
+        "background": "#232B38",
+        "fontWeight": "none",
+        "foreground": "#52647A",
+        "referenceBackground": "#232b38",
+        "referenceForeground": "#52647a"
+      },
+      "sample.grid.header": {
+        "background": "#3B4E67",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#3b4e67",
+        "referenceForeground": "#eceff4"
+      },
+      "sample.grid.stripe": {
+        "background": "#293342",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#293342",
+        "referenceForeground": "#eceff4"
+      },
+      "selection": {
+        "background": "#005F87",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#005f87",
+        "referenceForeground": "#ffffff"
+      },
+      "success": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#eceff4"
+      },
+      "surface": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "#ECEFF4",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#eceff4"
+      },
+      "warning": {
+        "background": "#3B4252",
+        "fontWeight": "none",
+        "foreground": "11",
+        "referenceBackground": "#3b4252",
+        "referenceForeground": "#ffff00"
+      }
+    },
+    "light-16": {
+      "body": {
+        "background": "15",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#000000"
+      },
+      "button": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button.focus": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#ffffff"
+      },
+      "disabled": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "8",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#808080"
+      },
+      "edited": {
+        "background": "3",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#808000",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "15",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#000000"
+      },
+      "error": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "field": {
+        "background": "15",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#000000"
+      },
+      "focus.border": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "4",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000080"
+      },
+      "header": {
+        "background": "15",
+        "fontWeight": "none",
+        "foreground": "4",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#000080"
+      },
+      "hint": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "info": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "4",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000080"
+      },
+      "sample.border": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "sample.border.focus": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "4",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000080"
+      },
+      "sample.dropdown": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#ffffff"
+      },
+      "sample.grid.body": {
+        "background": "15",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#000000"
+      },
+      "sample.grid.current": {
+        "background": "15",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#000000"
+      },
+      "sample.grid.divider": {
+        "background": "15",
+        "fontWeight": "none",
+        "foreground": "6",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#008080"
+      },
+      "sample.grid.header": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "sample.grid.stripe": {
+        "background": "15",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#000000"
+      },
+      "selection": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#ffffff"
+      },
+      "success": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "surface": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "warning": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "1",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#800000"
+      }
+    },
+    "light-256": {
+      "body": {
+        "background": "255",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#eeeeee",
+        "referenceForeground": "#262626"
+      },
+      "button": {
+        "background": "153",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#afd7ff",
+        "referenceForeground": "#262626"
+      },
+      "button.focus": {
+        "background": "24",
+        "fontWeight": "none",
+        "foreground": "231",
+        "referenceBackground": "#005f87",
+        "referenceForeground": "#ffffff"
+      },
+      "disabled": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "244",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#808080"
+      },
+      "edited": {
+        "background": "180",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#d7af87",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "231",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#262626"
+      },
+      "error": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#262626"
+      },
+      "field": {
+        "background": "231",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#262626"
+      },
+      "focus.border": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "25",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#005faf"
+      },
+      "header": {
+        "background": "255",
+        "fontWeight": "none",
+        "foreground": "25",
+        "referenceBackground": "#eeeeee",
+        "referenceForeground": "#005faf"
+      },
+      "hint": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "239",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#4e4e4e"
+      },
+      "info": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "25",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#005faf"
+      },
+      "sample.border": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "244",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#808080"
+      },
+      "sample.border.focus": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "25",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#005faf"
+      },
+      "sample.dropdown": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#262626"
+      },
+      "sample.grid.body": {
+        "background": "255",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#eeeeee",
+        "referenceForeground": "#262626"
+      },
+      "sample.grid.current": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#262626"
+      },
+      "sample.grid.divider": {
+        "background": "255",
+        "fontWeight": "none",
+        "foreground": "239",
+        "referenceBackground": "#eeeeee",
+        "referenceForeground": "#4e4e4e"
+      },
+      "sample.grid.header": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#262626"
+      },
+      "sample.grid.stripe": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#262626"
+      },
+      "selection": {
+        "background": "24",
+        "fontWeight": "none",
+        "foreground": "231",
+        "referenceBackground": "#005f87",
+        "referenceForeground": "#ffffff"
+      },
+      "success": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#262626"
+      },
+      "surface": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#262626"
+      },
+      "warning": {
+        "background": "254",
+        "fontWeight": "none",
+        "foreground": "94",
+        "referenceBackground": "#e4e4e4",
+        "referenceForeground": "#875f00"
+      }
+    },
+    "light-8": {
+      "body": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "button.focus": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#c0c0c0"
+      },
+      "disabled": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "edited": {
+        "background": "3",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#808000",
+        "referenceForeground": "#000000"
+      },
+      "editor": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "error": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "field": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "focus.border": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "4",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000080"
+      },
+      "header": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "4",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000080"
+      },
+      "hint": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "info": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "4",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000080"
+      },
+      "sample.border": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "sample.border.focus": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "4",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000080"
+      },
+      "sample.dropdown": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#c0c0c0"
+      },
+      "sample.grid.body": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "sample.grid.current": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "sample.grid.divider": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "6",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#008080"
+      },
+      "sample.grid.header": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "sample.grid.stripe": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "selection": {
+        "background": "4",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#000080",
+        "referenceForeground": "#c0c0c0"
+      },
+      "success": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "surface": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
+      "warning": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "1",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#800000"
+      }
+    },
+    "light-truecolor": {
+      "body": {
+        "background": "#F3F5F7",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#f3f5f7",
+        "referenceForeground": "#202a36"
+      },
+      "button": {
+        "background": "#BBD4E5",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#bbd4e5",
+        "referenceForeground": "#202a36"
+      },
+      "button.focus": {
+        "background": "#005F87",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#005f87",
+        "referenceForeground": "#ffffff"
+      },
+      "disabled": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#808080",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#808080"
+      },
+      "edited": {
+        "background": "#D7AF87",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#d7af87",
+        "referenceForeground": "#202a36"
+      },
+      "editor": {
+        "background": "#FFFFFF",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#202a36"
+      },
+      "error": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#202a36"
+      },
+      "field": {
+        "background": "#FFFFFF",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#202a36"
+      },
+      "focus.border": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#005FCC",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#005fcc"
+      },
+      "header": {
+        "background": "#F3F5F7",
+        "fontWeight": "none",
+        "foreground": "#005FCC",
+        "referenceBackground": "#f3f5f7",
+        "referenceForeground": "#005fcc"
+      },
+      "hint": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#485869",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#485869"
+      },
+      "info": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#005FCC",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#005fcc"
+      },
+      "sample.border": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#66758A",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#66758a"
+      },
+      "sample.border.focus": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#005FCC",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#005fcc"
+      },
+      "sample.dropdown": {
+        "background": "#CCD7E2",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#ccd7e2",
+        "referenceForeground": "#202a36"
+      },
+      "sample.grid.body": {
+        "background": "#FFFFFF",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#202a36"
+      },
+      "sample.grid.current": {
+        "background": "#DCE9F4",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#dce9f4",
+        "referenceForeground": "#202a36"
+      },
+      "sample.grid.divider": {
+        "background": "#FFFFFF",
+        "fontWeight": "none",
+        "foreground": "#91A6B8",
+        "referenceBackground": "#ffffff",
+        "referenceForeground": "#91a6b8"
+      },
+      "sample.grid.header": {
+        "background": "#D4E0EB",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#d4e0eb",
+        "referenceForeground": "#202a36"
+      },
+      "sample.grid.stripe": {
+        "background": "#F0F4F8",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#f0f4f8",
+        "referenceForeground": "#202a36"
+      },
+      "selection": {
+        "background": "#005F87",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#005f87",
+        "referenceForeground": "#ffffff"
+      },
+      "success": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#202a36"
+      },
+      "surface": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#202a36"
+      },
+      "warning": {
+        "background": "#E4EAF0",
+        "fontWeight": "none",
+        "foreground": "#7A4300",
+        "referenceBackground": "#e4eaf0",
+        "referenceForeground": "#7a4300"
+      }
+    }
+  },
+  "roles": [
+    "body",
+    "surface",
+    "hint",
+    "field",
+    "selection",
+    "button",
+    "button.focus",
+    "disabled",
+    "edited",
+    "header",
+    "editor",
+    "info",
+    "success",
+    "warning",
+    "error",
+    "focus.border",
+    "sample.dropdown",
+    "sample.grid.body",
+    "sample.grid.stripe",
+    "sample.grid.current",
+    "sample.grid.header",
+    "sample.grid.divider",
+    "sample.border",
+    "sample.border.focus"
+  ]
+}

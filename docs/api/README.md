@@ -2,13 +2,13 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
-**0.9.1 TVR-24 API 포함:** [선택적 문법 분석·새 편집 API](../syntax.md)는 0.9.1부터 제공합니다.
+**0.9.0 TVR-24 API 포함:** [선택적 문법 분석·새 편집 API](../syntax.md)는 0.9.0부터 제공합니다.
 
-**0.9.1:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../ui-facade.md).
+**0.9.2:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../ui-facade.md).
 
-이 명세는 0.9.1 소스를 따르며 **TVR-22~26 API를 포함합니다.** [제공 범위·전환 안내](../controls.md).
+이 명세는 0.9.2 소스를 따르며 **TVR-22~26 API를 포함합니다.** [제공 범위·전환 안내](../controls.md).
 
-기준 버전은 **0.9.1**입니다. Go 모듈은 `github.com/leechis7/tuivory/go`, Rust crate는 `tuivory`입니다. Rust 렌더러는 `ratatui`, 대화형 예제는 `playground` 기능을 켭니다.
+기준 버전은 **0.9.2**입니다. Go 모듈은 `github.com/leechis7/tuivory/go`, Rust crate는 `tuivory`입니다. Rust 렌더러는 `ratatui`, 대화형 예제는 `playground` 기능을 켭니다.
 
 - [Go 공개 선언](go.md)
 - [Rust 공개 선언](rust.md)
@@ -53,4 +53,4 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 
 0.8.0 TVR-26: [공통 UI API](../ui-facade.md) · [Go ui](go-ui.md) · [Go terminal](go-terminal.md). Rust ui::components는 기존 렌더러 API의 호환 경로이며 새 InputEvent/Session/바이트 span API는 Rust 명세에 포함합니다.
 
-[문법 분석·강조 API와 편집기 전환](../syntax.md): 0.9.1 TVR-24 후속입니다.
+[문법 분석·강조 API와 편집기 전환](../syntax.md): 0.9.2 TVR-24 후속입니다.

@@ -77,6 +77,10 @@ legacy, err := ui.NewStyles(theme, profile)
 view.SyntaxStyle = ui.SyntaxStyleFunc(legacy)
 ```
 
+### Syntax colors with eight colors
+
+Version 0.9.2 improves dark/8 syntax with seven foreground/attribute combinations. Keyword/function/string/parameter use olive (3); type/number/comment use silver (7). Keyword is bold+underlined, function plain, type underlined, string italic, number bold, comment italic, and parameter underlined. Reference text contrast remains >=4.5:1 on black, without requesting bright indices, RGB, Dim, reverse or colored token backgrounds. Go legacy SyntaxStyle and default Go/Rust semantic editors share these rules; selection/search/disabled precedence and monochrome behavior remain intact. Bold/italic/underline support varies by terminal; some terminals render bold with brighter ANSI colors.
+
 ## Oracle scope
 
 Defaults are sql/oracle; plsql is also accepted. Handles an explicit case-insensitive keyword/builtin/type vocabulary, normal/N strings and doubled quotes, q/nq paired/same/multibyte delimiters, quoted identifiers/binds, numeric fractions/exponents/f-d suffixes, line/block/hint comments and incomplete input. It does not rewrite whitespace/CRLF/source or insert color tags.
@@ -114,3 +118,5 @@ F2 theme, F3 profile, Ctrl+Q exit. Ctrl+C emits a copy request; no database/clip
 ![ASCII SQL highlighting](images/syntax-ascii-en.svg)
 
 References render real Rust SDK widgets through TestBackend, separately from remote-terminal captures. Tests inspect Go post-Show buffers and Rust TestBackend across twelve palettes/state precedence, plus real PTY editing/resize/mouse/restoration. [Shared fixtures](../design/syntax-cases.json) · [Validation record](evidence/syntax-results.json). Analyzer/vocabulary code is this repository's AGPL-3.0-only implementation; no third-party lexer/license was added. No CentOS checks.
+
+![Dark eight-color SQL highlighting](images/syntax-dark8-en.svg)

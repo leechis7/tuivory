@@ -49,6 +49,8 @@ python3 tools/snapshot_tree.py bin/rust/tuivory-linux-arm64 --demo tree --output
 [예제 소스](examples.md) · [정적 배포](static-build.md) · [로컬 검증 기록](evidence/showcase-results.json). 언어별 24개 한영 PTY 시나리오와 정적 ELF 검사, 20개 참조 화면 일치를 확인했습니다. 원격 CI·게시·x86_64 실행·CentOS 검증은 수행하지 않았습니다.
 
 
+Go를 예제 기준으로 사용합니다. 기본 playground의 탐색·테마/색상 선택·암호·비활성 버튼과 조작 순서를 Rust에도 제공합니다. 트리 제목/버튼 정렬과 SQL 편집기의 여백·마우스 좌표도 Go 기준으로 맞춥니다. `--lang=en`, `--theme=light`, `--colors=16` 같은 값 지정 옵션은 두 통합 실행파일에서 사용할 수 있습니다. 터미널 백엔드와 자동 색상 감지는 언어별 구현을 사용하며 실제 단말 출력은 달라질 수 있습니다. [Rust 화면·조작](rust-playground.md).
+
 ## 예제 소스·컴포넌트 안내
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](component-boundary.md).

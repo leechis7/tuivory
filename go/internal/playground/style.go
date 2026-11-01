@@ -31,6 +31,9 @@ func (u *UI) apply() {
 	}
 	u.palette = p
 	u.styleLayout(u.root, p["body"])
+	// The first apply runs before reflow attaches views to body. Style the
+	// page tree explicitly so card padding and spacer boxes are opaque at startup.
+	u.styleLayout(u.views, p["body"])
 	for _, view := range []*tview.TextView{u.header, u.context, u.status, u.footer, u.guide, u.small} {
 		viewStyle(view, p["body"])
 	}
@@ -87,6 +90,10 @@ func (u *UI) apply() {
 			style := p["body"].Style()
 			if c == 3 {
 				style = pair.Style()
+				if role == "disabled" {
+					// Pair carries colors but cannot preserve the 8-color Dim cue.
+					style = styler.Styles.DisabledStyle()
+				}
 			}
 			u.tokens.SetCell(i+1, c, tview.NewTableCell(value).SetStyle(style).SetTransparency(false).SetMaxWidth(24))
 		}

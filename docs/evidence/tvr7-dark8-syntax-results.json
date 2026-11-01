@@ -1,0 +1,28 @@
+{
+  "issue": "TVR-7",
+  "release": "0.9.2",
+  "stage": "local pre-publication",
+  "source_uncommitted": true,
+  "checks": {
+    "go": "all packages; post-Show seven distinct styles; text reference contrast >=4.5:1; existing twelve-palette state precedence",
+    "rust": "syntax tests including TestBackend seven distinct styles; existing twelve-palette state precedence",
+    "screenshots": "ten bilingual syntax references; dark8 and ASCII updated; italic SVG support",
+    "scope": "default dark ANSI-8-compatible palettes and Go legacy SyntaxStyle; two foregrounds plus bold/underline/italic; no new bright/RGB index"
+  },
+  "files": {
+    "go/internal/style/syntax.go": "c4ab1fc31e9c30246093907926f9d033b415343f54e8fe34f4dacaa7f71c030d",
+    "go/syntax_style.go": "49927a0cacc858d983bd12fe5c44b43ff921fcbdb60ad98fe3d6d54fc54d7bb2",
+    "go/rows_view.go": "b6f57cf3d16fe49186453f449a9b522f2c6d20538e93c4615bf9cd3e82c517d5",
+    "go/syntax_low_color_test.go": "c4b4eef2f2b9894907ac2dffff93b2d7bad2410de9ffae47691e4aacd262b816",
+    "rust/src/ratatui.rs": "8c5e64ba4cded151fd3e93c0302f446195b4dda707c1ba26e10de90f0be3cf54",
+    "rust/tests/syntax.rs": "96104cdf2a5d11400b7887d179315ce67b3b569e8dd6046798135fdb9eeedbfb",
+    "docs/images/syntax-dark8.svg": "68cd04f1eaed6d72f127068b392804da3b6e6c45938d8db584d788db4dedd57d",
+    "docs/images/syntax-dark8-en.svg": "166e41f98637af186c48360b2150caf4e9773bdafd56e7c2222b0fd07d71ef18"
+  },
+  "limitations": [
+    "Actual ANSI palette and text attribute support vary by terminal",
+    "Some terminals map bold to bright ANSI colors",
+    "LazyOra 40-column reconnect popup and F10 placement are application work",
+    "No CentOS checks"
+  ]
+}

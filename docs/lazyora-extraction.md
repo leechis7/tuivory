@@ -60,3 +60,10 @@ python3 tools/capture_lazyora_matrix.py /path/to/lazyora
 구문 스타일 계산은 stock tcell에서 사용할 수 있습니다. stock tview의 TextArea에는 LazyOra 포크의 `SetTextStyleFunc`가 없으므로 Tuivory는 그 훅을 복제하지 않습니다. 실제 LazyOra import 전환 시 기존 호스트 lexer와 훅에서 Tuivory의 `SyntaxStyle`을 호출하는 구조로 연결합니다. 템플릿에서 구문 강조 렌더링까지 제공한다고 표현하지 않습니다.
 
 비활성 표시 보완 이후 Go DisabledStyle()은 공통 disabled 전경·Dim 정책을 적용합니다. 기존 추출 Disabled 필드와 원본 비교 JSON은 과거 색상을 보존하며, 새 어댑터는 별도 12팔레트 출력 회귀로 검증합니다. 사용자 지정 Disabled 색상은 보존합니다. [현재 규칙](disabled-states.md).
+
+
+## TVR-7 표·분할선 대비 보완
+
+원본 팔레트 필드와 과거 추출 fixture는 보존합니다. 현재 `Styles.SplitterStyle()`은 버튼 채움색 대신 canvas 위의 muted 전경을 사용하며, 12팔레트 참조 대비를 3:1 이상으로 검사합니다. 라이트/8색 동색뿐 아니라 라이트/16·256·True Color의 낮은 대비도 보완합니다.
+
+`ComparisonHeaderStyle`은 패널 배경을 유지합니다. 현재 열은 강조 전경·밑줄, 나머지는 본문 전경으로 구분합니다. 제목을 Field/Selection 배경으로 채워 공통 세로 구분선과 같은 색이 되는 문제를 피하며, 선택한 데이터 셀의 선택 스타일은 유지합니다. `Styler.Comparison` 실제 Show 출력에서 선택 이동 후에도 구분선 3:1·제목 4.5:1 이상을 검사합니다. [문자 재칠 규칙과 검증](overlay-drawing.md).
