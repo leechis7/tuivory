@@ -89,6 +89,9 @@ func (s Styler) Apply(roles Roles, roots ...tview.Primitive) {
 		case *tview.Modal:
 			s.Modal(w)
 			surface = style.Panel
+		case *Modal:
+			s.Modal(w)
+			surface = style.Panel
 		}
 		if box != nil {
 			box.SetBackgroundColor(s.Styles.SurfaceColor(surface)).SetTitleColor(s.Styles.SurfaceText(surface))
@@ -136,6 +139,8 @@ func widgetBox(p tview.Primitive) *tview.Box {
 	case *tview.Button:
 		return w.Box
 	case *tview.Modal:
+		return w.Box
+	case *Modal:
 		return w.Box
 	}
 	return nil

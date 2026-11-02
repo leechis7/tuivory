@@ -68,6 +68,12 @@ pub struct Styles {
 }
 
 impl Styles {
+    pub(super) fn drag_feedback(&self, allowed: bool) -> Style {
+        self.text_on_surface(if allowed { "info" } else { "error" }, "surface")
+            .or_else(|_| self.role("surface"))
+            .expect("validated drag palette")
+            .add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
+    }
     /// Resolve common control states; the host draws visual().markers separately.
     pub fn control(
         &self,

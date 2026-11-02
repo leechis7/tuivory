@@ -2,17 +2,21 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+0.10.0 TVR-7: [Go 반응형 Modal](../docs/modals.md)은 좁은 단말 안에서 긴 버튼을 여러 행으로 배치합니다. Modal은 backend를 내장한 SDK 어댑터이며 원시 별칭 정체성의 예외입니다. 0.10.0에 포함합니다.
+0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](../docs/drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.
+
+
 **0.9.1 TVR-27:** [통합 예제 실행파일](../docs/examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
 
 **0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](../docs/syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다.
 
-**0.9.2:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
+**0.10.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
 
 [공개 API 명세](../docs/api/go.md)
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-제품 버전은 루트 `VERSION`의 **0.9.2**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.9.2`으로 배포합니다. [릴리스 안내](../docs/release-0.9.2.md).
+제품 버전은 루트 `VERSION`의 **0.10.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.10.0`으로 배포합니다. [릴리스 안내](../docs/release-0.10.0.md).
 
 Go 모듈과 모든 Go 구현은 이 디렉터리에 있습니다. 모듈 경로는 `github.com/leechis7/tuivory/go`, 패키지 이름은 `tuivory`이며 한 번만 import합니다.
 
@@ -24,10 +28,10 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-현재 버전은 `v0.9.2`이며 Go 하위 모듈 태그는 `go/v0.9.2`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
+현재 버전은 `v0.10.0`이며 Go 하위 모듈 태그는 `go/v0.10.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.9.2
+go get github.com/leechis7/tuivory/go@v0.10.0
 ```
 
 저장소 루트에서:

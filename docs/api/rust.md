@@ -1,4 +1,4 @@
-# Rust API — source (0.9.2)
+# Rust API — source (0.10.0)
 
 **한국어 (기본)** · [English](rust.en.md)
 
@@ -611,6 +611,74 @@ pub fn click(&self, state: &mut TabState, column: usize, width: usize) -> Option
 
 
 
+#### tuivory::components::Tabs::items
+
+```rust
+pub fn items(&self) -> &[TabItem];
+```
+
+
+
+#### tuivory::components::Tabs::request_drop
+
+```rust
+pub fn request_drop(
+        &self,
+        source: &str,
+        target: &str,
+        position: DropPosition,
+        o: &DragOptions,
+        allow: DropPolicy<'_>,
+    ) -> Result<DropRequest, String>;
+```
+
+
+
+#### tuivory::components::Tabs::apply_drop
+
+```rust
+pub fn apply_drop(&self, r: &DropRequest) -> Result<Self, String>;
+```
+
+Apply only after host approval. The source model is never mutated.
+
+#### tuivory::components::Tabs::keyboard_drop
+
+```rust
+pub fn keyboard_drop(
+        &self,
+        s: &TabState,
+        m: DragMove,
+        o: &DragOptions,
+        allow: DropPolicy<'_>,
+    ) -> Result<DropRequest, String>;
+```
+
+
+
+#### tuivory::components::Tabs::drag_layout
+
+```rust
+pub fn drag_layout(&self, s: &mut TabState, d: &mut DragState, width: usize) -> TabLayout;
+```
+
+
+
+#### tuivory::components::Tabs::drag
+
+```rust
+pub fn drag(
+        &self,
+        s: &mut TabState,
+        d: &mut DragState,
+        p: DragPointer,
+        o: &DragOptions,
+        allow: DropPolicy<'_>,
+    ) -> Option<DropRequest>;
+```
+
+Route captured move/up even outside the viewport; up rechecks policy.
+
 ### tuivory::components::breadcrumbs
 
 ```rust
@@ -849,6 +917,140 @@ pub fn select(
 ```rust
 pub fn layout(&self, width: usize, height: usize) -> Vec<ComponentLine>;
 ```
+
+
+
+### tuivory::drag::DragAction
+
+```rust
+pub enum DragAction {
+    Down,
+    Move,
+    Up,
+    Cancel,
+}
+```
+
+
+
+
+### tuivory::drag::DragMove
+
+```rust
+pub enum DragMove {
+    Previous,
+    Next,
+    Inside,
+    Outside,
+}
+```
+
+
+
+
+### tuivory::drag::DragOptions
+
+```rust
+pub struct DragOptions {
+    pub threshold: usize,
+    pub auto_scroll: bool,
+    pub hover_expand: bool,
+    pub locked: Vec<String>,
+}
+```
+
+
+
+
+### tuivory::drag::DragPointer
+
+```rust
+pub struct DragPointer {
+    pub action: DragAction,
+    pub x: i32,
+    pub y: i32,
+    pub width: usize,
+    pub height: usize,
+}
+```
+
+
+
+
+### tuivory::drag::DragState
+
+```rust
+pub struct DragState {
+    pub phase: String,
+    pub result: String,
+    pub source_id: String,
+    pub target_id: String,
+    pub position: Option<DropPosition>,
+    pub allowed: bool,
+    pub reason: String,
+    // Private fields omitted.
+}
+```
+
+
+
+#### tuivory::drag::DragState::captured
+
+```rust
+pub fn captured(&self) -> bool;
+```
+
+
+
+#### tuivory::drag::DragState::cancel
+
+```rust
+pub fn cancel(&mut self);
+```
+
+
+
+#### tuivory::drag::DragState::render_key
+
+```rust
+pub fn render_key(&mut self, key: String);
+```
+
+Widgets call this every frame to cancel gestures on move/resize/restyle.
+
+### tuivory::drag::DropPolicy
+
+```rust
+pub type DropPolicy<'a> = Option<&'a dyn Fn(&DropRequest) -> bool>;
+```
+
+
+
+
+### tuivory::drag::DropPosition
+
+```rust
+pub enum DropPosition {
+    Before,
+    After,
+    Inside,
+}
+```
+
+
+
+
+### tuivory::drag::DropRequest
+
+```rust
+pub struct DropRequest {
+    pub source_id: String,
+    pub target_id: String,
+    pub position: DropPosition,
+    pub revision: u64,
+}
+```
+
 
 
 
@@ -3034,6 +3236,14 @@ pub fn new(tabs: &'a Tabs, styles: &'a Styles) -> Result<Self, crate::Error>;
 
 
 
+#### tuivory::ratatui::TabsWidget::with_drag
+
+```rust
+pub fn with_drag(mut self, drag: &'a mut crate::drag::DragState, ascii: bool) -> Self;
+```
+
+
+
 ### tuivory::ratatui::TextWidget
 
 ```rust
@@ -3063,6 +3273,14 @@ pub struct TreeWidget<'a> {
 
 ```rust
 pub fn new(tree: &'a Tree, styles: &'a Styles) -> Result<Self, crate::Error>;
+```
+
+
+
+#### tuivory::ratatui::TreeWidget::with_drag
+
+```rust
+pub fn with_drag(mut self, drag: &'a mut crate::drag::DragState) -> Self;
 ```
 
 
@@ -3518,6 +3736,79 @@ pub struct Tree {
 
     // Private fields omitted.
 }
+```
+
+
+
+#### tuivory::tree::Tree::nodes
+
+```rust
+pub fn nodes(&self) -> Vec<TreeNode>;
+```
+
+
+
+#### tuivory::tree::Tree::request_drop
+
+```rust
+pub fn request_drop(
+        &self,
+        source: &str,
+        target: &str,
+        position: DropPosition,
+        o: &DragOptions,
+        allow: DropPolicy<'_>,
+    ) -> Result<DropRequest, String>;
+```
+
+
+
+#### tuivory::tree::Tree::apply_drop
+
+```rust
+pub fn apply_drop(&self, r: &DropRequest) -> Result<Self, String>;
+```
+
+
+
+#### tuivory::tree::Tree::keyboard_drop
+
+```rust
+pub fn keyboard_drop(
+        &self,
+        s: &TreeState,
+        m: DragMove,
+        o: &DragOptions,
+        allow: DropPolicy<'_>,
+    ) -> Result<DropRequest, String>;
+```
+
+
+
+#### tuivory::tree::Tree::drag_rows
+
+```rust
+pub fn drag_rows(
+        &self,
+        s: &mut TreeState,
+        d: &mut DragState,
+        height: usize,
+    ) -> (Vec<TreeRow>, usize);
+```
+
+
+
+#### tuivory::tree::Tree::drag
+
+```rust
+pub fn drag(
+        &self,
+        s: &mut TreeState,
+        d: &mut DragState,
+        p: DragPointer,
+        o: &DragOptions,
+        allow: DropPolicy<'_>,
+    ) -> Option<DropRequest>;
 ```
 
 

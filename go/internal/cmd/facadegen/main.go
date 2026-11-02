@@ -45,7 +45,7 @@ func printed(n any) string {
 func main() {
 	check := flag.Bool("check", false, "verify generated files")
 	flag.Parse()
-	manifest := map[string]any{"format": 1, "scope": "Pinned SDK compatibility; aliases retain backend identity. Global setters are explicit; no consumer-local shim.", "packages": map[string]any{}}
+	manifest := map[string]any{"format": 1, "scope": "Pinned SDK compatibility; aliases retain backend identity except the responsive Modal adapter, which embeds its backend. Global setters are explicit; no consumer-local shim.", "packages": map[string]any{}}
 	for _, cfg := range []struct{ source, out, name string }{{"github.com/rivo/tview", "ui", "ui"}, {"github.com/gdamore/tcell/v2", "terminal", "terminal"}} {
 		raw, err := exec.Command("go", "list", "-json", cfg.source).Output()
 		must(err)
@@ -183,6 +183,11 @@ func main() {
 					}
 				}
 			}
+		}
+		if cfg.name == "ui" {
+			imports["widgets"] = "github.com/leechis7/tuivory/go/internal/widgets"
+			decls["Modal"] = "// Modal is the SDK responsive adapter and embeds the pinned backend Modal.\ntype Modal = widgets.Modal\n"
+			decls["NewModal"] = "// NewModal creates a responsive message window with wrapping buttons.\nfunc NewModal() *Modal { return widgets.NewModal() }\n"
 		}
 		names := []string{}
 		for name := range decls {

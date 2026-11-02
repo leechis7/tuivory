@@ -21,8 +21,8 @@ pub struct TreeRow {
 }
 #[derive(Clone, Debug)]
 pub struct Tree {
-    rows: Vec<TreeRow>,
-    index: BTreeMap<String, usize>,
+    pub(crate) rows: Vec<TreeRow>,
+    pub(crate) index: BTreeMap<String, usize>,
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct TreeState {

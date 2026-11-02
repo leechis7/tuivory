@@ -14,6 +14,7 @@ pub struct TreeWidget<'a> {
     styles: &'a Styles,
     pub focused: bool,
     pub ascii: bool,
+    drag: Option<&'a mut crate::drag::DragState>,
 }
 impl<'a> TreeWidget<'a> {
     pub fn new(tree: &'a Tree, styles: &'a Styles) -> Result<Self, crate::Error> {
@@ -25,7 +26,12 @@ impl<'a> TreeWidget<'a> {
             styles,
             focused: false,
             ascii: false,
+            drag: None,
         })
+    }
+    pub fn with_drag(mut self, drag: &'a mut crate::drag::DragState) -> Self {
+        self.drag = Some(drag);
+        self
     }
 }
 fn clean(text: &str) -> String {
@@ -35,7 +41,7 @@ fn clean(text: &str) -> String {
 }
 impl StatefulWidget for TreeWidget<'_> {
     type State = TreeState;
-    fn render(self, area: Rect, buf: &mut Buffer, state: &mut TreeState) {
+    fn render(mut self, area: Rect, buf: &mut Buffer, state: &mut TreeState) {
         let surface = self.styles.role("surface").expect("validated tree palette");
         let hint = self
             .styles
@@ -52,10 +58,25 @@ impl StatefulWidget for TreeWidget<'_> {
                 buf[(x, y)].set_symbol(" ");
             }
         }
-        let rows = self.tree.reconcile(state, usize::from(area.height));
+        let (rows, scroll) = if let Some(d) = self.drag.as_deref_mut() {
+            d.render_key(format!(
+                "{area:?}/{:?}/{}",
+                self.styles.palette.styles(),
+                self.ascii
+            ));
+            self.tree.drag_rows(state, d, usize::from(area.height))
+        } else {
+            let rows = self.tree.reconcile(state, usize::from(area.height));
+            (rows, state.scroll)
+        };
+        let feedback = self
+            .drag
+            .as_ref()
+            .filter(|d| d.phase == "dragging")
+            .map(|d| (d.target_id.clone(), d.position, d.allowed));
         for (line, row) in rows
             .iter()
-            .skip(state.scroll)
+            .skip(scroll)
             .take(usize::from(area.height))
             .enumerate()
         {
@@ -122,6 +143,26 @@ impl StatefulWidget for TreeWidget<'_> {
                     ),
                     buf,
                 );
+            if let Some((target, position, allowed)) = &feedback {
+                if *target == node.id && area.width > 0 {
+                    let marker = if !allowed {
+                        "!"
+                    } else {
+                        match (self.ascii, position) {
+                            (true, Some(crate::drag::DropPosition::Before)) => "^",
+                            (true, Some(crate::drag::DropPosition::Inside)) => "+",
+                            (true, _) => "v",
+                            (false, Some(crate::drag::DropPosition::Before)) => "↑",
+                            (false, Some(crate::drag::DropPosition::Inside)) => "↳",
+                            _ => "↓",
+                        }
+                    };
+                    buf.set_stringn(area.x, y, marker, 1, self.styles.drag_feedback(*allowed));
+                }
+            }
+        }
+        if feedback.as_ref().is_some_and(|f| f.0.is_empty()) && area.width > 0 && area.height > 0 {
+            buf.set_stringn(area.x, area.y, "!", 1, self.styles.drag_feedback(false));
         }
     }
 }

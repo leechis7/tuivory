@@ -28,10 +28,32 @@ func fillComponent(screen tcell.Screen, x, y, w, h int, style tcell.Style) {
 
 type TabView struct {
 	*tview.Box
-	tabs    *Tabs
-	state   *TabState
-	palette Palette
-	OnEvent func(TabEvent)
+	tabs              *Tabs
+	state             *TabState
+	palette           Palette
+	OnEvent           func(TabEvent)
+	Drag              *DragState
+	DragOptions       DragOptions
+	CanDrop           func(DropRequest) bool
+	OnDrop            func(DropRequest)
+	ASCII             bool
+	suppressDragClick bool
+}
+
+func (v *TabView) Blur() {
+	if v.Drag.Captured() {
+		v.suppressDragClick = true
+	}
+	v.Drag.Cancel()
+	v.Box.Blur()
+}
+func (v *TabView) SetRect(x, y, w, h int) {
+	ox, oy, ow, oh := v.GetRect()
+	if v.Drag.Captured() && (x != ox || y != oy || w != ow || h != oh) {
+		v.Drag.Cancel()
+		v.suppressDragClick = true
+	}
+	v.Box.SetRect(x, y, w, h)
 }
 
 func NewTabView(tabs *Tabs, state *TabState, palette Palette) (*TabView, error) {
@@ -50,6 +72,10 @@ func (v *TabView) SetPalette(palette Palette) error {
 		return err
 	}
 	v.palette = p
+	if v.Drag.Captured() {
+		v.suppressDragClick = true
+	}
+	v.Drag.Cancel()
 	return nil
 }
 func (v *TabView) SetTabs(tabs *Tabs) error {
@@ -57,16 +83,33 @@ func (v *TabView) SetTabs(tabs *Tabs) error {
 		return fmt.Errorf("tabs: model required")
 	}
 	v.tabs = tabs
+	if v.Drag.Captured() {
+		v.suppressDragClick = true
+	}
+	v.Drag.Cancel()
 	tabs.Reconcile(v.state)
 	return nil
 }
 func (v *TabView) Draw(screen tcell.Screen) {
+	screen = WideSafeScreen(screen)
 	x, y, w, h := v.GetInnerRect()
+	if v.Drag != nil {
+		captured := v.Drag.Captured()
+		v.Drag.RenderKey(dragRenderKey(v.palette, x, y, w, h, v.ASCII))
+		if captured && !v.Drag.Captured() {
+			v.suppressDragClick = true
+		}
+	}
 	fillComponent(screen, x, y, w, h, v.palette["surface"].Style())
 	if h == 0 {
 		return
 	}
-	layout := v.tabs.Layout(v.state, w)
+	var layout TabLayout
+	if v.Drag.Captured() {
+		layout = v.tabs.DragLayout(v.state, v.Drag, w)
+	} else {
+		layout = v.tabs.Layout(v.state, w)
+	}
 	if layout.Previous {
 		drawTreeText(screen, x, y, w, 0, "<", v.palette["hint"].Style())
 	}
@@ -88,6 +131,21 @@ func (v *TabView) Draw(screen tcell.Screen) {
 		fillComponent(screen, x+cell.Start, y, cell.Width, 1, st)
 		drawTreeText(screen, x+cell.Start, y, cell.Width, 0, cell.Text, st)
 	}
+	if v.Drag != nil && v.Drag.Phase == "dragging" {
+		for _, c := range layout.Cells {
+			if c.ID == v.Drag.TargetID {
+				column := c.Start
+				if v.Drag.Position == DropAfter {
+					column += max(0, c.Width-1)
+				}
+				drawTreeText(screen, x+column, y, 1, 0, dragMarker(v.Drag, v.ASCII, false), dragFeedbackStyle(v.palette, v.Drag))
+				break
+			}
+		}
+		if v.Drag.TargetID == "" && w > 0 {
+			drawTreeText(screen, x, y, 1, 0, "!", dragFeedbackStyle(v.palette, v.Drag))
+		}
+	}
 }
 func (v *TabView) dispatch(action TabAction) {
 	e := v.tabs.Handle(v.state, action)
@@ -97,6 +155,33 @@ func (v *TabView) dispatch(action TabAction) {
 }
 func (v *TabView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
 	return v.WrapInputHandler(func(e *tcell.EventKey, _ func(tview.Primitive)) {
+		if v.Drag != nil {
+			if e.Key() == tcell.KeyEscape && v.Drag.Captured() {
+				v.Drag.Cancel()
+				v.suppressDragClick = true
+				return
+			}
+			if e.Modifiers()&(tcell.ModAlt|tcell.ModShift) == tcell.ModAlt|tcell.ModShift {
+				move := DragMove("")
+				if e.Key() == tcell.KeyLeft {
+					move = DragPrevious
+				}
+				if e.Key() == tcell.KeyRight {
+					move = DragNext
+				}
+				if move != "" {
+					v.Drag.Cancel()
+					r, err := v.tabs.KeyboardDrop(v.state, move, v.DragOptions, v.CanDrop)
+					if err == nil && v.OnDrop != nil {
+						v.OnDrop(r)
+					}
+					return
+				}
+			}
+			if v.Drag.Captured() {
+				v.Drag.Cancel()
+			}
+		}
 		switch e.Key() {
 		case tcell.KeyLeft:
 			v.dispatch(TabPrevious)
@@ -121,6 +206,39 @@ func (v *TabView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func
 	return v.WrapMouseHandler(func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
 		x, y := e.Position()
 		left, top, w, h := v.GetInnerRect()
+		if v.Drag != nil {
+			if a == tview.MouseLeftClick && v.suppressDragClick {
+				v.suppressDragClick = false
+				return true, nil
+			}
+			kind := ""
+			switch a {
+			case tview.MouseLeftDown:
+				kind = "down"
+				v.suppressDragClick = false
+			case tview.MouseMove:
+				kind = "move"
+			case tview.MouseLeftUp:
+				kind = "up"
+			}
+			if kind != "" && (kind == "down" || v.Drag.Captured()) {
+				captured := v.Drag.Captured()
+				active := v.Drag.Phase == "dragging"
+				r := v.tabs.Drag(v.state, v.Drag, DragPointer{kind, x - left, y - top, w, h}, v.DragOptions, v.CanDrop)
+				if kind == "up" {
+					v.suppressDragClick = active || v.Drag.Result != ""
+				}
+				if r != nil && v.OnDrop != nil {
+					v.OnDrop(*r)
+				}
+				if v.Drag.Captured() {
+					return true, v
+				}
+				if captured {
+					return true, nil
+				}
+			}
+		}
 		if x < left || x >= left+w || y != top || h == 0 {
 			return false, nil
 		}
@@ -153,6 +271,14 @@ type PanelView struct {
 	palette  Palette
 	ASCII    bool
 	bordered bool
+}
+
+func (v *PanelView) SetRect(x, y, w, h int) {
+	v.Box.SetRect(x, y, w, h)
+	if v.Child != nil {
+		cx, cy, cw, ch := v.GetInnerRect()
+		v.Child.SetRect(cx, cy, max(0, cw), max(0, ch))
+	}
 }
 
 func (v *PanelView) SetBorder(show bool) *PanelView {
@@ -317,12 +443,13 @@ func (v *SplitView) Draw(screen tcell.Screen) {
 	x, y, w, h, l := v.geometry()
 	fillComponent(screen, x, y, w, h, v.palette["surface"].Style())
 	if l.Compact {
-		v.First.SetRect(x, y, 0, 0)
-		v.Second.SetRect(x, y, 0, 0)
 		child := v.First
+		hidden := v.Second
 		if v.ActiveSecond {
 			child = v.Second
+			hidden = v.First
 		}
+		hidden.SetRect(x, y, 0, 0)
 		child.SetRect(x, y, w, h)
 		child.Draw(screen)
 		return

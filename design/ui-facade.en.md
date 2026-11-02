@@ -51,3 +51,5 @@ Hosts explicitly choose terminal lifetime. Rust's terminal-feature Session confi
 These are not implemented. FFI should use copies/explicit ownership rather than exposing borrowed Rust/Go pointers as a shared ABI. New adapters must conform to shared ID/state/input/width/offset/layout scenarios. Document model changes separately from compatibility adapters and follow the [API lifecycle policy](../docs/api-lifecycle.en.md).
 
 The 0.9.0 TVR-24 [optional highlighting analyzer](../docs/syntax.en.md) is separate from common tokens/rendering. Custom host analyzers remain supported; execution/dangerous-SQL/transaction policy stays in the host.
+
+0.10.0 TVR-7: [responsive Go Modal](../docs/modals.en.md) wraps long buttons inside narrow terminals. Modal is an SDK adapter embedding its backend, an exception to raw alias identity. Included in 0.10.0.

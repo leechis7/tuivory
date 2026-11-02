@@ -130,6 +130,13 @@ func TestIsolatedModule(t *testing.T) {
     if err != nil { t.Fatal(err) }
     tabView.SetRect(0,0,30,1)
     tabView.Draw(screen)
+    drop,err:=tabs.RequestDrop("a","b",tuivory.DropAfter,tuivory.DragOptions{},nil);if err!=nil{t.Fatal(err)}
+    movedTabs,err:=tabs.ApplyDrop(drop);if err!=nil||movedTabs.Items()[0].ID!="b"||!movedTabs.Items()[0].Edited{t.Fatal("external tab movement")}
+    tabView.Drag=&tuivory.DragState{};tabView.ASCII=true
+    modal:=tuivory.NewModal().SetText("Long confirmation").AddButtons([]string{"Continue with pending changes","Discard pending changes","Cancel"}).SetFocus(2)
+    modalStyles,_:=tuivory.NewStyles("light","8");tuivory.Styler{Styles:modalStyles}.Modal(modal)
+    app:=tuivory.NewApplication().SetScreen(screen).SetRoot(modal,true).SetFocus(modal);screen.SetSize(40,16);app.ForceDraw()
+    x,y,w,h:=modal.GetRect();if x<0||y<0||x+w>40||y+h>16{t.Fatal("external responsive Modal")}
     panel, err := tuivory.NewPanelView(view,colors)
     if err != nil { t.Fatal(err) }
     panel.SetRect(0,0,30,6)
