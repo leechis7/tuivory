@@ -2,7 +2,7 @@
 
 [한국어 (default)](static-build.md) · **English**
 
-Current public release: **0.10.0**. [Assets and validation](release-0.10.0.en.md). The 0.2.0/CentOS details below are historical.
+Current public release: **0.10.1**. [Assets and validation](release-0.10.1.en.md). The 0.2.0/CentOS details below are historical.
 
 Per the user instruction on 2026-10-29, CentOS validation is no longer performed, including the CI VM job. Static distribution requirements, ELF inspection and execution checks in available environments remain. The CentOS commands and previous results below are historical reproduction records, not current required procedures.
 

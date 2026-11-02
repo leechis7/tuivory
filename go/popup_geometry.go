@@ -6,14 +6,17 @@ import "fmt"
 type ShadowMode string
 
 const (
-	ShadowOff   ShadowMode = "off"
+	ShadowOff ShadowMode = "off"
+	// ShadowAuto paints a backdrop-aware compact half-row shadow.
 	ShadowAuto  ShadowMode = "auto"
 	ShadowSolid ShadowMode = "solid"
 	ShadowDim   ShadowMode = "dim"
 )
 
-// ShadowOptions uses terminal cells. Auto/solid/dim with both offsets zero uses
-// the default right-two/down-one offset; use Off to remove the shadow entirely.
+// ShadowOptions uses terminal cells. Enabled modes with both offsets zero use
+// one cell right and one reserved row down. Auto/solid paint half-block caps:
+// OffsetY N paints N-0.5 rows down. Dim remains a whole-cell compatibility mode.
+// An explicit zero vertical offset has no half caps. Use Off to remove shadows.
 type ShadowOptions struct {
 	Mode    ShadowMode `json:"mode"`
 	OffsetX int        `json:"offsetX"`
@@ -36,7 +39,7 @@ func (o ShadowOptions) offsets() (int, int) {
 	}
 	x, y := max(0, o.OffsetX), max(0, o.OffsetY)
 	if x == 0 && y == 0 {
-		return 2, 1
+		return 1, 1
 	}
 	return x, y
 }
@@ -62,6 +65,10 @@ func (o ShadowOptions) Layout(bounds CellRect) PopupLayout {
 	l.Card.Height -= dy
 	if dx != 0 || dy != 0 {
 		l.Shadow = CellRect{X: popupAdd(bounds.X, dx), Y: popupAdd(bounds.Y, dy), Width: l.Card.Width, Height: l.Card.Height}
+		if (o.Mode == ShadowAuto || o.Mode == ShadowSolid) && dy > 0 {
+			l.Shadow.Y = popupAdd(bounds.Y, dy-1)
+			l.Shadow.Height++
+		}
 	}
 	return l
 }

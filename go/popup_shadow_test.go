@@ -2,8 +2,8 @@ package tuivory_test
 
 import (
 	"encoding/json"
-	tcell "github.com/leechis7/tuivory/go/terminal"
 	ui "github.com/leechis7/tuivory/go"
+	tcell "github.com/leechis7/tuivory/go/terminal"
 	tview "github.com/leechis7/tuivory/go/ui"
 	"os"
 	"reflect"
@@ -57,7 +57,7 @@ func TestShadowModesAfterShowAndRestoration(t *testing.T) {
 					background := func() {
 						screen.Fill('R', base)
 						screen.Put(19, 5, glyph, base)
-						screen.Put(5, 10, glyph, base)
+						screen.Put(4, 10, glyph, base)
 						screen.Put(18, 10, glyph, base)
 						screen.Show()
 					}
@@ -83,11 +83,8 @@ func TestShadowModesAfterShowAndRestoration(t *testing.T) {
 							want := " "
 							if mode == ui.ShadowDim {
 								want = "R"
-							} else if mode == ui.ShadowAuto {
-								rr, gg, bb := p["surface"].BG.RGB()
-								if rr <= 16 && gg <= 16 && bb <= 16 {
-									want = "░"
-								}
+							} else {
+								want = "▄"
 							}
 							_, _, attrs := outputCell(t, screen, r.X, r.Y, want).Decompose()
 							if mode == ui.ShadowDim && attrs&tcell.AttrDim == 0 {
@@ -99,7 +96,7 @@ func TestShadowModesAfterShowAndRestoration(t *testing.T) {
 						if st := outputCell(t, screen, 20, 5, " "); st != base {
 							t.Fatal("outside shadow style changed")
 						}
-						if st := outputCell(t, screen, 5, 10, " "); st != base {
+						if st := outputCell(t, screen, 4, 10, " "); st != base {
 							t.Fatal("outside left style changed")
 						}
 					}

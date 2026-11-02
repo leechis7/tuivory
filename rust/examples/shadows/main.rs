@@ -11,7 +11,7 @@ use tuivory::{
     ui::components::{MenuPopupWidget, Styles},
 };
 fn main() -> Result<(), Box<dyn Error>> {
-    let (mut en, mut edge, mut ascii) = (false, false, false);
+    let (mut en, mut edge, mut ascii, mut clean) = (false, false, false, false);
     let mut mode = ShadowMode::Off;
     let mut output = None;
     let mut args = std::env::args().skip(1);
@@ -27,12 +27,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--shadow" => mode = args.next().ok_or("missing shadow mode")?.parse()?,
             "--edge" => edge = true,
             "--ascii" => ascii = true,
+            "--clean" => clean = true,
             "--snapshot" => output = Some(PathBuf::from(args.next().ok_or("missing output")?)),
             _ => return Err(format!("unknown option {a}").into()),
         }
     }
     let output = output.ok_or(
-        "use --snapshot PATH [--shadow off|auto|solid|dim] [--lang ko|en] [--edge] [--ascii]",
+        "use --snapshot PATH [--shadow off|auto|solid|dim] [--lang ko|en] [--edge] [--ascii] [--clean]",
     )?;
     let tr = |ko: &str, english: &str| {
         if en {
@@ -71,12 +72,24 @@ fn main() -> Result<(), Box<dyn Error>> {
                     styles.panel(&title, false, 0, ascii).unwrap(),
                     Rect::new(x as u16, y as u16, 38, 18),
                 );
-                for yy in 2..15 {
+                if clean {
                     f.render_widget(
-                        Paragraph::new(format!("{yy:02} README.md settings README.md"))
-                            .style(styles.text_on_surface("body", "surface").unwrap()),
-                        Rect::new(x as u16 + 2, y as u16 + yy, 34, 1),
+                        Paragraph::new("").style(styles.role("body").unwrap()),
+                        Rect::new(x as u16 + 1, y as u16 + 1, 36, 15),
                     );
+                    f.render_widget(
+                        Paragraph::new(tr("작업 공간 / 파일", "Workspace / Files"))
+                            .style(styles.text_on_surface("hint", "body").unwrap()),
+                        Rect::new(x as u16 + 3, y as u16 + 2, 32, 1),
+                    );
+                } else {
+                    for yy in 2..15 {
+                        f.render_widget(
+                            Paragraph::new(format!("{yy:02} README.md settings README.md"))
+                                .style(styles.text_on_surface("body", "surface").unwrap()),
+                            Rect::new(x as u16 + 2, y as u16 + yy, 34, 1),
+                        );
+                    }
                 }
                 let anchor = if edge {
                     CellRect {
@@ -142,10 +155,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                         layout.bounds.height as u16,
                     ),
                 );
-                f.render_widget(
-                    Paragraph::new("+").style(styles.role("selection").unwrap()),
-                    Rect::new(anchor.x as u16, anchor.y as u16, 1, 1),
-                );
+                if !clean {
+                    f.render_widget(
+                        Paragraph::new("+").style(styles.role("selection").unwrap()),
+                        Rect::new(anchor.x as u16, anchor.y as u16, 1, 1),
+                    );
+                }
                 f.render_widget(
                     Paragraph::new(format!(
                         "{}: {} · {}",

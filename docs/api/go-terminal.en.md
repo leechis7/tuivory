@@ -1,4 +1,4 @@
-# Go terminal API — source (0.10.0)
+# Go terminal API — source (0.10.1)
 
 [한국어 (default)](go-terminal.md) · **English**
 

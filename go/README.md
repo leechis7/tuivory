@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+**0.10.1 TVR-29:** [팝업 그림자](../docs/popup-shadows.md)를 오른쪽 1칸·아래 반 줄로 통일했습니다. 테두리와 기본 끄기는 유지합니다.
+
 0.10.0 TVR-7: [Go 반응형 Modal](../docs/modals.md)은 좁은 단말 안에서 긴 버튼을 여러 행으로 배치합니다. Modal은 backend를 내장한 SDK 어댑터이며 원시 별칭 정체성의 예외입니다. 0.10.0에 포함합니다.
 0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](../docs/drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.
 
@@ -16,7 +18,7 @@
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-제품 버전은 루트 `VERSION`의 **0.10.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.10.0`으로 배포합니다. [릴리스 안내](../docs/release-0.10.0.md).
+제품 버전은 루트 `VERSION`의 **0.10.1**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.10.1`으로 배포합니다. [릴리스 안내](../docs/release-0.10.1.md).
 
 Go 모듈과 모든 Go 구현은 이 디렉터리에 있습니다. 모듈 경로는 `github.com/leechis7/tuivory/go`, 패키지 이름은 `tuivory`이며 한 번만 import합니다.
 
@@ -28,10 +30,10 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-현재 버전은 `v0.10.0`이며 Go 하위 모듈 태그는 `go/v0.10.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
+현재 버전은 `v0.10.1`이며 Go 하위 모듈 태그는 `go/v0.10.1`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.10.0
+go get github.com/leechis7/tuivory/go@v0.10.1
 ```
 
 저장소 루트에서:

@@ -53,3 +53,5 @@ TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/soli
 0.6.0 TVR-22–25 adds borderless Surface, standalone/secret controls, text editing/viewing and row/column/grid/layer containers. [Usage, source availability and examples](../docs/controls.en.md).
 
 0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](../docs/drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
+
+0.10.1 TVR-29 unifies auto/solid as one cell right and half a row down, with backdrop-aware dark contrast, half-block caps and ASCII dots. Reserve a full row; shadow cells replace backdrop text and never receive input. Keep Dim as whole-cell compatibility only. Tags through 0.10.0 retain the previous appearance.

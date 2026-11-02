@@ -94,6 +94,109 @@ mod rendering {
         ratatui::{MenuPopupWidget, Styles},
     };
     #[test]
+    fn compact_caps_backdrop_contrast_ascii_and_wide_edges() {
+        use ratatui::{
+            style::{Color, Style},
+            widgets::Block,
+        };
+        use tuivory::ratatui::ShadowWidget;
+        for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {
+            for profile in [
+                ColorProfile::Ansi8,
+                ColorProfile::Ansi16,
+                ColorProfile::Indexed256,
+                ColorProfile::Truecolor,
+            ] {
+                for ascii in [false, true] {
+                    for glyph in ["한", "界", "😀", "👩‍💻", "é"] {
+                        let styles = Styles::new(theme, profile).unwrap();
+                        let base = styles
+                            .role("surface")
+                            .unwrap()
+                            .add_modifier(Modifier::ITALIC | Modifier::UNDERLINED);
+                        let mut t = Terminal::new(TestBackend::new(30, 12)).unwrap();
+                        let mut outside = [Style::default(); 2];
+                        t.draw(|f| {
+                            for y in 0..12 {
+                                for x in 0..30 {
+                                    f.buffer_mut()[(x, y)].set_symbol("R").set_style(base);
+                                }
+                            }
+                            f.buffer_mut().set_string(4, 9, glyph, base);
+                            f.buffer_mut().set_string(15, 9, glyph, base);
+                            outside = [
+                                f.buffer_mut()[(4, 9)].style(),
+                                f.buffer_mut()[(16, 9)].style(),
+                            ];
+                            f.render_widget(
+                                ShadowWidget::new(
+                                    Block::default().style(styles.role("surface").unwrap()),
+                                    &styles,
+                                    ShadowOptions {
+                                        mode: ShadowMode::Auto,
+                                        ..Default::default()
+                                    },
+                                )
+                                .ascii(ascii),
+                                Rect::new(4, 3, 12, 7),
+                            );
+                        })
+                        .unwrap();
+                        let b = t.backend().buffer();
+                        for (x, y, symbol) in
+                            [(15, 3, "▄"), (15, 4, " "), (5, 9, "▀"), (15, 9, "▀")]
+                        {
+                            let c = &b[(x, y)];
+                            let want = if ascii { "." } else { symbol };
+                            assert_eq!(c.symbol(), want, "{theme:?}/{profile:?}/{ascii}/{glyph}");
+                            assert!(c.modifier.is_empty());
+                            if ascii || want != " " {
+                                assert_eq!(c.bg, base.bg.unwrap());
+                                assert_ne!(c.fg, c.bg);
+                            }
+                        }
+                        if glyph != "é" {
+                            for (i, x) in [4, 16].into_iter().enumerate() {
+                                assert_eq!(b[(x, 9)].symbol(), " ");
+                                assert_eq!(b[(x, 9)].style(), outside[i]);
+                            }
+                        }
+                        assert_eq!(b[(17, 9)].symbol(), "R");
+                    }
+                }
+            }
+        }
+        let styles = Styles::new(Theme::Dark, ColorProfile::Truecolor).unwrap();
+        let backdrop = Color::Rgb(32, 39, 51);
+        let mut t = Terminal::new(TestBackend::new(24, 8)).unwrap();
+        t.draw(|f| {
+            for y in 0..8 {
+                for x in 0..24 {
+                    f.buffer_mut()[(x, y)]
+                        .set_symbol("R")
+                        .set_style(Style::default().bg(backdrop));
+                }
+            }
+            f.buffer_mut()
+                .set_string(12, 1, "界", Style::default().bg(backdrop));
+            f.render_widget(
+                ShadowWidget::new(
+                    Block::default(),
+                    &styles,
+                    ShadowOptions {
+                        mode: ShadowMode::Auto,
+                        ..Default::default()
+                    },
+                ),
+                Rect::new(2, 1, 12, 6),
+            );
+        })
+        .unwrap();
+        assert_eq!(t.backend().buffer()[(13, 1)].symbol(), "▄");
+        assert_eq!(t.backend().buffer()[(13, 1)].bg, backdrop);
+        assert_eq!(t.backend().buffer()[(13, 1)].fg, Color::Rgb(12, 15, 20));
+    }
+    #[test]
     fn modes_preserve_card_and_repair_wide_edges() {
         for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {
             for profile in [
@@ -139,7 +242,7 @@ mod rendering {
                                     f.buffer_mut()[(x, y)].set_symbol("R").set_style(base);
                                 }
                             }
-                            for (x, y) in [(19, 5), (5, 10), (18, 10)] {
+                            for (x, y) in [(19, 5), (4, 10), (18, 10)] {
                                 f.buffer_mut().set_string(x, y, glyph, base);
                             }
                             outside_before = Some(f.buffer_mut()[(20, 5)].style());
@@ -163,18 +266,16 @@ mod rendering {
                             if mode == ShadowMode::Dim {
                                 assert_eq!(c.symbol(), "R");
                                 assert!(c.modifier.contains(Modifier::DIM));
-                            } else if mode == ShadowMode::Solid {
-                                assert_eq!(c.symbol(), " ");
                             } else {
-                                assert!(c.symbol() == " " || c.symbol() == "░");
+                                assert_eq!(c.symbol(), "▄");
                             }
                         }
                         if mode != ShadowMode::Off && tuivory::components::cells(glyph) == 2 {
                             assert_eq!(b[(20, 5)].symbol(), " ");
                             assert_eq!(b[(20, 5)].style(), outside_before.unwrap());
                             assert!(!b[(20, 5)].modifier.contains(Modifier::DIM));
-                            assert_eq!(b[(5, 10)].symbol(), " ");
-                            assert!(!b[(5, 10)].modifier.contains(Modifier::DIM));
+                            assert_eq!(b[(4, 10)].symbol(), " ");
+                            assert!(!b[(4, 10)].modifier.contains(Modifier::DIM));
                         }
                         assert_eq!(menu.return_id(), "origin");
                         assert_eq!(menu.focused_id(), "item");
@@ -254,7 +355,7 @@ fn general_popup_widget_repairs_its_card_edges() {
     terminal
         .draw(|f| {
             f.buffer_mut().set_string(3, 5, "界", base);
-            f.buffer_mut().set_string(17, 5, "界", base);
+            f.buffer_mut().set_string(18, 5, "界", base);
             f.render_widget(
                 ShadowWidget::new(
                     Paragraph::new("General").block(styles.block("Card", false).unwrap()),
@@ -272,5 +373,5 @@ fn general_popup_widget_repairs_its_card_edges() {
     assert_eq!(b[(3, 5)].symbol(), " ");
     assert_eq!(b[(3, 5)].fg, base.fg.unwrap());
     assert_eq!(b[(4, 5)].symbol(), "│");
-    assert_eq!(b[(17, 5)].symbol(), "│");
+    assert_eq!(b[(18, 5)].symbol(), "│");
 }

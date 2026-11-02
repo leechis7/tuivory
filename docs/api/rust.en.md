@@ -1,4 +1,4 @@
-# Rust API — source (0.10.0)
+# Rust API — source (0.10.1)
 
 [한국어 (default)](rust.md) · **English**
 
@@ -2678,6 +2678,7 @@ Disjoint right/bottom shadow strips, never the card itself.
 pub enum ShadowMode {
     #[default]
     Off,
+    /// Backdrop-aware compact half-row shadow.
     Auto,
     Solid,
     Dim,
@@ -2704,7 +2705,9 @@ pub struct ShadowOptions {
 }
 ```
 
-Cell offsets; enabled modes with both offsets zero use right-two/down-one.
+Cell offsets; enabled modes default to one cell right and one reserved row down.
+Auto/solid paint N-0.5 rows down for offset_y N; zero has no half caps.
+Dim remains a whole-cell compatibility mode.
 
 #### tuivory::popup::ShadowOptions::layout
 

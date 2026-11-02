@@ -1,4 +1,4 @@
-# Go API — source (0.10.0)
+# Go API — source (0.10.1)
 
 **한국어 (기본)** · [English](go.en.md)
 
@@ -3072,7 +3072,8 @@ type ShadowMode string
     ShadowMode selects an optional popup shadow. The zero value is off.
 
 const (
-	ShadowOff   ShadowMode = "off"
+	ShadowOff ShadowMode = "off"
+	// ShadowAuto paints a backdrop-aware compact half-row shadow.
 	ShadowAuto  ShadowMode = "auto"
 	ShadowSolid ShadowMode = "solid"
 	ShadowDim   ShadowMode = "dim"
@@ -3087,9 +3088,11 @@ type ShadowOptions struct {
 	OffsetX int        `json:"offsetX"`
 	OffsetY int        `json:"offsetY"`
 }
-    ShadowOptions uses terminal cells. Auto/solid/dim with both offsets zero
-    uses the default right-two/down-one offset; use Off to remove the shadow
-    entirely.
+    ShadowOptions uses terminal cells. Enabled modes with both offsets zero use
+    one cell right and one reserved row down. Auto/solid paint half-block caps:
+    OffsetY N paints N-0.5 rows down. Dim remains a whole-cell compatibility
+    mode. An explicit zero vertical offset has no half caps. Use Off to remove
+    shadows.
 
 func (o ShadowOptions) Layout(bounds CellRect) PopupLayout
     Layout reserves shadow space inside an assigned footprint, retaining at

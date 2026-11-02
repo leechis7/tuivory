@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.10.1 — 2026-11-03
+
+- TVR-29: replace the old two-cell/one-row default with compact Go/Rust half-row popup shadows; improve actual-backdrop contrast, ASCII fallback, geometry/input safety, wide-glyph regressions and bilingual references. Dim remains a whole-cell compatibility mode outside the example cycle.
+
 ## 0.10.0 — 2026-11-02
 
 - TVR-18: add shared request-only tab/tree drag and drop, threshold/capture, immutable approved reorder/reparent, stable IDs/metadata, cycle/permission/stale rejection, temporary scrolling/expansion, keyboard alternatives and twelve-palette Unicode/ASCII feedback. Update bilingual design/API/guides/examples/screens and physical/PTY/consumer regressions.
