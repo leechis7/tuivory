@@ -1,4 +1,4 @@
-# Go API — source (0.9.2)
+# Go API — source (0.10.0)
 
 [한국어 (default)](go.md) · **English**
 
@@ -1599,6 +1599,67 @@ const (
 )
 ```
 
+## DragMove
+
+```go
+type DragMove string
+
+const (
+	DragPrevious DragMove = "previous"
+	DragNext     DragMove = "next"
+	DragInside   DragMove = "inside"
+	DragOutside  DragMove = "outside"
+)
+```
+
+## DragOptions
+
+```go
+type DragOptions struct {
+	Threshold               int
+	AutoScroll, HoverExpand bool
+	Locked                  []string
+}
+    DragOptions controls local interaction. Zero Threshold means two cells.
+    Locked blocks source and target IDs (including host-disabled tree nodes).
+    AutoScroll advances one item per edge move; HoverExpand is opt-in/immediate.
+```
+
+## DragPointer
+
+```go
+type DragPointer struct {
+	Action              string
+	X, Y, Width, Height int
+}
+```
+
+## DragState
+
+```go
+type DragState struct {
+	Phase, Result      string
+	SourceID, TargetID string
+	Position           DropPosition
+	Allowed            bool
+	Reason             string
+
+	// Has unexported fields.
+}
+    DragState owns only transient preview state. Cancel leaves application
+    data, selection, focus, expansion and scroll untouched. Result is
+    drop/reject/cancel/stale.
+
+func (d *DragState) Cancel()
+
+func (d *DragState) Captured() bool
+
+func (d *DragState) RenderKey(key string)
+    RenderKey cancels a captured gesture if the host moves/resizes/restyles
+    the component. Call every frame; Go views and Rust widgets do this
+    automatically.
+```
+
 ## DrawerPlacement
 
 ```go
@@ -1626,6 +1687,31 @@ type DropDown = native.DropDown
 
 func NewDropDown() *DropDown
     NewDropDown forwards to the pinned backend without changing behavior.
+```
+
+## DropPosition
+
+```go
+type DropPosition string
+    DropPosition is relative to a stable target ID; inside appends a last child.
+
+const (
+	DropBefore DropPosition = "before"
+	DropAfter  DropPosition = "after"
+	DropInside DropPosition = "inside"
+)
+```
+
+## DropRequest
+
+```go
+type DropRequest struct {
+	SourceID, TargetID string
+	Position           DropPosition
+	Revision           uint64
+}
+    DropRequest never changes source data. Hosts approve it before ApplyDrop.
+    Revision rejects requests against replaced data, even if IDs still exist.
 ```
 
 ## Encoding
@@ -2544,12 +2630,45 @@ func NewModal() *Modal
     NewModal forwards to the SDK compatibility API.
 
 // Public alias: underlying declaration and methods.
-package ui // import "github.com/leechis7/tuivory/go/ui"
+package widgets // import "github.com/leechis7/tuivory/go/internal/widgets"
 
-type Modal = native.Modal
+type Modal struct {
+	*tview.Modal
+
+	// Has unexported fields.
+}
+    Modal retains the backend's focus, input, mouse and callback machinery while
+    fitting its message and wrapping buttons to the current terminal size.
+    The embedded Modal is available for explicit backend interoperability.
 
 func NewModal() *Modal
-    NewModal forwards to the pinned backend without changing behavior.
+
+func (m *Modal) AddButtons(labels []string) *Modal
+
+func (m *Modal) ClearButtons() *Modal
+
+func (m *Modal) Draw(screen tcell.Screen)
+    Draw prioritizes reachable buttons over message text at small heights.
+    Form scrolling keeps the focused button visible when even wrapped rows
+    cannot fit.
+
+func (m *Modal) SetBackgroundColor(color tcell.Color) *Modal
+
+func (m *Modal) SetButtonActivatedStyle(style tcell.Style) *Modal
+
+func (m *Modal) SetButtonBackgroundColor(color tcell.Color) *Modal
+
+func (m *Modal) SetButtonStyle(style tcell.Style) *Modal
+
+func (m *Modal) SetButtonTextColor(color tcell.Color) *Modal
+
+func (m *Modal) SetDoneFunc(done func(int, string)) *Modal
+
+func (m *Modal) SetFocus(index int) *Modal
+
+func (m *Modal) SetText(text string) *Modal
+
+func (m *Modal) SetTextColor(color tcell.Color) *Modal
 ```
 
 ## MouseAction
@@ -2732,6 +2851,8 @@ func (v *PanelView) PasteHandler() func(string, func(tview.Primitive))
 func (v *PanelView) SetBorder(show bool) *PanelView
 
 func (v *PanelView) SetPalette(palette Palette) error
+
+func (v *PanelView) SetRect(x, y, w, h int)
 
 func (v *PanelView) StyleChildren() []tview.Primitive
 ```
@@ -3288,7 +3409,7 @@ func (s Styler) Input(field *tview.InputField)
 
 func (s Styler) List(list *tview.List)
 
-func (s Styler) Modal(modal *tview.Modal)
+func (s Styler) Modal(primitive tview.Primitive)
 
 func (s Styler) RefreshBorders(roots ...tview.Primitive)
     RefreshBorders uses each widget's current focus and actual background. Call
@@ -3631,11 +3752,18 @@ type TabState struct {
 type TabView struct {
 	*tview.Box
 
-	OnEvent func(TabEvent)
+	OnEvent     func(TabEvent)
+	Drag        *DragState
+	DragOptions DragOptions
+	CanDrop     func(DropRequest) bool
+	OnDrop      func(DropRequest)
+	ASCII       bool
 	// Has unexported fields.
 }
 
 func NewTabView(tabs *Tabs, state *TabState, palette Palette) (*TabView, error)
+
+func (v *TabView) Blur()
 
 func (v *TabView) Draw(screen tcell.Screen)
 
@@ -3644,6 +3772,8 @@ func (v *TabView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
 func (v *TabView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
 
 func (v *TabView) SetPalette(palette Palette) error
+
+func (v *TabView) SetRect(x, y, w, h int)
 
 func (v *TabView) SetTabs(tabs *Tabs) error
 ```
@@ -3717,15 +3847,34 @@ type Tabs struct {
 
 func NewTabs(items []TabItem) (*Tabs, error)
 
+func (t *Tabs) ApplyDrop(r DropRequest) (*Tabs, error)
+    ApplyDrop returns a new model after host approval. The original stays
+    intact.
+
 func (t *Tabs) Click(s *TabState, column, width int) TabEvent
     Click requests closing only on the x marker; removal/unsaved confirmation is
     a host decision. Overflow arrows move focus without changing the active tab.
 
+func (t *Tabs) Drag(s *TabState, d *DragState, p DragPointer, o DragOptions, allow func(DropRequest) bool) *DropRequest
+    Drag accepts down/move/up/cancel in inner-viewport cell coordinates.
+    Capture all move/up events after down, including outside coordinates.
+    Up rechecks policy.
+
+func (t *Tabs) DragLayout(s *TabState, d *DragState, width int) TabLayout
+    DragLayout uses an independent preview viewport, retaining actual
+    focus/scroll.
+
 func (t *Tabs) Handle(s *TabState, action TabAction) TabEvent
+
+func (t *Tabs) Items() []TabItem
+
+func (t *Tabs) KeyboardDrop(s *TabState, move DragMove, o DragOptions, allow func(DropRequest) bool) (DropRequest, error)
 
 func (t *Tabs) Layout(s *TabState, width int) TabLayout
 
 func (t *Tabs) Reconcile(s *TabState)
+
+func (t *Tabs) RequestDrop(source, target string, pos DropPosition, o DragOptions, allow func(DropRequest) bool) (DropRequest, error)
 ```
 
 ## Terminfo
@@ -4005,14 +4154,27 @@ type Tree struct {
 
 func NewTree(nodes []TreeNode) (*Tree, error)
 
+func (t *Tree) ApplyDrop(r DropRequest) (*Tree, error)
+
 func (t *Tree) Click(s *TreeState, column, row, height int) TreeEvent
     Click coordinates are relative to the inner tree viewport.
 
+func (t *Tree) Drag(s *TreeState, d *DragState, p DragPointer, o DragOptions, allow func(DropRequest) bool) *DropRequest
+
+func (t *Tree) DragRows(s *TreeState, d *DragState, height int) ([]TreeRow, int)
+    DragRows exposes temporary scroll/expansion without modifying TreeState.
+
 func (t *Tree) Handle(s *TreeState, action TreeAction, height int) TreeEvent
+
+func (t *Tree) KeyboardDrop(s *TreeState, move DragMove, o DragOptions, allow func(DropRequest) bool) (DropRequest, error)
+
+func (t *Tree) Nodes() []TreeNode
 
 func (t *Tree) Reconcile(s *TreeState, height int) []TreeRow
     Reconcile retains stable IDs after data changes; a hidden selection moves to
     its nearest visible ancestor. Removed selections fall back to the first row.
+
+func (t *Tree) RequestDrop(source, target string, pos DropPosition, o DragOptions, allow func(DropRequest) bool) (DropRequest, error)
 
 func (t *Tree) Visible(s *TreeState) []TreeRow
 ```
@@ -4084,14 +4246,20 @@ type TreeState struct {
 type TreeView struct {
 	*tview.Box
 
-	ASCII   bool
-	OnEvent func(TreeEvent)
+	ASCII       bool
+	OnEvent     func(TreeEvent)
+	Drag        *DragState
+	DragOptions DragOptions
+	CanDrop     func(DropRequest) bool
+	OnDrop      func(DropRequest)
 	// Has unexported fields.
 }
     TreeView adapts the shared model to tview, preserving the host's TreeState.
     SetPalette changes styles only. It does not replace input/focus callbacks.
 
 func NewTreeView(tree *Tree, state *TreeState, palette Palette) (*TreeView, error)
+
+func (v *TreeView) Blur()
 
 func (v *TreeView) Draw(screen tcell.Screen)
 
@@ -4100,6 +4268,8 @@ func (v *TreeView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
 func (v *TreeView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
 
 func (v *TreeView) SetPalette(palette Palette) error
+
+func (v *TreeView) SetRect(x, y, w, h int)
 
 func (v *TreeView) SetTree(tree *Tree) error
 ```

@@ -96,3 +96,5 @@ python3 tools/check_rust_module.py --ratatui
 이미지는 실제 Rust 예제를 Ratatui TestBackend 120×28에 그린 참조 SVG이며 원격 단말 캡처가 아닙니다. `cargo run --manifest-path rust/Cargo.toml --features playground --example tree -- --lang ko --colors truecolor --snapshot docs/images/tree-dark.svg`로 재생성합니다. Go 화면 캡처로 해석하지 않습니다.
 
 공통 원본 `design/tree-navigation.json`은 키보드·미로딩 펼침·가로 스크롤·클릭을 포함한 동일 탐색 시퀀스의 기대 상태·이벤트입니다. `tools/export_tree_cases.py`로 각 모듈의 테스트 사본을 생성하고 `--check`로 일치 여부를 검사합니다. 양쪽 테스트는 같은 기대 결과를 검증하며 12팔레트·포커스 분리·리터럴 텍스트·셀 폭·데이터 교체도 확인합니다. 외부 프로젝트 import·한영 PTY 시작/종료/복원도 검사합니다. 실제 원격 단말, 원격 CI, LazyOra/LazyBeaver 적용은 미검증입니다. TVR-7 변경은 v0.1.0에 포함합니다.
+
+0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.

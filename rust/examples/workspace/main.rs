@@ -24,10 +24,16 @@ use tuivory::ui::{
 use tuivory::{
     ColorProfile, Theme,
     components::*,
+    drag::{DragAction, DragMove, DragOptions, DragPointer, DragState, DropPosition, DropRequest},
     tree::{Tree, TreeAction, TreeNode, TreeState},
     ui::components::{LineWidget, SplitRects, Styles, TabsWidget, TreeWidget, split_rects},
 };
 struct App {
+    drag_enabled: bool,
+    tab_drag: DragState,
+    tree_drag: DragState,
+    tab_area: Rect,
+    drag_press: Option<(bool, u16, u16)>,
     en: bool,
     ascii: bool,
     theme: Theme,
@@ -55,6 +61,156 @@ struct App {
     content_scroll: u16,
 }
 impl App {
+    fn drop_options() -> DragOptions {
+        DragOptions {
+            auto_scroll: true,
+            hover_expand: true,
+            locked: vec!["root".into()],
+            ..DragOptions::default()
+        }
+    }
+    fn apply_drop(&mut self, tabs: bool, r: DropRequest) {
+        let result = if tabs {
+            self.tabs.apply_drop(&r).map(|next| {
+                self.items = next.items().to_vec();
+                self.tabs = next;
+                self.tabs.reconcile(&mut self.tab);
+            })
+        } else {
+            self.tree.apply_drop(&r).map(|next| {
+                self.tree = next;
+                if r.position == DropPosition::Inside {
+                    self.tree_state.expanded.insert(r.target_id.clone());
+                }
+                self.tree
+                    .reconcile(&mut self.tree_state, usize::from(self.tree_inner.height));
+            })
+        };
+        self.message = if let Err(error) = result {
+            format!("reject: {error}")
+        } else {
+            format!(
+                "drop {}: {} {} {}",
+                if tabs { "tabs" } else { "tree" },
+                r.source_id,
+                match r.position {
+                    DropPosition::Before => "before",
+                    DropPosition::After => "after",
+                    DropPosition::Inside => "inside",
+                },
+                r.target_id
+            )
+        };
+    }
+    fn cancel_drop(&mut self) {
+        self.tab_drag.cancel();
+        self.tree_drag.cancel();
+        self.drag_press = None;
+    }
+    fn drag_mouse(&mut self, mouse: tuivory::ui::terminal::event::MouseEvent) -> bool {
+        if !self.drag_enabled {
+            return false;
+        }
+        let action = match mouse.kind {
+            MouseEventKind::Down(MouseButton::Left) => DragAction::Down,
+            MouseEventKind::Drag(MouseButton::Left) | MouseEventKind::Moved => DragAction::Move,
+            MouseEventKind::Up(MouseButton::Left) => DragAction::Up,
+            _ => {
+                if self.tab_drag.captured() || self.tree_drag.captured() {
+                    self.cancel_drop()
+                }
+                return false;
+            }
+        };
+        let point = (mouse.column, mouse.row).into();
+        let tabs = if self.tab_drag.captured() {
+            true
+        } else if self.tree_drag.captured() {
+            false
+        } else if action == DragAction::Down && self.tab_area.contains(point) {
+            true
+        } else if action == DragAction::Down && self.tree_inner.contains(point) {
+            false
+        } else if action == DragAction::Up {
+            if let Some((tabs, _, _)) = self.drag_press {
+                tabs
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        };
+        if action == DragAction::Down {
+            self.drag_press = Some((tabs, mouse.column, mouse.row));
+        }
+        let area = if tabs { self.tab_area } else { self.tree_inner };
+        let p = DragPointer {
+            action,
+            x: i32::from(mouse.column) - i32::from(area.x),
+            y: i32::from(mouse.row) - i32::from(area.y),
+            width: usize::from(area.width),
+            height: usize::from(area.height),
+        };
+        let request = if tabs {
+            self.tabs.drag(
+                &mut self.tab,
+                &mut self.tab_drag,
+                p,
+                &Self::drop_options(),
+                None,
+            )
+        } else {
+            self.tree.drag(
+                &mut self.tree_state,
+                &mut self.tree_drag,
+                p,
+                &Self::drop_options(),
+                None,
+            )
+        };
+        if let Some(r) = request {
+            self.apply_drop(tabs, r)
+        } else if action == DragAction::Up {
+            let result = if tabs {
+                &self.tab_drag.result
+            } else {
+                &self.tree_drag.result
+            };
+            let click = self
+                .drag_press
+                .is_some_and(|(_, x, y)| x.abs_diff(mouse.column) < 2 && y.abs_diff(mouse.row) < 2)
+                && !matches!(result.as_str(), "stale" | "reject" | "drop")
+                && area.contains(point);
+            if click {
+                if tabs {
+                    let e = self.tabs.click(
+                        &mut self.tab,
+                        usize::from(mouse.column - area.x),
+                        usize::from(area.width),
+                    );
+                    if e.is_some() {
+                        self.focus = 0;
+                    }
+                    self.tab_event(e)
+                } else {
+                    self.focus = 1;
+                    self.active_second = false;
+                    if let Some(e) = self.tree.click(
+                        &mut self.tree_state,
+                        usize::from(mouse.column - area.x),
+                        usize::from(mouse.row - area.y),
+                        usize::from(area.height),
+                    ) {
+                        self.message = format!("{e:?}")
+                    }
+                }
+            }
+        }
+        if action == DragAction::Up {
+            self.drag_press = None;
+        }
+        true
+    }
     fn text<'a>(&self, ko: &'a str, en: &'a str) -> &'a str {
         if self.en { en } else { ko }
     }
@@ -157,6 +313,10 @@ impl App {
         );
         let mut tabs = TabsWidget::new(&self.tabs, &self.styles).unwrap();
         tabs.focused = self.focus == 0;
+        self.tab_area = layout[2];
+        if self.drag_enabled {
+            tabs = tabs.with_drag(&mut self.tab_drag, self.ascii);
+        }
         frame.render_stateful_widget(tabs, layout[2], &mut self.tab);
         self.body = layout[3];
         self.rects = split_rects(
@@ -183,6 +343,9 @@ impl App {
             let mut tree = TreeWidget::new(&self.tree, &self.styles).unwrap();
             tree.focused = self.focus == 1;
             tree.ascii = self.ascii;
+            if self.drag_enabled {
+                tree = tree.with_drag(&mut self.tree_drag);
+            }
             frame.render_stateful_widget(tree, self.tree_inner, &mut self.tree_state);
         }
         if self.rects.second.width > 0 && self.rects.second.height > 0 {
@@ -258,6 +421,19 @@ impl App {
             "Ctrl+Q"
         };
         frame.render_widget(Paragraph::new(self.text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · Ctrl+Q 종료","Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · Ctrl+Q quit").replace("Ctrl+Q",quit_label)).style(self.styles.role("hint").unwrap()),layout[5]);
+        if self.drag_enabled {
+            frame.render_widget(
+                Paragraph::new(
+                    self.text(
+                        "드래그 이동 · Alt+Shift+방향키 이동 요청 · Esc 취소 · Ctrl+Q 종료",
+                        "Drag to move / Alt+Shift+arrows request move / Esc cancel / Ctrl+Q quit",
+                    )
+                    .replace("Ctrl+Q", quit_label),
+                )
+                .style(self.styles.role("hint").unwrap()),
+                layout[5],
+            );
+        }
     }
 }
 struct Session;
@@ -282,6 +458,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut focus_order = [0, 1, 2];
     let mut quit_key = 'q';
     let mut snapshot = None;
+    let mut drag_enabled = false;
     let mut args = arguments.into_iter();
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -295,6 +472,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--theme" => theme = args.next().ok_or("missing theme")?.parse()?,
             "--colors" => profile = args.next().ok_or("missing colors")?.parse()?,
             "--ascii" => ascii = true,
+            "--drag" => drag_enabled = true,
             "--layout" => {
                 rows = match args.next().as_deref() {
                     Some("columns") => false,
@@ -328,7 +506,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--snapshot" => snapshot = Some(args.next().ok_or("missing file")?),
             "--help" => {
                 println!(
-                    "TUIVORY Workspace: --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --snapshot FILE.svg"
+                    "TUIVORY Workspace: --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --drag --layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --snapshot FILE.svg"
                 );
                 return Ok(());
             }
@@ -444,6 +622,11 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
         },
     ];
     let mut app = App {
+        drag_enabled,
+        tab_drag: DragState::default(),
+        tree_drag: DragState::default(),
+        tab_area: Rect::default(),
+        drag_press: None,
         en,
         ascii,
         theme,
@@ -508,6 +691,48 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                 {
                     break;
                 }
+                if app.drag_enabled {
+                    if key.code == KeyCode::Esc {
+                        app.cancel_drop();
+                        continue;
+                    }
+                    if key
+                        .modifiers
+                        .contains(KeyModifiers::ALT | KeyModifiers::SHIFT)
+                    {
+                        let movement = match (app.focus, key.code) {
+                            (0, KeyCode::Left) | (1, KeyCode::Up) => Some(DragMove::Previous),
+                            (0, KeyCode::Right) | (1, KeyCode::Down) => Some(DragMove::Next),
+                            (1, KeyCode::Right) => Some(DragMove::Inside),
+                            (1, KeyCode::Left) => Some(DragMove::Outside),
+                            _ => None,
+                        };
+                        if let Some(movement) = movement {
+                            let result = if app.focus == 0 {
+                                app.tabs.keyboard_drop(
+                                    &app.tab,
+                                    movement,
+                                    &App::drop_options(),
+                                    None,
+                                )
+                            } else {
+                                app.tree.keyboard_drop(
+                                    &app.tree_state,
+                                    movement,
+                                    &App::drop_options(),
+                                    None,
+                                )
+                            };
+                            app.cancel_drop();
+                            match result {
+                                Ok(r) => app.apply_drop(app.focus == 0, r),
+                                Err(e) => app.message = format!("reject: {e}"),
+                            };
+                            continue;
+                        }
+                    }
+                    app.cancel_drop();
+                }
                 if key.modifiers.contains(KeyModifiers::CONTROL) {
                     let delta = match (key.code, app.rows) {
                         (KeyCode::Left, false) | (KeyCode::Up, true) => -1,
@@ -538,6 +763,9 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             }
             }
             Event::Mouse(mouse) => {
+                if app.drag_mouse(mouse) {
+                    continue;
+                }
                 let position = (mouse.column, mouse.row).into();
                 if app.dragging {
                     let offset = if app.rows {
@@ -603,6 +831,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                     app.active_second = true;
                 }
             }
+            Event::Resize(_, _) => app.cancel_drop(),
             _ => (),
         }
     }

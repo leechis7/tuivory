@@ -9679,5 +9679,5 @@
     "github.com/leechis7/tuivory/go/ui.Unescape": "github.com/leechis7/tuivory/go.Unescape",
     "github.com/leechis7/tuivory/go/ui.WordWrap": "github.com/leechis7/tuivory/go.WordWrap"
   },
-  "scope": "Pinned SDK compatibility; aliases retain backend identity. Global setters are explicit; no consumer-local shim."
+  "scope": "Pinned SDK compatibility; aliases retain backend identity except the responsive Modal adapter, which embeds its backend. Global setters are explicit; no consumer-local shim."
 }

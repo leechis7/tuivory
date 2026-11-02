@@ -1,0 +1,270 @@
+{
+  "tabs": [
+    {
+      "id": "a",
+      "title": "한글 A",
+      "edited": true
+    },
+    {
+      "id": "b",
+      "title": "B",
+      "closable": true
+    },
+    {
+      "id": "c",
+      "title": "C"
+    },
+    {
+      "id": "x",
+      "title": "Locked",
+      "disabled": true
+    }
+  ],
+  "tree": [
+    {
+      "id": "root",
+      "name": "프로젝트"
+    },
+    {
+      "id": "a",
+      "parent": "root",
+      "name": "한글 A"
+    },
+    {
+      "id": "a1",
+      "parent": "a",
+      "name": "界 😀"
+    },
+    {
+      "id": "b",
+      "parent": "root",
+      "name": "B"
+    },
+    {
+      "id": "c",
+      "parent": "root",
+      "name": "C"
+    },
+    {
+      "id": "c1",
+      "parent": "c",
+      "name": "C1"
+    }
+  ],
+  "cases": [
+    {
+      "kind": "tabs",
+      "source": "a",
+      "target": "c",
+      "position": "after",
+      "order": [
+        "b",
+        "c",
+        "a",
+        "x"
+      ]
+    },
+    {
+      "kind": "tabs",
+      "source": "c",
+      "target": "a",
+      "position": "before",
+      "order": [
+        "c",
+        "a",
+        "b",
+        "x"
+      ]
+    },
+    {
+      "kind": "tabs",
+      "source": "a",
+      "target": "b",
+      "position": "before",
+      "error": "unchanged"
+    },
+    {
+      "kind": "tabs",
+      "source": "a",
+      "target": "a",
+      "position": "after",
+      "error": "self"
+    },
+    {
+      "kind": "tabs",
+      "source": "a",
+      "target": "b",
+      "position": "inside",
+      "error": "position"
+    },
+    {
+      "kind": "tabs",
+      "source": "x",
+      "target": "a",
+      "position": "after",
+      "error": "disabled"
+    },
+    {
+      "kind": "tabs",
+      "source": "a",
+      "target": "x",
+      "position": "after",
+      "error": "disabled"
+    },
+    {
+      "kind": "tabs",
+      "source": "a",
+      "target": "missing",
+      "position": "after",
+      "error": "missing"
+    },
+    {
+      "kind": "tabs",
+      "source": "a",
+      "target": "c",
+      "position": "after",
+      "locked": [
+        "a"
+      ],
+      "error": "locked"
+    },
+    {
+      "kind": "tabs",
+      "source": "a",
+      "target": "c",
+      "position": "after",
+      "deny": true,
+      "error": "policy"
+    },
+    {
+      "kind": "tree",
+      "source": "a",
+      "target": "c",
+      "position": "inside",
+      "order": [
+        "root",
+        "b",
+        "c",
+        "c1",
+        "a",
+        "a1"
+      ],
+      "parent": "c"
+    },
+    {
+      "kind": "tree",
+      "source": "b",
+      "target": "a",
+      "position": "before",
+      "order": [
+        "root",
+        "b",
+        "a",
+        "a1",
+        "c",
+        "c1"
+      ],
+      "parent": "root"
+    },
+    {
+      "kind": "tree",
+      "source": "a",
+      "target": "c",
+      "position": "after",
+      "order": [
+        "root",
+        "b",
+        "c",
+        "c1",
+        "a",
+        "a1"
+      ],
+      "parent": "root"
+    },
+    {
+      "kind": "tree",
+      "source": "root",
+      "target": "a",
+      "position": "inside",
+      "error": "cycle"
+    },
+    {
+      "kind": "tree",
+      "source": "a",
+      "target": "a1",
+      "position": "after",
+      "error": "cycle"
+    },
+    {
+      "kind": "tree",
+      "source": "a",
+      "target": "a",
+      "position": "inside",
+      "error": "self"
+    },
+    {
+      "kind": "tree",
+      "source": "b",
+      "target": "c",
+      "position": "inside",
+      "order": [
+        "root",
+        "a",
+        "a1",
+        "c",
+        "c1",
+        "b"
+      ],
+      "parent": "c"
+    },
+    {
+      "kind": "tree",
+      "source": "a",
+      "target": "b",
+      "position": "inside",
+      "error": "leaf"
+    },
+    {
+      "kind": "tree",
+      "source": "a",
+      "target": "b",
+      "position": "before",
+      "error": "unchanged"
+    },
+    {
+      "kind": "tree",
+      "source": "a1",
+      "target": "c",
+      "position": "after",
+      "order": [
+        "root",
+        "a",
+        "b",
+        "c",
+        "c1",
+        "a1"
+      ],
+      "parent": "root"
+    },
+    {
+      "kind": "tree",
+      "source": "b",
+      "target": "c",
+      "position": "inside",
+      "locked": [
+        "c"
+      ],
+      "error": "locked"
+    },
+    {
+      "kind": "tree",
+      "source": "b",
+      "target": "c",
+      "position": "inside",
+      "deny": true,
+      "error": "policy"
+    }
+  ],
+  "tab_revision": 9273858508496476077,
+  "tree_revision": 14013327930500906367
+}

@@ -3,6 +3,7 @@ package controls
 
 import (
 	"flag"
+	"fmt"
 	ui "github.com/leechis7/tuivory/go"
 
 	"log"
@@ -15,6 +16,7 @@ func Run(args []string) {
 	profile := flags.String("colors", "256", "profile")
 	ascii := flags.Bool("ascii", false, "ASCII ornaments")
 	opened := flags.Bool("open", false, "open modal")
+	modalDemo := flags.Bool("modal", false, "responsive confirmation with long buttons (Go)")
 	_ = flags.Parse(args)
 	if *lang != "ko" && *lang != "en" {
 		log.Fatal("invalid language")
@@ -42,6 +44,56 @@ func Run(args []string) {
 	}
 	p := palette()
 	app := ui.NewApplication()
+	if *modalDemo {
+		m := ui.NewModal().SetText(tr("변경 사항을 처리할 방법을 선택하세요. 창을 40열로 줄여도 취소 버튼과 선택 상태를 유지합니다.", "Choose how to handle pending changes. Resize to 40 columns; Cancel remains visible and focused.")).AddButtons([]string{tr("변경 저장 후 계속", "Save changes and continue"), tr("변경 취소 후 계속", "Discard changes and continue"), tr("취소", "Cancel")}).SetFocus(2)
+		refresh := func() {
+			styles, err := ui.NewStyles(*theme, *profile)
+			if err != nil {
+				log.Fatal(err)
+			}
+			ui.Styler{Styles: styles}.Modal(m)
+		}
+		m.SetDoneFunc(func(index int, label string) {
+			if index < 0 {
+				app.Stop()
+				return
+			}
+			m.SetText(fmt.Sprintf("%s: %d / %s", tr("앱에 전달한 요청", "Request delivered to host"), index, label))
+		})
+		app.SetInputCapture(func(e *ui.EventKey) *ui.EventKey {
+			switch e.Key() {
+			case ui.KeyCtrlQ:
+				app.Stop()
+				return nil
+			case ui.KeyF2:
+				if *theme == "dark" {
+					*theme = "light"
+				} else if *theme == "light" {
+					*theme = "blackwhite"
+				} else {
+					*theme = "dark"
+				}
+				refresh()
+				return nil
+			case ui.KeyF3:
+				values := []string{"8", "16", "256", "truecolor"}
+				for i, v := range values {
+					if v == *profile {
+						*profile = values[(i+1)%4]
+						break
+					}
+				}
+				refresh()
+				return nil
+			}
+			return e
+		})
+		refresh()
+		if err := app.SetRoot(m, true).SetFocus(m).EnableMouse(true).Run(); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	status := tr("명령은 요청만 전달합니다.", "Actions emit requests only.")
 	form, e := ui.NewForm([]ui.FormField{{ID: "name", Kind: "text", Label: tr("이름", "Name"), Value: tr("예제 사용자", "Example user")}, {ID: "password", Kind: "password", Label: tr("암호", "Password"), Value: "example-secret"}, {ID: "check", Kind: "checkbox", Label: tr("선택 상태 보존", "Preserve selection"), Checked: true}, {ID: "save", Kind: "button", Label: tr("저장 요청", "Request save")}})
 	if e != nil {

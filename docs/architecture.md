@@ -21,7 +21,7 @@ tuivory/
 
 0.9.1 TVR-28 변경으로 루트 `evidence/`는 `docs/evidence/`로 옮기고 `examples/` 안내는 [통합 예제 안내](examples.md)에 합쳤습니다. 언어별 소스·공개 import 경로는 유지합니다. `bin/`에는 실행파일만 두며 임시 산출물은 `.cache/`로 분리합니다. Rust 기본 빌드 경로는 `.cache/rust/`이고 `CARGO_TARGET_DIR`로 덮어쓸 수 있습니다. `.cargo/config.toml`은 저장소 개발 빌드의 출력 위치만 지정하며 배포 crate의 필수 설정이 아닙니다. 예전 worktree는 Git 등록·브랜치·커밋을 유지한 채 `.cache/worktrees/`로 옮겼습니다.
 
-[로컬 정리 검증](evidence/layout-results.json): 호스트 정적 빌드·소스 실행 진입점·API 명세·도구 테스트·문서 링크·터미널 조작을 확인했습니다. 구현 당시 게시 전 기록이며 최종 배포 검증은 [0.9.2 릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.9.2)의 manifest에 기록합니다.
+[로컬 정리 검증](evidence/layout-results.json): 호스트 정적 빌드·소스 실행 진입점·API 명세·도구 테스트·문서 링크·터미널 조작을 확인했습니다. 구현 당시 게시 전 기록이며 최종 배포 검증은 [0.10.0 릴리스](https://github.com/leechis7/tuivory/releases/tag/go/v0.10.0)의 manifest에 기록합니다.
 
 Go·Rust는 공통 컴포넌트 모델·토큰·스타일과 tview/Ratatui 렌더러를 제공합니다. Rust 코어는 1.85 이상, Ratatui 어댑터·대화형 예제는 1.88 이상입니다. 공통 모델은 내부 상태·선택·스크롤·요청을 계산하고, 앱은 단말·이벤트 루프·화면 조합·전역 포커스·업무 동작을 연결합니다. [책임 범위](component-boundary.md). 다른 언어는 현재 토큰 읽기·참조 예제이며 UI 패키지 미구현 범위를 각 README에 명시합니다. 다른 언어에서 Go를 호출하도록 강제하지 않습니다.
 

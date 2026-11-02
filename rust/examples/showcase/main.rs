@@ -113,7 +113,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
         match demo.as_str() {
             "workspace" => println!(
-                "--layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x"
+                "--layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --drag"
             ),
             "catalog" => println!(
                 "--mode forms|collections|grid|feedback|layout --grid-preset simple|data --grid-sample --density auto|compact|comfortable"

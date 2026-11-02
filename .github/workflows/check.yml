@@ -100,6 +100,7 @@ jobs:
           for lang in ko en; do
             python3 tools/smoke_controls.py bin/go/tuivory-linux-x86_64 --demo controls --lang "$lang"
             python3 tools/smoke_controls.py bin/go/tuivory-linux-x86_64 --demo controls --lang "$lang" --ascii
+            python3 tools/smoke_modal.py bin/go/tuivory-linux-x86_64 --lang "$lang"
           done
       - name: Check optional SQL highlighting through the single Go import
         run: |

@@ -36,3 +36,5 @@ Update documentation/examples under the existing TVR-7 epic using the [boundary]
 ## TVR-7 menu improvement
 
 The user’s subsequent instruction implements [shared menus](menus.en.md) under the existing epic, following the earlier candidate record; no new issue number was created. The library owns hierarchy/back/bar/presentation/internal interaction; hosts own taxonomy/global keys/command execution. Menus were committed as 27e6019 and integrated into dev in PR #16; included in 0.3.0.
+
+0.10.0 TVR-7/18: [responsive Go Modal](modals.en.md) fixes narrow confirmation buttons; [Go/Rust drag and drop](drag-drop.en.md) adds request-only tab/tree moves. Bilingual API/examples/screens and local physical/PTY/consumer checks accompany the implementation. Included in 0.10.0; half-row shadows are dropped.

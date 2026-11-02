@@ -243,11 +243,32 @@ func (t *Tree) Click(s *TreeState, column, row, height int) TreeEvent {
 // SetPalette changes styles only. It does not replace input/focus callbacks.
 type TreeView struct {
 	*tview.Box
-	tree    *Tree
-	state   *TreeState
-	palette Palette
-	ASCII   bool
-	OnEvent func(TreeEvent)
+	tree              *Tree
+	state             *TreeState
+	palette           Palette
+	ASCII             bool
+	OnEvent           func(TreeEvent)
+	Drag              *DragState
+	DragOptions       DragOptions
+	CanDrop           func(DropRequest) bool
+	OnDrop            func(DropRequest)
+	suppressDragClick bool
+}
+
+func (v *TreeView) Blur() {
+	if v.Drag.Captured() {
+		v.suppressDragClick = true
+	}
+	v.Drag.Cancel()
+	v.Box.Blur()
+}
+func (v *TreeView) SetRect(x, y, w, h int) {
+	ox, oy, ow, oh := v.GetRect()
+	if v.Drag.Captured() && (x != ox || y != oy || w != ow || h != oh) {
+		v.Drag.Cancel()
+		v.suppressDragClick = true
+	}
+	v.Box.SetRect(x, y, w, h)
 }
 
 func NewTreeView(tree *Tree, state *TreeState, palette Palette) (*TreeView, error) {
@@ -267,6 +288,10 @@ func (v *TreeView) SetTree(tree *Tree) error {
 		return fmt.Errorf("tree: model is required")
 	}
 	v.tree = tree
+	if v.Drag.Captured() {
+		v.suppressDragClick = true
+	}
+	v.Drag.Cancel()
 	_, _, _, h := v.GetInnerRect()
 	tree.Reconcile(v.state, h)
 	return nil
@@ -281,6 +306,10 @@ func (v *TreeView) SetPalette(palette Palette) error {
 	for role, pair := range palette {
 		v.palette[role] = pair
 	}
+	if v.Drag.Captured() {
+		v.suppressDragClick = true
+	}
+	v.Drag.Cancel()
 	return nil
 }
 
@@ -310,6 +339,7 @@ func drawTreeText(screen tcell.Screen, x, y, width, offset int, text string, st 
 }
 
 func (v *TreeView) Draw(screen tcell.Screen) {
+	screen = WideSafeScreen(screen)
 	surface := v.palette["surface"].Style()
 	v.SetBackgroundColor(v.palette["surface"].BG).SetTitleColor(v.palette["body"].FG)
 	border := v.palette["hint"].Style()
@@ -319,10 +349,24 @@ func (v *TreeView) Draw(screen tcell.Screen) {
 	v.SetBorderStyle(border)
 	v.Box.DrawForSubclass(screen, v)
 	x, y, w, h := v.GetInnerRect()
-	rows := v.tree.Reconcile(v.state, h)
+	if v.Drag != nil {
+		captured := v.Drag.Captured()
+		v.Drag.RenderKey(dragRenderKey(v.palette, x, y, w, h, v.ASCII))
+		if captured && !v.Drag.Captured() {
+			v.suppressDragClick = true
+		}
+	}
+	var rows []TreeRow
+	scroll := v.state.Scroll
+	if v.Drag.Captured() {
+		rows, scroll = v.tree.DragRows(v.state, v.Drag, h)
+	} else {
+		rows = v.tree.Reconcile(v.state, h)
+		scroll = v.state.Scroll
+	}
 	for line := 0; line < h; line++ {
 		st := surface
-		index := v.state.Scroll + line
+		index := scroll + line
 		selected := index < len(rows) && rows[index].Node.ID == v.state.Selected
 		if selected {
 			st = v.palette["selection"].Style()
@@ -377,6 +421,12 @@ func (v *TreeView) Draw(screen tcell.Screen) {
 			secondary = st
 		}
 		drawTreeText(screen, x+2, y+line, max(0, w-2), v.state.Horizontal-column, "  "+n.Secondary, secondary)
+		if v.Drag != nil && v.Drag.Phase == "dragging" && v.Drag.TargetID == n.ID && w > 0 {
+			drawTreeText(screen, x, y+line, 1, 0, dragMarker(v.Drag, v.ASCII, true), dragFeedbackStyle(v.palette, v.Drag))
+		}
+	}
+	if v.Drag != nil && v.Drag.Phase == "dragging" && v.Drag.TargetID == "" && w > 0 && h > 0 {
+		drawTreeText(screen, x, y, 1, 0, "!", dragFeedbackStyle(v.palette, v.Drag))
 	}
 }
 
@@ -389,6 +439,37 @@ func (v *TreeView) dispatch(action TreeAction) {
 }
 func (v *TreeView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
 	return v.WrapInputHandler(func(e *tcell.EventKey, _ func(tview.Primitive)) {
+		if v.Drag != nil {
+			if e.Key() == tcell.KeyEscape && v.Drag.Captured() {
+				v.Drag.Cancel()
+				v.suppressDragClick = true
+				return
+			}
+			if e.Modifiers()&(tcell.ModAlt|tcell.ModShift) == tcell.ModAlt|tcell.ModShift {
+				move := DragMove("")
+				switch e.Key() {
+				case tcell.KeyUp:
+					move = DragPrevious
+				case tcell.KeyDown:
+					move = DragNext
+				case tcell.KeyRight:
+					move = DragInside
+				case tcell.KeyLeft:
+					move = DragOutside
+				}
+				if move != "" {
+					v.Drag.Cancel()
+					r, err := v.tree.KeyboardDrop(v.state, move, v.DragOptions, v.CanDrop)
+					if err == nil && v.OnDrop != nil {
+						v.OnDrop(r)
+					}
+					return
+				}
+			}
+			if v.Drag.Captured() {
+				v.Drag.Cancel()
+			}
+		}
 		if e.Modifiers()&tcell.ModAlt != 0 {
 			if e.Key() == tcell.KeyLeft {
 				v.dispatch(TreePanLeft)
@@ -410,6 +491,39 @@ func (v *TreeView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, fun
 	return v.WrapMouseHandler(func(action tview.MouseAction, e *tcell.EventMouse, setFocus func(tview.Primitive)) (bool, tview.Primitive) {
 		x, y := e.Position()
 		left, top, w, h := v.GetInnerRect()
+		if v.Drag != nil {
+			if action == tview.MouseLeftClick && v.suppressDragClick {
+				v.suppressDragClick = false
+				return true, nil
+			}
+			kind := ""
+			switch action {
+			case tview.MouseLeftDown:
+				kind = "down"
+				v.suppressDragClick = false
+			case tview.MouseMove:
+				kind = "move"
+			case tview.MouseLeftUp:
+				kind = "up"
+			}
+			if kind != "" && (kind == "down" || v.Drag.Captured()) {
+				captured := v.Drag.Captured()
+				active := v.Drag.Phase == "dragging"
+				r := v.tree.Drag(v.state, v.Drag, DragPointer{kind, x - left, y - top, w, h}, v.DragOptions, v.CanDrop)
+				if kind == "up" {
+					v.suppressDragClick = active || v.Drag.Result != ""
+				}
+				if r != nil && v.OnDrop != nil {
+					v.OnDrop(*r)
+				}
+				if v.Drag.Captured() {
+					return true, v
+				}
+				if captured {
+					return true, nil
+				}
+			}
+		}
 		if x < left || x >= left+w || y < top || y >= top+h {
 			return false, nil
 		}

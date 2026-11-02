@@ -11,6 +11,8 @@ pub struct TabsWidget<'a> {
     tabs: &'a Tabs,
     styles: &'a Styles,
     pub focused: bool,
+    drag: Option<&'a mut crate::drag::DragState>,
+    ascii: bool,
 }
 impl<'a> TabsWidget<'a> {
     pub fn new(tabs: &'a Tabs, styles: &'a Styles) -> Result<Self, crate::Error> {
@@ -21,7 +23,14 @@ impl<'a> TabsWidget<'a> {
             tabs,
             styles,
             focused: false,
+            drag: None,
+            ascii: false,
         })
+    }
+    pub fn with_drag(mut self, drag: &'a mut crate::drag::DragState, ascii: bool) -> Self {
+        self.drag = Some(drag);
+        self.ascii = ascii;
+        self
     }
 }
 fn fill(area: Rect, buf: &mut Buffer, styles: &Styles) {
@@ -34,12 +43,26 @@ fn fill(area: Rect, buf: &mut Buffer, styles: &Styles) {
 }
 impl StatefulWidget for TabsWidget<'_> {
     type State = TabState;
-    fn render(self, area: Rect, buf: &mut Buffer, state: &mut TabState) {
+    fn render(mut self, area: Rect, buf: &mut Buffer, state: &mut TabState) {
         fill(area, buf, self.styles);
+        let layout = if let Some(d) = self.drag.as_deref_mut() {
+            d.render_key(format!(
+                "{area:?}/{:?}/{}",
+                self.styles.palette.styles(),
+                self.ascii
+            ));
+            self.tabs.drag_layout(state, d, usize::from(area.width))
+        } else {
+            self.tabs.layout(state, usize::from(area.width))
+        };
         if area.height == 0 {
             return;
         }
-        let layout = self.tabs.layout(state, usize::from(area.width));
+        let feedback = self
+            .drag
+            .as_ref()
+            .filter(|d| d.phase == "dragging")
+            .map(|d| (d.target_id.clone(), d.position, d.allowed));
         if layout.previous {
             buf.set_stringn(
                 area.x,
@@ -77,6 +100,32 @@ impl StatefulWidget for TabsWidget<'_> {
             let x = area.x + cell.start as u16;
             buf.set_style(Rect::new(x, area.y, cell.width as u16, 1), style);
             buf.set_stringn(x, area.y, &cell.text, cell.width, style);
+            if let Some((target, position, allowed)) = &feedback {
+                if *target == cell.id {
+                    let column = if *position == Some(crate::drag::DropPosition::After) {
+                        x + cell.width.saturating_sub(1) as u16
+                    } else {
+                        x
+                    };
+                    let marker = if !allowed {
+                        "!"
+                    } else if self.ascii {
+                        "|"
+                    } else {
+                        "│"
+                    };
+                    buf.set_stringn(
+                        column,
+                        area.y,
+                        marker,
+                        1,
+                        self.styles.drag_feedback(*allowed),
+                    );
+                }
+            }
+        }
+        if feedback.as_ref().is_some_and(|f| f.0.is_empty()) && area.width > 0 {
+            buf.set_stringn(area.x, area.y, "!", 1, self.styles.drag_feedback(false));
         }
     }
 }

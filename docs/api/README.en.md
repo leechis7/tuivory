@@ -2,13 +2,16 @@
 
 [한국어 (default)](README.md) · **English**
 
+0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](../drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
+
+
 **Includes 0.9.0 TVR-24 APIs:** [optional syntax analysis and new editing APIs](../syntax.en.md) are available since 0.9.0.
 
-**0.9.2:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../ui-facade.en.md).
+**0.10.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../ui-facade.en.md).
 
-This reference follows 0.9.2 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
+This reference follows 0.10.0 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
 
-Reference version: **0.9.2**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
+Reference version: **0.10.0**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
 
 - [Go public declarations](go.en.md)
 - [Rust public declarations](rust.en.md)

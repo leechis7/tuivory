@@ -104,3 +104,5 @@ See [overlay drawing](overlay-drawing.en.md) for Go popup/external-card usage. E
 
 
 0.9.1 TVR-28 layout: use `.cache/validation/` for logs/generated references and `.cache/releases/` for local release archives. [Repository layout](architecture.en.md).
+
+0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
