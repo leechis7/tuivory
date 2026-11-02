@@ -1,28 +1,31 @@
 # Tuivory — TUI component library
 
-**0.9.2:** CJK/emoji table repainting, separator contrast and disabled styles are fixed; Go/Rust examples follow a consistent design. [Changes](CHANGELOG.en.md).
+**0.10.0:** responsive confirmation buttons plus opt-in Go/Rust tab/tree drag and drop with keyboard alternatives. [Changes](CHANGELOG.en.md).
 
 [한국어 (default)](README.md) · **English**
+
+0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](docs/drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
+
 
 **0.9.1 TVR-27:** [Unified example executables](docs/examples.en.md) provide one file per language, built only for the current Linux host architecture. Select examples with `--demo tree`, `--demo menu`, `--demo syntax`, etc.
 
 **0.9.0 TVR-24:** [optional Oracle SQL/PLSQL analysis, common tokens and editor migration](docs/syntax.en.md). Go uses one root import; Rust opts in with syntax-sql.
 
-**0.9.2:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](docs/ui-facade.en.md).
+**0.10.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](docs/ui-facade.en.md).
 
 Reusable TUI components for **Go/tview and Rust/Ratatui**. Hosts compose screens, supply data and execute actions. Python/JavaScript currently provide token-reading examples; reusable UI packages are planned.
 
-**0.9.2** · [Release](docs/release-0.9.2.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
+**0.10.0** · [Release](docs/release-0.10.0.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
 
 ## Install
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.9.2
+go get github.com/leechis7/tuivory/go@v0.10.0
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.9.2", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.10.0", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [Installation details](docs/installation.en.md)

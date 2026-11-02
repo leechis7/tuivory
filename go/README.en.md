@@ -2,22 +2,26 @@
 
 [한국어 (default)](README.md) · **English**
 
+0.10.0 TVR-7: [responsive Go Modal](../docs/modals.en.md) wraps long buttons inside narrow terminals. Modal is an SDK adapter embedding its backend, an exception to raw alias identity. Included in 0.10.0.
+0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](../docs/drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
+
+
 **0.9.1 TVR-27:** [Unified example executables](../docs/examples.en.md) provide one file per language, built only for the current Linux host architecture. Select examples with `--demo tree`, `--demo menu`, `--demo syntax`, etc.
 
 **0.9.0 TVR-24:** [optional Oracle SQL/PLSQL analysis, common tokens and editor migration](../docs/syntax.en.md). Go uses one root import; Rust opts in with syntax-sql.
 
-**0.9.2:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).
+**0.10.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).
 
 [Public API reference](../docs/api/go.en.md)
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
-Product version is **0.9.2** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.9.2`. [Release guide](../docs/release-0.9.2.en.md).
+Product version is **0.10.0** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.10.0`. [Release guide](../docs/release-0.10.0.en.md).
 
 All Go implementation code and module configuration live in this directory. The module path is `github.com/leechis7/tuivory/go`; the package name is `tuivory`. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.9.2
+go get github.com/leechis7/tuivory/go@v0.10.0
 ```
 
 ```go
@@ -28,7 +32,7 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-The current release is `v0.9.2`, tagged `go/v0.9.2` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
+The current release is `v0.10.0`, tagged `go/v0.10.0` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
 
 From the repository root:
 

@@ -2,6 +2,12 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.10.0 — 2026-11-02
+
+- TVR-18: add shared request-only tab/tree drag and drop, threshold/capture, immutable approved reorder/reparent, stable IDs/metadata, cycle/permission/stale rejection, temporary scrolling/expansion, keyboard alternatives and twelve-palette Unicode/ASCII feedback. Update bilingual design/API/guides/examples/screens and physical/PTY/consumer regressions.
+
+- TVR-7: keep confirmation buttons inside narrow terminals, wrapping rows and retaining focused-button visibility, original indices/callbacks, keyboard/mouse and raw-backend interoperability. Update Go root/compatibility Modal, bilingual example/screens/API guidance.
+
 ## 0.9.2 — 2026-11-02
 
 - TVR-7: improve dark/8 SQL highlighting with seven readable foreground/attribute combinations shared by Go/Rust and the Go legacy adapter; add physical rendering regressions and bilingual references.

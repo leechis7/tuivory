@@ -67,3 +67,5 @@ Public Go/Rust [forms](forms.en.md), [lists/menus/search](collections.en.md), [v
 ## TVR-7 shared menus (0.3.0)
 
 [Menu APIs](menus.en.md) add Go/Rust hierarchy, bar/back navigation, separators/disabled/shortcuts, popup placement and original-context requests. This addresses the audited gap after the user’s subsequent instruction without transferring host screen/business ownership. [Validation](evidence/menu.en.md).
+
+0.10.0 TVR-7/18: [responsive Go Modal](modals.en.md) fixes narrow confirmation buttons; [Go/Rust drag and drop](drag-drop.en.md) adds request-only tab/tree moves. Bilingual API/examples/screens and local physical/PTY/consumer checks accompany the implementation. Included in 0.10.0; half-row shadows are dropped.

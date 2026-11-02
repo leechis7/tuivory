@@ -2,6 +2,9 @@
 
 [한국어 (default)](README.md) · **English**
 
+0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](../docs/drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
+
+
 **0.9.0 TVR-24:** [optional Oracle SQL/PLSQL analysis, common tokens and editor migration](../docs/syntax.en.md). Go uses one root import; Rust opts in with syntax-sql.
 
 **0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).

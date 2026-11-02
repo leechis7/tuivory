@@ -18,6 +18,8 @@ aliases = re.findall(r'^type (\w+) = (\w+)\.(\w+)',go,re.M)
 expanded = {}
 for public, module, target in aliases:
     package = {'compatui': './ui', 'compatterminal': './terminal'}.get(module, './internal/'+module)
+    if public == 'Modal' and module == 'compatui':
+        package = './internal/widgets'
     expanded[public] = go_doc(package,target).strip()
 chunks = re.split(r'(?=^type [A-Z]\w*)', go, flags=re.M)
 blocks = ['## Functions and constants\n\n```go\n'+chunks[0].strip()+'\n```']

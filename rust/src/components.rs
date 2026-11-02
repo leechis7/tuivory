@@ -100,7 +100,7 @@ pub struct TabLayout {
 }
 #[derive(Clone, Debug)]
 pub struct Tabs {
-    items: Vec<TabItem>,
+    pub(crate) items: Vec<TabItem>,
 }
 impl Tabs {
     pub fn new(items: Vec<TabItem>) -> Result<Self, String> {

@@ -2,13 +2,16 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](../drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.
+
+
 **0.9.0 TVR-24 API 포함:** [선택적 문법 분석·새 편집 API](../syntax.md)는 0.9.0부터 제공합니다.
 
-**0.9.2:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../ui-facade.md).
+**0.10.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../ui-facade.md).
 
-이 명세는 0.9.2 소스를 따르며 **TVR-22~26 API를 포함합니다.** [제공 범위·전환 안내](../controls.md).
+이 명세는 0.10.0 소스를 따르며 **TVR-22~26 API를 포함합니다.** [제공 범위·전환 안내](../controls.md).
 
-기준 버전은 **0.9.2**입니다. Go 모듈은 `github.com/leechis7/tuivory/go`, Rust crate는 `tuivory`입니다. Rust 렌더러는 `ratatui`, 대화형 예제는 `playground` 기능을 켭니다.
+기준 버전은 **0.10.0**입니다. Go 모듈은 `github.com/leechis7/tuivory/go`, Rust crate는 `tuivory`입니다. Rust 렌더러는 `ratatui`, 대화형 예제는 `playground` 기능을 켭니다.
 
 - [Go 공개 선언](go.md)
 - [Rust 공개 선언](rust.md)

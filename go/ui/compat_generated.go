@@ -2,6 +2,7 @@
 package ui
 
 import (
+	widgets "github.com/leechis7/tuivory/go/internal/widgets"
 	tcell "github.com/leechis7/tuivory/go/terminal"
 	native "github.com/rivo/tview"
 	io "io"
@@ -431,7 +432,8 @@ var InputFieldMaxLength = native.InputFieldMaxLength
 
 type List = native.List
 
-type Modal = native.Modal
+// Modal is the SDK responsive adapter and embeds the pinned backend Modal.
+type Modal = widgets.Modal
 
 type MouseAction = native.MouseAction
 
@@ -510,8 +512,8 @@ func SetNewLine(value string) { native.NewLine = value }
 // NewList forwards to the pinned backend without changing behavior.
 func NewList() *List { return native.NewList() }
 
-// NewModal forwards to the pinned backend without changing behavior.
-func NewModal() *Modal { return native.NewModal() }
+// NewModal creates a responsive message window with wrapping buttons.
+func NewModal() *Modal { return widgets.NewModal() }
 
 // NewPages forwards to the pinned backend without changing behavior.
 func NewPages() *Pages { return native.NewPages() }

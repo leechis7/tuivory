@@ -2,6 +2,10 @@
 
 [한국어 (default)](components.md) · **English**
 
+0.10.0 TVR-7: [responsive Go Modal](modals.en.md) wraps long buttons inside narrow terminals. Modal is an SDK adapter embedding its backend, an exception to raw alias identity. Included in 0.10.0.
+0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
+
+
 **0.9.0 TVR-24:** [optional Oracle SQL/PLSQL analysis, common tokens and editor migration](syntax.en.md). Go uses one root import; Rust opts in with syntax-sql. Not available in public 0.8.0.
 
 Choose a component for models, state, events, language usage and runnable examples.

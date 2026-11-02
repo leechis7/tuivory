@@ -47,6 +47,9 @@ def main():
         source = '''#![deny(deprecated)]
 use tuivory::{Color, ColorProfile, Theme, TokenDocument};
 fn main() {
+    let drag_tabs=tuivory::components::Tabs::new(vec![tuivory::components::TabItem{id:"a".into(),title:"A".into(),..Default::default()},tuivory::components::TabItem{id:"b".into(),title:"B".into(),edited:true,..Default::default()}]).unwrap();
+    let request=drag_tabs.request_drop("a","b",tuivory::drag::DropPosition::After,&Default::default(),None).unwrap();
+    let moved=drag_tabs.apply_drop(&request).unwrap();assert_eq!(moved.items()[0].id,"b");assert!(moved.items()[0].edited);
     let password=tuivory::controls::Control::input("pw","Password","private",true).unwrap();
     assert_eq!(password.model.value("pw"),Some("private"));
     assert_ne!(password.model.fields()[0].value,"private");

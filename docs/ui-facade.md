@@ -17,7 +17,7 @@
 | 공통 입력·편집 요청 | InputEvent, InputFromKey/InputFromMouse, EditingAction | input::InputEvent, from_key/from_terminal, editing_action |
 | 터미널 수명 | tuivory.NewApplication의 Run/Stop/SetScreen | ui::Session, SessionOptions, finish/Drop |
 
-Go는 루트 패키지 하나만 import합니다. 기존 /ui·/terminal 경로도 유지하며 tview/tcell을 직접 import할 필요가 없습니다. Rust 외부 프로젝트는 Cargo 의존성에 **tuivory만** 선언하고 필요한 기능을 켭니다. 기존 루트 API와 `tuivory::ratatui` 경로는 유지합니다. SDK 내부 호환 별칭은 현재 backend의 타입·메서드·trait 정체성을 보존합니다. backend를 바꿔도 기존 코드/ABI가 무조건 유지된다는 의미는 아닙니다.
+Go는 루트 패키지 하나만 import합니다. 기존 /ui·/terminal 경로도 유지하며 tview/tcell을 직접 import할 필요가 없습니다. Rust 외부 프로젝트는 Cargo 의존성에 **tuivory만** 선언하고 필요한 기능을 켭니다. 기존 루트 API와 `tuivory::ratatui` 경로는 유지합니다. SDK 내부 호환 별칭은 현재 backend의 타입·메서드·trait 정체성을 보존합니다. 0.10.0의 Modal은 반응형 SDK 어댑터이며 이 별칭 규칙의 예외입니다. backend를 바꿔도 기존 코드/ABI가 무조건 유지된다는 의미는 아닙니다.
 
 Rust 기능은 기본 core(1.85+), 그리기용 ratatui(1.88+), 터미널 I/O용 terminal(1.88+)로 나뉩니다. 기존 playground 기능은 terminal을 포함하는 호환 경로입니다. DB·전역 키·클립보드 실행 정책은 앱에 남습니다.
 
@@ -141,3 +141,5 @@ Go 모든 공개 예제와 루트 외부 API 테스트, Rust 모든 예제 및 U
 [단일 import 후속 로컬 검증](evidence/go-single-import-results.json)은 공개 [0.8.0 릴리스 검증 manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0)와 구분합니다.
 
 0.9.0 TVR-24 후속의 [선택적 강조 분석기](syntax.md)는 공통 토큰/렌더링과 분리됩니다. 앱 자체 분석기도 연결하며 DB 실행·위험 SQL/트랜잭션 판단은 앱 책임입니다.
+
+0.10.0 TVR-7: [Go 반응형 Modal](modals.md)은 좁은 단말 안에서 긴 버튼을 여러 행으로 배치합니다. Modal은 backend를 내장한 SDK 어댑터이며 원시 별칭 정체성의 예외입니다. 0.10.0에 포함합니다.

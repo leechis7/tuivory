@@ -36,6 +36,12 @@ def check(binary, languages):
             ('syntax', 'smoke_syntax.py', []),
             ('syntax', 'smoke_syntax.py', ['--ascii']),
         ]
+        # New opt-in examples are tested when advertised; old release binaries
+        # remain valid inputs for the release-download validator.
+        for demo,flag,script,variants in [('workspace',b'-drag','smoke_drag.py',[[],['--ascii']]),('controls',b'-modal','smoke_modal.py',[[]])]:
+            help_result=subprocess.run([binary,'--demo',demo,'--help'],capture_output=True,check=True)
+            if flag in help_result.stdout+help_result.stderr:
+                cases.extend((demo,script,options) for options in variants)
         for demo, script, options in cases:
             subprocess.run([sys.executable, str(ROOT / 'tools' / script), binary, '--demo', demo, '--lang', lang] + options, check=True)
             print('PASS', binary, lang, demo, *options, flush=True)

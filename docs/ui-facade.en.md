@@ -17,7 +17,7 @@
 | Shared input/edit requests | InputEvent, InputFromKey/InputFromMouse, EditingAction | input::InputEvent, from_key/from_terminal, editing_action |
 | Terminal lifetime | tuivory.NewApplication Run/Stop/SetScreen | ui::Session, SessionOptions, finish/Drop |
 
-Go uses one root import; existing /ui and /terminal paths remain supported without direct tview/tcell imports. Rust external manifests declare **only tuivory**, enabling the required features. Preserve existing root APIs and tuivory::ratatui paths. SDK compatibility aliases retain pinned backend type/method/trait identity; they do not promise source/ABI interchangeability across backend replacement.
+Go uses one root import; existing /ui and /terminal paths remain supported without direct tview/tcell imports. Rust external manifests declare **only tuivory**, enabling the required features. Preserve existing root APIs and tuivory::ratatui paths. SDK compatibility aliases retain pinned backend type/method/trait identity, except the 0.10.0 responsive Modal adapter; they do not promise source/ABI interchangeability across backend replacement.
 
 Rust features: default core (1.85+), ratatui rendering (1.88+), terminal I/O (1.88+). The existing playground feature includes terminal as a compatible alias. Hosts retain database/global-key/clipboard execution policy.
 
@@ -141,3 +141,5 @@ Retain bilingual Unicode/ASCII, twelve-palette, popup/focus/selection/undo/redo/
 The [single-import local validation record](evidence/go-single-import-results.json) is distinct from the [0.8.0 release validation manifest](https://github.com/leechis7/tuivory/releases/tag/go/v0.8.0).
 
 The 0.9.0 TVR-24 [optional highlighting analyzer](syntax.en.md) is separate from common tokens/rendering. Custom host analyzers remain supported; execution/dangerous-SQL/transaction policy stays in the host.
+
+0.10.0 TVR-7: [responsive Go Modal](modals.en.md) wraps long buttons inside narrow terminals. Modal is an SDK adapter embedding its backend, an exception to raw alias identity. Included in 0.10.0.

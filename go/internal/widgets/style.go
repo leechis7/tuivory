@@ -98,11 +98,18 @@ func (s Styler) Form(form *tview.Form) {
 	}
 }
 
-func (s Styler) Modal(modal *tview.Modal) {
+func (s Styler) Modal(primitive tview.Primitive) {
 	p := s.Styles
-	s.Box(modal.Box, p.Surface, p.Text)
-	modal.SetBackgroundColor(p.Surface).SetTextColor(p.Text).
-		SetButtonStyle(p.ButtonStyle()).SetButtonActivatedStyle(p.ButtonFocusStyle())
+	switch modal := primitive.(type) {
+	case *Modal:
+		s.Box(modal.Box, p.Surface, p.Text)
+		modal.SetBorderStyle(p.BorderStyle(modal.HasFocus(), p.Surface))
+		modal.SetBackgroundColor(p.Surface).SetTextColor(p.Text).SetButtonStyle(p.ButtonStyle()).SetButtonActivatedStyle(p.ButtonFocusStyle())
+	case *tview.Modal:
+		s.Box(modal.Box, p.Surface, p.Text)
+		modal.SetBorderStyle(p.BorderStyle(modal.HasFocus(), p.Surface))
+		modal.SetBackgroundColor(p.Surface).SetTextColor(p.Text).SetButtonStyle(p.ButtonStyle()).SetButtonActivatedStyle(p.ButtonFocusStyle())
+	}
 }
 
 // Table styles a simple data table on the canvas.

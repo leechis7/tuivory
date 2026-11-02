@@ -19,6 +19,7 @@ func Run(args []string) {
 	focusOrder := flags.String("focus-order", "tabs,tree,content", "host Tab order: permutation of tabs,tree,content")
 	quitKey := flags.String("quit-key", "ctrl-q", "host quit shortcut: ctrl-q/ctrl-x")
 	ascii := flags.Bool("ascii", false, "ordinary ASCII borders/icons")
+	dragEnabled := flags.Bool("drag", false, "tab/tree request-based drag and drop; Alt+Shift+arrows keyboard alternative")
 	_ = flags.Parse(args)
 	if *lang != "ko" && *lang != "en" {
 		log.Fatal("--lang requires ko or en")
@@ -105,6 +106,7 @@ func Run(args []string) {
 			}
 		}
 		treeView.ASCII = *ascii
+		tabView.ASCII = *ascii
 		left.ASCII = *ascii
 		right.ASCII = *ascii
 		split.ASCII = *ascii
@@ -118,6 +120,9 @@ func Run(args []string) {
 			log.Fatal(e)
 		}
 		hints.SetText(text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · "+quitLabel+" 종료", "Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · "+quitLabel+" quit")).SetTextColor(p["hint"].FG).SetBackgroundColor(p["surface"].BG)
+		if *dragEnabled {
+			hints.SetText(text("드래그 이동 · Alt+Shift+방향키 이동 요청 · Esc 취소 · "+quitLabel+" 종료", "Drag to move / Alt+Shift+arrows request move / Esc cancel / "+quitLabel+" quit"))
+		}
 	}
 	tabView.OnEvent = func(event ui.TabEvent) {
 		message = fmt.Sprintf("%s: %s", event.Kind, event.ID)
@@ -140,6 +145,38 @@ func Run(args []string) {
 		refresh()
 	}
 	treeView.OnEvent = func(event ui.TreeEvent) { message = fmt.Sprintf("%s: %s", event.Kind, event.ID); refresh() }
+	if *dragEnabled {
+		tabView.Drag = &ui.DragState{}
+		treeView.Drag = &ui.DragState{}
+		tabView.DragOptions = ui.DragOptions{AutoScroll: true}
+		treeView.DragOptions = ui.DragOptions{AutoScroll: true, HoverExpand: true, Locked: []string{"root"}}
+		tabView.OnDrop = func(r ui.DropRequest) {
+			next, err := tabs.ApplyDrop(r)
+			if err != nil {
+				message = "reject: " + err.Error()
+			} else {
+				tabs = next
+				items = tabs.Items()
+				_ = tabView.SetTabs(tabs)
+				message = fmt.Sprintf("drop tabs: %s %s %s", r.SourceID, r.Position, r.TargetID)
+			}
+			refresh()
+		}
+		treeView.OnDrop = func(r ui.DropRequest) {
+			next, err := tree.ApplyDrop(r)
+			if err != nil {
+				message = "reject: " + err.Error()
+			} else {
+				tree = next
+				if r.Position == ui.DropInside {
+					treeState.Expanded[r.TargetID] = true
+				}
+				_ = treeView.SetTree(tree)
+				message = fmt.Sprintf("drop tree: %s %s %s", r.SourceID, r.Position, r.TargetID)
+			}
+			refresh()
+		}
+	}
 	path.OnNavigate = func(id string) {
 		message = fmt.Sprintf("%s: %s", text("경로 이동 요청", "Navigation request"), id)
 		refresh()

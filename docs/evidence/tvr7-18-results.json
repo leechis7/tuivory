@@ -1,0 +1,308 @@
+{
+  "issues": [
+    "TVR-7",
+    "TVR-18"
+  ],
+  "date": "2026-11-02",
+  "stage": "implemented and locally validated; uncommitted/unpublished",
+  "source_base_commit": "e8dd3231643d886b16fa68783979e2f4dcd1dd71",
+  "branch": "codex/TVR-7-18-modal-drag-drop",
+  "source_uncommitted": true,
+  "published": false,
+  "github_ci": "not run for these changes",
+  "native_host": "aarch64",
+  "modal": {
+    "scope": "Go compatibility Modal; no equivalent Rust compatibility type",
+    "size_states": 9,
+    "languages": 2,
+    "palettes": 12,
+    "physical_cases": 216,
+    "checks": [
+      "wrapped buttons within terminal",
+      "focused Cancel visibility",
+      "Unicode glyph preservation/truncation",
+      "callback index/label and Esc",
+      "keyboard/mouse",
+      "resize/recovery",
+      "palette reapply",
+      "readable modal border"
+    ],
+    "compatibility": "SDK method chaining retained; Modal now embeds the backend rather than retaining raw alias identity. Explicit interoperability uses modal.Modal."
+  },
+  "drag": {
+    "languages": [
+      "Go",
+      "Rust"
+    ],
+    "request_cases": 22,
+    "shared_revision_goldens": true,
+    "physical_palettes": 12,
+    "rendering_modes": [
+      "Unicode",
+      "ASCII"
+    ],
+    "components": [
+      "tabs",
+      "tree"
+    ],
+    "checks": [
+      "request-only preview",
+      "immutable approved reorder/reparent",
+      "stable IDs/metadata/subtrees",
+      "threshold and outside capture/release",
+      "cycle/self/leaf/no-op/missing/disabled/locked/policy rejection",
+      "up-time permission recheck",
+      "stale data/request/viewport/state invalidation",
+      "temporary edge scroll and hover expansion",
+      "cancel/reject preserve actual state",
+      "keyboard alternatives",
+      "captured resize/hide/restyle and synthetic-click suppression"
+    ]
+  },
+  "pty": {
+    "go": {
+      "passed": 30,
+      "scenarios": [
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko playground --resize",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko tree",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko workspace",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko focus",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko catalog",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko catalog --mode grid --grid-preset data",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko menu",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko menu --ascii --shadow auto",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko controls",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko controls --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko syntax",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko syntax --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko workspace",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko workspace --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 ko controls",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en playground --resize",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en tree",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en workspace",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en focus",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en catalog",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en catalog --mode grid --grid-preset data",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en menu",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en menu --ascii --shadow auto",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en controls",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en controls --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en syntax",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en syntax --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en workspace",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en workspace --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/go/tuivory-linux-arm64 en controls"
+      ]
+    },
+    "rust": {
+      "passed": 28,
+      "scenarios": [
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko playground --resize",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko tree",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko workspace",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko focus",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko catalog",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko catalog --mode grid --grid-preset data",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko menu",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko menu --ascii --shadow auto",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko controls",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko controls --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko syntax",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko syntax --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko workspace",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 ko workspace --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en playground --resize",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en tree",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en workspace",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en focus",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en catalog",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en catalog --mode grid --grid-preset data",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en menu",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en menu --ascii --shadow auto",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en controls",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en controls --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en syntax",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en syntax --ascii",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en workspace",
+        "PASS /home/leechis/workspace/tuivory/bin/rust/tuivory-linux-arm64 en workspace --ascii"
+      ]
+    },
+    "combined": 58,
+    "latest_go_modal_recheck": "both Korean and English passed after modal-border fix"
+  },
+  "checks": {
+    "go_race": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-18-go-race-final.log"
+    },
+    "go_vet_shared_checks": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-18-go-final-check.log"
+    },
+    "rust_all_features_and_doctests": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-18-rust.log"
+    },
+    "rust_all_target_clippy": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-18-clippy-final.log"
+    },
+    "rust_1_85_1_core_drag": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr18-rust-msrv.log"
+    },
+    "go_public_module_consumer": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-18-go-consumer-final.log"
+    },
+    "rust_packaged_consumer_and_terminal_lifecycle": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-18-rust-consumer.log"
+    },
+    "api_generation_check": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-18-api-final-check.log"
+    },
+    "modal_physical_buffers": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-modal-final.log"
+    },
+    "go_drag_physical_models_and_stale_state": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr18-tests-final.log"
+    },
+    "rust_drag_testbackend_and_models": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr18-rust-tests-final.log"
+    },
+    "sdk_facade": {
+      "result": "passed",
+      "local_log": ".cache/validation/tvr7-18-facade-final.log"
+    }
+  },
+  "ui_references": {
+    "count": 12,
+    "localized": true,
+    "source": "Go SimulationScreen post-Show Modal; Rust TestBackend drag feedback",
+    "not_physical_font_verification": true
+  },
+  "binaries": {
+    "bin/go/tuivory-linux-arm64": {
+      "sha256": "30c58b7ebf8fcedb63053cc6f58b6ffff51c07ca20064fea2e031c5cbb331791",
+      "static_elf": true,
+      "architecture": "Linux ARM64"
+    },
+    "bin/rust/tuivory-linux-arm64": {
+      "sha256": "39f52cb14c98788ddb6bc456422551fb36935cb83dbbc4acc30a3d180e5e5f11",
+      "static_elf": true,
+      "architecture": "Linux ARM64"
+    }
+  },
+  "file_sha256": {
+    ".github/workflows/check.yml": "56a2d0d12b2b9674dc546be50a140c8e7dddad48965aaee7787e89faf58e6489",
+    "CHANGELOG.en.md": "9e8e3be49916c4945be4920f9d16b94725a5002f48e3f83874c2681a74b44e4e",
+    "CHANGELOG.md": "26b4fc9c689d6e93e4bd8ad641055737a7bd0a439b73e0551b32c4954027d865",
+    "README.en.md": "25742b187155a71265547d65059be8f590e5ee2a3b1a2670b0085b5405cadfcb",
+    "README.md": "b40eb500cb6fd566a1751dfca732f0521c300f9c1c3e64f75318fbc62baccc17",
+    "design/README.en.md": "ebc873197d6a7f848257626aeecf6b2e48ea1d2f0b60636c7931372b1cf88181",
+    "design/README.md": "b0f9d51469b248e7ea743b0aa640873110645247c487d25f209845a591d0eb19",
+    "design/drag-cases.json": "53aa87035ac475c1a29ef4647363728ed78db17d8098e59d15a4e65df0ab07b5",
+    "design/drag.en.md": "32abf918ca6dbde71b227b1639be4faa5d576821d28a880bb17f92d81ebf98f0",
+    "design/drag.md": "142fa9507e6d3da981e861cfebcfd63ad56fbd088d5a402c85dd384b57697428",
+    "design/go-facade-symbols.json": "399c0b1357d00412f2839cd73902b411e0f9d6bc2f6a7b9c28995a7ae035c9ed",
+    "design/surfaces.en.md": "3f866758cbac25e279b476cd6e7bfe43ae11b72d9c3aa2f82f0c7bbd5c6f117f",
+    "design/surfaces.md": "d8e55e3d09041224cafb7afa95384ed58c64d5f42c438321fe83dee16a68d03b",
+    "design/ui-facade.en.md": "053133e8e34498e9bb61b59b3b2b4c4e01b40c1ad168684eac6fdc9ffa8c1cc4",
+    "design/ui-facade.md": "102c5bfac2fc0e4c806de5e123decfdec186792b225b5ad1bbb2656874fd6b07",
+    "docs/README.en.md": "ff0a28f71de64e45811deeb8eb168aa1b8c050bb80385c74abba22cdc487458c",
+    "docs/README.md": "305916f1cda6afd60a0e5ac76df872ffaf341270fe77586553f95bad3effbfa0",
+    "docs/api/README.en.md": "47242dc2ae98d8c448d91264393775071c02572fc2f9bfb29753426fbc84a1d8",
+    "docs/api/README.md": "eb7bc6e97dba3909a8f7b82ca0da08961e4cdd2f51d354b3cc445f4031569519",
+    "docs/api/go-ui.en.md": "30098e843deb969b4dd90a48093860a7998893746098e98d15d0eaf43a25d883",
+    "docs/api/go-ui.md": "ed2cddcdd058a6b42d60c0df62c6acd8bbeca69e1a0f3298d765903f9f13727e",
+    "docs/api/go.en.md": "9ebe30f75a3ef3d9e35f9f6523ad1534ac4629d0a5183c9e725f7a5682bfcac6",
+    "docs/api/go.md": "03b922c253fb34137f280965e1d2888ebd0f4f91f06932c7788295b8deed9465",
+    "docs/api/rust.en.md": "ab9fb87c7e4667909ee484373cf3ea13c4c4f2f716974301c0722da03f659fdb",
+    "docs/api/rust.md": "bc4cb18b549c70f13f4465154ea1beaffbe94c401284bfcb90063efafdc5b689",
+    "docs/component-audit.en.md": "216081b71d52241a192390c7a6f649a0fda9045cca8a5fda4ba376508ac6bb08",
+    "docs/component-audit.md": "aa2ed0268309613cf9d4f14b98af22c8414fe9c623184512b7da90421a504ea5",
+    "docs/components-backlog.en.md": "1293749d0d9cbf495782ed061be30a5f3df08fa4e084ec9aaf1603a431f1f9fc",
+    "docs/components-backlog.md": "8953ab60855249d1679393199e2919d96c5f7af796f59a02115609e8190cc80b",
+    "docs/components.en.md": "384984b09c43e8790df6424db821a0bbef804dc32df48bceba7c2828b3b84393",
+    "docs/components.md": "08f990bc6d615787d8a0fd3b95fa98ed3b00da4ace43e78f0033ff730e3555c2",
+    "docs/drag-drop.en.md": "cf4147f6c134c38b9240d4a75969db945b020913e5e405e6a241edf4f97c55f8",
+    "docs/drag-drop.md": "fb21dd70c40412eb46768c9cfab18a1448e4ea34b556beffa52ae3df4b120102",
+    "docs/examples.en.md": "6ac6c319648780e6beeb2f02c970566cd565d611db0b35480001a112d4b936dd",
+    "docs/examples.md": "24c43ed05e94d1f6bb9a8ae7f9bc25e8709aabbe4d08e24bc715b87dca128806",
+    "docs/images/drag-ascii-en.svg": "9701cb24366a9716dd2612af5b0e44d8c481e2236222b973057fb005692c1b4d",
+    "docs/images/drag-ascii.svg": "40ef2d579cb2740c8d06aa429c2cd6f728bc7e35733570bc8444c63bcacf7f4e",
+    "docs/images/drag-blackwhite-en.svg": "79e926d91f3f8647b3ebdf07d4a3d7603f34268a2cc9d60d047dcf95574c9e68",
+    "docs/images/drag-blackwhite.svg": "e7327114c82196a6191c03591d685e8ec29fce2a796dce845c9e86d432ad55fd",
+    "docs/images/drag-dark-en.svg": "2d853fbae8c45a8c6cefb352a7d273ce9339cfc9650ac33a454c158e7a9a738b",
+    "docs/images/drag-dark.svg": "ba4ee5bf633636ea805f29117672631d7af471d9bf259a958d03eb0b8e95ca6a",
+    "docs/images/drag-light-en.svg": "ee1d3e1e894d25b375bffccb4228c5bb2634330e65fd490d1acb1d90669ed1b7",
+    "docs/images/drag-light.svg": "a5b5f99ae3a2b197be25617c29eb2a478c9d31d6a752345230957f8a976a0e8a",
+    "docs/images/modal-dark-en.svg": "6325924de20720880abd6e06209dc560646917c5d02c8dd9bb7377fc96cceb76",
+    "docs/images/modal-dark.svg": "bbb042ee7d9c66ded3d8ac7b49abfe83b8faf09f2175db6c2ddc98d2af687e9b",
+    "docs/images/modal-light-en.svg": "10f362d3b9bdce80e3b2378504a463ae4a69a2bd78b2cd94a35d4943b680d6be",
+    "docs/images/modal-light.svg": "dc7ff7ebed9becb238d0f9b9006b9a8339ac08ef8dada9797bae09d91670c532",
+    "docs/modals.en.md": "4e46ec47414e7cdcfcb4be46bef53eb1f8dd3ab09b22c102159ee3c61d4305f6",
+    "docs/modals.md": "191d0537ab85def384cfd1d7d45c8472fcd4a43174a7ab832adbf9a507177715",
+    "docs/tree.en.md": "41c36c3b469c38162a1bf3e7fe1c3be2c3e50cd7ffcbe00694aee56470b6541a",
+    "docs/tree.md": "9c1cfe3c546ee8492c2aacf90f58397df918f9c6f3a4a3a642cc600970668851",
+    "docs/ui-facade.en.md": "61f2e93eceffbc306c0cb5b4a74b952dfe81e504612db253f06ba295e00c6720",
+    "docs/ui-facade.md": "ebb9467575cb5c595655c3deccb7689d34e38a5ab7fd931463166b8b1c52f337",
+    "docs/workspace.en.md": "ceecd496ad32ee526d4e30ee6b01dc1e8c046992db6a061a9162c6a460dde814",
+    "docs/workspace.md": "01c6d4ba513577ab98177c002776db0bd8fb59281ff72d696c0775298e34ede8",
+    "go/README.en.md": "12787ac64ebba53d10003262045216de9d9103e91a436871439d9f71fb7349fa",
+    "go/README.md": "1099f102d5172deeeb06d474e19db06d364f028fc74f8d50e47208526b42f0e1",
+    "go/component_views.go": "39af6ce313a108ce04e20be72637287e2fe2e9e5eab44186df01f60660b6cac7",
+    "go/drag.go": "e82caa10c9d6eaf3461b507e9dcdce58e7b5b953e4ea119213049d88b42557f2",
+    "go/drag_test.go": "0ad5adf433c7f143f71d3342379e43c211986dc124e4571b28f107b92cba8d5c",
+    "go/internal/cmd/facadegen/main.go": "04b5ccf3bf2751b2a275eae47313725cc633249d336c7eb0458e427ecc1aad10",
+    "go/internal/showcase/controls/demo.go": "5d19ee82515aba3b33954b3b2b7e7a6e518398c94082d65b7a63c21c6ec705b2",
+    "go/internal/showcase/workspace/demo.go": "1b4a4bd76acf12a875d6f8f34416a774d6a36526a49abffd2f0a1e28e6fac830",
+    "go/internal/widgets/apply.go": "54f748f35fe915f77a38fe94a84fc22b61af4287f64518e844cbed0d5b55c7a0",
+    "go/internal/widgets/modal.go": "fccabf082d0bd1247059debc1958ae4399b5e4c422405eced52a2df0f9ac81bd",
+    "go/internal/widgets/style.go": "4383f69589f530d23ab80a342ef1bb59e4f8a0ee93e2ca8da6336537d01e7f92",
+    "go/modal_test.go": "e2a6b232eb70b1f86e0414b0a311c1a5a167e776899cd797095333b4d54aa59f",
+    "go/testdata/drag-cases.json": "53aa87035ac475c1a29ef4647363728ed78db17d8098e59d15a4e65df0ab07b5",
+    "go/tree.go": "315905aec6c528ddbf1833dd51b2051342494b8ab0f3c433e105edd06f495ceb",
+    "go/ui/compat_generated.go": "6ca39885813eed2280e94ed6691f13d3f9fc15aaae9bcd2f0ecf3d61e511fa4d",
+    "go/ui/doc.go": "9ebcd7d090ff5268d6f04c154ba7f68c3d0d3f4885249dd7c27807fa7b035f2f",
+    "rust/README.en.md": "1dff4a8cf1d924b3ba36347b9b0f6339914814b3fc0ac39bfa88570e184582e7",
+    "rust/README.md": "0a0b875fa76d0d78fc685a45d572f5d4743c371267d2c47c457b96636db31e3f",
+    "rust/examples/showcase/main.rs": "1737e16663cbdfa77a96a641bea84ebb479a182fe82164da1c7003f1fba254a8",
+    "rust/examples/workspace/main.rs": "835ca1cae4d700de60a25087543363f81dc4b69a6348069aeef8a3dc22b16d48",
+    "rust/src/components.rs": "3401ef841e8e3e20a675f827c98d6cba71f6f1f6c58631f2904e0fca81d0ce00",
+    "rust/src/drag.rs": "74625c143694e43fa2dd885a247396282714711504c25658db9146ce8573f75d",
+    "rust/src/lib.rs": "ddf848b1ee8080fc97daa6ddd3771bc44a9ad21084e5dbc480295795f940e706",
+    "rust/src/ratatui.rs": "2e345c295e92c9a48e2baacf957320ec1b630c4b40a4b2c3227f33f77b6b6f77",
+    "rust/src/ratatui/components.rs": "5b68f8950b1b8c3a66628a3d33e1a0cd59452daf68f610423fe9f00f249fdfec",
+    "rust/src/ratatui/tree.rs": "1da3e3f434534de63034409fa2506d41cc832c3e721bc48e01405011a8af9565",
+    "rust/src/tree.rs": "4b09eef1bb1c21cb2ea6a874b296a61432545d265c7e7fda60df778c8b1ebc79",
+    "rust/tests/data/drag-cases.json": "53aa87035ac475c1a29ef4647363728ed78db17d8098e59d15a4e65df0ab07b5",
+    "rust/tests/drag.rs": "c76acdcb9b588ea689e6013c22fe6e92348c20defde6f693796d14cd7efe78cb",
+    "tools/check_go_module.py": "761fae1281bdd54d8ee0b4c31f9a795fb7ebc8f55f4233bdaed5f98ab45190db",
+    "tools/check_rust_module.py": "030a957d3f0200ae20de9623fc2b1492a34c63772236a0bf3eb9383212d7f701",
+    "tools/check_showcase.py": "33b8524ee4e89e69d2d47a600b872b583c14d24aeb8d58658b54088ff78df21d",
+    "tools/export_tree_cases.py": "2bff151855d58a1e8a00a42e1b42d0ae92129cdffddcbee5050ba4fdfffe784a",
+    "tools/generate_api_reference.py": "85517f5540e67c8bf6925f22ab30fa79edd14b2b5471ef70f6eca2c36737f529",
+    "tools/smoke_drag.py": "f3595e2581a7ef133e58da03adafb39ec8df85c6fc04def39563fc08ba79b267",
+    "tools/smoke_modal.py": "8813001f3c63fe63c7eca16a6cd03c760bd05c736bc0b028d8bd141f5137d826"
+  },
+  "excluded": [
+    "half-row shadows (discarded by user)",
+    "DB/file/OS drag operations",
+    "CentOS validation",
+    "physical font/SSH/real LazyOra integration",
+    "commit/GitHub publication/release"
+  ],
+  "jira": {
+    "started_in_progress": true,
+    "TVR-7_epic": "keep open/in progress",
+    "TVR-18_completion_transition": "pending",
+    "reason": "Atlassian tools became unavailable mid-task; plugin lookup confirmed installed=false. Completion evidence retained locally for later update."
+  }
+}
