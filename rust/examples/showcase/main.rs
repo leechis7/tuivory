@@ -118,7 +118,9 @@ fn run() -> Result<(), Box<dyn Error>> {
             "catalog" => println!(
                 "--mode forms|collections|grid|feedback|layout --grid-preset simple|data --grid-sample --density auto|compact|comfortable"
             ),
-            "menu" => println!("--shadow off|auto|solid|dim --open --menu-id ID"),
+            "menu" => println!(
+                "--shadow off|auto|solid (dim: whole-cell compatibility) --open --menu-id ID"
+            ),
             "controls" => println!("--open"),
             _ => (),
         }

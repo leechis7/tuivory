@@ -126,6 +126,7 @@ fn main() {
     assert_eq!(terminal.backend().buffer()[(grid.geometry(24,4).gutter as u16-1,0)].symbol(),"│");
     let mut menu_terminal=tuivory::ui::Terminal::new(tuivory::ui::backend::TestBackend::new(40,10)).unwrap();
     menu_terminal.draw(|f|f.render_widget(tuivory::ui::components::MenuPopupWidget::new(&mut menu,&styles,"Menu").ascii(true).padding(1),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),"+");assert_eq!(menu_terminal.backend().buffer()[(2,2)].symbol(),">");
+    menu_terminal.draw(|f|f.render_widget(tuivory::ui::components::MenuPopupWidget::new(&mut menu,&styles,"Menu").shadow(tuivory::popup::ShadowOptions{mode:tuivory::popup::ShadowMode::Auto,..Default::default()}),f.area())).unwrap();let area=menu_terminal.backend().buffer().area;assert_eq!(menu_terminal.backend().buffer()[(area.right()-1,0)].symbol(),"▄");assert_eq!(menu_terminal.backend().buffer()[(1,area.bottom()-1)].symbol(),"▀");
     menu_terminal.draw(|f|f.render_widget(tuivory::ui::components::MenuWidget::new(&mut menu,&styles).ascii(true),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),">");
     menu_terminal.draw(|f|f.render_widget(tuivory::ui::components::MenuBarWidget::new(&mut menu,&styles),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(2,0)].symbol(),"R");
     assert_eq!(menu.return_id(),"editor");

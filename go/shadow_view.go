@@ -63,7 +63,11 @@ func (v *ShadowView) InRect(x, y int) bool {
 func (v *ShadowView) Draw(screen tcell.Screen) {
 	l := v.Layout()
 	for _, region := range l.ShadowRegions() {
-		drawPopupShadow(screen, region, v.palette, v.options.Mode, v.ASCII)
+		if v.options.Mode == ShadowAuto || v.options.Mode == ShadowSolid {
+			drawHalfShadow(screen, region, l, v.palette, v.options.Mode, v.ASCII)
+		} else if v.options.Mode == ShadowDim {
+			DimRegion(screen, region)
+		}
 	}
 	v.Child.SetRect(l.Card.X, l.Card.Y, l.Card.Width, l.Card.Height)
 	if l.Card.Width > 0 && l.Card.Height > 0 {
@@ -95,72 +99,4 @@ func (v *ShadowView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, f
 		}
 		return false, nil
 	})
-}
-
-// Solid uses the existing classic black shadow style. Auto darkens the real
-// surface with supported colors, using a stipple when black cannot be darkened.
-func shadowBrush(p Palette, mode ShadowMode) (tcell.Style, bool, bool) {
-	classic := (Styles{}).PopupShadowStyle().Foreground(p["hint"].FG)
-	if mode == ShadowDim {
-		return classic, false, true
-	}
-	if mode == ShadowSolid {
-		return classic, false, false
-	}
-	base := p["surface"].BG
-	r, g, b := base.RGB()
-	if r < 0 || g < 0 || b < 0 {
-		return classic, false, true
-	}
-	if max(r, g, b) <= 16 {
-		return tcell.StyleDefault.Foreground(p["hint"].FG).Background(base), true, false
-	}
-	rgb, colors256 := false, false
-	for _, pair := range p {
-		for _, c := range []tcell.Color{pair.FG, pair.BG} {
-			if !c.Valid() {
-				continue
-			}
-			if c.IsRGB() {
-				rgb = true
-			} else if c&^tcell.ColorValid >= 16 {
-				colors256 = true
-			}
-		}
-	}
-	if rgb {
-		return tcell.StyleDefault.Background(tcell.NewRGBColor(r*4/5, g*4/5, b*4/5)), false, false
-	}
-	if colors256 {
-		gray := (r + g + b) * 4 / 15
-		index := 232 + max(int32(0), min(int32(23), (gray-8+5)/10))
-		return tcell.StyleDefault.Background(tcell.PaletteColor(int(index))), false, false
-	}
-	return classic, false, false
-}
-func drawPopupShadow(screen tcell.Screen, r CellRect, p Palette, mode ShadowMode, ascii bool) {
-	if r.Width <= 0 || r.Height <= 0 || mode == ShadowOff || mode == "" {
-		return
-	}
-	style, pattern, dim := shadowBrush(p, mode)
-	if dim {
-		DimRegion(screen, r)
-		return
-	}
-	cols, rows := screen.Size()
-	right, bottom := min(cols, popupAdd(r.X, r.Width)), min(rows, popupAdd(r.Y, r.Height))
-	left, top := max(0, r.X), max(0, r.Y)
-	glyph := ' '
-	if pattern {
-		glyph = '░'
-		if ascii {
-			glyph = '.'
-		}
-	}
-	safe := WideSafeScreen(screen)
-	for y := top; y < bottom; y++ {
-		for x := left; x < right; x++ {
-			safe.SetContent(x, y, glyph, nil, style)
-		}
-	}
 }

@@ -412,8 +412,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                         app.shadow.mode = match app.shadow.mode {
                             ShadowMode::Off => ShadowMode::Auto,
                             ShadowMode::Auto => ShadowMode::Solid,
-                            ShadowMode::Solid => ShadowMode::Dim,
-                            ShadowMode::Dim => ShadowMode::Off,
+                            ShadowMode::Solid | ShadowMode::Dim => ShadowMode::Off,
                         };
                         continue;
                     }

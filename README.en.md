@@ -1,6 +1,8 @@
 # Tuivory — TUI component library
 
-**0.10.0:** responsive confirmation buttons plus opt-in Go/Rust tab/tree drag and drop with keyboard alternatives. [Changes](CHANGELOG.en.md).
+**0.10.1:** compact Go/Rust popup shadows with improved dark-theme contrast. Borders and shadows-off defaults remain. [Changes](CHANGELOG.en.md).
+
+**0.10.1 TVR-29:** [Compact popup shadows](docs/popup-shadows.en.md) now use one cell right and half a row down with stronger dark-theme contrast. Available starting with 0.10.1.
 
 [한국어 (default)](README.md) · **English**
 
@@ -15,17 +17,17 @@
 
 Reusable TUI components for **Go/tview and Rust/Ratatui**. Hosts compose screens, supply data and execute actions. Python/JavaScript currently provide token-reading examples; reusable UI packages are planned.
 
-**0.10.0** · [Release](docs/release-0.10.0.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
+**0.10.1** · [Release](docs/release-0.10.1.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
 
 ## Install
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.10.0
+go get github.com/leechis7/tuivory/go@v0.10.1
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.10.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.10.1", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [Installation details](docs/installation.en.md)

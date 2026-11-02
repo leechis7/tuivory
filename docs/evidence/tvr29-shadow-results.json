@@ -1,0 +1,56 @@
+{
+  "issue": "TVR-29",
+  "status": "local-validation-passed",
+  "scope_ko": "Go/Rust auto·solid 기본 그림자를 오른쪽 1칸·아래 반 줄로 교체. 실제 배경 대비와 ASCII 대체. dim은 셀 전체 호환 모드로 유지.",
+  "scope_en": "Replace the default Go/Rust auto/solid shape with one cell right and half a row down. Actual-backdrop contrast and ASCII fallback. Dim remains whole-cell compatibility.",
+  "source_uncommitted": true,
+  "github_ci": "not-run",
+  "published": false,
+  "centos": "not-run-user-instruction",
+  "date": "2026-11-02",
+  "branch": "codex/TVR-29-half-row-shadow",
+  "base_commit": "1697765b366facfc82120ef4f6c9a18a73437524",
+  "checks": {
+    "go": "go test -race ./... and go vet ./... passed",
+    "rust": "all-feature/all-target tests, doctests, fmt and clippy -D warnings passed",
+    "shared_geometry_cases": 32,
+    "compact_physical_matrix_per_language": 120,
+    "physical_scope": "Go post-Show physical output; Rust TestBackend, 12 palettes x Unicode/ASCII x 5 graphemes; cap geometry, actual backdrop contrast, wide edges/outside styles, close redraw, clipping/zero vertical offset and card-only input",
+    "external_consumers": "isolated Go module/single root import and packaged Rust crate/Ratatui external app passed without repository design assets",
+    "pty": {
+      "menu": 8,
+      "general_popup": 2,
+      "details": "Go and Rust menu: Korean/English x Unicode/ASCII; English general controls popup in each language. Theme/profile changes, F6, input, mouse, resize, restoration passed."
+    },
+    "native_builds": [
+      "make build",
+      "make build-rust"
+    ],
+    "static_elf": "two native Linux ARM64 executables; no PT_INTERP/DT_NEEDED",
+    "api": "generated Go/Rust declarations checked",
+    "references": "12 localized actual Rust TestBackend SVGs generated and localized text checked",
+    "other": "shared data, tokens, palette checks, Python tests, document links and git diff --check passed"
+  },
+  "not_run": [
+    "GitHub CI/publication (no user approval for this change)",
+    "x86_64 execution/build (native ARM64 host only)",
+    "CentOS (user instruction)",
+    "physical terminal fonts/SSH and actual LazyOra/LazyBeaver integration"
+  ],
+  "notes_ko": "기본 off는 유지. auto/solid의 2칸·1행 기본 형태를 1칸·반 줄로 교체했으며 정수 셀 배치는 1행을 예약한다. dim은 호환 모드로 유지하고 일반 예제 순환에서는 제외한다. 반 블록은 셀의 배경 글자를 대체하며 ASCII는 점으로 대체한다.",
+  "notes_en": "Off remains the default. Auto/solid replace the two-cell/one-row default with one cell/half row while reserving one full terminal row. Dim remains a compatibility mode outside the ordinary example cycle. Half blocks replace backdrop text; ASCII uses dots.",
+  "refinement_date": "2026-11-03",
+  "refinement_ko": "다크 True Color/256색의 단색 검정을 배경 40% 밝기로 조정하고 실제 위젯 참조 예제를 정돈된 배경으로 개선.",
+  "refinement_en": "Refine dark True Color/256-color shadows to 40% backdrop brightness and improve actual-widget references with a quiet backdrop.",
+  "refinement_checks": {
+    "go": "shadow/popup race tests and native make build passed",
+    "rust": "popup_shadow tests, all-target/all-feature clippy, native make build-rust passed",
+    "pty": "two fresh Go/Rust Korean menu PTY checks passed after refinement",
+    "references": "12 localized SVGs regenerated; clean normal references and crisp cell geometry; stress text retained for edge/ASCII/Dim",
+    "static": "both native ARM64 executables verified; no loader/shared dependencies",
+    "scope": "original full validation remains recorded above; this refinement reruns affected checks; no GitHub CI/commit/publication"
+  },
+  "evidence_stage": "pre-release-local-validation",
+  "final_selection_ko": "사용자는 테두리 있는 현재 반 줄 그림자를 유지하기로 결정. 무테·오른쪽 전용 비교안은 적용하지 않음.",
+  "final_selection_en": "User retains the current bordered half-row shadow; frameless/right-only comparison alternatives are not applied."
+}

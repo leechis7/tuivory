@@ -29,7 +29,7 @@ try:
  send(b'\x1b[B');send(b'\x1b[C');has('open:more/origin=editor')
  for key in (b'\x1b[12~',b'\x1b[13~',b'\x1b[14~'):send(key)
  if args.shadow!='off':
-  for _ in range(4):send(b'\x1b[17~') # F6 shadow cycle.
+  for _ in range(3):send(b'\x1b[17~') # F6 off/compact auto/compact solid cycle.
  for h,w in ((16,36),(32,120)):
   fcntl.ioctl(master,termios.TIOCSWINSZ,struct.pack('HHHH',h,w,0,0));os.killpg(process.pid,signal.SIGWINCH);drain()
  send(b'b');has('activate:beta/origin=editor')
