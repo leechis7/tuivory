@@ -1,6 +1,8 @@
 # Tuivory — TUI 컴포넌트 라이브러리
 
-**0.10.0:** 좁은 확인창 버튼 잘림을 수정하고 Go·Rust 탭/트리 드래그 앤 드롭과 키보드 대안을 제공합니다. [변경 이력](CHANGELOG.md).
+**0.10.1:** Go·Rust 팝업 그림자를 오른쪽 1칸·아래 반 줄로 줄이고 다크 대비를 개선했습니다. 테두리와 기본 끄기는 유지합니다. [변경 이력](CHANGELOG.md).
+
+**0.10.1 TVR-29:** [팝업 그림자](docs/popup-shadows.md)를 오른쪽 1칸·아래 반 줄로 통일하고 다크 대비를 개선했습니다. 0.10.1부터 제공합니다.
 
 **한국어 (기본)** · [English](README.en.md)
 
@@ -15,17 +17,17 @@
 
 **Go/tview와 Rust/Ratatui**를 위한 TUI 컴포넌트 라이브러리입니다. 앱이 화면 구성·데이터·업무 동작을 연결합니다. Python·JavaScript는 현재 토큰 읽기 예제를 제공하며 UI 패키지는 계획 단계입니다.
 
-**0.10.0** · [릴리스](docs/release-0.10.0.md) · [문서](docs/README.md) · [API](docs/api/README.md)
+**0.10.1** · [릴리스](docs/release-0.10.1.md) · [문서](docs/README.md) · [API](docs/api/README.md)
 
 ## 설치
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.10.0
+go get github.com/leechis7/tuivory/go@v0.10.1
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.10.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.10.1", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [설치 상세](docs/installation.md)

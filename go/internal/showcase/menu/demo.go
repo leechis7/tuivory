@@ -79,7 +79,7 @@ func Run(args []string) {
 	theme := flags.String("theme", "dark", "theme")
 	colors := flags.String("colors", "256", "color profile")
 	ascii := flags.Bool("ascii", false, "ASCII menu glyphs")
-	shadowFlag := flags.String("shadow", "off", "off/auto/solid/dim")
+	shadowFlag := flags.String("shadow", "off", "off/auto/solid; dim is a whole-cell compatibility mode")
 	_ = flags.Parse(args)
 	if *lang != "ko" && *lang != "en" {
 		log.Fatal("invalid language")
@@ -252,7 +252,7 @@ func Run(args []string) {
 			refresh()
 			return nil
 		case ui.KeyF6:
-			cycle(shadowFlag, []string{"off", "auto", "solid", "dim"})
+			cycle(shadowFlag, []string{"off", "auto", "solid"})
 			shadowOptions.Mode = ui.ShadowMode(*shadowFlag)
 			if err := shadow.SetShadow(shadowOptions); err != nil {
 				log.Fatal(err)

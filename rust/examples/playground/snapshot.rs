@@ -61,7 +61,7 @@ pub fn write(path: &Path, buffer: &Buffer) -> std::io::Result<()> {
     let width = buffer.area.width;
     let height = buffer.area.height;
     let mut svg = format!(
-        r#"<svg xmlns="http://www.w3.org/2000/svg" width="{}" height="{}" viewBox="0 0 {} {}"><title>Tuivory Rust live widget preview</title><desc>Ratatui TestBackend reference rendering; not a remote terminal screenshot.</desc>"#,
+        r#"<svg xmlns="http://www.w3.org/2000/svg" width="{}" height="{}" viewBox="0 0 {} {}" shape-rendering="crispEdges"><title>Tuivory Rust live widget preview</title><desc>Ratatui TestBackend reference rendering; not a remote terminal screenshot.</desc>"#,
         width * 10,
         height * 22,
         width * 10,
@@ -110,6 +110,19 @@ pub fn write(path: &Path, buffer: &Buffer) -> std::io::Result<()> {
         for x in 0..width {
             let cell = &buffer[(x, y)];
             if cell.symbol().trim().is_empty() {
+                continue;
+            }
+            // Half blocks cover exactly half of a terminal cell. Use rectangles
+            // in the exported reference so font metrics do not add seams.
+            if cell.symbol() == "▀" || cell.symbol() == "▄" {
+                write!(
+                    svg,
+                    r#"<rect x="{}" y="{}" width="10" height="11" fill="{}" shape-rendering="crispEdges"/>"#,
+                    x * 10,
+                    y * 22 + if cell.symbol() == "▄" { 11 } else { 0 },
+                    color(cell.fg)
+                )
+                .unwrap();
                 continue;
             }
             let bold = if cell.modifier.contains(Modifier::BOLD) {

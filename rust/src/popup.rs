@@ -6,11 +6,14 @@ use serde::{Deserialize, Serialize};
 pub enum ShadowMode {
     #[default]
     Off,
+    /// Backdrop-aware compact half-row shadow.
     Auto,
     Solid,
     Dim,
 }
-/// Cell offsets; enabled modes with both offsets zero use right-two/down-one.
+/// Cell offsets; enabled modes default to one cell right and one reserved row down.
+/// Auto/solid paint N-0.5 rows down for offset_y N; zero has no half caps.
+/// Dim remains a whole-cell compatibility mode.
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(default, rename_all = "camelCase")]
 pub struct ShadowOptions {
@@ -29,7 +32,7 @@ impl ShadowOptions {
         if self.mode == ShadowMode::Off {
             (0, 0)
         } else if self.offset_x == 0 && self.offset_y == 0 {
-            (2, 1)
+            (1, 1)
         } else {
             (self.offset_x, self.offset_y)
         }
@@ -56,6 +59,10 @@ impl ShadowOptions {
                 width: l.card.width,
                 height: l.card.height,
             };
+            if matches!(self.mode, ShadowMode::Auto | ShadowMode::Solid) && dy > 0 {
+                l.shadow.y = bounds.y.saturating_add(dy - 1);
+                l.shadow.height += 1;
+            }
         }
         l
     }

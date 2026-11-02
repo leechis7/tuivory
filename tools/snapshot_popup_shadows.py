@@ -17,6 +17,8 @@ for lang in ('ko', 'en'):
                    'auto' if view in ('edge', 'ascii') else view, '--snapshot', str(target)]
         if view in ('edge', 'ascii'):
             command.append('--' + view)
+        elif view in ('off', 'auto', 'solid'):
+            command.append('--clean')
         subprocess.run(command, check=True)
         text = ''.join(ET.parse(target).getroot().itertext())
         assert any('\uac00' <= c <= '\ud7a3' for c in text) == (lang == 'ko'), target

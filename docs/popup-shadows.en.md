@@ -2,35 +2,39 @@
 
 [한국어 (default)](popup-shadows.md) · **English**
 
-TVR-19 ships in **0.5.0**, absent from previous 0.4.0 tags. Shadows are **off by default** and selected per menu/context menu/general popup by the host. They do not determine application focus, global keys or business actions.
+Shadows are **off by default** and selected per menu/context menu/general popup by the host. Hosts own focus, global keys and business actions. TVR-19 introduced the APIs; **0.10.1 TVR-29** unifies auto/solid as **one cell right and half a row down**. Tags through 0.10.0 do not include this change.
 
 ## Modes
 
 | Mode | Behavior | When to use |
 | --- | --- | --- |
-| `off` / Go zero value / Rust Default | No shadow; preserve existing card size/presentation | Default |
-| `auto` | Fill exposed strips darker than the real surface. If black cannot be darkened, use `░`, or `.` in ASCII mode | Recommended when enabling shadows |
-| `solid` | Blank-fill with the existing classic black shadow style | Classic black shadow; may be invisible on black backgrounds |
-| `dim` | Retain underlying glyphs/colors/backgrounds and add Dim to text | Keep underlying content. Empty backgrounds do not darken; terminals ignoring Dim may show no effect |
+| `off` / Go zero value / Rust Default | No shadow | Default |
+| `auto` | Shade the actual backdrop with visible contrast and `▄`/`▀` half-row caps | Recommended |
+| `solid` | Same compact half-row shape in fixed black | May be invisible on black backgrounds |
+| `dim` | Retain underlying glyphs/colors/backgrounds and add Dim to text | Compatibility mode: whole-cell attributes cannot represent half rows; excluded from the ordinary example cycle |
 
-Auto follows the supplied palette's color representation: RGB for True Color, gray indices for 256 colors, and black/patterns for 8/16 colors. It does not probe or modify the terminal. Custom palettes must fit actual terminal capabilities. Dim reference images approximate the attribute with 0.45 opacity, not a guarantee of physical-terminal brightness.
+Auto uses 40% RGB brightness for dark backdrops (maximum channel 17–96), retaining a little hue while keeping contrast. The 256-color form uses a nearby gray and 8/16 colors use black. Near-black backdrops (maximum channel at most 16) use a neutral fallback: RGB 64/64/64, index 238 in 256 colors, or index 7 in 8/16 colors. Other backdrops use 80% RGB brightness in True Color, a nearby gray in 256 colors, or black in 8/16 colors. The same rules apply to custom palettes without assuming theme names.
 
-[Off](images/popup-shadow-off-en.svg) · [Auto/twelve palettes](images/popup-shadow-auto-en.svg) · [Dim/twelve palettes](images/popup-shadow-dim-en.svg) · [Black](images/popup-shadow-solid-en.svg) · [Edges](images/popup-shadow-edge-en.svg) · [ASCII](images/popup-shadow-ascii-en.svg). Columns are dark/light/monochrome and rows 8/16/256/True Color. `+` is a synthetic host-provided anchor, not a captured mouse event.
+The unfilled half retains its original background color. **Half-block cells replace underlying text**, unlike Dim. ASCII uses `.` in the same whole-cell footprint; it cannot represent an actual half row. Palettes must fit actual terminal capabilities; no terminal probing or palette mutation is performed. Dim references approximate the attribute with 0.45 opacity.
 
-![Dim shadow comparison](images/popup-shadow-dim-en.svg)
+[Off](images/popup-shadow-off-en.svg) · [Auto/twelve palettes](images/popup-shadow-auto-en.svg) · [Black](images/popup-shadow-solid-en.svg) · [Edges](images/popup-shadow-edge-en.svg) · [ASCII](images/popup-shadow-ascii-en.svg) · [Compatibility Dim](images/popup-shadow-dim-en.svg). Columns are dark/light/monochrome and rows 8/16/256/True Color. `+` is a synthetic host-provided anchor.
+
+![Compact Auto shadow](images/popup-shadow-auto-en.svg)
 
 ## Geometry
 
-ShadowOptions contains Mode/OffsetX/OffsetY (Rust snake_case). Enabled modes with both offsets zero use **two cells right and one row down**. A single zero axis is allowed for custom offsets. Negative offsets are invalid. Select off to remove the shadow.
+ShadowOptions contains Mode/OffsetX/OffsetY (Rust snake_case). Enabled modes with both offsets zero use **one cell right and half a row down**. The former two-cell/one-row default is removed. Half rows still **reserve one whole terminal row**: Bounds is one cell wider and one row taller than Card. The first right-hand cell uses `▄`, the bottom row uses `▀`, and intermediate right-hand cells are solid.
 
-Pass the **desired card size**, host anchor and viewport to PopupPlacement/popup_placement:
+Explicit offsets remain supported. For auto/solid, OffsetY=N reserves N rows and paints a visual N−0.5-row shift. A single zero axis is allowed; explicit Y=0 draws only a horizontal shift without half caps. One-row allocations omit the vertical shadow. Dim uses the same one-cell/one-row default allocation with whole-cell attributes. Negative offsets are invalid; select off to remove shadows.
 
-- Bounds/bounds: full card-and-shadow allocation passed to the view/widget.
+Pass the desired card size, host anchor and viewport to PopupPlacement/popup_placement:
+
+- Bounds/bounds: full whole-cell allocation for the card and shadow.
 - Card/card: actual content/border and input hit area.
-- Shadow/shadow: shifted shadow extent, potentially overlapping the card.
-- ShadowRegions/shadow_regions(): disjoint exposed right/bottom strips, excluding the card so Dim cannot leak into content.
+- Shadow/shadow: whole-cell bounding rectangle including half blocks, potentially overlapping Card; auto/solid height is one row greater than Card.
+- ShadowRegions/shadow_regions(): disjoint right/bottom strips excluding Card.
 
-Placement flips the **whole Bounds** above an anchor or shifts it left to fit. Narrow allocations shrink the card/offset; a single cell may leave no room for a shadow. Use ShadowOptions.Layout/layout for an existing allocation. MenuPlacement/menu_placement remains the no-shadow card placement helper.
+Placement flips the whole Bounds above an anchor or shifts it left to fit. Narrow allocations shrink Card/offsets; a single cell may leave no room for shadows. Use ShadowOptions.Layout/layout for an existing allocation. Use returned Card/Bounds rather than assuming fixed coordinates. MenuPlacement/menu_placement remains the no-shadow card placement helper.
 
 ## Go
 
@@ -74,28 +78,21 @@ frame.render_widget(
 
 Wrap arbitrary widgets with ShadowWidget::new(widget, &styles, options). Configure menu ascii before shadow to carry it into the pattern. Generic wrapper ascii changes only its shadow pattern. Renderers only draw: hosts hit-test layout.card and call model input methods. Shadows add no input target.
 
-## Boundaries, redraws and low-level APIs
+## Boundaries, redraws and compatibility
 
-Painting stays inside the allocation and clips to the screen/buffer. A wide grapheme crossing either horizontal card/shadow edge is blanked completely while retaining outside-cell styles. This repair can blank **one adjacent cell** belonging to a glyph intersecting the allocation. Check both menu and general-widget edges. [TVR-14 rules](overlay-drawing.en.md).
+Painting clips to the assigned buffer/screen. At either horizontal card/shadow edge, replace intersected wide graphemes with spaces while retaining outside-cell styles. This can blank one adjacent cell belonging to a crossing glyph. [Overlay drawing](overlay-drawing.en.md).
 
-Hosts repaint the background when disabling, closing, moving or resizing a popup. No stale screen snapshot is restored over newer application data. Draw the backdrop before applying Dim so it can fade actual existing content.
-
-Go PopupShadowStyle and DimRegion remain available. Solid uses the existing black style; Dim uses the existing safe region operation. The wrapper automates a bounded popup surround, not arbitrary backdrop areas or custom style composition. [API support status](api-lifecycle.en.md).
+Hosts repaint the backdrop before each draw and when disabling, closing, moving or resizing popups. No stale snapshot is restored. Auto needs the actual backdrop color; unresolved background colors fall back to the palette surface. Shadow cells never receive input. Go `PopupShadowStyle` and `DimRegion` remain available; Dim retains whole-cell text attributes. [API lifecycle](api-lifecycle.en.md).
 
 ## Examples and validation
 
 ```sh
-make run-menu-go ARGS="--lang ko --shadow dim"
+make run-menu-go ARGS="--lang en --shadow auto"
 make run-menu-rust ARGS="--lang en --shadow auto"
-# F6 in menu examples: off → auto → solid → dim → off
+# F6: off → auto → solid → off
 cargo run --manifest-path rust/Cargo.toml --features ratatui --example shadows -- \
-  --lang en --shadow dim --snapshot popup-shadows.svg
-```
-
-The example host chooses opening, caller restoration and global shortcuts. Its context-menu anchor remains fixed; this task does not newly wire right-click coordinates. The shadows example renders real shared widgets to TestBackend without a DB or interactive terminal. Validate modes/profiles, Unicode/ASCII, geometry/backdrop edges, Go post-Show output and Rust TestBackend. Separate local results, remote CI and publication in the [validation record](evidence/popup-shadow-results.json). No CentOS checks are performed.
-
-```sh
+  --lang en --shadow auto --clean --snapshot popup-shadows.svg
 python3 tools/snapshot_popup_shadows.py .cache/rust/debug/examples/shadows
 ```
 
-Auto uses 80% of surface RGB brightness in True Color and a nearby quantized gray in 256 colors for a subtle shadow. The 8/16-color and black-surface pattern fallbacks remain coarser because of palette limits.
+The example host owns opening, caller restoration and global keys. The context-menu anchor is synthetic, not a new right-click integration. References use actual TestBackend widgets. Auto/solid/off references use --clean for a quiet application backdrop; edge/ASCII/Dim references retain repeated text to inspect boundaries and underlying content. Go post-Show buffers and Rust TestBackend cover palettes, Unicode/ASCII, clipping, wide edges, backdrop contrast and restoration. [TVR-29 local results](evidence/tvr29-shadow-results.json) distinguish local checks from unexecuted CI/publication; [previous release results](evidence/popup-shadow-results.json) remain historical. No CentOS checks.

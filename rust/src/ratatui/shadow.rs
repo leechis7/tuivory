@@ -49,13 +49,18 @@ impl<W: Widget> Widget for ShadowWidget<'_, W> {
             height: area.height.into(),
         });
         for region in layout.shadow_regions() {
-            draw_shadow(
-                buf,
-                rect(region),
-                self.styles,
-                self.options.mode,
-                self.ascii,
-            );
+            if matches!(self.options.mode, ShadowMode::Auto | ShadowMode::Solid) {
+                draw_half_shadow(
+                    buf,
+                    rect(region),
+                    layout,
+                    self.styles,
+                    self.options.mode,
+                    self.ascii,
+                );
+            } else if self.options.mode == ShadowMode::Dim {
+                draw_shadow(buf, rect(region));
+            }
         }
         let card = rect(layout.card);
         if self.options.mode != ShadowMode::Off && !card.is_empty() {
@@ -105,26 +110,41 @@ fn rgb(c: Color) -> (u8, u8, u8) {
         }
     }
 }
-fn brush(styles: &Styles, mode: ShadowMode) -> (Style, bool) {
-    let base = styles.palette.style("surface").expect("surface role");
-    let hint = styles.palette.style("hint").expect("hint role");
-    if mode == ShadowMode::Solid {
-        return (
-            Style::default()
-                .bg(ratatui::style::Color::Indexed(0))
-                .fg(hint.foreground.into()),
-            false,
-        );
-    }
-    let (r, g, b) = rgb(base.background);
-    if r.max(g).max(b) <= 16 {
-        return (
-            Style::default()
-                .bg(base.background.into())
-                .fg(hint.foreground.into()),
-            true,
-        );
-    }
+
+fn backdrop_color(c: ratatui::style::Color, styles: &Styles) -> Color {
+    use ratatui::style::Color as C;
+    let index = match c {
+        C::Rgb(r, g, b) => return Color::Rgb(r, g, b),
+        C::Indexed(n) => return Color::Indexed(n),
+        C::Black => 0,
+        C::Red => 1,
+        C::Green => 2,
+        C::Yellow => 3,
+        C::Blue => 4,
+        C::Magenta => 5,
+        C::Cyan => 6,
+        C::Gray => 7,
+        C::DarkGray => 8,
+        C::LightRed => 9,
+        C::LightGreen => 10,
+        C::LightYellow => 11,
+        C::LightBlue => 12,
+        C::LightMagenta => 13,
+        C::LightCyan => 14,
+        C::White => 15,
+        C::Reset => {
+            return styles
+                .palette
+                .style("surface")
+                .expect("surface role")
+                .background;
+        }
+    };
+    Color::Indexed(index)
+}
+
+fn half_shadow_color(backdrop: Color, styles: &Styles) -> Color {
+    let (r, g, b) = rgb(backdrop);
     let colors = styles
         .palette
         .styles()
@@ -134,19 +154,83 @@ fn brush(styles: &Styles, mode: ShadowMode) -> (Style, bool) {
     let has_256 = colors
         .into_iter()
         .any(|c| matches!(c, Color::Indexed(16..=255)));
-    let bg = if has_rgb {
+    if r.max(g).max(b) <= 16 {
+        return if has_rgb {
+            Color::Rgb(64, 64, 64)
+        } else if has_256 {
+            Color::Indexed(238)
+        } else {
+            Color::Indexed(7)
+        };
+    }
+    let factor = if r.max(g).max(b) <= 96 { 2 } else { 4 };
+    if has_rgb {
         Color::Rgb(
-            (r as u16 * 4 / 5) as u8,
-            (g as u16 * 4 / 5) as u8,
-            (b as u16 * 4 / 5) as u8,
+            (r as u16 * factor / 5) as u8,
+            (g as u16 * factor / 5) as u8,
+            (b as u16 * factor / 5) as u8,
         )
     } else if has_256 {
-        let gray = (r as i32 + g as i32 + b as i32) * 4 / 15;
+        let gray = (r as i32 + g as i32 + b as i32) * factor as i32 / 15;
         Color::Indexed((232 + ((gray - 8 + 5) / 10).clamp(0, 23)) as u8)
     } else {
         Color::Indexed(0)
-    };
-    (Style::default().bg(bg.into()), false)
+    }
+}
+
+fn draw_half_shadow(
+    buf: &mut Buffer,
+    region: Rect,
+    layout: PopupLayout,
+    styles: &Styles,
+    mode: ShadowMode,
+    ascii: bool,
+) {
+    let area = region.intersection(buf.area);
+    if area.is_empty() {
+        return;
+    }
+    for y in area.y..area.bottom() {
+        // Ratatui resets wide continuation cells. A terminal still shows the
+        // leading cell's background across both columns; capture it before
+        // repairing/overwriting either half of the grapheme.
+        let backgrounds: Vec<_> = (area.x..area.right())
+            .map(|x| {
+                let source =
+                    if x > buf.area.x && crate::components::cells(buf[(x - 1, y)].symbol()) > 1 {
+                        x - 1
+                    } else {
+                        x
+                    };
+                backdrop_color(buf[(source, y)].bg, styles)
+            })
+            .collect();
+        repair_edges(buf, area, y);
+        for x in area.x..area.right() {
+            let bg: ratatui::style::Color = backgrounds[(x - area.x) as usize].into();
+            let shade: ratatui::style::Color = if mode == ShadowMode::Solid {
+                Color::Indexed(0)
+            } else {
+                half_shadow_color(backdrop_color(bg, styles), styles)
+            }
+            .into();
+            let (mut symbol, mut style) = (" ", Style::default().bg(shade));
+            if ascii {
+                symbol = ".";
+                style = Style::default().fg(shade).bg(bg);
+            } else if layout.shadow.height > layout.card.height {
+                if y as usize == layout.shadow.y {
+                    symbol = "▄";
+                    style = Style::default().fg(shade).bg(bg);
+                } else if y as usize == layout.shadow.y.saturating_add(layout.shadow.height) - 1 {
+                    symbol = "▀";
+                    style = Style::default().fg(shade).bg(bg);
+                }
+            }
+            buf[(x, y)].reset();
+            buf[(x, y)].set_symbol(symbol).set_style(style);
+        }
+    }
 }
 // Clear an intersected whole grapheme, retaining every cell's original style.
 fn clear_wide(buf: &mut Buffer, x: u16, y: u16) {
@@ -167,26 +251,15 @@ pub(super) fn repair_edges(buf: &mut Buffer, area: Rect, y: u16) {
         clear_wide(buf, last, y)
     }
 }
-fn draw_shadow(buf: &mut Buffer, area: Rect, styles: &Styles, mode: ShadowMode, ascii: bool) {
+fn draw_shadow(buf: &mut Buffer, area: Rect) {
     let area = area.intersection(buf.area);
-    if area.is_empty() || mode == ShadowMode::Off {
+    if area.is_empty() {
         return;
     }
-    let (style, pattern) = brush(styles, mode);
-    let symbol = if pattern {
-        if ascii { "." } else { "░" }
-    } else {
-        " "
-    };
     for y in area.y..area.bottom() {
         repair_edges(buf, area, y);
         for x in area.x..area.right() {
-            if mode == ShadowMode::Dim {
-                buf[(x, y)].modifier.insert(Modifier::DIM)
-            } else {
-                buf[(x, y)].reset();
-                buf[(x, y)].set_symbol(symbol).set_style(style);
-            }
+            buf[(x, y)].modifier.insert(Modifier::DIM);
         }
     }
 }

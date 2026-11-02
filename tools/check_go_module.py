@@ -149,6 +149,7 @@ func TestIsolatedModule(t *testing.T) {
     if err != nil { t.Fatal(err) }
     status.SetRect(0,0,20,1); status.Draw(screen)
     menuView,menuErr:=tuivory.NewMenuView(menu,colors,true,nil);if menuErr!=nil{t.Fatal(menuErr)};popup,menuErr:=tuivory.NewPanelView(menuView,colors);if menuErr!=nil{t.Fatal(menuErr)};popup.ASCII=true;popup.SetRect(0,0,30,6);popup.Draw(screen);screen.Show();physical,cols,_=screen.GetContents();if string(physical[0].Bytes)!="+"||string(physical[2*cols+2].Bytes)!=">"{t.Fatal("external menu physical output")}
+    compact,err:=tuivory.NewShadowView(popup,colors,tuivory.ShadowOptions{Mode:tuivory.ShadowAuto});if err!=nil{t.Fatal(err)};compact.SetRect(0,0,30,6);compact.Draw(screen);screen.Show();physical,cols,_=screen.GetContents();if string(physical[29].Bytes)!="▄"||string(physical[5*cols+1].Bytes)!="▀"||compact.InRect(29,0){t.Fatal("external compact shadow")}
     if _,err:=tuivory.NewMenuBarView(menu,colors,nil);err!=nil{t.Fatal(err)}
 }
 ''')
