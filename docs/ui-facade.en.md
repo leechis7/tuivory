@@ -21,6 +21,28 @@ Go uses one root import; existing /ui and /terminal paths remain supported witho
 
 Rust features: default core (1.85+), ratatui rendering (1.88+), terminal I/O (1.88+). The existing playground feature includes terminal as a compatible alias. Hosts retain database/global-key/clipboard execution policy.
 
+## Platform terminal APIs — 0.10.2 TVR-26 fix
+
+Public Go **0.10.1** references `NewStdIoTty` even on Windows, where it does not exist, breaking a root import. The generator is fixed in 0.10.2. Version 0.10.1 is [withdrawn](withdrawn-versions.en.md). No application-local shim or direct backend import is used.
+
+| Root/terminal API | Declaration availability |
+| --- | --- |
+| `NewScreen`, `NewConsoleScreen` | Common; preserve actual backend support/error behavior |
+| `NewDevTty` | Backend Unix variants, Windows and Plan9 implementations |
+| `NewStdIoTty`, `NewDevTtyFromDev` | Backend Unix variants and Plan9; absent on Windows |
+| `NewTerminfoScreenFromTty`, `NewTerminfoScreenFromTtyTerminfo` | `!(js && wasm)` |
+
+Ordinary apps use portable paths such as NewApplication/NewScreen/NewDevTty. Host code selecting platform devices directly must use matching build constraints. The table describes backend declaration availability, not tested runtime support on every platform.
+
+Generation retains the existing Linux inventory and combines all backend implementations' `//go:build`, legacy `// +build` and filename OS/architecture conditions. Root and terminal use conditional generated files; `build_constraint` in the [symbol map](../design/go-facade-symbols.json) records availability. Complementary Windows implementations and non-Windows stubs remain common APIs.
+
+```sh
+python3 tools/check_go_platforms.py          # compile six OS/architecture consumers
+python3 tools/check_go_platforms.py --native # current-host simulation execution
+```
+
+Consumers import only the SDK root. Negative Windows checks verify that calling an unavailable API fails at the consumer. Artifacts stay under `.cache/validation/go-platforms/`; native-only bin examples and release platform scope remain unchanged. [Evidence](evidence/tvr26-windows-facade-results.json) separates local cross compilation/Linux ARM64 simulation from unexecuted native Windows/macOS CI. Physical console/font tests are separate.
+
 ## Migrating Go imports
 
 ```go

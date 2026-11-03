@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](ui-facade.en.md)
 
+**0.10.2 TVR-26:** [Windows Go 파사드](../docs/ui-facade.md)가 Unix 전용 API를 참조하는 결함을 수정했습니다. 0.10.2에서 제공하며 0.10.1은 사용 금지입니다.
+
 0.8.0 TVR-26의 공통 UI 명세입니다. 현재 Go·Rust를 구현하며 Python·JavaScript/TypeScript·C·C++는 확장 대상으로 설계합니다. [언어별 API·전환](../docs/ui-facade.md)과 [입력/오프셋 시나리오](ui-input-cases.json)를 함께 유지합니다.
 
 **0.8.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).

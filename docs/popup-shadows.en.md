@@ -2,7 +2,7 @@
 
 [한국어 (default)](popup-shadows.md) · **English**
 
-Shadows are **off by default** and selected per menu/context menu/general popup by the host. Hosts own focus, global keys and business actions. TVR-19 introduced the APIs; **0.10.1 TVR-29** unifies auto/solid as **one cell right and half a row down**. Tags through 0.10.0 do not include this change.
+Shadows are **off by default** and selected per menu/context menu/general popup by the host. Hosts own focus, global keys and business actions. TVR-19 introduced the APIs; **0.10.2 TVR-29** unifies auto/solid as **one cell right and half a row down**. Tags through 0.10.0 do not include this change.
 
 ## Modes
 

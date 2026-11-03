@@ -2,6 +2,9 @@ module github.com/leechis7/tuivory/go
 
 go 1.24.0
 
+// Windows facade compilation fails in v0.10.1. Do not use; upgrade to v0.10.2 or later.
+retract v0.10.1
+
 require github.com/gdamore/tcell/v2 v2.13.10
 
 require (

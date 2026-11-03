@@ -2,6 +2,8 @@
 
 [Korean (default)](ui-facade.md) · **English**
 
+**0.10.2 TVR-26:** [Windows Go facade](../docs/ui-facade.en.md) no longer references Unix-only terminal APIs. Available in 0.10.2; do not use 0.10.1.
+
 Shared UI specification for 0.8.0 TVR-26. Go/Rust are implemented; Python, JavaScript/TypeScript and C/C++ are future adapters. Maintain [API/migration mappings](../docs/ui-facade.en.md) and [input/offset scenarios](ui-input-cases.json) together.
 
 **0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).

@@ -2,7 +2,7 @@
 
 [한국어 (default)](examples.md) · **English**
 
-**0.10.1 TVR-29:** [Compact popup shadows](popup-shadows.en.md) now use one cell right and half a row down with stronger dark-theme contrast. Available starting with 0.10.1.
+**0.10.2 TVR-29:** [Compact popup shadows](popup-shadows.en.md) now use one cell right and half a row down with stronger dark-theme contrast. Available in 0.10.2.
 
 **0.9.1 TVR-27 change:** Go/Rust examples share one executable per language. Release archives use this layout starting with 0.9.1.
 
