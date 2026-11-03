@@ -2,7 +2,11 @@
 
 [한국어 (default)](README.md) · **English**
 
-**0.10.1 TVR-29:** [Compact popup shadows](../docs/popup-shadows.en.md) use one cell right and half a row down; preserve borders and the off default.
+**Do not use 0.10.1:** [Withdrawal and upgrade](../docs/withdrawn-versions.en.md). Use 0.10.2 or later.
+
+**0.10.2 TVR-26:** [Windows Go facade](../docs/ui-facade.en.md) no longer references Unix-only terminal APIs. Available in 0.10.2; do not use 0.10.1.
+
+**0.10.2 TVR-29:** [Compact popup shadows](../docs/popup-shadows.en.md) use one cell right and half a row down; preserve borders and the off default.
 
 0.10.0 TVR-7: [responsive Go Modal](../docs/modals.en.md) wraps long buttons inside narrow terminals. Modal is an SDK adapter embedding its backend, an exception to raw alias identity. Included in 0.10.0.
 0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](../docs/drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
@@ -18,12 +22,12 @@
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
-Product version is **0.10.1** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.10.1`. [Release guide](../docs/release-0.10.1.en.md).
+Product version is **0.10.2** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.10.2`. [Release guide](../docs/release-0.10.2.en.md).
 
 All Go implementation code and module configuration live in this directory. The module path is `github.com/leechis7/tuivory/go`; the package name is `tuivory`. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.10.1
+go get github.com/leechis7/tuivory/go@v0.10.2
 ```
 
 ```go
@@ -34,7 +38,7 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-The current release is `v0.10.1`, tagged `go/v0.10.1` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
+The current release is `v0.10.2`, tagged `go/v0.10.2` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
 
 From the repository root:
 

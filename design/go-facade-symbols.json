@@ -5663,16 +5663,18 @@
           "sdk": [
             "github.com/leechis7/tuivory/go/terminal.NewDevTty",
             "github.com/leechis7/tuivory/go.NewDevTty"
-          ]
+          ],
+          "build_constraint": "aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris || zos || plan9 || windows"
         },
         {
           "name": "NewDevTtyFromDev",
-          "kind": "platform function",
+          "kind": "function",
           "target": "github.com/gdamore/tcell/v2.NewDevTtyFromDev",
           "sdk": [
             "github.com/leechis7/tuivory/go/terminal.NewDevTtyFromDev",
             "github.com/leechis7/tuivory/go.NewDevTtyFromDev"
-          ]
+          ],
+          "build_constraint": "aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris || zos || plan9"
         },
         {
           "name": "NewEventClipboard",
@@ -5798,7 +5800,8 @@
           "sdk": [
             "github.com/leechis7/tuivory/go/terminal.NewStdIoTty",
             "github.com/leechis7/tuivory/go.NewStdIoTty"
-          ]
+          ],
+          "build_constraint": "aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris || zos || plan9"
         },
         {
           "name": "NewTerminfoScreen",
@@ -5816,7 +5819,8 @@
           "sdk": [
             "github.com/leechis7/tuivory/go/terminal.NewTerminfoScreenFromTty",
             "github.com/leechis7/tuivory/go.NewTerminfoScreenFromTty"
-          ]
+          ],
+          "build_constraint": "!(js \u0026\u0026 wasm)"
         },
         {
           "name": "NewTerminfoScreenFromTtyTerminfo",
@@ -5825,7 +5829,8 @@
           "sdk": [
             "github.com/leechis7/tuivory/go/terminal.NewTerminfoScreenFromTtyTerminfo",
             "github.com/leechis7/tuivory/go.NewTerminfoScreenFromTtyTerminfo"
-          ]
+          ],
+          "build_constraint": "!(js \u0026\u0026 wasm)"
         },
         {
           "name": "PaletteColor",

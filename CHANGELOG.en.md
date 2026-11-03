@@ -2,7 +2,13 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.10.2 — 2026-11-03
+
+- TVR-26: preserve backend build constraints in terminal/root facade generation, fix Windows import compilation, and add root-only OS/architecture consumers plus native Windows/macOS/Linux CI. Preserve API names and native-only example builds; update bilingual availability/API guides.
+
 ## 0.10.1 — 2026-11-03
+
+**DO NOT USE:** withdrawn due to Windows Go facade compilation failure; retracted as a Go module. Upgrade to 0.10.2. [Details](docs/withdrawn-versions.en.md).
 
 - TVR-29: replace the old two-cell/one-row default with compact Go/Rust half-row popup shadows; improve actual-backdrop contrast, ASCII fallback, geometry/input safety, wide-glyph regressions and bilingual references. Dim remains a whole-cell compatibility mode outside the example cycle.
 

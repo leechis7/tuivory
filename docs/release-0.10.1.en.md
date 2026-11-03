@@ -2,6 +2,8 @@
 
 [한국어 (default)](release-0.10.1.md) · **English**
 
+**DO NOT USE / WITHDRAWN:** use [0.10.2](release-0.10.2.en.md). [Windows facade defect and Go retraction](withdrawn-versions.en.md). The remaining text is historical release evidence.
+
 Go/Rust auto/solid popup shadows now use **one cell right and half a row down**. Keep borders and the off default; frameless and right-only comparison designs are not applied. Dark shades use actual-backdrop contrast with RGB 40% brightness, while light shades use 80%. Black backgrounds and low-color terminals use documented fallbacks.
 
 ```sh

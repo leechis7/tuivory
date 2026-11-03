@@ -21,6 +21,28 @@ Go는 루트 패키지 하나만 import합니다. 기존 /ui·/terminal 경로�
 
 Rust 기능은 기본 core(1.85+), 그리기용 ratatui(1.88+), 터미널 I/O용 terminal(1.88+)로 나뉩니다. 기존 playground 기능은 terminal을 포함하는 호환 경로입니다. DB·전역 키·클립보드 실행 정책은 앱에 남습니다.
 
+## 플랫폼별 터미널 API — 0.10.2 TVR-26 수정
+
+공개 Go **0.10.1**에서 Windows에 없는 `NewStdIoTty`를 공통 파일이 참조해 루트 import만으로 컴파일이 실패하는 결함을 확인했습니다. 0.10.2에서 생성기를 수정했습니다. 0.10.1은 [사용 금지](withdrawn-versions.md)입니다. 앱 로컬 shim이나 backend 직접 import로 우회하지 않습니다.
+
+| 루트·terminal API | 선언 조건 |
+| --- | --- |
+| `NewScreen`, `NewConsoleScreen` | 공통. 실제 backend의 지원·오류 의미는 유지 |
+| `NewDevTty` | backend의 Unix 계열·Windows·Plan9 구현 |
+| `NewStdIoTty`, `NewDevTtyFromDev` | backend의 Unix 계열·Plan9 구현. Windows에는 없음 |
+| `NewTerminfoScreenFromTty`, `NewTerminfoScreenFromTtyTerminfo` | `!(js && wasm)` |
+
+일반 앱은 `NewApplication`·`NewScreen`·`NewDevTty` 같은 공통 경로를 사용합니다. 플랫폼 장치를 직접 선택하는 앱 코드도 해당 빌드 조건으로 분리해야 합니다. 표는 backend 선언의 가용성이며 모든 플랫폼의 실행 지원을 검증했다는 뜻은 아닙니다.
+
+생성기는 기존 Linux 심볼 목록을 유지하면서 모든 backend 구현의 `//go:build`·기존 `// +build`·파일명 OS/아키텍처 조건을 합칩니다. 루트와 terminal 모두 조건부 생성 파일을 사용합니다. [심볼 대응](../design/go-facade-symbols.json)의 `build_constraint`에서 조건을 확인할 수 있습니다. Windows 구현과 비 Windows stub처럼 서로 보완하는 선언은 공통 API로 유지합니다.
+
+```sh
+python3 tools/check_go_platforms.py          # 6개 OS/아키텍처 소비자 컴파일
+python3 tools/check_go_platforms.py --native # 현재 호스트 시뮬레이션 실행
+```
+
+검사 앱은 루트 경로만 import합니다. Windows에서 없는 API를 호출할 때 소비자 오류가 나는지도 검사합니다. 산출물은 `.cache/validation/go-platforms/`에만 두며 기본 `bin/` 예제 빌드나 배포 플랫폼을 늘리지 않습니다. [검증 기록](evidence/tvr26-windows-facade-results.json)에서 로컬 교차 컴파일·Linux ARM64 시뮬레이션과 미실행 Windows/macOS 네이티브 CI를 구분합니다. 물리 콘솔·폰트 검증은 별도입니다.
+
 ## 기존 Go 코드 전환
 
 ```go
