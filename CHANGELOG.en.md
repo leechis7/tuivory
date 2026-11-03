@@ -4,6 +4,8 @@
 
 ## 0.10.2 — 2026-11-03
 
+- Cumulative replacement including all TVR-29 improvements from withdrawn 0.10.1: Go/Rust half-row shadows, retained borders, dark contrast, drawing/input safety and bilingual examples/references.
+
 - TVR-26: preserve backend build constraints in terminal/root facade generation, fix Windows import compilation, and add root-only OS/architecture consumers plus native Windows/macOS/Linux CI. Preserve API names and native-only example builds; update bilingual availability/API guides.
 
 ## 0.10.1 — 2026-11-03
