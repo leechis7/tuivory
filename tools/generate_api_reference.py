@@ -92,6 +92,8 @@ for language, body in [('go',go_body),('rust',rust_body)]:
     for suffix in ['', '.en']:
         title=f'# {language.title()} API — source ({version})\n\n'
         intro=(f'**한국어 (기본)** · [English]({language}.en.md)\n\n[API 안내](README.md) · [컴포넌트 사용법](../components.md)\n\n실제 소스에서 생성한 공개 선언과 원문 주석입니다. 코드·심볼·원문 주석은 두 언어판에서 동일하게 유지합니다. 기본값·오류·이벤트 의미는 API 안내의 컴포넌트별 명세를 참고하세요. 외부 프레임워크의 상속/trait API는 해당 프레임워크 문서를 참고합니다.\n\n' if not suffix else f'[한국어 (default)]({language}.md) · **English**\n\n[API guide](README.en.md) · [Component guides](../components.en.md)\n\nGenerated public declarations and original source comments. Code, symbols and original comments are identical across language editions. See the API guide for component defaults, errors and event semantics. Inherited/trait APIs from external frameworks are documented by those frameworks.\n\n')
+        if language == 'go':
+            intro += ('플랫폼 API는 생성 파일의 빌드 조건에 따라 달라집니다. 아래 선언은 문서 생성 호스트 기준입니다. [플랫폼별 가용성](../ui-facade.md)을 함께 확인하세요.\n\n' if not suffix else 'Platform APIs depend on generated build constraints; declarations below reflect the documentation host. See [platform availability](../ui-facade.en.md).\n\n')
         result=title+intro+body
         target=ROOT/'docs/api'/f'{language}{suffix}.md'
         if a.check:
@@ -102,6 +104,8 @@ for package in ('ui', 'terminal'):
     for suffix in ('', '.en'):
         target=ROOT/'docs/api'/f'go-{package}{suffix}.md'
         intro=(f'**한국어 (기본)** · [English](go-{package}.en.md)\n\n[공통 UI 사용법·설정·호환성](../ui-facade.md) · [심볼 대응](../../design/go-facade-symbols.json)\n\n0.7.0부터 제공하는 SDK 호환 선언입니다. 별칭은 고정 backend의 메서드·콜백을 유지합니다. 전역 변수는 setter 설명을 따릅니다.\n\n' if not suffix else f'[한국어 (default)](go-{package}.md) · **English**\n\n[UI usage/configuration/compatibility](../ui-facade.en.md) · [Symbol mappings](../../design/go-facade-symbols.json)\n\nSDK compatibility declarations available since 0.7.0. Aliases retain pinned backend methods/callbacks. Follow setter guidance for global variables.\n\n')
+        if package == 'terminal':
+            intro += ('플랫폼별 API 가용성은 [사용법](../ui-facade.md)을 참고하세요. 아래 선언은 문서 생성 호스트 기준입니다.\n\n' if not suffix else 'See the [guide](../ui-facade.en.md) for platform availability. Declarations reflect the documentation host.\n\n')
         result=f'# Go {package} API — source ({version})\n\n'+intro+'```go\n'+declarations.strip()+'\n```\n'
         if a.check:
             if not target.exists() or target.read_text()!=result:raise SystemExit(f'Stale API reference: {target}')

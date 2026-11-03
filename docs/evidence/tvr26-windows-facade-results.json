@@ -1,0 +1,87 @@
+{
+  "issue": "TVR-26",
+  "stage": "local-validation-passed",
+  "scope_ko": "Go 파사드 생성기의 플랫폼 조건 유실을 수정. 공개 0.10.1에는 아직 결함이 남음.",
+  "scope_en": "Fix lost platform constraints in Go facade generation. Public 0.10.1 still contains the defect.",
+  "source_uncommitted": true,
+  "published": false,
+  "remote_ci": "not-run",
+  "physical_windows_macos_terminal": "not-tested",
+  "centos": "not-run-user-instruction",
+  "date": "2026-11-03",
+  "branch": "codex/TVR-26-windows-facade",
+  "base_commit": "287ab1d17e3834c13359645d4a4ec132e83ed345",
+  "baseline": {
+    "version": "0.10.1",
+    "target": "windows/amd64",
+    "result": "failed",
+    "error": "terminal/compat_generated.go:1318:49: undefined: native.NewStdIoTty"
+  },
+  "checks": {
+    "generator": "race-tested explicit/legacy/filename constraints, complementary implementations, root propagation, unused imports and stale generated-file removal",
+    "generation": "--check passed normally and from an already compiled generator under Windows ARM64/macOS AMD64 target environments",
+    "cross_compilation": [
+      {
+        "os": "windows",
+        "arch": "amd64",
+        "compile": "passed",
+        "native_simulation": false
+      },
+      {
+        "os": "windows",
+        "arch": "arm64",
+        "compile": "passed",
+        "native_simulation": false
+      },
+      {
+        "os": "linux",
+        "arch": "amd64",
+        "compile": "passed",
+        "native_simulation": false
+      },
+      {
+        "os": "linux",
+        "arch": "arm64",
+        "compile": "passed",
+        "native_simulation": false
+      },
+      {
+        "os": "darwin",
+        "arch": "amd64",
+        "compile": "passed",
+        "native_simulation": false
+      },
+      {
+        "os": "darwin",
+        "arch": "arm64",
+        "compile": "passed",
+        "native_simulation": false
+      }
+    ],
+    "native_simulation": [
+      {
+        "os": "linux",
+        "arch": "arm64",
+        "compile": "passed",
+        "native_simulation": true
+      }
+    ],
+    "windows_negative": "calling NewStdIoTty fails at the root-only consumer; ordinary imports compile and no native undefined reference is emitted",
+    "go": "make test check build: all Go race tests/vet, facade/shared data/palette/links and current ARM64 static ELF passed",
+    "isolated_module": "tools/check_go_module.py: standalone Go module and root-only external consumer passed without repository design assets",
+    "api": "generated paired Korean/English source references synchronized",
+    "ui_images": "unchanged; no visual behavior change"
+  },
+  "ci_added": [
+    "native facade generation and root-only simulation on Windows/macOS/Linux",
+    "six-target consumer compilation on Linux"
+  ],
+  "not_run": [
+    "native Windows/macOS CI (added, not executed)",
+    "Windows/macOS physical terminal/input/fonts",
+    "CentOS (user instruction)",
+    "publication and LazyOra downstream validation"
+  ],
+  "notes_ko": "라이브러리 소비자 교차 컴파일 자료는 .cache/ 아래에만 생성. bin/ 예제는 현재 ARM64 하나로 유지. Windows에서는 backend와 동일하게 NewStdIoTty를 선언하지 않으며 공통 경로는 NewApplication/NewScreen/NewDevTty. 공개 0.10.1에는 결함이 남음.",
+  "notes_en": "Cross-compiled library consumers stay under .cache; bin examples remain native ARM64 only. NewStdIoTty is absent on Windows as in the backend; portable paths use NewApplication/NewScreen/NewDevTty. Public 0.10.1 remains affected."
+}
