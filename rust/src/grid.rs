@@ -5,7 +5,10 @@ use crate::{
     interaction::ControlState,
 };
 use std::collections::BTreeMap;
+mod input;
 mod options;
+mod work;
+pub use work::*;
 mod pointer;
 mod presentation;
 pub use options::*;
@@ -66,6 +69,7 @@ pub struct GridEvent {
     pub direction: String,
 }
 pub struct Grid {
+    work: work::GridWork,
     columns: Vec<GridColumn>,
     source: Box<dyn GridSource>,
     pub row_id: String,
@@ -115,6 +119,7 @@ impl Grid {
             col.width = col.width.min(4096)
         }
         let mut g = Self {
+            work: work::GridWork::default(),
             columns,
             source,
             row_id: String::new(),
@@ -152,6 +157,10 @@ impl Grid {
         &self.columns
     }
     pub fn set_source(&mut self, source: Box<dyn GridSource>) {
+        self.invalidate_work();
+        self.drag_column.clear();
+        self.drag_anchor = GridRange::default();
+        self.work.drag_move_column.clear();
         if let Some(at) = source
             .index_of(&self.row_id)
             .filter(|at| *at < source.len())
@@ -176,6 +185,7 @@ impl Grid {
         }
         self.column = self.column.min(self.columns.len() - 1);
         self.column_id = self.columns[self.column].id.clone();
+        self.reconcile_visible();
         if self.source.is_empty() {
             self.row = 0;
             self.row_id.clear();
@@ -199,7 +209,8 @@ impl Grid {
         }
         self.row_id = self.source.row(self.row).id;
         self.top = self.top.min(self.row);
-        self.left = self.left.min(self.column)
+        self.left = self.left.min(self.column);
+        self.reconcile_visible()
     }
     pub fn focus(&mut self, row_id: &str, column_id: &str) -> bool {
         let Some(row) = self
@@ -213,7 +224,11 @@ impl Grid {
         if record.id != row_id || record.state.disabled {
             return false;
         }
-        let Some(col) = self.columns.iter().position(|c| c.id == column_id) else {
+        let Some(col) = self
+            .columns
+            .iter()
+            .position(|c| c.id == column_id && self.work.hidden.get(&c.id) != Some(&true))
+        else {
             return false;
         };
         self.row = row;
@@ -248,6 +263,9 @@ impl Grid {
     }
     pub fn handle(&mut self, action: &str, height: usize) -> GridEvent {
         self.reconcile();
+        if let Some(e) = self.work_action(action, height) {
+            return e;
+        }
         if self.columns.is_empty() {
             return GridEvent::default();
         }
@@ -282,9 +300,14 @@ impl Grid {
             "copy" => {
                 event.kind = "copy".into();
                 event.text = if self.whole_row {
-                    self.columns
+                    self.visible_indices()
                         .iter()
-                        .map(|c| row.cells.get(&c.id).cloned().unwrap_or_default())
+                        .map(|c| {
+                            row.cells
+                                .get(&self.columns[*c].id)
+                                .cloned()
+                                .unwrap_or_default()
+                        })
                         .collect::<Vec<_>>()
                         .join("\t")
                 } else {

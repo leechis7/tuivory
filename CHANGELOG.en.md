@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.11.0 — 2026-11-06
+
+- TVR-7: Go/Rust host-approved in-cell editing and navigation, independent dirty-cell/row-gutter cues, column pinning/visibility/reordering, quoted TSV paste requests, loaded-data find/global-search requests, serializable view state and raw-value details. Preserves the existing grid and default edit event. Adds shared fixtures, physical output/PTY coverage, bilingual APIs/design/examples and references. Available from 0.11.0.
+
 ## 0.10.2 — 2026-11-03
 
 - Cumulative replacement including all TVR-29 improvements from withdrawn 0.10.1: Go/Rust half-row shadows, retained borders, dark contrast, drawing/input safety and bilingual examples/references.

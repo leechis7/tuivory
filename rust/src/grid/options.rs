@@ -32,7 +32,7 @@ pub struct GridOptions {
     pub selection: String,
     pub status_fields: Option<Vec<String>>,
 }
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct GridColumnOptions {
     pub align: String,
     pub min_width: usize,
@@ -50,7 +50,7 @@ pub struct GridCellInfo {
     pub state: ControlState,
     pub metadata: String,
 }
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct GridRange {
     pub anchor_row: String,
     pub anchor_column: String,
@@ -179,6 +179,10 @@ impl Grid {
         }
         if !o.selection.is_empty() {
             self.set_selection_mode(&o.selection)?;
+        }
+        if o.disable_editing {
+            self.cancel_edit();
+            self.cancel_paste()
         }
         self.options = o;
         Ok(())
@@ -310,7 +314,9 @@ impl Grid {
         e.text = (r1..=r2)
             .map(|r| {
                 let row = self.source.row(r);
-                (c1..=c2)
+                self.visible_indices()
+                    .into_iter()
+                    .filter(|c| *c >= c1 && *c <= c2)
                     .map(|c| {
                         let s = row
                             .cells
@@ -403,9 +409,14 @@ impl Grid {
                 }
                 .into();
                 e.text = if action == "copy_row" {
-                    self.columns
+                    self.visible_indices()
                         .iter()
-                        .map(|c| r.cells.get(&c.id).cloned().unwrap_or_default())
+                        .map(|c| {
+                            r.cells
+                                .get(&self.columns[*c].id)
+                                .cloned()
+                                .unwrap_or_default()
+                        })
                         .collect::<Vec<_>>()
                         .join("\t")
                 } else {

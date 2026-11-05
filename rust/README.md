@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+0.11.0 TVR-7: [그리드 편집과 데이터 작업](../docs/grid-workspace.md). `grid::Grid / GridWidget`과 공통 입력을 확장하며 보기 상태는 serde로 저장할 수 있습니다.
+
 **0.10.1 사용 금지:** [업그레이드·회수 안내](../docs/withdrawn-versions.md). 0.10.2 이상을 사용하세요.
 
 **0.10.2 TVR-29:** [팝업 그림자](../docs/popup-shadows.md)를 오른쪽 1칸·아래 반 줄로 통일했습니다. 테두리와 기본 끄기는 유지합니다.
@@ -17,17 +19,17 @@
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-crate 버전은 **0.10.2**이며 루트 `VERSION`과 일치합니다. `rust/v0.10.2` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.10.2.md).
+crate 버전은 **0.11.0**이며 루트 `VERSION`과 일치합니다. `rust/v0.11.0` Git 태그로 사용합니다. [릴리스 안내](../docs/release-0.11.0.md).
 
 공통 컴포넌트 모델·후보 토큰·스타일 코어, 선택적 Ratatui 렌더러와 DB 없는 대화형 예제를 제공합니다. 기본 코어는 Rust 1.85 이상(1.85.1 검증), Ratatui 0.30.2 어댑터와 Crossterm 0.29 예제는 Rust 1.88 이상(1.88.0 검증)입니다. 코어와 어댑터는 Go 코드·단말 I/O·DB에 의존하지 않습니다.
 
 ## 사용
 
-버전 0.10.2은 `rust/v0.10.2` Git 태그로 배포하며 crates.io에는 게시하지 않습니다. 외부 프로젝트의 Cargo.toml에서 Git 의존성을 지정하거나 로컬 체크아웃의 rust/를 path 의존성으로 사용합니다.
+버전 0.11.0은 `rust/v0.11.0` Git 태그로 배포하며 crates.io에는 게시하지 않습니다. 외부 프로젝트의 Cargo.toml에서 Git 의존성을 지정하거나 로컬 체크아웃의 rust/를 path 의존성으로 사용합니다.
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.10.2" }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.0" }
 # Ratatui 사용 시 features = ["ratatui"] 추가
 ```
 
@@ -117,7 +119,7 @@ make build-rust
 
 공통 원본은 [design/tokens](https://github.com/leechis7/tuivory/blob/main/design/tokens/README.md)입니다. `src/data/candidate.json`은 `python3 tools/export_tokens.py`로 생성한 배포용 사본이며 수동 편집하지 않습니다. `include_str!`로 포함하므로 외부 Rust 프로젝트에 design/이나 생성 도구가 필요하지 않습니다.
 
-현재 Cargo 버전은 0.10.2이며 Git 배포를 위해 `publish = false`를 유지합니다. crates.io 게시는 수행하지 않았습니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
+현재 Cargo 버전은 0.11.0이며 Git 배포를 위해 `publish = false`를 유지합니다. crates.io 게시는 수행하지 않았습니다. [라이선스](LICENSE) · [출처 고지](NOTICE.md)
 
 ## 공통 Tree
 

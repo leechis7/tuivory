@@ -57,3 +57,5 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 0.8.0 TVR-26: [shared UI APIs](../ui-facade.en.md) · [Go ui](go-ui.en.md) · [Go terminal](go-terminal.en.md). Rust ui::components aliases existing renderer APIs; new InputEvent/Session/byte-span APIs are in the Rust reference.
 
 [Syntax analysis/highlighting APIs and editor migration](../syntax.en.md): 0.9.2 TVR-24 follow-up.
+
+[Grid workspace APIs and host approval](../grid-workspace.en.md): 0.11.0 TVR-7 source; Go/Rust API declarations below include these additions.

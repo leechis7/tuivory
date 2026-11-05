@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](README.en.md)
 
+0.11.0 TVR-7: [그리드 편집과 데이터 작업](../docs/grid-workspace.md). 루트 단일 import의 `Grid / NewGridView`를 확장하며 기존 편집 요청은 기본 동작으로 유지합니다.
+
 **0.10.1 사용 금지:** [업그레이드·회수 안내](../docs/withdrawn-versions.md). 0.10.2 이상을 사용하세요.
 
 **0.10.2 TVR-26:** [Windows Go 파사드](../docs/ui-facade.md)가 Unix 전용 API를 참조하는 결함을 수정했습니다. 0.10.2에서 제공하며 0.10.1은 사용 금지입니다.
@@ -22,7 +24,7 @@
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-제품 버전은 루트 `VERSION`의 **0.10.2**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.10.2`으로 배포합니다. [릴리스 안내](../docs/release-0.10.2.md).
+제품 버전은 루트 `VERSION`의 **0.11.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.11.0`으로 배포합니다. [릴리스 안내](../docs/release-0.11.0.md).
 
 Go 모듈과 모든 Go 구현은 이 디렉터리에 있습니다. 모듈 경로는 `github.com/leechis7/tuivory/go`, 패키지 이름은 `tuivory`이며 한 번만 import합니다.
 
@@ -34,10 +36,10 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-현재 버전은 `v0.10.2`이며 Go 하위 모듈 태그는 `go/v0.10.2`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
+현재 버전은 `v0.11.0`이며 Go 하위 모듈 태그는 `go/v0.11.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.10.2
+go get github.com/leechis7/tuivory/go@v0.11.0
 ```
 
 저장소 루트에서:
@@ -57,7 +59,7 @@ make check
 
 [API와 사용법](../docs/go-package.md) · [스타일 범위](../docs/go-style-coverage.md)
 
-TVR-7 미배포 보완: 표의 스타일 재칠에서 두 칸 문자를 보존하고, 분할선·비교표 구분선 대비를 보정합니다. [그리기 규칙](../docs/overlay-drawing.md) · [스타일 보완](../docs/lazyora-extraction.md).
+TVR-7 0.9.2 보완: 표의 스타일 재칠에서 두 칸 문자를 보존하고, 분할선·비교표 구분선 대비를 보정합니다. [그리기 규칙](../docs/overlay-drawing.md) · [스타일 보완](../docs/lazyora-extraction.md).
 
 ## 공통 Tree
 
@@ -85,6 +87,6 @@ TVR-7 미배포 보완: 표의 스타일 재칠에서 두 칸 문자를 보존�
 
 0.7.0 TVR-26: Go·Rust에서 Tuivory 경로만 사용하는 UI 구성, 공통 입력·바이트 span 변환과 터미널 수명을 제공합니다. [API 대응·예제·현재 제공 상태](../docs/ui-facade.md).
 
-TVR-8 미배포 후속은 Go 토큰 표의 8색 Dim 누락과 드롭다운 비활성 필드의 테마 적용 누락을 수정합니다. [Go 12팔레트 화면·검증](../docs/disabled-states.md).
+TVR-8 0.9.2 후속은 Go 토큰 표의 8색 Dim 누락과 드롭다운 비활성 필드의 테마 적용 누락을 수정합니다. [Go 12팔레트 화면·검증](../docs/disabled-states.md).
 
 0.9.2는 다크/8색 SQL 강조를 Go/Rust 공통 7종 전경·속성 조합으로 개선하고 참조 본문 대비 >=4.5:1을 유지합니다. [규칙·단말 제약](../docs/syntax.md).

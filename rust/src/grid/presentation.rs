@@ -68,7 +68,8 @@ impl Grid {
         }
         geo.gutter = geo.gutter.max(o.gutter_width).min(width);
         geo.header_rows = usize::from(!o.hide_header);
-        geo.footer_rows = usize::from(o.status_bar && height >= 3);
+        geo.footer_rows =
+            usize::from((o.status_bar || self.edit_session().is_some()) && height >= 3);
         let mut rows = height
             .saturating_sub(geo.header_rows + geo.footer_rows)
             .div_ceil(geo.stride);
@@ -106,55 +107,16 @@ impl Grid {
             }
             widths.push(w.clamp(lo, hi));
         }
-        let capacity = width.saturating_sub(geo.gutter);
-        geo.left = self.left.min(self.column);
-        while geo.left < self.column {
-            let used: usize = (geo.left..=self.column)
-                .map(|c| widths[c] + 2 * o.padding + 1)
-                .sum();
-            if used <= capacity {
-                break;
-            }
-            geo.left += 1;
-        }
-        let mut used = 0;
-        let mut end = geo.left;
-        while end < self.columns.len() && used < capacity {
-            used += widths[end] + 2 * o.padding + 1;
-            end += 1;
-        }
-        let extra = capacity.saturating_sub(used);
-        let weight: usize = self.columns[geo.left..end]
-            .iter()
-            .map(|c| self.column_options(&c.id).expand)
-            .sum();
-        if weight > 0 {
-            for (c, width) in widths.iter_mut().enumerate().take(end).skip(geo.left) {
-                let co = self.column_options(&self.columns[c].id);
-                let (_, hi) = options::bounds(&co);
-                *width = (*width + extra * co.expand / weight).min(hi);
-            }
-        }
-        let mut x = geo.gutter;
-        for (c, col) in self.columns.iter().enumerate().skip(geo.left) {
-            if x >= width {
-                break;
-            }
-            let w = (widths[c] + 2 * o.padding).min(width - x);
-            geo.columns.push(GridSpan {
-                id: col.id.clone(),
-                start: x,
-                width: w,
-            });
-            x += w + 1;
-        }
+        (geo.left, geo.columns) = self.column_spans(width, geo.gutter, &mut widths);
         Window { geo, rows: records }
     }
     pub fn geometry(&self, width: usize, height: usize) -> GridGeometry {
         self.window(width, height).geo
     }
     fn row_role(&self, r: &GridRecord, index: usize) -> String {
-        let mut role = r.state.visual().role;
+        let mut state = r.state;
+        state.edited = false;
+        let mut role = state.visual().role;
         if role == "body" {
             if self.options.use_surface {
                 role = "grid.base"
@@ -170,13 +132,26 @@ impl Grid {
     }
     fn cell_role(&self, r: &GridRecord, c: &GridColumn, index: usize, selected: bool) -> String {
         let i = self.info(r, c);
-        let s = options::combine(r.state, i.state);
+        let s = self.cell_state(r, &i);
         let role = if s.disabled {
             "disabled"
         } else if s.invalid {
             "error"
+        } else if let Some(e) = self
+            .edit_session()
+            .filter(|e| e.row_id == r.id && e.column_id == c.id)
+        {
+            if !e.error.is_empty() {
+                "error"
+            } else if e.pending {
+                "grid.loading"
+            } else {
+                "field"
+            }
         } else if s.edited && self.options.preserve_edited {
             "grid.edited"
+        } else if self.matches(r, c) && !s.edited {
+            "grid.match"
         } else if self.options.highlight_cell && r.id == self.row_id && c.id == self.column_id {
             "grid.active"
         } else if selected && self.range_mode && !self.whole_row {
@@ -200,11 +175,11 @@ impl Grid {
         let o = &self.options;
         let co = self.column_options(&c.id);
         let i = self.info(r, c);
-        let mut s = options::combine(r.state, i.state);
+        let mut s = self.cell_state(r, &i);
         if self.range_mode && selected && o.show_cell_markers {
             s.selected = true;
         }
-        let raw = if i.has_display {
+        let mut raw = if i.has_display {
             i.display
         } else if i.null {
             self.label("null", "NULL")
@@ -220,6 +195,28 @@ impl Grid {
             prefix.push_str(&s.visual().markers);
             if !prefix.is_empty() {
                 prefix.push(' ')
+            }
+        }
+        if s.edited && !o.show_cell_markers {
+            prefix.push_str("* ")
+        }
+        if let Some(e) = self
+            .edit_session()
+            .filter(|e| e.row_id == r.id && e.column_id == c.id)
+        {
+            let b = self.work.buffer.as_ref().unwrap();
+            raw = crate::forms::edit_window(
+                b.text(),
+                b.cursor,
+                w.saturating_sub(2 * o.padding + if s.edited { 2 } else { 0 }),
+                !e.pending,
+            );
+            if e.value.null {
+                raw = self.label("null", "NULL")
+            }
+            prefix.clear();
+            if s.edited {
+                prefix.push_str("* ")
             }
         }
         let content = w.saturating_sub(2 * o.padding);
@@ -273,7 +270,7 @@ impl Grid {
                 (index + 1).to_string()
             };
             if !header && !o.hide_markers {
-                if r.state.edited {
+                if self.row_edited(r) {
                     label = format!("*{label}")
                 }
                 if r.id == self.row_id {
@@ -316,6 +313,20 @@ impl Grid {
         let height = height.min(4096);
         if width == 0 || height == 0 || self.columns.is_empty() {
             return vec![];
+        }
+        if let Some(b) = &self.work.find_buffer {
+            return vec![ComponentLine {
+                role: "field".into(),
+                text: format!(
+                    "{}: {}",
+                    self.label("find", "Find"),
+                    crate::forms::edit_window(b.text(), b.cursor, width.saturating_sub(8), true)
+                ),
+                ..Default::default()
+            }];
+        }
+        if self.work.detail.is_some() {
+            return self.detail_layout(width, height);
         }
         let win = self.window(width, height);
         let geo = &win.geo;
@@ -392,7 +403,11 @@ impl Grid {
             };
             let mut l = ComponentLine {
                 id: r.id.clone(),
-                text: format!("{}{}", marker, r.state.visual().markers),
+                text: format!("{}{}", marker, {
+                    let mut state = r.state;
+                    state.edited = self.row_edited(r);
+                    state.visual().markers
+                }),
                 role: self.row_role(r, index),
                 focused: r.id == self.row_id,
                 ..Default::default()
@@ -466,7 +481,9 @@ impl Grid {
             let bar = status_line(&self.status_items(), width);
             out.push(ComponentLine {
                 text: bar.runs.iter().map(|r| r.text.as_str()).collect(),
-                role: if self.status.error.is_empty() {
+                role: if self.status.error.is_empty()
+                    && self.edit_session().is_none_or(|e| e.error.is_empty())
+                {
                     "grid.status"
                 } else {
                     "error"
@@ -597,12 +614,30 @@ impl Grid {
         ]
         .map(String::from)
         .to_vec();
-        self.options
-            .status_fields
-            .as_ref()
-            .unwrap_or(&defaults)
-            .iter()
-            .filter_map(|k| all.remove(k))
-            .collect()
+        let mut items = vec![];
+        if let Some(e) = self.edit_session() {
+            items.push(StatusItem {
+                id: "editing".into(),
+                text: if !e.error.is_empty() {
+                    e.error.clone()
+                } else if e.pending {
+                    self.label("pending", "Awaiting approval")
+                } else {
+                    self.label("editing", "Editing")
+                },
+                priority: 110,
+                role: if e.error.is_empty() { "info" } else { "error" }.into(),
+            })
+        }
+        items.extend(
+            self.options
+                .status_fields
+                .as_ref()
+                .unwrap_or(&defaults)
+                .iter()
+                .filter_map(|k| all.remove(k))
+                .collect::<Vec<_>>(),
+        );
+        items
     }
 }

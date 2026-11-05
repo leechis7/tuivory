@@ -1,0 +1,112 @@
+{
+  "cases": [
+    {
+      "id": "plain",
+      "text": "A\tB",
+      "accepted": true,
+      "values": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "id": "quoted",
+      "text": "\"a\tb\"\t\"x\ny\"",
+      "accepted": true,
+      "values": [
+        "a\tb",
+        "x\ny"
+      ]
+    },
+    {
+      "id": "quote",
+      "text": "\"a\"\"b\"\t\"\"",
+      "accepted": true,
+      "values": [
+        "a\"b",
+        ""
+      ]
+    },
+    {
+      "id": "crlf",
+      "text": "A\tB\r\nC\tD\r\n",
+      "accepted": true,
+      "values": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    {
+      "id": "blank-lines",
+      "text": "\nA\tB\n\n",
+      "accepted": true,
+      "values": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "id": "empty",
+      "text": "",
+      "accepted": false,
+      "values": []
+    },
+    {
+      "id": "blank",
+      "text": "\n",
+      "accepted": false,
+      "values": []
+    },
+    {
+      "id": "tab",
+      "text": "\t",
+      "accepted": true,
+      "values": [
+        "",
+        ""
+      ]
+    },
+    {
+      "id": "single-empty",
+      "text": "\"\"",
+      "accepted": true,
+      "values": [
+        ""
+      ]
+    },
+    {
+      "id": "ragged",
+      "text": "A\tB\nC",
+      "accepted": false,
+      "values": []
+    },
+    {
+      "id": "badquote",
+      "text": "A\"B",
+      "accepted": false,
+      "values": []
+    },
+    {
+      "id": "afterquote",
+      "text": "\"A\"B",
+      "accepted": false,
+      "values": []
+    },
+    {
+      "id": "unterminated",
+      "text": "\"A",
+      "accepted": false,
+      "values": []
+    },
+    {
+      "id": "bare-cr",
+      "text": "A\rB",
+      "accepted": true,
+      "values": [
+        "A\rB"
+      ]
+    }
+  ]
+}

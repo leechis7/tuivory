@@ -92,6 +92,10 @@ func (g *Grid) SetOptions(o GridOptions) error {
 		g.setMode(o.Selection)
 	}
 	g.options = o
+	if o.DisableEditing {
+		g.CancelEdit()
+		g.CancelPaste()
+	}
 	return nil
 }
 func (g *Grid) Options() GridOptions {
@@ -209,7 +213,7 @@ func (g *Grid) label(key, fallback string) string {
 	}
 	return fallback
 }
-func (g *Grid) nextRequest() { g.revision++ }
+func (g *Grid) nextRequest() { g.revision++; g.invalidateWork() }
 func (g *Grid) RequestPage() GridEvent {
 	if !g.Status.HasMore || g.Status.Loading {
 		return GridEvent{}
@@ -241,7 +245,10 @@ func (g *Grid) copyRange() GridEvent {
 	for r := r1; r <= r2; r++ {
 		row := g.source.Row(r)
 		cells := []string{}
-		for c := c1; c <= c2; c++ {
+		for _, c := range g.visibleIndices() {
+			if c < c1 || c > c2 {
+				continue
+			}
 			cells = append(cells, tsvValue(row.Cells[g.columns[c].ID]))
 		}
 		rows = append(rows, strings.Join(cells, "\t"))
@@ -306,7 +313,8 @@ func (g *Grid) extraAction(action string, height int) (GridEvent, bool) {
 		e.Text = r.Cells[g.ColumnID]
 		if action == "copy_row" {
 			v := []string{}
-			for _, c := range g.columns {
+			for _, ci := range g.visibleIndices() {
+				c := g.columns[ci]
 				v = append(v, r.Cells[c.ID])
 			}
 			e.Text = strings.Join(v, "\t")

@@ -46,3 +46,7 @@ python3 tools/snapshot_catalog.py /PATH/TO/RUST/tuivory --demo catalog --mode gr
 CentOS 7.4.1708 x86_64 / 커널 `3.10.0-693.el7.x86_64` / glibc `2.17-196.el7.x86_64`에서 Go·Rust 정적 견본의 한영 시작·종료와 두 외부 그리드 앱 실행을 모두 통과했습니다. QEMU TCG로 실제 구형 커널/사용자 공간을 부팅한 결과이며 물리 서버·SSH 검증은 아닙니다. ARM64 CentOS 실행 검증으로 확대하지 않습니다. [환경·산출물 해시](evidence/grid-options-results.json).
 
 [그리드 API·지원 범위](grid.md)
+
+## 0.11.0 TVR-7 데이터 작업
+
+[현재 근거](evidence/tvr7-grid-workspace-results.json): 공유 인용 TSV, 앱 승인/거절/취소/오래된 요청·열/보기 상태·상세 보기, Go Show 이후/Rust TestBackend의 변경 상태 조합 및 실제 ARM64 통합 실행파일 한영 PTY를 검사합니다. 로컬 검증과 미실행 원격 CI/게시를 구분합니다. [API·동작](grid-workspace.md).

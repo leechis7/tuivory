@@ -36,6 +36,9 @@ def check(binary, languages):
             ('syntax', 'smoke_syntax.py', []),
             ('syntax', 'smoke_syntax.py', ['--ascii']),
         ]
+        catalog_help=subprocess.run([binary,'--demo','catalog','--help'],capture_output=True,check=True)
+        if b'grid-edit-preview' in catalog_help.stdout+catalog_help.stderr:
+            cases.append(('catalog','smoke_grid_work.py',[]))
         # New opt-in examples are tested when advertised; old release binaries
         # remain valid inputs for the release-download validator.
         for demo,flag,script,variants in [('workspace',b'-drag','smoke_drag.py',[[],['--ascii']]),('controls',b'-modal','smoke_modal.py',[[]])]:

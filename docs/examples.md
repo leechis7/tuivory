@@ -110,3 +110,7 @@ Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](overlay-dr
 0.9.1 TVR-28 폴더 정리: 검증 로그·참조 화면 생성물은 `.cache/validation/`, 로컬 릴리스 보관은 `.cache/releases/`를 사용합니다. [저장소 구조](architecture.md).
 
 0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.
+
+## 0.11.0 그리드 데이터 작업
+
+기존 통합 실행파일에서 `--demo catalog --mode grid --grid-sample --grid-preset data`로 실행합니다. `--grid-edit-preview`는 편집 중 화면으로 시작합니다. 합성 데이터의 앱 승인·거절/재시도·NULL·붙여넣기·찾기·열 관리·메모리 보기 복원·원문 상세를 한 예제에 모으며 실행파일을 추가하지 않습니다. [키와 화면](grid-workspace.md).

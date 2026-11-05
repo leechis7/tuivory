@@ -1,4 +1,4 @@
-# Go API — source (0.10.2)
+# Go API — source (0.11.0)
 
 **한국어 (기본)** · [English](go.en.md)
 
@@ -2118,15 +2118,35 @@ func (g *Grid) ApplySource(revision uint64, source GridSource) bool
 
 func (g *Grid) AutoFitColumn(id string, height int) bool
 
+func (g *Grid) BeginEdit(first string) bool
+
+func (g *Grid) CancelEdit()
+
+func (g *Grid) CancelPaste()
+
 func (g *Grid) Click(rowID, kind string, x, width, height int) GridEvent
     Click is the legacy row-ID and horizontal-coordinate mouse entry point.
 
     Deprecated: Use Pointer for local mouse coordinates, or Focus and Handle for
     programmatic selection/sorting.
 
+func (g *Grid) CloseDetails()
+
+func (g *Grid) ColumnLayout() []GridColumnLayout
+
 func (g *Grid) ColumnOptions(id string) GridColumnOptions
 
 func (g *Grid) Columns() []GridColumn
+
+func (g *Grid) EditInput(action, text string) GridEvent
+    EditInput consumes only internal editor actions. Submit/next/previous wait
+    for ResolveEdit.
+
+func (g *Grid) EditSession() (GridEditSession, bool)
+
+func (g *Grid) FindNext(previous bool) (GridCellRef, bool)
+    FindNext is bounded and scans only the supplied (loaded) source, wrapping
+    once.
 
 func (g *Grid) Focus(rowID, columnID string) bool
 
@@ -2134,9 +2154,29 @@ func (g *Grid) Geometry(width, height int) GridGeometry
 
 func (g *Grid) Handle(action string, height int) GridEvent
 
+func (g *Grid) HideColumn(id string, hidden bool) bool
+
+func (g *Grid) Input(e InputEvent, width, height int) GridEvent
+    Input routes only grid-local keys/paste. Hosts keep global bindings and
+    clipboard I/O.
+
+func (g *Grid) InvalidateRequests()
+    InvalidateRequests rejects late edits/pastes and data responses on host
+    context changes.
+
 func (g *Grid) Layout(width, height int) []ComponentLine
 
+func (g *Grid) MoveColumn(id string, at int) bool
+
+func (g *Grid) MoveEditable(previous bool) bool
+
+func (g *Grid) OpenDetails() bool
+
 func (g *Grid) Options() GridOptions
+
+func (g *Grid) PendingPaste() (GridPasteRequest, bool)
+
+func (g *Grid) PinColumn(id, side string) bool
 
 func (g *Grid) Pointer(action string, x, y, width, height int, extend bool) GridEvent
     Pointer consumes local grid coordinates. Hosts translate their own mouse
@@ -2146,9 +2186,27 @@ func (g *Grid) RequestFilter(query string) GridEvent
 
 func (g *Grid) RequestPage() GridEvent
 
+func (g *Grid) RequestPaste(text string, o GridPasteOptions) (GridPasteRequest, error)
+    RequestPaste parses quoted TSV, validates the whole batch and never mutates
+    source values.
+
+func (g *Grid) RequestSearch(query string) GridEvent
+
 func (g *Grid) ResizeColumn(id string, width int) bool
 
+func (g *Grid) ResolveEdit(id uint64, message string, source GridSource) bool
+    ResolveEdit accepts only the active pending request. A source is applied
+    only on success.
+
+func (g *Grid) ResolvePaste(id uint64, source GridSource) bool
+
+func (g *Grid) RestoreViewState(s GridViewState) error
+    RestoreViewState requires the same column schema. Missing row IDs fall back
+    safely.
+
 func (g *Grid) Revision() uint64
+
+func (g *Grid) SaveViewState() GridViewState
 
 func (g *Grid) SelectRange(r GridRange) bool
 
@@ -2158,9 +2216,25 @@ func (g *Grid) SelectionMode() string
 
 func (g *Grid) SetCellInfo(info func(GridRecord, GridColumn) GridCellInfo)
 
+func (g *Grid) SetColumnLayout(layout []GridColumnLayout) error
+    SetColumnLayout validates atomically; at least one column must remain
+    visible.
+
 func (g *Grid) SetColumnOptions(id string, o GridColumnOptions) error
 
+func (g *Grid) SetDetailsEnabled(enabled bool)
+    SetDetailsEnabled opts into built-in handling of the existing details
+    request.
+
+func (g *Grid) SetEditOptions(o GridEditOptions)
+
+func (g *Grid) SetFind(query string, o GridFindOptions)
+
 func (g *Grid) SetOptions(o GridOptions) error
+
+func (g *Grid) SetRowEdited(fn func(GridRecord) bool)
+    SetRowEdited supplies an independent aggregate gutter marker without
+    coloring cells.
 
 func (g *Grid) SetSelectionMode(mode string) error
 
@@ -2181,6 +2255,21 @@ type GridCellInfo struct {
 }
     GridCellInfo is host presentation metadata. GridRecord.Cells remain raw
     values.
+```
+
+## GridCellRef
+
+```go
+type GridCellRef struct{ RowID, ColumnID string }
+```
+
+## GridChange
+
+```go
+type GridChange struct {
+	RowID, ColumnID string
+	Value           GridValue
+}
 ```
 
 ## GridColors
@@ -2205,6 +2294,17 @@ type GridColumn struct {
 }
 ```
 
+## GridColumnLayout
+
+```go
+type GridColumnLayout struct {
+	ID, Pin string
+	Hidden  bool
+}
+    GridColumnLayout orders every column by stable ID. Pin is "", "left",
+    or "right".
+```
+
 ## GridColumnOptions
 
 ```go
@@ -2227,10 +2327,41 @@ type GridDataStatus struct {
 }
 ```
 
+## GridEditOptions
+
+```go
+type GridEditOptions struct {
+	Enabled, StartTyping, AllowNull bool
+	// Prepare may reject a cell or supply its typed initial value. It must not mutate the grid.
+	Prepare func(GridRecord, GridColumn) (GridValue, bool)
+}
+```
+
+## GridEditSession
+
+```go
+type GridEditSession struct {
+	ID              uint64
+	RowID, ColumnID string
+	Original, Value GridValue
+	Pending         bool
+	Error           string
+}
+```
+
 ## GridEvent
 
 ```go
 type GridEvent struct{ Kind, RowID, ColumnID, Text, Direction string }
+```
+
+## GridFindOptions
+
+```go
+type GridFindOptions struct {
+	CaseSensitive, UseDisplay bool
+	MaxCells                  int
+}
 ```
 
 ## GridGeometry
@@ -2261,6 +2392,25 @@ func GridPreset(name string) (GridOptions, error)
 
 func (o GridOptions) WithDensity(name string) (GridOptions, error)
     WithDensity returns a spacing option bundle; other options are retained.
+```
+
+## GridPasteOptions
+
+```go
+type GridPasteOptions struct {
+	MaxCells  int
+	NullText  string
+	ParseNull bool
+}
+```
+
+## GridPasteRequest
+
+```go
+type GridPasteRequest struct {
+	ID      uint64
+	Changes []GridChange
+}
 ```
 
 ## GridRange
@@ -2299,6 +2449,29 @@ type GridSpan struct {
 	ID           string
 	Start, Width int
 }
+```
+
+## GridValue
+
+```go
+type GridValue struct {
+	Text string
+	Null bool
+}
+```
+
+## GridViewState
+
+```go
+type GridViewState struct {
+	Columns                                                            []GridColumnLayout
+	Widths                                                             map[string]int
+	ColumnOptions                                                      map[string]GridColumnOptions
+	RowID, ColumnID, TopRowID, LeftColumnID, SortColumn, SortDirection string
+	Selected                                                           GridRange
+	SelectedRow, SelectedColumn, Selection, Filter                     string
+}
+    GridViewState is plain host-persisted state; no file I/O is performed.
 ```
 
 ## Help
@@ -3021,6 +3194,13 @@ func NewTerminfoScreenFromTty(tty Tty) (Screen, error)
 
 func NewTerminfoScreenFromTtyTerminfo(tty Tty, ti *Terminfo) (s Screen, e error)
     NewTerminfoScreenFromTtyTerminfo forwards to the SDK compatibility API.
+
+func PasteSafeScreen(screen Screen) Screen
+    PasteSafeScreen preserves LF/CRLF pasted through the compatibility
+    Application. Its backend collects only Enter keys while pasting;
+    raw LF arrives as Ctrl+J. Wrap the screen before Application.SetScreen/Run.
+    Outside bracketed paste, Ctrl+J and every other event retain their original
+    identity.
 
 // Public alias: underlying declaration and methods.
 package terminal // import "github.com/leechis7/tuivory/go/terminal"

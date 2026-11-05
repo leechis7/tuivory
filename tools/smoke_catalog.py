@@ -4,6 +4,8 @@ import argparse,fcntl,os,pty,select,signal,struct,subprocess,termios,time
 from pathlib import Path
 from smoke_focus import Screen
 parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('binary',type=Path); parser.add_argument('--demo', help='select an example from the unified executable');parser.add_argument('--mode',default='forms');parser.add_argument('--lang',choices=['ko','en'],default='en');parser.add_argument('--ascii',action='store_true');parser.add_argument('--grid-preset',choices=['simple','data']);args=parser.parse_args()
+help_result=subprocess.run([str(args.binary.resolve()),*(['--demo',args.demo] if args.demo else []),'--help'],capture_output=True,check=True)
+new_grid=b'grid-edit-preview' in help_result.stdout+help_result.stderr
 master,slave=pty.openpty();fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',36,120,0,0))
 def terminal():
  os.setsid();fcntl.ioctl(0,termios.TIOCSCTTY,0)
@@ -33,7 +35,9 @@ try:
   send(b'\r');send(b'Go');send(b'\x1b');assert 'v Rust' in visible(),visible()
   send(b'\r');send(b'NoSuchItem');assert ('No results' in visible() or '결과없음' in visible().replace(' ','')),visible()
  if args.mode=='grid':
-  send(b'\x1b[B');send(b'\r');assert 'edit: row-2' in visible(),visible()
+  send(b'\x1b[B');send(b'\r');assert ('edit_begin: row-2' if new_grid else 'edit: row-2') in visible(),visible()
+  if new_grid:
+   send(b'\x1b');assert 'edit_cancel: row-2' in visible(),visible()
   send(b' ');send(b'\x03');assert 'copy: row-2' in visible(),visible()
   send(b'\x1b[21~');send(b'\x1b[1;2C');assert 'select:' in visible(),visible()
   send(b'\x03');assert 'copy: row-2' in visible(),visible()
