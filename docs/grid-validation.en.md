@@ -46,3 +46,7 @@ python3 tools/snapshot_catalog.py /PATH/TO/RUST/tuivory --demo catalog --mode gr
 Go/Rust static demos started/exited in both languages and both external grid apps passed on CentOS 7.4.1708 x86_64, kernel `3.10.0-693.el7.x86_64`, glibc `2.17-196.el7.x86_64`. QEMU TCG boots the actual legacy kernel/userspace; this does not establish physical-server/SSH results or ARM64 CentOS execution. [Environment/artifact hashes](evidence/grid-options-results.json).
 
 [Grid API and support](grid.en.md)
+
+## 0.11.0 TVR-7 workspace
+
+[Current evidence](evidence/tvr7-grid-workspace-results.json): shared quoted-TSV cases, host approval/rejection/cancel/stale requests, column and view state, and details; Go post-Show/Rust TestBackend dirty-state combinations and real bilingual native ARM64 PTYs. Keep local checks distinct from unexecuted remote CI/publication. [API and behavior](grid-workspace.en.md).

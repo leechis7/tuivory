@@ -12,8 +12,8 @@ use tuivory::grid::{Grid, GridColumn, GridRecord, GridSource};
 use tuivory::ui::terminal::{
     cursor::Show,
     event::{
-        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
-        MouseButton, MouseEventKind,
+        self, DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture,
+        Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind,
     },
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
@@ -186,6 +186,7 @@ impl Drop for Session {
         let _ = execute!(
             io::stdout(),
             DisableMouseCapture,
+            DisableBracketedPaste,
             LeaveAlternateScreen,
             Show
         );
@@ -200,6 +201,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut mode = "forms".to_owned();
     let mut grid_preset = "simple".to_string();
     let mut grid_sample = false;
+    let mut edit_preview = false;
     let mut density = tuivory::layout::Density::Auto;
     let mut args = arguments.into_iter();
     while let Some(arg) = args.next() {
@@ -217,6 +219,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--snapshot" => output = Some(args.next().ok_or("missing output")?),
             "--grid-preset" => grid_preset = args.next().ok_or("missing grid preset")?,
             "--grid-sample" => grid_sample = true,
+            "--grid-edit-preview" => edit_preview = true,
             "--density" => density = args.next().ok_or("missing density")?.parse()?,
             "--mode" => {
                 mode = args.next().ok_or("missing mode")?;
@@ -234,6 +237,9 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
         removed: false,
         help_open: false,
     };
+    let changes = grid_demo::Changes::default();
+    let mut saved_view = None;
+    let mut last_grid_click = None;
     let mut grid = Grid::new(
         vec![
             GridColumn {
@@ -255,10 +261,13 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                 editable: false,
             },
         ],
-        Box::new(DemoRows { count: 100000, en }),
+        Box::new(grid_demo::EditableRows {
+            base: Box::new(DemoRows { count: 100000, en }),
+            changes: changes.clone(),
+        }),
     )?;
     if grid_sample {
-        grid = grid_demo::sample(en);
+        grid = grid_demo::sample(en, changes.clone());
     }
     let mut grid_options = tuivory::grid::grid_preset(&grid_preset)?;
     grid_options.ascii = ascii;
@@ -268,7 +277,12 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
         _ => grid_options,
     };
     grid.set_options(grid_options)?;
-    grid_demo::configure(&mut grid, en);
+    grid_demo::configure(&mut grid, en, changes.clone());
+    if edit_preview {
+        grid.begin_edit("");
+        grid.edit_input("select_all", "");
+        grid.edit_input("insert", if en { "Updated value" } else { "수정한 값" });
+    }
     grid.empty = text(en, "결과 없음", "No results");
     let mut queue = NoticeQueue::new(8)?;
     queue.push(Notice {
@@ -456,7 +470,12 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     }
     enable_raw_mode()?;
     let _session = Session;
-    execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(
+        io::stdout(),
+        EnterAlternateScreen,
+        EnableMouseCapture,
+        EnableBracketedPaste
+    )?;
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
     loop {
         terminal.draw(|f| {
@@ -543,52 +562,20 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                         ..Default::default()
                     }
                 } else if mode == "grid" {
-                    let action = match k.code {
-                        KeyCode::Left => "left",
-                        KeyCode::Right => "right",
-                        KeyCode::Up => "up",
-                        KeyCode::Down => "down",
-                        KeyCode::Home => "first",
-                        KeyCode::End => "last",
-                        KeyCode::PageUp => "page_up",
-                        KeyCode::PageDown => "page_down",
-                        KeyCode::Enter => "activate",
-                        KeyCode::F(6) => "row_mode",
-                        KeyCode::F(7) => "widen",
-                        KeyCode::F(8) => "narrow",
-                        KeyCode::F(9) => "sort",
-                        KeyCode::F(10) => "range_mode",
-                        KeyCode::F(11) => "autofit",
-                        KeyCode::F(12) => "details",
-                        KeyCode::Esc => "cancel",
-                        KeyCode::Char(' ') => "select",
-                        KeyCode::Char('c') if k.modifiers.contains(KeyModifiers::CONTROL) => "copy",
-                        _ => "",
-                    };
-                    let action = if k.modifiers.contains(KeyModifiers::SHIFT) {
-                        match k.code {
-                            KeyCode::Up => "extend_up",
-                            KeyCode::Down => "extend_down",
-                            KeyCode::Left => "extend_left",
-                            KeyCode::Right => "extend_right",
-                            _ => action,
+                    let e = grid.input(
+                        &tuivory::input::InputEvent::from_key(k),
+                        body.width.into(),
+                        body.height.into(),
+                    );
+                    grid_demo::respond(&mut grid, &changes, &e, en);
+                    if e.kind == "view_save" {
+                        saved_view = Some(grid.save_view_state())
+                    }
+                    if e.kind == "view_restore" {
+                        if let Some(s) = saved_view.clone() {
+                            grid.restore_view_state(s)?;
                         }
-                    } else if k.modifiers.contains(KeyModifiers::ALT) {
-                        match k.code {
-                            KeyCode::Left => "cell_pan_left",
-                            KeyCode::Right => "cell_pan_right",
-                            _ => action,
-                        }
-                    } else {
-                        action
-                    };
-                    let e = if grid.options().disable_keyboard {
-                        tuivory::grid::GridEvent::default()
-                    } else if k.code == KeyCode::F(5) {
-                        grid.request_filter(&grid.status.filter)
-                    } else {
-                        grid.handle(action, body.height.into())
-                    };
+                    }
                     FormEvent {
                         kind: e.kind,
                         id: format!("{} / {}", e.row_id, e.column_id),
@@ -623,6 +610,19 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                     key(&mut form, k.code)
                 }
             }
+            Event::Paste(value) if mode == "grid" => {
+                let e = grid.input(
+                    &tuivory::input::InputEvent::paste(&value),
+                    body.width.into(),
+                    body.height.into(),
+                );
+                grid_demo::respond(&mut grid, &changes, &e, en);
+                FormEvent {
+                    kind: e.kind,
+                    id: format!("{} / {}", e.row_id, e.column_id),
+                    ..Default::default()
+                }
+            }
             Event::Mouse(m)
                 if mode == "grid"
                     && (body.contains((m.column, m.row).into()) || grid.pointer_captured()) =>
@@ -637,10 +637,30 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                     MouseEventKind::ScrollRight => "wheel_right",
                     _ => "",
                 };
-                // Header activation occurs on down in the host; body down starts selection/drag.
-                let geo = grid.geometry(body.width.into(), body.height.into());
                 let local_x = isize::try_from(m.column).unwrap() - isize::try_from(body.x).unwrap();
                 let local_y = isize::try_from(m.row).unwrap() - isize::try_from(body.y).unwrap();
+                let mut action = action;
+                if action == "down" {
+                    let now = std::time::Instant::now();
+                    if let Some((when, x, y)) = last_grid_click {
+                        if now.duration_since(when) < Duration::from_millis(400)
+                            && x == local_x
+                            && y == local_y
+                        {
+                            action = "double";
+                            last_grid_click = None;
+                        }
+                    }
+                    if action != "double" {
+                        last_grid_click = Some((now, local_x, local_y));
+                    }
+                }
+                // Header click on release allows column dragging before sorting.
+                let header = local_y >= 0
+                    && (local_y as usize)
+                        < grid
+                            .geometry(body.width.into(), body.height.into())
+                            .header_rows;
                 let mut e = grid.pointer(
                     action,
                     local_x,
@@ -649,11 +669,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                     body.height.into(),
                     m.modifiers.contains(KeyModifiers::SHIFT),
                 );
-                if action == "down"
-                    && local_y >= 0
-                    && (local_y as usize) < geo.header_rows
-                    && e.kind != "resize_start"
-                {
+                if action == "up" && header {
                     e = grid.pointer(
                         "click",
                         local_x,
@@ -663,6 +679,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                         false,
                     );
                 }
+                grid_demo::respond(&mut grid, &changes, &e, en);
                 FormEvent {
                     kind: e.kind,
                     id: format!("{} / {}", e.row_id, e.column_id),

@@ -28,3 +28,5 @@
 [API 명세](api/README.md) · [전체 예제](examples.md)
 
 0.7.0 TVR-26: Go·Rust에서 Tuivory 경로만 사용하는 UI 구성, 공통 입력·바이트 span 변환과 터미널 수명을 제공합니다. [API 대응·예제·현재 제공 상태](ui-facade.md).
+
+[0.11.0 그리드 편집·열 관리·붙여넣기·찾기·보기 상태 안내](grid-workspace.md).

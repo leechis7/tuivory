@@ -2,7 +2,7 @@ use tuivory::{grid::*, interaction::ControlState};
 fn tr(en: bool, ko: &str, english: &str) -> String {
     if en { english } else { ko }.into()
 }
-pub fn sample(en: bool) -> Grid {
+pub fn sample(en: bool, changes: Changes) -> Grid {
     let columns = [
         ("id", "ID", "ID", 5, false),
         ("name", "이름", "Name", 18, true),
@@ -46,13 +46,36 @@ pub fn sample(en: bool) -> Grid {
         }
     })
     .collect();
-    let mut g = Grid::new(columns, Box::new(MemoryRows::new(rows).unwrap())).unwrap();
+    let mut g = Grid::new(
+        columns,
+        Box::new(EditableRows {
+            base: Box::new(MemoryRows::new(rows).unwrap()),
+            changes,
+        }),
+    )
+    .unwrap();
     g.focus("row-2", "name");
     g.handle("select", 12);
     g
 }
-pub fn configure(g: &mut Grid, en: bool) {
+pub fn configure(g: &mut Grid, en: bool, changes: Changes) {
+    g.set_details_enabled(true);
+    g.set_edit_options(GridEditOptions {
+        enabled: true,
+        start_typing: true,
+        allow_null: true,
+        ..Default::default()
+    });
+    let dirty = changes.clone();
+    g.set_row_edited(move |r| r.id == "row-2" || dirty.borrow().keys().any(|(id, _)| *id == r.id));
     for (key, ko, english) in [
+        (
+            "editing",
+            "편집 중 · Enter 확정 / Esc 취소 / Ctrl+N NULL",
+            "Editing · Enter submit / Esc cancel / Ctrl+N NULL",
+        ),
+        ("find", "찾기", "Find"),
+        ("pending", "승인 대기", "Awaiting approval"),
         ("row", "행", "R"),
         ("column", "열", "C"),
         ("selected", "선택", "selected"),
@@ -63,21 +86,28 @@ pub fn configure(g: &mut Grid, en: bool) {
     ] {
         g.labels.insert(key.into(), tr(en, ko, english));
     }
-    g.set_cell_info(|r, c| GridCellInfo {
-        null: c.id == "value" && r.cells.get(&c.id).is_some_and(String::is_empty),
-        numeric: c.id == "value",
-        metadata: match c.id.as_str() {
-            "id" => "INTEGER",
-            "value" => "DECIMAL",
-            _ => "TEXT",
-        }
-        .into(),
-        state: ControlState {
-            edited: r.id == "row-2" && c.id == "name",
-            read_only: !c.editable,
+    g.set_cell_info(move |r, c| {
+        let map = changes.borrow();
+        let value = map.get(&(r.id.clone(), c.id.clone()));
+        GridCellInfo {
+            null: value.map_or(
+                c.id == "value" && r.cells.get(&c.id).is_some_and(String::is_empty),
+                |v| v.null,
+            ),
+            numeric: c.id == "value",
+            metadata: match c.id.as_str() {
+                "id" => "INTEGER",
+                "value" => "DECIMAL",
+                _ => "TEXT",
+            }
+            .into(),
+            state: ControlState {
+                edited: value.is_some() || r.id == "row-2" && c.id == "name",
+                read_only: !c.editable,
+                ..Default::default()
+            },
             ..Default::default()
-        },
-        ..Default::default()
+        }
     });
     g.set_column_options(
         "value",
@@ -89,4 +119,60 @@ pub fn configure(g: &mut Grid, en: bool) {
         },
     )
     .unwrap();
+}
+
+pub type Changes =
+    std::rc::Rc<std::cell::RefCell<std::collections::BTreeMap<(String, String), GridValue>>>;
+pub struct EditableRows {
+    pub base: Box<dyn GridSource>,
+    pub changes: Changes,
+}
+impl GridSource for EditableRows {
+    fn len(&self) -> usize {
+        self.base.len()
+    }
+    fn index_of(&self, id: &str) -> Option<usize> {
+        self.base.index_of(id)
+    }
+    fn row(&self, i: usize) -> GridRecord {
+        let mut r = self.base.row(i);
+        for ((row, col), v) in self.changes.borrow().iter() {
+            if *row == r.id {
+                r.cells.insert(col.clone(), v.text.clone());
+            }
+        }
+        r
+    }
+}
+pub fn respond(g: &mut Grid, changes: &Changes, event: &GridEvent, en: bool) {
+    if event.kind == "edit_submit" {
+        if let Some(e) = g.edit_session().cloned() {
+            if e.value.text == "reject" || e.value.text == "거절" {
+                g.resolve_edit(
+                    e.id,
+                    if en {
+                        "Rejected: retry"
+                    } else {
+                        "거절: 다시 입력하세요"
+                    },
+                    None,
+                );
+                return;
+            }
+            changes
+                .borrow_mut()
+                .insert((e.row_id, e.column_id), e.value);
+            g.resolve_edit(e.id, "", None);
+        }
+    }
+    if event.kind == "paste_request" {
+        if let Some(p) = g.pending_paste().cloned() {
+            for v in p.changes {
+                changes
+                    .borrow_mut()
+                    .insert((v.row_id, v.column_id), v.value);
+            }
+            g.resolve_paste(p.id, None);
+        }
+    }
 }

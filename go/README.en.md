@@ -2,6 +2,8 @@
 
 [한국어 (default)](README.md) · **English**
 
+TVR-7 in 0.11.0: [grid editing and data work](../docs/grid-workspace.en.md). Extends root-only `Grid / NewGridView`, preserving legacy edit requests by default.
+
 **Do not use 0.10.1:** [Withdrawal and upgrade](../docs/withdrawn-versions.en.md). Use 0.10.2 or later.
 
 **0.10.2 TVR-26:** [Windows Go facade](../docs/ui-facade.en.md) no longer references Unix-only terminal APIs. Available in 0.10.2; do not use 0.10.1.
@@ -22,12 +24,12 @@
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
-Product version is **0.10.2** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.10.2`. [Release guide](../docs/release-0.10.2.en.md).
+Product version is **0.11.0** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.11.0`. [Release guide](../docs/release-0.11.0.en.md).
 
 All Go implementation code and module configuration live in this directory. The module path is `github.com/leechis7/tuivory/go`; the package name is `tuivory`. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.10.2
+go get github.com/leechis7/tuivory/go@v0.11.0
 ```
 
 ```go
@@ -38,7 +40,7 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-The current release is `v0.10.2`, tagged `go/v0.10.2` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
+The current release is `v0.11.0`, tagged `go/v0.11.0` because the module lives in `go/`. The first tag `go/v0.0.1` is preserved.
 
 From the repository root:
 
@@ -55,7 +57,7 @@ Shared candidate tokens originate in [design/tokens](../design/tokens/README.en.
 
 [API and usage](../docs/go-package.en.md) · [Style coverage](../docs/go-style-coverage.en.md) · [Project overview](../README.en.md)
 
-TVR-7 unreleased fixes preserve wide text during table restyling and correct splitter/comparison separator contrast. [Drawing rules](../docs/overlay-drawing.en.md) · [Style fixes](../docs/lazyora-extraction.en.md).
+TVR-7 fixes in 0.9.2 preserve wide text during table restyling and correct splitter/comparison separator contrast. [Drawing rules](../docs/overlay-drawing.en.md) · [Style fixes](../docs/lazyora-extraction.en.md).
 
 ## Shared Tree
 
@@ -83,6 +85,6 @@ TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/soli
 
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](../docs/ui-facade.en.md).
 
-The unreleased TVR-8 follow-up fixes missing Dim on eight-color Go token samples and missing themed disabled dropdown field styling. [Go twelve-palette views and validation](../docs/disabled-states.en.md).
+The TVR-8 follow-up in 0.9.2 fixes missing Dim on eight-color Go token samples and missing themed disabled dropdown field styling. [Go twelve-palette views and validation](../docs/disabled-states.en.md).
 
 0.9.2 also improves dark/8 SQL highlighting with seven foreground/attribute combinations shared by Go/Rust, retaining >=4.5:1 reference text contrast. [Rules and terminal limitations](../docs/syntax.en.md).

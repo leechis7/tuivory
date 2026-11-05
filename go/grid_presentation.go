@@ -70,7 +70,7 @@ func GridPalette(palette Palette) Palette {
 	}
 	hint := p["hint"]
 	hint.BG = base.BG
-	aliases := map[string]Pair{"grid.base": base, "grid.stripe": stripe, "grid.current-row": current, "grid.active": p["selection"], "grid.range": p["selection"], "grid.edited": p["edited"], "grid.header-active": p["header"], "grid.gutter": hint, "grid.divider": hint, "grid.status": p["header"], "grid.null": hint, "grid.readonly": hint, "grid.loading": hint}
+	aliases := map[string]Pair{"grid.match": p["warning"], "grid.base": base, "grid.stripe": stripe, "grid.current-row": current, "grid.active": p["selection"], "grid.range": p["selection"], "grid.edited": p["edited"], "grid.header-active": p["header"], "grid.gutter": hint, "grid.divider": hint, "grid.status": p["header"], "grid.null": hint, "grid.readonly": hint, "grid.loading": hint}
 	for k, v := range aliases {
 		if _, ok := p[k]; !ok {
 			p[k] = v
@@ -111,7 +111,7 @@ func (g *Grid) window(width, height int) gridWindow {
 	if !o.HideHeader {
 		geo.HeaderRows = 1
 	}
-	if o.StatusBar && height >= 3 {
+	if (o.StatusBar || g.work.edit != nil) && height >= 3 {
 		geo.FooterRows = 1
 	}
 	rows := max(0, (height-geo.HeaderRows-geo.FooterRows+geo.Stride-1)/geo.Stride)
@@ -154,44 +154,8 @@ func (g *Grid) window(width, height int) gridWindow {
 		}
 		widths[c] = max(lo, min(hi, w))
 	}
-	physical := func(c int) int { return widths[c] + 2*o.Padding + 1 }
-	geo.Left = max(0, min(g.Left, g.Column))
-	capacity := max(0, width-geo.Gutter)
-	for geo.Left < g.Column {
-		used := 0
-		for c := geo.Left; c <= g.Column; c++ {
-			used += physical(c)
-		}
-		if used <= capacity {
-			break
-		}
-		geo.Left++
-	}
-	used := 0
-	end := geo.Left
-	for end < len(g.columns) && used < capacity {
-		used += physical(end)
-		end++
-	}
-	extra := max(0, capacity-used)
-	weight := 0
-	for c := geo.Left; c < end; c++ {
-		weight += g.columnOptions[g.columns[c].ID].Expand
-	}
-	if weight > 0 && extra > 0 {
-		for c := geo.Left; c < end; c++ {
-			opt := g.columnOptions[g.columns[c].ID]
-			add := extra * opt.Expand / weight
-			_, hi := columnBounds(opt)
-			widths[c] = min(hi, widths[c]+add)
-		}
-	}
-	x := geo.Gutter
-	for c := geo.Left; c < len(g.columns) && x < width; c++ {
-		w := min(width-x, widths[c]+2*o.Padding)
-		geo.Columns = append(geo.Columns, GridSpan{g.columns[c].ID, x, w})
-		x += w + 1
-	}
+	geo.Left, geo.Columns = g.columnSpans(width, geo.Gutter, widths)
+
 	return result
 }
 func (g *Grid) Geometry(width, height int) GridGeometry { return g.window(width, height).geometry }
@@ -199,7 +163,7 @@ func (g *Grid) cellText(row GridRecord, column GridColumn, width int, selected b
 	o := g.options
 	co := g.columnOptions[column.ID]
 	info := g.info(row, column)
-	state := combineGridState(row.State, info.State)
+	state := g.cellState(row, info)
 	if g.rangeMode && selected && o.ShowCellMarkers {
 		state.Selected = true
 	}
@@ -217,6 +181,23 @@ func (g *Grid) cellText(row GridRecord, column GridColumn, width int, selected b
 		prefix += state.Visual().Markers
 		if prefix != "" {
 			prefix += " "
+		}
+	}
+	if state.Edited && !o.ShowCellMarkers {
+		prefix += "* "
+	}
+	if e := g.work.edit; e != nil && e.RowID == row.ID && e.ColumnID == column.ID {
+		extra := 0
+		if state.Edited {
+			extra = 2
+		}
+		raw = editDisplay(g.work.buffer.Text(), g.work.buffer.Cursor, max(0, width-2*o.Padding-extra), !e.Pending)
+		if e.Value.Null {
+			raw = g.label("null", "NULL")
+		}
+		prefix = ""
+		if state.Edited {
+			prefix = "* "
 		}
 	}
 	content := max(0, width-2*o.Padding)
@@ -238,7 +219,9 @@ func (g *Grid) selected(row, col int, r GridRecord, c GridColumn) bool {
 	return r.ID == g.SelectedRow && (g.WholeRow || c.ID == g.SelectedColumn)
 }
 func (g *Grid) rowRole(row GridRecord, index int) string {
-	role := row.State.Visual().Role
+	state := row.State
+	state.Edited = false
+	role := state.Visual().Role
 	if role == "body" {
 		if g.options.UseSurface {
 			role = "grid.base"
@@ -254,15 +237,25 @@ func (g *Grid) rowRole(row GridRecord, index int) string {
 }
 func (g *Grid) cellRole(row GridRecord, col GridColumn, index int, selected bool) string {
 	info := g.info(row, col)
-	s := combineGridState(row.State, info.State)
+	s := g.cellState(row, info)
 	role := g.rowRole(row, index)
 	switch {
 	case s.Disabled:
 		return "disabled"
 	case s.Invalid:
 		return "error"
+	case g.work.edit != nil && g.work.edit.RowID == row.ID && g.work.edit.ColumnID == col.ID:
+		if g.work.edit.Error != "" {
+			return "error"
+		}
+		if g.work.edit.Pending {
+			return "grid.loading"
+		}
+		return "field"
 	case s.Edited && g.options.PreserveEdited:
 		return "grid.edited"
+	case g.matches(row, col) && !s.Edited:
+		return "grid.match"
 	case g.options.HighlightCell && row.ID == g.RowID && col.ID == g.ColumnID:
 		return "grid.active"
 	case selected:
@@ -295,7 +288,7 @@ func (g *Grid) decorations(line *ComponentLine, geo GridGeometry, width int, hea
 		} else {
 			label = strconv.Itoa(index + 1)
 			if !o.HideMarkers {
-				if row.State.Edited {
+				if g.rowEdited(row) {
 					label = "*" + label
 				}
 				if row.ID == g.RowID {
@@ -329,6 +322,12 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 	g.lastHeight = height
 	if width == 0 || height == 0 || len(g.columns) == 0 {
 		return nil
+	}
+	if g.work.findBuffer != nil {
+		return []ComponentLine{{Text: g.label("find", "Find") + ": " + editDisplay(g.work.findBuffer.Text(), g.work.findBuffer.Cursor, max(0, width-8), true), Role: "field"}}
+	}
+	if g.work.detail != nil {
+		return g.detailLayout(width, height)
 	}
 	window := g.window(width, height)
 	geo := window.geometry
@@ -373,7 +372,9 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 			break
 		}
 		index := geo.Top + i
-		v := row.State.Visual()
+		rs := row.State
+		rs.Edited = g.rowEdited(row)
+		v := rs.Visual()
 		marker := "  "
 		if row.ID == g.RowID {
 			marker = "> "
@@ -434,7 +435,7 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 			text += run.Text
 		}
 		role := "grid.status"
-		if g.Status.Error != "" {
+		if g.Status.Error != "" || g.work.edit != nil && g.work.edit.Error != "" {
 			role = "error"
 		}
 		out = append(out, ComponentLine{Text: text, Role: role, Value: "@status"})
@@ -496,6 +497,19 @@ func (g *Grid) StatusItems() []StatusItem {
 		fields = []string{"error", "position", "column", "selection", "loading", "more", "sort", "filter", "meta"}
 	}
 	out := []StatusItem{}
+	if e := g.work.edit; e != nil {
+		message := g.label("editing", "Editing")
+		role := "info"
+		if e.Pending {
+			message = g.label("pending", "Awaiting approval")
+		}
+		if e.Error != "" {
+			message = e.Error
+			role = "error"
+		}
+		out = append(out, StatusItem{ID: "editing", Text: message, Role: role, Priority: 110})
+	}
+
 	for _, key := range fields {
 		if item, ok := all[key]; ok {
 			out = append(out, item)

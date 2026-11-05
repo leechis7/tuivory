@@ -161,6 +161,7 @@ impl Styles {
         let alias = match name {
             "grid.active" | "grid.range" => "selection",
             "grid.edited" => "edited",
+            "grid.match" => "warning",
             "grid.header-active" | "grid.status" => "header",
             "grid.gutter" | "grid.divider" | "grid.null" | "grid.readonly" | "grid.loading" => {
                 "hint"

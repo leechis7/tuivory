@@ -2,6 +2,8 @@
 
 [한국어 (default)](README.md) · **English**
 
+0.11.0: [grid editing and data work](grid-workspace.en.md). Available from 0.11.0.
+
 **Do not use 0.10.1:** [Withdrawal and upgrade](withdrawn-versions.en.md). Use 0.10.2 or later.
 
 0.10.0 TVR-7: [responsive Go Modal](modals.en.md) wraps long buttons inside narrow terminals. Modal is an SDK adapter embedding its backend, an exception to raw alias identity. Included in 0.10.0.
@@ -14,7 +16,7 @@
 
 **0.10.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](ui-facade.en.md).
 
-Current release: **0.10.2**. Start with installation, choose a component, then consult its API.
+Current release: **0.11.0**. Start with installation, choose a component, then consult its API.
 
 - [Installation](installation.en.md)
 - [Component guides](components.en.md)
@@ -24,6 +26,6 @@ Current release: **0.10.2**. Start with installation, choose a component, then c
 - [Responsibilities](component-boundary.en.md)
 - [Development and history](development.en.md)
 
-[Current release](release-0.10.2.en.md)
+[Current release](release-0.11.0.en.md)
 
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](ui-facade.en.md).

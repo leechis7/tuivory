@@ -69,6 +69,8 @@ func (m *MemoryRows) Row(n int) GridRecord {
 
 type GridEvent struct{ Kind, RowID, ColumnID, Text, Direction string }
 type Grid struct {
+	work gridWork
+
 	columns                                                                 []GridColumn
 	source                                                                  GridSource
 	RowID, ColumnID, SelectedRow, SelectedColumn, SortColumn, SortDirection string
@@ -116,6 +118,10 @@ func (g *Grid) SetSource(source GridSource) {
 	if source == nil {
 		return
 	}
+	g.invalidateWork()
+	g.dragColumn = ""
+	g.dragAnchor = GridRange{}
+	g.work.dragMoveColumn = ""
 	g.source = source
 	if at := source.IndexOf(g.RowID); at >= 0 && at < source.Len() {
 		g.Row = at
@@ -130,6 +136,7 @@ func (g *Grid) SetSource(source GridSource) {
 	g.reconcile()
 }
 func (g *Grid) reconcile() {
+	defer g.reconcileVisible()
 	if len(g.columns) == 0 {
 		g.ColumnID = ""
 		g.RowID = ""
@@ -175,7 +182,7 @@ func (g *Grid) Focus(rowID, columnID string) bool {
 		return false
 	}
 	for col, c := range g.columns {
-		if c.ID == columnID {
+		if c.ID == columnID && !g.work.hidden[c.ID] {
 			g.Row = row
 			g.Column = col
 			g.reconcile()
@@ -212,6 +219,9 @@ func (g *Grid) RequestFilter(query string) GridEvent {
 }
 func (g *Grid) Handle(action string, height int) GridEvent {
 	g.reconcile()
+	if e, ok := g.workAction(action, height); ok {
+		return e
+	}
 	if len(g.columns) == 0 {
 		return GridEvent{}
 	}
@@ -232,7 +242,8 @@ func (g *Grid) Handle(action string, height int) GridEvent {
 		event.Kind = "copy"
 		if g.WholeRow {
 			values := []string{}
-			for _, c := range g.columns {
+			for _, i := range g.visibleIndices() {
+				c := g.columns[i]
 				values = append(values, row.Cells[c.ID])
 			}
 			event.Text = strings.Join(values, "\t")
