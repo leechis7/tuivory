@@ -28,3 +28,5 @@ Choose a component for models, state, events, language usage and runnable exampl
 [API reference](api/README.en.md) · [All examples](examples.en.md)
 
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](ui-facade.en.md).
+
+[0.11.0 grid editing, columns, paste, find and view-state guide](grid-workspace.en.md).

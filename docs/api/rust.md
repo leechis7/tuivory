@@ -1,4 +1,4 @@
-# Rust API — source (0.10.2)
+# Rust API — source (0.11.0)
 
 **한국어 (기본)** · [English](rust.en.md)
 
@@ -1436,6 +1436,14 @@ pub struct Grid {
 
 
 
+#### tuivory::grid::Grid::input
+
+```rust
+pub fn input(&mut self, e: &InputEvent, width: usize, height: usize) -> GridEvent;
+```
+
+Grid-local input only; hosts choose global shortcuts and clipboard I/O.
+
 #### tuivory::grid::Grid::options
 
 ```rust
@@ -1547,6 +1555,223 @@ pub fn request_page(&self) -> GridEvent;
 
 ```rust
 pub fn auto_fit_column(&mut self, id: &str, height: usize) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::invalidate_requests
+
+```rust
+pub fn invalidate_requests(&mut self);
+```
+
+Call when a host workspace/tab/context changes without replacing its source.
+
+#### tuivory::grid::Grid::column_layout
+
+```rust
+pub fn column_layout(&self) -> Vec<GridColumnLayout>;
+```
+
+
+
+#### tuivory::grid::Grid::set_column_layout
+
+```rust
+pub fn set_column_layout(&mut self, l: Vec<GridColumnLayout>) -> Result<(), Error>;
+```
+
+
+
+#### tuivory::grid::Grid::move_column
+
+```rust
+pub fn move_column(&mut self, id: &str, at: usize) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::hide_column
+
+```rust
+pub fn hide_column(&mut self, id: &str, hidden: bool) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::pin_column
+
+```rust
+pub fn pin_column(&mut self, id: &str, side: &str) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::save_view_state
+
+```rust
+pub fn save_view_state(&self) -> GridViewState;
+```
+
+
+
+#### tuivory::grid::Grid::restore_view_state
+
+```rust
+pub fn restore_view_state(&mut self, s: GridViewState) -> Result<(), Error>;
+```
+
+
+
+#### tuivory::grid::Grid::set_edit_options
+
+```rust
+pub fn set_edit_options(&mut self, o: GridEditOptions);
+```
+
+
+
+#### tuivory::grid::Grid::begin_edit
+
+```rust
+pub fn begin_edit(&mut self, first: &str) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::edit_session
+
+```rust
+pub fn edit_session(&self) -> Option<&GridEditSession>;
+```
+
+
+
+#### tuivory::grid::Grid::cancel_edit
+
+```rust
+pub fn cancel_edit(&mut self);
+```
+
+
+
+#### tuivory::grid::Grid::edit_input
+
+```rust
+pub fn edit_input(&mut self, action: &str, text: &str) -> GridEvent;
+```
+
+
+
+#### tuivory::grid::Grid::resolve_edit
+
+```rust
+pub fn resolve_edit(
+        &mut self,
+        id: u64,
+        message: &str,
+        source: Option<Box<dyn GridSource>>,
+    ) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::move_editable
+
+```rust
+pub fn move_editable(&mut self, previous: bool) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::request_paste
+
+```rust
+pub fn request_paste(
+        &mut self,
+        text: &str,
+        o: GridPasteOptions,
+    ) -> Result<GridPasteRequest, Error>;
+```
+
+
+
+#### tuivory::grid::Grid::pending_paste
+
+```rust
+pub fn pending_paste(&self) -> Option<&GridPasteRequest>;
+```
+
+
+
+#### tuivory::grid::Grid::resolve_paste
+
+```rust
+pub fn resolve_paste(&mut self, id: u64, source: Option<Box<dyn GridSource>>) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::cancel_paste
+
+```rust
+pub fn cancel_paste(&mut self);
+```
+
+
+
+#### tuivory::grid::Grid::set_find
+
+```rust
+pub fn set_find(&mut self, query: &str, o: GridFindOptions);
+```
+
+
+
+#### tuivory::grid::Grid::find_next
+
+```rust
+pub fn find_next(&mut self, previous: bool) -> Option<GridCellRef>;
+```
+
+
+
+#### tuivory::grid::Grid::request_search
+
+```rust
+pub fn request_search(&self, query: &str) -> GridEvent;
+```
+
+
+
+#### tuivory::grid::Grid::set_details_enabled
+
+```rust
+pub fn set_details_enabled(&mut self, enabled: bool);
+```
+
+
+
+#### tuivory::grid::Grid::open_details
+
+```rust
+pub fn open_details(&mut self) -> bool;
+```
+
+
+
+#### tuivory::grid::Grid::close_details
+
+```rust
+pub fn close_details(&mut self);
+```
+
+
+
+#### tuivory::grid::Grid::set_row_edited
+
+```rust
+pub fn set_row_edited(&mut self, callback: impl Fn(&GridRecord) -> bool + 'static);
 ```
 
 
@@ -1690,6 +1915,31 @@ pub struct GridCellInfo {
 
 
 
+### tuivory::grid::GridCellRef
+
+```rust
+pub struct GridCellRef {
+    pub row_id: String,
+    pub column_id: String,
+}
+```
+
+
+
+
+### tuivory::grid::GridChange
+
+```rust
+pub struct GridChange {
+    pub row_id: String,
+    pub column_id: String,
+    pub value: GridValue,
+}
+```
+
+
+
+
 ### tuivory::grid::GridColumn
 
 ```rust
@@ -1698,6 +1948,19 @@ pub struct GridColumn {
     pub label: String,
     pub width: usize,
     pub editable: bool,
+}
+```
+
+
+
+
+### tuivory::grid::GridColumnLayout
+
+```rust
+pub struct GridColumnLayout {
+    pub id: String,
+    pub pin: String,
+    pub hidden: bool,
 }
 ```
 
@@ -1736,6 +1999,46 @@ pub struct GridDataStatus {
 
 
 
+### tuivory::grid::GridEditOptions
+
+```rust
+pub struct GridEditOptions {
+    pub enabled: bool,
+    pub start_typing: bool,
+    pub allow_null: bool,
+    pub prepare: Option<GridEditPrepare>,
+}
+```
+
+
+
+
+### tuivory::grid::GridEditPrepare
+
+```rust
+pub type GridEditPrepare = Box<dyn Fn(&GridRecord, &GridColumn) -> Option<GridValue>>;
+```
+
+
+
+
+### tuivory::grid::GridEditSession
+
+```rust
+pub struct GridEditSession {
+    pub id: u64,
+    pub row_id: String,
+    pub column_id: String,
+    pub original: GridValue,
+    pub value: GridValue,
+    pub pending: bool,
+    pub error: String,
+}
+```
+
+
+
+
 ### tuivory::grid::GridEvent
 
 ```rust
@@ -1745,6 +2048,19 @@ pub struct GridEvent {
     pub column_id: String,
     pub text: String,
     pub direction: String,
+}
+```
+
+
+
+
+### tuivory::grid::GridFindOptions
+
+```rust
+pub struct GridFindOptions {
+    pub case_sensitive: bool,
+    pub use_display: bool,
+    pub max_cells: usize,
 }
 ```
 
@@ -1813,6 +2129,31 @@ pub fn with_density(mut self, density: &str) -> Result<Self, Error>;
 
 
 
+### tuivory::grid::GridPasteOptions
+
+```rust
+pub struct GridPasteOptions {
+    pub max_cells: usize,
+    pub null_text: String,
+    pub parse_null: bool,
+}
+```
+
+
+
+
+### tuivory::grid::GridPasteRequest
+
+```rust
+pub struct GridPasteRequest {
+    pub id: u64,
+    pub changes: Vec<GridChange>,
+}
+```
+
+
+
+
 ### tuivory::grid::GridRange
 
 ```rust
@@ -1863,6 +2204,42 @@ pub struct GridSpan {
     pub id: String,
     pub start: usize,
     pub width: usize,
+}
+```
+
+
+
+
+### tuivory::grid::GridValue
+
+```rust
+pub struct GridValue {
+    pub text: String,
+    pub null: bool,
+}
+```
+
+
+
+
+### tuivory::grid::GridViewState
+
+```rust
+pub struct GridViewState {
+    pub columns: Vec<GridColumnLayout>,
+    pub widths: BTreeMap<String, usize>,
+    pub column_options: BTreeMap<String, GridColumnOptions>,
+    pub row_id: String,
+    pub column_id: String,
+    pub top_row_id: String,
+    pub left_column_id: String,
+    pub sort_column: String,
+    pub sort_direction: String,
+    pub selected: GridRange,
+    pub selected_row: String,
+    pub selected_column: String,
+    pub selection: String,
+    pub filter: String,
 }
 ```
 

@@ -57,3 +57,5 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 0.8.0 TVR-26: [공통 UI API](../ui-facade.md) · [Go ui](go-ui.md) · [Go terminal](go-terminal.md). Rust ui::components는 기존 렌더러 API의 호환 경로이며 새 InputEvent/Session/바이트 span API는 Rust 명세에 포함합니다.
 
 [문법 분석·강조 API와 편집기 전환](../syntax.md): 0.9.2 TVR-24 후속입니다.
+
+[그리드 확장 API와 앱 승인](../grid-workspace.md): TVR-7 0.11.0 소스입니다. Go/Rust API 명세에 추가 공개 선언을 함께 제공합니다.

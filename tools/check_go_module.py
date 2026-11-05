@@ -71,6 +71,11 @@ func TestIsolatedModule(t *testing.T) {
     grid.SetCellInfo(func(r tuivory.GridRecord,c tuivory.GridColumn)tuivory.GridCellInfo{return tuivory.GridCellInfo{Display:"formatted",HasDisplay:true,Metadata:"TEXT"}})
     if !grid.SelectRange(tuivory.GridRange{AnchorRow:"row",EndRow:"row",AnchorColumn:"name",EndColumn:"name"})||grid.Handle("copy_range",4).Text!="External" {t.Fatal("external options/raw range")}
     grid.RequestFilter("old");oldRevision:=grid.Revision();grid.RequestFilter("new");if grid.ApplySource(oldRevision,gridRows){t.Fatal("stale source")}
+    grid.SetEditOptions(tuivory.GridEditOptions{Enabled:true,AllowNull:true});if !grid.BeginEdit("updated"){t.Fatal("external inline editor")};grid.EditInput("submit","");edit,ok:=grid.EditSession();if !ok||!grid.ResolveEdit(edit.ID,"",nil){t.Fatal("external approval")}
+    if !grid.PinColumn("name","left"){t.Fatal("external pin")};savedView:=grid.SaveViewState();if err:=grid.RestoreViewState(savedView);err!=nil{t.Fatal(err)}
+    paste,pasteErr:=grid.RequestPaste("one",tuivory.GridPasteOptions{});if pasteErr!=nil||!grid.ResolvePaste(paste.ID,nil){t.Fatal("external paste",pasteErr)}
+    grid.SetFind("External",tuivory.GridFindOptions{});if _,ok:=grid.FindNext(false);!ok{t.Fatal("external find")};grid.SetDetailsEnabled(true);if !grid.OpenDetails(){t.Fatal("external details")};grid.CloseDetails();grid.InvalidateRequests()
+    if tuivory.PasteSafeScreen(tuivory.NewSimulationScreen("UTF-8"))==nil{t.Fatal("external paste screen")}
     menu,menuErr:=tuivory.NewMenu([]tuivory.MenuItem{{ID:"root",Label:"Root"},{ID:"copy",Parent:"root",Label:"Copy",Mnemonic:"c",Icon:"◇",ASCIIIcon:"*"}});if menuErr!=nil{t.Fatal(menuErr)}
     menu.Open("root","editor");if e:=menu.Handle("mnemonic","c",4);e.Kind!="activate"||e.ReturnID!="editor"{t.Fatal("external menu caller")};menu.Open("root","editor")
     notices,_:=tuivory.NewNoticeQueue(2);_ = notices.Push(tuivory.Notice{ID:"err",Severity:"error",ExpiresAt:1})

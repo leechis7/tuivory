@@ -1,6 +1,8 @@
 # Tuivory — TUI 컴포넌트 라이브러리
 
-**0.10.2:** Windows Go 파사드 컴파일 결함을 수정했습니다. **0.10.1 사용 금지** · [회수·업그레이드 안내](docs/withdrawn-versions.md).
+**0.11.0:** 그리드 편집·열 관리·붙여넣기·찾기를 제공합니다. **0.10.1 사용 금지** · [회수·업그레이드 안내](docs/withdrawn-versions.md).
+
+0.11.0 TVR-7: [그리드 셀 내 편집·열 고정/숨김/순서·붙여넣기·찾기·보기 복원·상세 보기](docs/grid-workspace.md). 0.11.0부터 제공합니다.
 
 **0.10.2 TVR-26:** [Windows Go 파사드](docs/ui-facade.md)가 Unix 전용 API를 참조하는 결함을 수정했습니다. 0.10.2에서 제공하며 0.10.1은 사용 금지입니다.
 
@@ -19,17 +21,17 @@
 
 **Go/tview와 Rust/Ratatui**를 위한 TUI 컴포넌트 라이브러리입니다. 앱이 화면 구성·데이터·업무 동작을 연결합니다. Python·JavaScript는 현재 토큰 읽기 예제를 제공하며 UI 패키지는 계획 단계입니다.
 
-**0.10.2** · [릴리스](docs/release-0.10.2.md) · [문서](docs/README.md) · [API](docs/api/README.md)
+**0.11.0** · [릴리스](docs/release-0.11.0.md) · [문서](docs/README.md) · [API](docs/api/README.md)
 
 ## 설치
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.10.2
+go get github.com/leechis7/tuivory/go@v0.11.0
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.10.2", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.0", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [설치 상세](docs/installation.md)

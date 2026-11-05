@@ -1,0 +1,1073 @@
+{
+  "schema_version": 1,
+  "issue": "TVR-7",
+  "issue_url": "https://leechis7.atlassian.net/browse/TVR-7",
+  "requested_comments": [
+    "10993",
+    "10995"
+  ],
+  "implementation_started_comment": "10997",
+  "checked_at_utc": "2026-11-05T14:31:16.182675+00:00",
+  "source": {
+    "base_commit": "9d05cfc03f584e6409c8d42287dc13ed1357e20d",
+    "branch": "codex/TVR-7-grid-workspace",
+    "uncommitted": true,
+    "manifest_version": "0.10.2",
+    "availability": "unreleased source; not in published 0.10.2",
+    "sha256": {
+      "go/grid.go": "5d2234fda41afa56e7dfb5bb3e08f6caea45b14bd2d4e0a5640de88686be1b37",
+      "go/grid_work.go": "453bc5c561077a75a71ebf14554df8f3cf1e2cfd602a139f2d12b6a696e39f74",
+      "go/grid_input.go": "b6102eae61fab70c9fe384ed24b3894d9730da05dc6588ff82b7fb128fc21262",
+      "go/grid_options.go": "288f4a3d8df8dfc94ab6142edf0ed767d9f9b257a203e05a76c8c53f5f57ed8e",
+      "go/grid_presentation.go": "6e0e7448fd8d17a65121ee45694679065820b9ce42a8b56159091ad441235797",
+      "go/grid_pointer.go": "dfc85d00a1cac08a2ca78621d9962211446d7adc7810f33e595db96477111a90",
+      "go/rows_view.go": "e0ba94fd9ed462d255e865f091d8d6ca66333fead797318ac02f673ba18938d9",
+      "go/paste_screen.go": "8b9f9d659b380e89173d47e7e66859d9e6a60f04f8b0c5b645ae6a3e87075604",
+      "rust/src/grid.rs": "08eaeabc4393b51149fe65b01dc2efd1199314603c1df5c7494817512a9771da",
+      "rust/src/grid/work.rs": "f273be8593974b01c0a91ea4393456c71504bb6fc3bed182db6f31b19237c808",
+      "rust/src/grid/input.rs": "64d77dd4c8f3381ec9fe0e3fd75aa33d55264a8a790a05681b355646338c51fd",
+      "rust/src/grid/options.rs": "f8a6f89385ba37b573fa03202d79caf207bc12c2b346510205157ed702ae2c2d",
+      "rust/src/grid/presentation.rs": "424ce133e9fb3d3ae7496bf7827ccb17e30e344bd11517160811e8cd04ea3a17",
+      "rust/src/grid/pointer.rs": "8fb0010e1640cfc176e617c260e61b99c1fdc7e88e5d0d29d7398ade6bb0bfbb",
+      "rust/src/ratatui.rs": "b9312d20d17fef679ca4a5d847fb30edc65fb20d02a230e194cd922526415e14"
+    }
+  },
+  "scope": [
+    {
+      "stage": 1,
+      "implemented": [
+        "dirty-cell presentation and independent row/gutter markers",
+        "host-approved in-cell editor with stable IDs, request guards, cancellation, NULL and retry"
+      ]
+    },
+    {
+      "stage": 2,
+      "implemented": [
+        "left/right column pinning",
+        "visibility and order",
+        "keyboard and header-drag reordering",
+        "clipped non-overlapping pinned regions"
+      ]
+    },
+    {
+      "stage": 3,
+      "implemented": [
+        "Tab/Shift+Tab submission and navigation after approval",
+        "skip hidden/read-only/host-denied cells",
+        "no reopening removed rows or wrapping the final cell"
+      ]
+    },
+    {
+      "stage": 4,
+      "implemented": [
+        "bounded quoted TSV batch requests",
+        "explicit optional NULL mapping",
+        "whole-batch eligibility validation and revalidation",
+        "host-owned acceptance/source writes"
+      ]
+    },
+    {
+      "stage": 5,
+      "implemented": [
+        "bounded loaded-source raw/display find",
+        "matching-cell styles and next/previous navigation",
+        "host global-search request"
+      ]
+    },
+    {
+      "stage": 6,
+      "implemented": [
+        "stable-ID view snapshots and atomic restoration",
+        "Go JSON / Rust serde",
+        "host-owned in-memory example storage"
+      ]
+    },
+    {
+      "stage": 7,
+      "implemented": [
+        "opt-in built-in raw-cell details viewer",
+        "read-only multiline/long-value scrolling",
+        "request-only compatibility by default"
+      ]
+    }
+  ],
+  "languages": {
+    "go": "implemented and locally validated",
+    "rust": "implemented and locally validated",
+    "python_typescript_javascript": "not implemented by this task"
+  },
+  "compatibility": {
+    "edit_ui_default": "off; activate still emits the legacy edit request",
+    "details_default": "request only; SetDetailsEnabled or open explicitly",
+    "row_edited_change": "gutter-only; explicit cell Edited supplies cell colors",
+    "paste_safe_screen": "optional common Go screen wrapper; preserves bracketed LF/CRLF without remapping normal Ctrl+J",
+    "new_native_dependencies": false
+  },
+  "local_validation": {
+    "go": [
+      "make test check: complete race suite, vet, shared assets/lifecycle/palette/link checks",
+      "isolated module tests and external root-only consumer without repository design assets",
+      "native Linux ARM64 root-only simulation consumer",
+      "final grid/paste regression suite after boundary follow-ups"
+    ],
+    "rust": [
+      "all-target/all-feature tests and doctests",
+      "clippy all-target/all-feature with warnings denied and fmt check",
+      "standalone packaged .crate and external Ratatui/SQL-feature consumer without repository design assets; dependency cache used offline",
+      "12 final workspace tests including empty-source visibility and revoked pending-paste eligibility"
+    ],
+    "physical_output": {
+      "themes": [
+        "dark",
+        "light",
+        "blackwhite"
+      ],
+      "color_profiles": [
+        "8",
+        "16",
+        "256",
+        "truecolor"
+      ],
+      "glyph_modes": [
+        "unicode",
+        "ascii"
+      ],
+      "state_combinations_per_profile": 64,
+      "combinations_per_language": 1536,
+      "backends": {
+        "go": "SimulationScreen after Show()",
+        "rust": "Ratatui TestBackend"
+      },
+      "coverage": [
+        "edited/selection/focus/disabled/error/busy/read-only/NULL precedence",
+        "visible dirty cues and distinct text/background",
+        "CJK editing and errors, graphemes, narrow resize/recovery"
+      ]
+    },
+    "shared_tsv_cases": {
+      "count": 14,
+      "source": "design/grid-work-cases.json",
+      "mirrors": [
+        "go/testdata/grid-work-cases.json",
+        "rust/tests/data/grid-work-cases.json"
+      ]
+    },
+    "pty_grid_workspace": {
+      "count": 96,
+      "passed": 96,
+      "dimensions": "Go/Rust x Korean/English x 3 themes x 4 color profiles x Unicode/ASCII",
+      "scenarios": [
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-dark-8-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-dark-8-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-dark-16-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-dark-16-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-dark-256-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-dark-256-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-dark-truecolor-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-dark-truecolor-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-light-8-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-light-8-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-light-16-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-light-16-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-light-256-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-light-256-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-light-truecolor-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-light-truecolor-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-blackwhite-8-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-blackwhite-8-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-blackwhite-16-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-blackwhite-16-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-blackwhite-256-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-blackwhite-256-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-ko-blackwhite-truecolor-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-ko-blackwhite-truecolor-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-dark-8-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-dark-8-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-dark-16-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-dark-16-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-dark-256-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-dark-256-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-dark-truecolor-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-dark-truecolor-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-light-8-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-light-8-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-light-16-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-light-16-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-light-256-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-light-256-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-light-truecolor-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-light-truecolor-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-blackwhite-8-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-blackwhite-8-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-blackwhite-16-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-blackwhite-16-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-blackwhite-256-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-blackwhite-256-ascii.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-go-en-blackwhite-truecolor-unicode.log"
+        },
+        {
+          "language": "go",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-go-en-blackwhite-truecolor-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-dark-8-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-dark-8-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-dark-16-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-dark-16-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-dark-256-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-dark-256-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-dark-truecolor-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-dark-truecolor-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-light-8-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-light-8-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-light-16-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-light-16-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-light-256-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-light-256-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-light-truecolor-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-light-truecolor-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-blackwhite-8-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-blackwhite-8-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-blackwhite-16-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-blackwhite-16-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-blackwhite-256-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-blackwhite-256-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-ko-blackwhite-truecolor-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-ko-blackwhite-truecolor-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-dark-8-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-dark-8-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-dark-16-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-dark-16-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-dark-256-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-dark-256-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-dark-truecolor-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-dark-truecolor-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-light-8-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-light-8-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-light-16-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-light-16-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-light-256-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-light-256-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-light-truecolor-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-light-truecolor-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-blackwhite-8-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-blackwhite-8-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-blackwhite-16-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-blackwhite-16-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-blackwhite-256-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-blackwhite-256-ascii.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true,
+          "log": "pty-rust-en-blackwhite-truecolor-unicode.log"
+        },
+        {
+          "language": "rust",
+          "locale": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true,
+          "log": "pty-rust-en-blackwhite-truecolor-ascii.log"
+        }
+      ]
+    },
+    "pty_other_unified_demos": {
+      "passed": 62,
+      "notes": "Existing unified-demos regression runner, including four workspace runs; followed by final 96-case workspace matrix. Empty-source follow-up validated separately by model tests."
+    },
+    "references": {
+      "new_editor_images": [
+        "docs/images/grid-edit-ascii-en.svg",
+        "docs/images/grid-edit-ascii.svg",
+        "docs/images/grid-edit-blackwhite-en.svg",
+        "docs/images/grid-edit-blackwhite.svg",
+        "docs/images/grid-edit-dark-en.svg",
+        "docs/images/grid-edit-dark.svg",
+        "docs/images/grid-edit-light-en.svg",
+        "docs/images/grid-edit-light.svg"
+      ],
+      "regenerated_existing_grid_images": 20,
+      "renderer": "Rust TestBackend; not physical-terminal screenshots",
+      "visual_review": "Light Korean SVG rendered in local Chromium and inspected"
+    },
+    "api": "source-derived bilingual API snapshots synchronized; fresh final rustdoc JSON checked",
+    "static_elf": "both native Linux ARM64 examples have no PT_INTERP or DT_NEEDED"
+  },
+  "binaries": {
+    "bin/go/tuivory-linux-arm64": {
+      "sha256": "168a8622ef06ceaf7589a6e07e26108504c71155bef20fdb03dff1c0f9b5b601",
+      "architecture": "Linux ARM64",
+      "static": true
+    },
+    "bin/rust/tuivory-linux-arm64": {
+      "sha256": "b1ccbbb0a8dc9e594bcf723039fd84caeef66d9eb7a094a2648442cdf2c5a3ba",
+      "architecture": "Linux ARM64",
+      "static": true
+    }
+  },
+  "status": {
+    "implementation": "complete",
+    "epic": "keep In Progress/open",
+    "commit": "not performed; awaiting explicit instruction",
+    "publication": "not performed",
+    "release": "not performed; current public release remains 0.10.2",
+    "remote_ci": "not run",
+    "public_tag_consumers": "not tested for unreleased APIs",
+    "centos": "not run per user instruction",
+    "real_lazyora_database_integration": "not performed; host responsibility"
+  },
+  "logs": "Local working logs are under .cache/validation/tvr7-grid/ and are not committed.",
+  "completion_comment": "10998"
+}

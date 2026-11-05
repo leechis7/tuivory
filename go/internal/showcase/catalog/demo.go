@@ -42,6 +42,7 @@ func Run(args []string) {
 	ascii := flags.Bool("ascii", false, "ASCII borders")
 	gridPreset := flags.String("grid-preset", "simple", "simple/data")
 	gridSample := flags.Bool("grid-sample", false, "five-row grid comparison")
+	editPreview := flags.Bool("grid-edit-preview", false, "start synthetic inline editing")
 	mode := flags.String("mode", "forms", "component")
 	densityFlag := flags.String("density", "auto", "auto/compact/comfortable")
 	_ = flags.Parse(args)
@@ -68,7 +69,12 @@ func Run(args []string) {
 		log.Fatal(err)
 	}
 	palette, _ := ui.Resolve(source)
-	app := ui.NewApplication()
+	app := ui.NewApplication().EnablePaste(true)
+	screen, screenErr := ui.NewScreen()
+	if screenErr != nil {
+		log.Fatal(screenErr)
+	}
+	app.SetScreen(ui.PasteSafeScreen(screen))
 	header := ui.NewWidgetTextView().SetText("TUIVORY Catalog / " + text("이름 · 공통 컴포넌트", "Name / shared components"))
 	footer := ui.NewWidgetTextView()
 	footer.SetText(text("Tab 이동 / Enter 확정 / Esc 취소 / Ctrl+Q 종료", "Tab move / Enter confirm / Esc cancel / Ctrl+Q quit"))
@@ -96,9 +102,10 @@ func Run(args []string) {
 		}
 	}
 	if *mode == "grid" {
-		grid, _ := ui.NewGrid([]ui.GridColumn{{ID: "name", Label: text("이름", "Name"), Width: 28, Editable: true}, {ID: "value", Label: text("값", "Value"), Width: 16, Editable: true}, {ID: "state", Label: text("상태", "State"), Width: 16}}, demoRows{count: 100000, en: *lang == "en"})
+		host := newEditableRows(demoRows{count: 100000, en: *lang == "en"})
+		grid, _ := ui.NewGrid([]ui.GridColumn{{ID: "name", Label: text("이름", "Name"), Width: 28, Editable: true}, {ID: "value", Label: text("값", "Value"), Width: 16, Editable: true}, {ID: "state", Label: text("상태", "State"), Width: 16}}, host)
 		if *gridSample {
-			grid = sampleGrid(text)
+			grid, host = sampleGrid(text)
 		}
 		gridOptions, e := ui.GridPreset(*gridPreset)
 		if e != nil {
@@ -114,9 +121,25 @@ func Run(args []string) {
 		if e = grid.SetOptions(gridOptions); e != nil {
 			log.Fatal(e)
 		}
-		configureGrid(grid, text)
+		configureGrid(grid, text, host)
+		if *editPreview {
+			grid.BeginEdit("")
+			grid.EditInput("select_all", "")
+			grid.EditInput("insert", text("수정한 값", "Updated value"))
+		}
 		grid.Empty = text("결과 없음", "No results")
-		view, err = ui.NewGridView(grid, palette, func(e ui.GridEvent) { footer.SetText(e.Kind + ": " + e.RowID + " / " + e.ColumnID) })
+		var saved *ui.GridViewState
+		view, err = ui.NewGridView(grid, palette, func(e ui.GridEvent) {
+			respondGrid(grid, host, e)
+			if e.Kind == "view_save" {
+				s := grid.SaveViewState()
+				saved = &s
+			}
+			if e.Kind == "view_restore" && saved != nil {
+				_ = grid.RestoreViewState(*saved)
+			}
+			footer.SetText(e.Kind + ": " + e.RowID + " / " + e.ColumnID)
+		})
 		if err != nil {
 			log.Fatal(err)
 		}

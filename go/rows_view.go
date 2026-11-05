@@ -363,16 +363,14 @@ func NewGridView(model *Grid, palette Palette, onEvent func(GridEvent)) (*RowsVi
 			onEvent(e)
 		}
 	}
-	v.Key = func(e *tcell.EventKey) {
-		if model.options.DisableKeyboard {
-			return
-		}
-		if e.Key() == tcell.KeyF5 {
-			emit(model.RequestFilter(model.Status.Filter))
-		} else {
-			emit(model.Handle(GridKey(e), height))
+	v.Key = func(e *tcell.EventKey) { emit(model.Input(InputFromKey(e), width, height)) }
+	v.Paste = func(text string) {
+		if !model.options.DisableKeyboard {
+			emit(model.Input(PasteInput(text), width, height))
 		}
 	}
+	v.TabBoundary = func(bool) bool { return model.work.edit == nil }
+
 	v.Pointer = func(line ComponentLine, x int) { emit(model.Click(line.ID, line.Value, x, width, height)) }
 	v.Mouse = func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
 		if model.options.DisableMouse {
@@ -401,17 +399,17 @@ func NewGridView(model *Grid, palette Palette, onEvent func(GridEvent)) (*RowsVi
 		case tview.MouseScrollRight:
 			action = "wheel_right"
 		}
-		if action == "" || (action == "move" && model.dragColumn == "" && model.dragAnchor.AnchorRow == "") {
+		if action == "" || (action == "move" && model.dragColumn == "" && model.dragAnchor.AnchorRow == "" && model.work.dragMoveColumn == "" && !model.work.editDragging) {
 			return false, nil
 		}
-		if !v.InRect(x, y) && model.dragColumn == "" && model.dragAnchor.AnchorRow == "" {
+		if !v.InRect(x, y) && model.dragColumn == "" && model.dragAnchor.AnchorRow == "" && model.work.dragMoveColumn == "" && !model.work.editDragging {
 			return false, nil
 		}
 		if action != "up" {
 			focus(v)
 		}
 		emit(model.Pointer(action, x-left, y-top, w, h, e.Modifiers()&tcell.ModShift != 0))
-		if model.dragColumn != "" || model.dragAnchor.AnchorRow != "" {
+		if model.dragColumn != "" || model.dragAnchor.AnchorRow != "" || model.work.dragMoveColumn != "" || model.work.editDragging {
 			return true, v
 		}
 		return true, nil

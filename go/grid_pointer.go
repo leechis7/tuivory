@@ -11,7 +11,19 @@ func (g *Grid) Pointer(action string, x, y, width, height int, extend bool) Grid
 	if g.options.DisableMouse {
 		return GridEvent{}
 	}
+	if g.work.edit != nil {
+		return g.editPoint(action, x, y, width, height, extend)
+	}
+	if g.work.detail != nil {
+		a := map[string]string{"wheel_up": "scroll_up", "wheel_down": "scroll_down", "wheel_left": "scroll_left", "wheel_right": "scroll_right"}[action]
+		g.work.detail.Handle(a, "")
+		return GridEvent{}
+	}
+	if g.work.findBuffer != nil {
+		return GridEvent{}
+	}
 	if action == "up" {
+		g.work.dragMoveColumn = ""
 		g.dragColumn = ""
 		g.dragAnchor = GridRange{}
 		return GridEvent{}
@@ -36,6 +48,18 @@ func (g *Grid) Pointer(action string, x, y, width, height int, extend bool) Grid
 		}
 		return GridEvent{}
 	}
+	if action == "move" && g.work.dragMoveColumn != "" {
+		geo := g.Geometry(width, height)
+		for _, s := range geo.Columns {
+			if x >= s.Start && x < s.Start+s.Width && s.ID != g.work.dragMoveColumn {
+				if g.MoveColumn(g.work.dragMoveColumn, g.columnIndex(s.ID)) {
+					g.work.dragMoved = true
+					return GridEvent{Kind: "columns"}
+				}
+			}
+		}
+		return GridEvent{}
+	}
 	if action == "move" && g.dragAnchor.AnchorRow == "" {
 		return GridEvent{}
 	}
@@ -54,7 +78,20 @@ func (g *Grid) Pointer(action string, x, y, width, height int, extend bool) Grid
 				}
 			}
 		}
+		if action == "down" {
+			for _, s := range geo.Columns {
+				if x >= s.Start && x < s.Start+s.Width {
+					g.work.dragMoveColumn = s.ID
+					g.work.dragMoved = false
+					return GridEvent{}
+				}
+			}
+		}
 		if action == "click" || action == "double" {
+			if g.work.dragMoved {
+				g.work.dragMoved = false
+				return GridEvent{}
+			}
 			return g.click("", "@header", x, width, height)
 		}
 		return GridEvent{}

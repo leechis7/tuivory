@@ -28,7 +28,25 @@ impl Grid {
         if self.options.disable_mouse {
             return GridEvent::default();
         }
+        if self.edit_session().is_some() {
+            return self.edit_point(action, x, y, width, height, extend);
+        }
+        if let Some(doc) = &self.work.detail {
+            let a = match action {
+                "wheel_up" => "scroll_up",
+                "wheel_down" => "scroll_down",
+                "wheel_left" => "scroll_left",
+                "wheel_right" => "scroll_right",
+                _ => "",
+            };
+            doc.borrow_mut().handle(a, "");
+            return GridEvent::default();
+        }
+        if self.work.find_buffer.is_some() {
+            return GridEvent::default();
+        }
         if action == "up" {
+            self.work.drag_move_column.clear();
             self.drag_column.clear();
             self.drag_anchor = GridRange::default();
             return GridEvent::default();
@@ -59,6 +77,23 @@ impl Grid {
             }
             return GridEvent::default();
         }
+        if action == "move" && !self.work.drag_move_column.is_empty() {
+            let id = self.work.drag_move_column.clone();
+            for s in self.geometry(width, height).columns {
+                if x >= s.start as isize
+                    && x < (s.start + s.width) as isize
+                    && s.id != id
+                    && self.move_column(&id, self.column_index(&s.id).unwrap())
+                {
+                    self.work.drag_moved = true;
+                    return GridEvent {
+                        kind: "columns".into(),
+                        ..Default::default()
+                    };
+                }
+            }
+            return GridEvent::default();
+        }
         if action == "move" && self.drag_anchor.anchor_row.is_empty() {
             return GridEvent::default();
         }
@@ -83,7 +118,20 @@ impl Grid {
                     }
                 }
             }
+            if action == "down" {
+                for s in &geo.columns {
+                    if x >= s.start && x < s.start + s.width {
+                        self.work.drag_move_column = s.id.clone();
+                        self.work.drag_moved = false;
+                        return GridEvent::default();
+                    }
+                }
+            }
             if action == "click" || action == "double" {
+                if self.work.drag_moved {
+                    self.work.drag_moved = false;
+                    return GridEvent::default();
+                }
                 return self.click_cell("", "@header", x, width, height);
             }
             return GridEvent::default();
@@ -170,6 +218,9 @@ impl Grid {
         self.handle("select", height)
     }
     pub fn pointer_captured(&self) -> bool {
-        !self.drag_column.is_empty() || !self.drag_anchor.anchor_row.is_empty()
+        !self.drag_column.is_empty()
+            || !self.drag_anchor.anchor_row.is_empty()
+            || !self.work.drag_move_column.is_empty()
+            || self.work.edit_dragging
     }
 }
