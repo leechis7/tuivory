@@ -6,3 +6,5 @@ import "./text.mjs";
 import "./forms.mjs";
 
 import "./focus.mjs";
+
+import "./collections.mjs";

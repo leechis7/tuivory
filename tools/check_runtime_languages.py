@@ -29,6 +29,11 @@ e=ui.Text("a");e.handle("insert","́");assert e.cursor==1;e.handle("backspace");
 f=ui.Form([ui.Field("p",kind="password",value="secret")]);assert f.fields[0].value=="******"
 s=ui.Form([ui.Field("s",kind="select",options=[ui.FormOption("a"),ui.FormOption("b")])]);s.handle("activate");s.handle("down");assert s.fields[0].choice=="";s.handle("activate");assert s.fields[0].choice=="b"
 focus=ui.Focus("root",[ui.FocusTarget("open")]);focus.open("popup",[]);assert focus.route("root").blocked and not focus.route().blocked;assert focus.request_close().id=="popup";focus.close("popup");assert focus.focused=="open"
+assert ui.fold("Straße Σςσ")=="strasse σσσ"
+l=ui.List([ui.Item("de","Straße")]);assert l.set_query("STRASSE").kind=="query" and l.focused=="de"
+picker=ui.SearchPicker([ui.Item("rust","Rust")]);picker.handle("open");picker.handle("insert","RUST");assert picker.value=="";assert picker.handle("activate").id=="rust" and picker.value=="rust"
+from importlib.metadata import distribution
+assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").files)
 ''')
  run([p,'-I',b/'consumer.py'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','tree','--lang','en'],b)
@@ -50,7 +55,10 @@ const e=new ui.Text("a");e.handle("insert","́");if(e.cursor!==1)throw new Error
 const f=new ui.Form([{id:"p",kind:"password",value:"secret"}]);if(f.fields[0].value!=="******")throw new Error("password");
 const s=new ui.Form([{id:"s",kind:"select",options:[{id:"a"},{id:"b"}]}]);s.handle("activate");s.handle("down");if(s.fields[0].choice)throw new Error("pending");s.handle("activate");if(s.fields[0].choice!=="b")throw new Error("choice");
 const focus=new ui.Focus("root",[{id:"open"}]);focus.open("popup",[]);if(!focus.route("root").blocked||focus.route().blocked||focus.requestClose()?.id!=="popup")throw new Error("focus routing");focus.close("popup");if(focus.focused!=="open")throw new Error("focus restoration");
+if(ui.fold("Straße Σςσ")!=="strasse σσσ")throw new Error("fold");const l=new ui.List([{id:"de",label:"Straße"}]);l.setQuery("STRASSE");if(l.focused!=="de")throw new Error("Unicode filter");
+const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open");picker.handle("insert","RUST");if(picker.value||picker.handle("activate").id!=="rust"||picker.value!=="rust")throw new Error("picker");
 '''
+ assert (b/'node_modules/tuivory/CASEFOLD-LICENSE').read_text().startswith('UNICODE LICENSE V3')
  (b/'consumer.mjs').write_text(source);(b/'consumer.ts').write_text(source)
  run(['node','consumer.mjs'],b)
  run(['node',args.typescript_compiler.resolve(),'--strict','--module','NodeNext','--target','ES2022','--noEmit','consumer.ts'],b)

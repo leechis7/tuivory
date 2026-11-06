@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Independent lists/search pickers with stable-ID selection, shared Unicode17 full case folding, disabled/secondary/icon rows, pending commit/cancel, real query cursors and bilingual examples. C output groups repeated SGR sequences while preserving rendered cells/styles/cursor; PTY CI is split by language.
+
 - TVR-15/16/30/31/32: Independent host-owned focus scopes with atomic updates, input blocking, close requests, stable-ID restoration and a 64-popup limit.
 
 - TVR-15/16/30/31/32: Independent forms/controls with validation, pending select commit/cancel, password/state handling, bounded pointer routing, real input cursors, and bilingual examples.

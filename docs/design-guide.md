@@ -29,3 +29,5 @@
 [독립 언어 폼·컨트롤 API](language-forms.md)
 
 [독립 언어 포커스 범위 API](language-focus.md)
+
+[독립 언어 목록·검색 선택기 API](language-collections.md)

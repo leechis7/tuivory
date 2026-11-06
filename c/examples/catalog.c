@@ -72,7 +72,7 @@ static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split,
 int main(int argc, char **argv) {
   const char *theme = "dark", *profile = "256";
   int en = 0, ascii = 0, snapshot = 0, workspace = 0, tab_focus = 0,
-      text_demo = 0, form_demo = 0;
+      text_demo = 0, form_demo = 0, list_demo = 0, picker_demo = 0;
   TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
@@ -92,12 +92,16 @@ int main(int argc, char **argv) {
       workspace = !strcmp(demo, "workspace");
       text_demo = !strcmp(demo, "text");
       form_demo = !strcmp(demo, "form");
-      if (strcmp(demo, "tree") && !workspace && !text_demo && !form_demo) {
-        fputs("Supported demos: tree, workspace, text, form\n", stderr);
+      list_demo = !strcmp(demo, "list");
+      picker_demo = !strcmp(demo, "picker");
+      if (strcmp(demo, "tree") && !workspace && !text_demo && !form_demo &&
+          !list_demo && !picker_demo) {
+        fputs("Supported demos: tree, workspace, text, form, list, picker\n",
+              stderr);
         return 2;
       }
     } else {
-      puts("--demo tree|workspace|text|form --lang ko|en --theme "
+      puts("--demo tree|workspace|text|form|list|picker --lang ko|en --theme "
            "dark|light|blackwhite "
            "--colors "
            "8|16|256|truecolor --ascii --snapshot");
@@ -177,6 +181,40 @@ int main(int argc, char **argv) {
     tui_tree_free(tree);
     return 1;
   }
+  TuiItem collection_items[] = {
+      {.id = "group", .label = en ? "Languages" : "지원 언어", .separator = 1},
+      {.id = "go",
+       .label = "Go",
+       .secondary = en ? "Static package" : "정적 패키지",
+       .icon = "◆",
+       .ascii_icon = "G",
+       .shortcut = "G"},
+      {.id = "off", .label = en ? "Disabled" : "비활성", .disabled = 1},
+      {.id = "rust",
+       .label = "Rust",
+       .secondary = en ? "Independent implementation" : "독립 구현",
+       .icon = "◆",
+       .ascii_icon = "R",
+       .shortcut = "R"},
+      {.id = "docs",
+       .label = en ? "Documentation" : "문서",
+       .secondary = en ? "Korean and English" : "한글·영어",
+       .icon = "◇",
+       .ascii_icon = "D"}};
+  TuiList *list = tui_list_new(collection_items, 5);
+  TuiSearchPicker *picker = tui_picker_new(collection_items, 5);
+  if (!list || !picker) {
+    tui_list_free(list);
+    tui_picker_free(picker);
+    tui_form_free(form);
+    tui_text_free(text);
+    tui_tabs_free(tabs);
+    tui_tree_free(tree);
+    return 1;
+  }
+  tui_list_empty(list, en ? "(empty)" : "항목 없음");
+  tui_list_empty(tui_picker_list(picker), en ? "(empty)" : "항목 없음");
+  tui_picker_handle(picker, "open", "", 10);
   if (!snapshot) {
     if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO) ||
         tcgetattr(STDIN_FILENO, &saved)) {
@@ -220,7 +258,11 @@ int main(int argc, char **argv) {
     TuiRect inner = tui_canvas_panel(
         canvas, (TuiRect){0, 0, width, height > 0 ? height - 1 : 0},
         en ? "Tuivory C example" : "Tuivory C 예제", 1, ascii);
-    if (form_demo)
+    if (list_demo)
+      tui_list_draw(list, canvas, inner, 1, ascii);
+    else if (picker_demo)
+      tui_picker_draw(picker, canvas, inner, 1, ascii);
+    else if (form_demo)
       tui_form_draw(form, canvas, inner, 1);
     else if (text_demo)
       tui_text_draw(text, canvas, inner, 1);
@@ -228,13 +270,20 @@ int main(int argc, char **argv) {
       workspace_draw(tree, tabs, split, canvas, inner, tab_focus, en, ascii);
     else
       tui_tree_draw(tree, canvas, inner, 1, ascii);
-    tui_canvas_write(canvas, 0, height - 1,
-                     text_demo
-                         ? (en ? "Ctrl+Q quit | type, arrows | Ctrl+Z/Y history"
-                               : "Ctrl+Q 종료 | 문자·방향키 | Ctrl+Z/Y 기록")
-                     : en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
-                          : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택",
-                     "hint", 0, width);
+    const char *hint =
+        picker_demo
+            ? (en ? "Ctrl+Q quit | type to filter | Enter select | Esc cancel"
+                  : "Ctrl+Q 종료 | 문자로 검색 | Enter 선택 | Esc 취소")
+        : form_demo ? (en ? "Ctrl+Q quit | Tab next | Enter activate | arrows"
+                          : "Ctrl+Q 종료 | Tab 이동 | Enter 실행 | 방향키")
+        : text_demo ? (en ? "Ctrl+Q quit | type, arrows | Ctrl+Z/Y history"
+                          : "Ctrl+Q 종료 | 문자·방향키 | Ctrl+Z/Y 기록")
+        : list_demo
+            ? (en ? "Ctrl+Q quit | arrows | Enter activate | Space select"
+                  : "Ctrl+Q 종료 | 방향키 | Enter 실행 | Space 선택")
+        : en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
+             : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택";
+    tui_canvas_write(canvas, 0, height - 1, hint, "hint", 0, width);
     if (snapshot) {
       if (snapshot == 2) {
         char *ansi_output = tui_canvas_ansi(canvas);
@@ -285,7 +334,7 @@ int main(int argc, char **argv) {
                          : key == '\r' || key == '\n' ? "activate"
                          : key == ' '                 ? "toggle"
                                                       : "";
-    if (text_demo || form_demo) {
+    if (text_demo || form_demo || list_demo || picker_demo) {
       char input[8] = {0};
       const char *edit_action = "";
       if (key == 27) {
@@ -306,7 +355,7 @@ int main(int argc, char **argv) {
                       : !strcmp(seq, "[H")  ? "home"
                       : !strcmp(seq, "[F")  ? "end"
                       : !strcmp(seq, "[3~") ? "delete"
-                                            : "";
+                                            : (n == 0 ? "cancel" : "");
       } else if (key == 127 || key == 8)
         edit_action = "backspace";
       else if (key == 13 || key == 10)
@@ -327,7 +376,17 @@ int main(int argc, char **argv) {
           }
         edit_action = "insert";
       }
-      if (form_demo)
+      if (list_demo)
+        tui_list_handle(list,
+                        key == 27   ? edit_action
+                        : key == 32 ? "select"
+                                    : action,
+                        inner.height);
+      else if (picker_demo)
+        tui_picker_handle(picker,
+                          (key == 13 || key == 10) ? "activate" : edit_action,
+                          input, inner.height);
+      else if (form_demo)
         tui_form_handle(form,
                         key == 9                   ? "next"
                         : (key == 13 || key == 10) ? "activate"
@@ -348,6 +407,8 @@ int main(int argc, char **argv) {
       tui_tree_handle(tree, action, inner.height);
   }
   restore();
+  tui_list_free(list);
+  tui_picker_free(picker);
   tui_form_free(form);
   tui_text_free(text);
   tui_tabs_free(tabs);

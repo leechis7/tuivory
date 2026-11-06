@@ -1543,4 +1543,299 @@ public final class Tuivory {
       return route(target).blocked();
     }
   }
+  public static String fold(String text) {
+    var out = new StringBuilder();
+    text.codePoints().forEach(cp -> {
+      int index = Arrays.binarySearch(FoldData.KEYS, cp);
+      if (index >= 0)
+        out.append(FoldData.VALUES[index]);
+      else
+        out.appendCodePoint(cp);
+    });
+    return out.toString();
+  }
+  public static final class Item {
+    public String id, label = "", secondary = "", shortcut = "", icon = "", asciiIcon = "",
+                      parent = "";
+    public boolean disabled, separator;
+    public Item(String id) {
+      this.id = id;
+    }
+    public Item(String id, String label) {
+      this.id = id;
+      this.label = label;
+    }
+  }
+  public record CollectionRow(String id, String text, String role, boolean focused) {}
+  public static final class ListModel {
+    private List<Item> items = List.of();
+    private List<CollectionRow> hits = List.of();
+    private int layoutWidth;
+    public String focused = "", selected = "", query = "", empty = "(empty)";
+    public int scroll;
+    public ListModel(List<Item> items) {
+      setItems(items);
+    }
+    public List<Item> items() {
+      return Collections.unmodifiableList(items);
+    }
+    public void setItems(List<Item> source) {
+      var ids = new HashSet<String>();
+      var owned = new ArrayList<Item>();
+      for (var i : source) {
+        if (i.id.isEmpty() || !ids.add(i.id))
+          throw new IllegalArgumentException("invalid list ID");
+        var v = new Item(i.id, i.label);
+        v.secondary = i.secondary;
+        v.shortcut = i.shortcut;
+        v.icon = i.icon;
+        v.asciiIcon = i.asciiIcon;
+        v.parent = i.parent;
+        v.disabled = i.disabled;
+        v.separator = i.separator;
+        owned.add(v);
+      }
+      if (owned.stream().noneMatch(i -> i.id.equals(selected)))
+        selected = "";
+      items = owned;
+      eligible();
+    }
+    public List<Item> visible() {
+      String q = fold(query);
+      var out = new ArrayList<Item>();
+      for (var i : items)
+        if (q.isEmpty() || !i.separator && fold(i.label + " " + i.secondary).contains(q))
+          out.add(i);
+      return out;
+    }
+    private List<String> eligible() {
+      var ids = new ArrayList<String>();
+      for (var i : visible())
+        if (!i.disabled && !i.separator)
+          ids.add(i.id);
+      if (!ids.contains(focused))
+        focused = ids.isEmpty() ? "" : ids.get(0);
+      return ids;
+    }
+    public boolean focus(String id) {
+      for (var i : visible())
+        if (i.id.equals(id) && !i.disabled && !i.separator) {
+          focused = id;
+          return true;
+        }
+      return false;
+    }
+    public Event setQuery(String text) {
+      query = text.replaceAll("[\\x00-\\x1f\\x7f-\\x9f]", "");
+      eligible();
+      return new Event("query", "", query);
+    }
+    public Event handle(String action, int height) {
+      return handle(action, height, "");
+    }
+    public Event handle(String action, int height, String text) {
+      if (action.equals("query"))
+        return setQuery(text);
+      var ids = eligible();
+      if (ids.isEmpty())
+        return new Event();
+      int at = ids.indexOf(focused);
+      if (action.equals("activate") || action.equals("select")) {
+        selected = focused;
+        return new Event(action, focused);
+      }
+      action = switch (action) {
+        case "up" -> "previous";
+        case "down" -> "next";
+        case "home" -> "first";
+        case "end" -> "last";
+        default -> action;
+      };
+      switch (action) {
+        case "previous" -> at = Math.max(0, at - 1);
+        case "next" -> at = Math.min(ids.size() - 1, at + 1);
+        case "first" -> at = 0;
+        case "last" -> at = ids.size() - 1;
+        case "page_up" -> at = Math.max(0, at - (height > 1 ? height - 1 : 1));
+        case "page_down" -> at = Math.min(ids.size() - 1, at + (height > 1 ? height - 1 : 1));
+        default -> {
+          return new Event();
+        }
+      }
+      focused = ids.get(at);
+      return new Event("focus", focused);
+    }
+    public List<CollectionRow> layout(int width, int height, boolean ascii) {
+      var rows = new ArrayList<CollectionRow>();
+      int anchor = 0;
+      for (var i : visible()) {
+        boolean current = i.id.equals(focused);
+        if (current)
+          anchor = rows.size();
+        String role = i.disabled ? "disabled" : i.id.equals(selected) ? "selection" : "body";
+        if (i.separator) {
+          rows.add(new CollectionRow(i.id, "--- " + i.label + " ---", "hint", false));
+          continue;
+        }
+        String icon = ascii ? i.asciiIcon : i.icon;
+        rows.add(new CollectionRow(i.id,
+            (current ? "> " : "  ") + (i.id.equals(selected) ? "* " : "")
+                + (icon.isEmpty() ? "" : icon + " ") + i.label
+                + (i.shortcut.isEmpty() ? "" : " [" + i.shortcut + "]"),
+            role, current));
+        if (!i.secondary.isEmpty())
+          rows.add(new CollectionRow(
+              i.id, "    " + i.secondary, i.disabled ? "disabled" : "hint", false));
+      }
+      if (rows.isEmpty())
+        rows.add(new CollectionRow("", empty, "hint", false));
+      width = Math.max(0, width);
+      height = Math.max(0, height);
+      scroll = Math.min(
+          Math.max(0, anchor - Math.max(0, height - 2)), Math.max(0, rows.size() - height));
+      layoutWidth = width;
+      var out = new ArrayList<CollectionRow>();
+      for (var row : rows.subList(scroll, Math.min(rows.size(), scroll + height)))
+        out.add(
+            new CollectionRow(row.id(), clip(row.text(), width, false), row.role(), row.focused()));
+      hits = out;
+      return List.copyOf(out);
+    }
+    public Event clickId(String id) {
+      return focus(id) ? handle("activate", 10) : new Event();
+    }
+    public Event click(int x, int y, int height) {
+      return x >= 0 && x < layoutWidth && y >= 0 && y < height && y < hits.size()
+          ? clickId(hits.get(y).id())
+          : new Event();
+    }
+    public void draw(Canvas c, Rect r, boolean focusedView, boolean ascii) {
+      c.fill(r, "surface");
+      var rows = layout(r.width(), r.height(), ascii);
+      for (int y = 0; y < rows.size(); y++) {
+        var row = rows.get(y);
+        c.fill(new Rect(r.x(), r.y() + y, r.width(), 1), row.role());
+        c.write(r.x(), r.y() + y, row.text(), row.role(), focusedView && row.focused(), r.width());
+      }
+    }
+  }
+  public static final class SearchPicker {
+    public final ListModel list;
+    public boolean open;
+    public String value = "";
+    private int width, height;
+    public SearchPicker(List<Item> items) {
+      list = new ListModel(items);
+    }
+    public Event handle(String action) {
+      return handle(action, "", 10);
+    }
+    public Event handle(String action, String text, int viewHeight) {
+      if (action.equals("open")) {
+        open = true;
+        list.setQuery("");
+        list.focus(value);
+        return new Event("open", "");
+      }
+      if (action.equals("cancel")) {
+        open = false;
+        return new Event("cancel", "");
+      }
+      if (action.equals("insert") || action.equals("backspace")) {
+        if (!open)
+          handle("open");
+        String query = list.query;
+        if (action.equals("insert"))
+          query += text;
+        else {
+          var g = graphemes(query);
+          if (!g.isEmpty())
+            g.remove(g.size() - 1);
+          query = String.join("", g);
+        }
+        return list.setQuery(query);
+      }
+      if (action.equals("activate")) {
+        if (!open)
+          return handle("open");
+        var e = list.handle("activate", viewHeight);
+        if (!e.id().isEmpty()) {
+          value = e.id();
+          open = false;
+          return new Event("change", e.id());
+        }
+        return e;
+      }
+      return open ? list.handle(action, viewHeight) : new Event();
+    }
+    public Event clickId(String id) {
+      return list.focus(id) ? handle("activate") : new Event();
+    }
+    public Event click(int x, int y, int viewHeight) {
+      if (x < 0 || x >= width || y < 0 || y >= Math.min(height, viewHeight))
+        return new Event();
+      if (!open)
+        return handle("open");
+      if (y == 0)
+        return new Event();
+      var e = list.click(x, y - 1, Math.max(0, viewHeight - 1));
+      if (!e.id().isEmpty()) {
+        value = e.id();
+        open = false;
+        return new Event("change", e.id());
+      }
+      return new Event();
+    }
+    public List<CollectionRow> layout(int width, int height, boolean ascii) {
+      this.width = Math.max(0, width);
+      this.height = Math.max(0, height);
+      width = this.width;
+      height = this.height;
+      if (height <= 0)
+        return List.of();
+      if (!open) {
+        String label = list.empty;
+        for (var i : list.items())
+          if (i.id.equals(value))
+            label = i.label;
+        return List.of(new CollectionRow(value, clip("v " + label, width, false), "field", false));
+      }
+      String query = "";
+      int used = 0;
+      var gs = graphemes(list.query);
+      for (int i = gs.size() - 1; i >= 0; i--) {
+        int n = cells(gs.get(i));
+        if (used + n > Math.max(0, width - 3))
+          break;
+        query = gs.get(i) + query;
+        used += n;
+      }
+      var rows = new ArrayList<CollectionRow>();
+      rows.add(new CollectionRow("", clip("? " + query, width, false), "field", false));
+      rows.addAll(list.layout(width, Math.max(0, height - 1), ascii));
+      return rows;
+    }
+    public void draw(Canvas c, Rect r, boolean focused, boolean ascii) {
+      c.fill(r, "surface");
+      var rows = layout(r.width(), r.height(), ascii);
+      if (!open) {
+        if (!rows.isEmpty()) {
+          c.fill(new Rect(r.x(), r.y(), r.width(), 1), "field");
+          c.write(r.x(), r.y(), rows.get(0).text(), "field");
+        }
+        return;
+      }
+      if (r.height() > 0) {
+        c.fill(new Rect(r.x(), r.y(), r.width(), 1), "field");
+        c.write(r.x(), r.y(), "? ", "field");
+        if (r.width() > 2) {
+          var query = new Text(list.query);
+          query.multiline = false;
+          query.draw(c, new Rect(r.x() + 2, r.y(), r.width() - 2, 1), focused);
+        }
+      }
+      if (r.height() > 1)
+        list.draw(c, new Rect(r.x(), r.y() + 1, r.width(), r.height() - 1), focused, ascii);
+    }
+  }
 }

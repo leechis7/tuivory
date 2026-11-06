@@ -22,7 +22,7 @@ def build(language):
         run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-d',classes,*sources])
         out=ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar'
         out.parent.mkdir(parents=True,exist_ok=True)
-        run(['jar','--create','--file',out,'--main-class','io.tuivory.examples.Catalog','-C',classes,'.','-C',ROOT/'java','UNICODE-LICENSE','-C',ROOT,'LICENSE','-C',ROOT/'java','NOTICE.md','-C',ROOT/'java','NOTICE.en.md'])
+        run(['jar','--create','--file',out,'--main-class','io.tuivory.examples.Catalog','-C',classes,'.','-C',ROOT/'java','CASEFOLD-LICENSE','-C',ROOT/'java','UNICODE-LICENSE','-C',ROOT,'LICENSE','-C',ROOT/'java','NOTICE.md','-C',ROOT/'java','NOTICE.en.md'])
         return out
     if platform.system()!='Linux':raise SystemExit('Default native example builds require a Linux host')
     arch={'aarch64':'arm64','arm64':'arm64','x86_64':'x86_64','amd64':'x86_64'}.get(platform.machine().lower())

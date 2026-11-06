@@ -24,3 +24,9 @@ __all__ += ["FormOption", "FormRow"]
 
 from .workspace import InputRoute, PopupCloseRequest
 __all__ += ["InputRoute", "PopupCloseRequest"]
+
+from .drawing import fold
+__all__ += ["fold"]
+
+from .models import CollectionRow, SearchPicker
+__all__ += ["CollectionRow", "SearchPicker"]

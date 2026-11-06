@@ -16,6 +16,14 @@ def emit(path, content):
         path.write_text(content)
 
 def generate():
+    fold=json.loads((ROOT/'design/casefold.json').read_text())
+    for path in ['python/src/tuivory/casefold.json','javascript/src/casefold.json']:
+        emit(ROOT/path,json.dumps(fold,ensure_ascii=False,separators=(',',':'))+'\n')
+    pairs=sorted((int(k),v)for k,v in fold['mappings'].items())
+    native='/* Generated Unicode17 default full case folding. See CASEFOLD-LICENSE. */\nstatic const struct { unsigned cp; const char *text; } tui_fold_data[] = {'+','.join('{'+str(cp)+','+json.dumps(value,ensure_ascii=False)+'}'for cp,value in pairs)+'};\n'
+    for language in ['c','cpp']:emit(ROOT/f'{language}/include/tuivory_fold.h',native)
+    java='package io.tuivory;\n// Generated Unicode17 C+F mappings. See CASEFOLD-LICENSE.\nfinal class FoldData {\nstatic final int[] KEYS={'+','.join(str(cp)for cp,_ in pairs)+'};\nstatic final String[] VALUES={'+','.join(json.dumps(v,ensure_ascii=True)for _,v in pairs)+'};\nprivate FoldData(){}\n}\n'
+    emit(ROOT/'java/src/main/java/io/tuivory/FoldData.java',java)
     tokens = json.loads((ROOT/'design/tokens/candidate.json').read_text())
     width = json.loads((ROOT/'design/unicode-width.json').read_text())
     for path in ['python/src/tuivory/tokens.json','javascript/src/tokens.json']:

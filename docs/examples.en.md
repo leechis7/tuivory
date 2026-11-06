@@ -124,3 +124,5 @@ TVR-7 in 0.11.1: [real grid cursor and backend integration](grid-workspace.en.md
 [Independent forms and controls API](language-forms.en.md)
 
 [Independent focus scope API](language-focus.en.md)
+
+[Independent lists and search pickers API](language-collections.en.md)

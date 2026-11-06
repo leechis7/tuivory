@@ -19,3 +19,5 @@ LazyOra의 실제 테마·스타일 함수에서 파생한 Go 패키지를 추�
 ## Tuivory 이전
 
 Tuivory는 [TUIS](https://github.com/leechis7/tuis)의 구현과 언어 중립 구조 전환 작업을 바탕으로 새 저장소에서 시작합니다. 기존 저작권·AGPL-3.0-only 조건과 LazyOra 원본 스타일 출처는 유지합니다. 현재 사용법은 [설치·사용 안내](docs/installation.md)를 참고하세요. 이 항목은 원출처를 보존하는 고지이며 현재 제품명·패키지·일감 관리 기준이 아닙니다.
+
+독립 언어 검색은 Unicode17 CaseFolding C+F 데이터를 내장합니다. [원본·해시](design/casefold.json)와 [Unicode License V3](design/casefold.LICENSE)를 보존합니다.

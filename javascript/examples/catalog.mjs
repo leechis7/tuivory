@@ -9,15 +9,24 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text|form --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form|list|picker --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
 const workspace = value("--demo", "tree") === "workspace";
 const textDemo = value("--demo", "tree") === "text";
 const formDemo = value("--demo", "tree") === "form";
-if (!workspace && !textDemo && !formDemo && value("--demo", "tree") !== "tree")
-  throw new Error("Supported demos: tree, workspace, text, form");
+const listDemo = value("--demo", "tree") === "list",
+  pickerDemo = value("--demo", "tree") === "picker";
+if (
+  !workspace &&
+  !textDemo &&
+  !formDemo &&
+  !listDemo &&
+  !pickerDemo &&
+  value("--demo", "tree") !== "tree"
+)
+  throw new Error("Supported demos: tree, workspace, text, form, list, picker");
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 const text = new ui.Text(
@@ -64,6 +73,37 @@ const form = new ui.Form([
     action: "submit",
   },
 ]);
+const collectionItems = [
+  { id: "group", label: en ? "Languages" : "지원 언어", separator: true },
+  {
+    id: "go",
+    label: "Go",
+    secondary: en ? "Static package" : "정적 패키지",
+    icon: "◆",
+    ascii_icon: "G",
+    shortcut: "G",
+  },
+  { id: "off", label: en ? "Disabled" : "비활성", disabled: true },
+  {
+    id: "rust",
+    label: "Rust",
+    secondary: en ? "Independent implementation" : "독립 구현",
+    icon: "◆",
+    ascii_icon: "R",
+    shortcut: "R",
+  },
+  {
+    id: "docs",
+    label: en ? "Documentation" : "문서",
+    secondary: en ? "Korean and English" : "한글·영어",
+    icon: "◇",
+    ascii_icon: "D",
+  },
+];
+const list = new ui.List(collectionItems),
+  picker = new ui.SearchPicker(collectionItems);
+picker.handle("open");
+list.empty = picker.list.empty = en ? "(empty)" : "항목 없음";
 let theme = value("--theme", "dark"),
   colors = value("--colors", "256");
 const tree = new ui.Tree([
@@ -165,7 +205,9 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  if (formDemo) form.draw(c, area);
+  if (listDemo) list.draw(c, area, true, ascii);
+  else if (pickerDemo) picker.draw(c, area, true, ascii);
+  else if (formDemo) form.draw(c, area);
   else if (textDemo) text.draw(c, area);
   else if (workspace) workspaceDraw(c, area);
   else tree.draw(c, area, true, ascii);
@@ -193,6 +235,7 @@ if (!stdin.isTTY || !stdout.isTTY)
   throw new Error("Interactive example requires a TTY; use --snapshot");
 let active = false,
   pending = "";
+let escapeTimer;
 const decoder = new StringDecoder("utf8");
 function restore() {
   if (!active) return;
@@ -218,6 +261,7 @@ try {
   stdout.on("resize", () => draw());
   stdin.on("data", (chunk) => {
     try {
+      clearTimeout(escapeTimer);
       pending += decoder.write(chunk);
       while (pending) {
         if (pending[0] === "\x11" || pending[0] === "\x03") {
@@ -237,7 +281,10 @@ try {
             y >= area.y &&
             y < area.y + area.height
           ) {
-            if (formDemo) form.click(x - area.x, y - area.y, area.height);
+            if (listDemo) list.click(x - area.x, y - area.y, area.height);
+            else if (pickerDemo)
+              picker.click(x - area.x, y - area.y, area.height);
+            else if (formDemo) form.click(x - area.x, y - area.y, area.height);
             else if (textDemo)
               text.click(x - area.x, y - area.y, area.width, area.height);
             else if (workspace && y === area.y) {
@@ -276,7 +323,18 @@ try {
         };
         const key = Object.keys(keys).find((k) => pending.startsWith(k));
         if (key) {
-          if (formDemo)
+          if (listDemo)
+            list.handle(
+              keys[key] === "toggle" ? "select" : keys[key],
+              area.height,
+            );
+          else if (pickerDemo)
+            picker.handle(
+              keys[key] === "toggle" ? "insert" : keys[key],
+              keys[key] === "toggle" ? " " : "",
+              area.height,
+            );
+          else if (formDemo)
             form.handle(
               keys[key] === "toggle" ? "insert" : keys[key],
               keys[key] === "toggle" ? " " : "",
@@ -345,15 +403,24 @@ try {
         )
           break;
         if (
-          (textDemo || formDemo) &&
+          (textDemo || formDemo || pickerDemo) &&
           pending.codePointAt(0) >= 32 &&
           pending[0] !== "\x1b"
         ) {
           const cp = String.fromCodePoint(pending.codePointAt(0));
-          (formDemo ? form : text).handle("insert", cp);
+          (pickerDemo ? picker : formDemo ? form : text).handle("insert", cp);
           pending = pending.slice(cp.length);
         } else pending = pending.slice(1);
       }
+      if (pending === "\x1b")
+        escapeTimer = setTimeout(() => {
+          if (pending === "\x1b") {
+            pending = "";
+            if (pickerDemo) picker.handle("cancel");
+            else if (formDemo) form.handle("cancel");
+            draw();
+          }
+        }, 100);
       draw();
     } catch (error) {
       restore();

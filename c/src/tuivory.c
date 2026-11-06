@@ -1,5 +1,6 @@
 #include "tuivory.h"
 #include "tuivory_data.h"
+#include "tuivory_fold.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -578,23 +579,33 @@ char *tui_canvas_ansi(const TuiCanvas *c) {
     return NULL;
   append(&b, "\033[?25l");
   for (y = 0; y < c->height; y++) {
+    TuiStyle previous = {0};
+    int has_previous = 0;
     snprintf(seq, sizeof(seq), "\033[%d;1H", y + 1);
     append(&b, seq);
     for (x = 0; x < c->width; x++) {
       const Cell *cell = &c->cells[(size_t)y * c->width + x];
       if (cell->owner >= 0)
         continue;
-      append(&b, "\033[0;");
-      color(&b, cell->style.foreground, 0);
-      append(&b, ";");
-      color(&b, cell->style.background, 1);
-      if (cell->style.bold)
-        append(&b, ";1");
-      if (cell->style.dim)
-        append(&b, ";2");
-      if (cell->style.underline)
-        append(&b, ";4");
-      append(&b, "m");
+      if (!has_previous || previous.foreground != cell->style.foreground ||
+          previous.background != cell->style.background ||
+          previous.bold != cell->style.bold ||
+          previous.dim != cell->style.dim ||
+          previous.underline != cell->style.underline) {
+        append(&b, "\033[0;");
+        color(&b, cell->style.foreground, 0);
+        append(&b, ";");
+        color(&b, cell->style.background, 1);
+        if (cell->style.bold)
+          append(&b, ";1");
+        if (cell->style.dim)
+          append(&b, ";2");
+        if (cell->style.underline)
+          append(&b, ";4");
+        append(&b, "m");
+        previous = cell->style;
+        has_previous = 1;
+      }
       append(&b, cell->text ? cell->text : " ");
     }
   }
@@ -2946,4 +2957,752 @@ TuiInputRoute tui_focus_route(const TuiFocus *f, const char *target) {
                          target && *target &&
                              strcmp(target, tui_focus_scope(f))};
   return route;
+}
+
+char *tui_casefold(const char *text) {
+  if (!text || strlen(text) > 16 * 1024 * 1024)
+    return NULL;
+  size_t n = strlen(text), p = 0;
+  Buffer out = {0};
+  append(&out, "");
+  while (p < n) {
+    size_t start = p, left = 0,
+           right = sizeof(tui_fold_data) / sizeof(tui_fold_data[0]);
+    unsigned cp;
+    if (!decode((const unsigned char *)text, n, &p, &cp)) {
+      free(out.s);
+      return NULL;
+    }
+    while (left < right) {
+      size_t m = (left + right) / 2;
+      if (tui_fold_data[m].cp < cp)
+        left = m + 1;
+      else
+        right = m;
+    }
+    if (left < sizeof(tui_fold_data) / sizeof(tui_fold_data[0]) &&
+        tui_fold_data[left].cp == cp)
+      append(&out, tui_fold_data[left].text);
+    else {
+      char glyph[5] = {0};
+      memcpy(glyph, text + start, p - start);
+      append(&out, glyph);
+    }
+  }
+  if (out.failed) {
+    free(out.s);
+    return NULL;
+  }
+  return out.s;
+}
+
+struct TuiList {
+  TuiItem *items;
+  size_t count, focused;
+  const char *selected, *query, *folded, *empty;
+  TuiCollectionRow *rows;
+  size_t row_count, start, visible_count;
+  int width;
+};
+static void collection_rows_free(TuiCollectionRow *rows, size_t count) {
+  for (size_t i = 0; i < count; i++)
+    free((void *)rows[i].text);
+  free(rows);
+}
+static void list_rows_clear(TuiList *l) {
+  collection_rows_free(l->rows, l->row_count);
+  l->rows = NULL;
+  l->row_count = l->start = l->visible_count = 0;
+}
+static void list_items_free(TuiItem *items, size_t count) {
+  if (!items)
+    return;
+  for (size_t i = 0; i < count; i++) {
+    free((void *)items[i].id);
+    free((void *)items[i].label);
+    free((void *)items[i].secondary);
+    free((void *)items[i].shortcut);
+    free((void *)items[i].icon);
+    free((void *)items[i].ascii_icon);
+    free((void *)items[i].parent);
+  }
+  free(items);
+}
+static TuiResult list_items_copy(const TuiItem *items, size_t count,
+                                 TuiItem **out) {
+  TuiItem *next;
+  *out = NULL;
+  if ((count && !items) || count > 65536)
+    return TUI_INVALID;
+  for (size_t i = 0; i < count; i++) {
+    if (!items[i].id || !*items[i].id)
+      return TUI_INVALID;
+    for (size_t j = 0; j < i; j++)
+      if (!strcmp(items[i].id, items[j].id))
+        return TUI_INVALID;
+    const char *texts[] = {items[i].id,        items[i].label,
+                           items[i].secondary, items[i].shortcut,
+                           items[i].icon,      items[i].ascii_icon,
+                           items[i].parent};
+    for (size_t j = 0; j < 7; j++)
+      if (tui_cells(nn(texts[j])) < 0)
+        return TUI_INVALID;
+    if (strlen(nn(items[i].label)) + strlen(nn(items[i].secondary)) + 1 >
+        16 * 1024 * 1024)
+      return TUI_INVALID;
+  }
+  next = calloc(count ? count : 1, sizeof(*next));
+  if (!next)
+    return TUI_NOMEM;
+  for (size_t i = 0; i < count; i++) {
+#define ITEM_COPY(name)                                                        \
+  next[i].name = copy(nn(items[i].name));                                      \
+  if (!next[i].name) {                                                         \
+    list_items_free(next, count);                                              \
+    return TUI_NOMEM;                                                          \
+  }
+    ITEM_COPY(id);
+    ITEM_COPY(label);
+    ITEM_COPY(secondary);
+    ITEM_COPY(shortcut);
+    ITEM_COPY(icon);
+    ITEM_COPY(ascii_icon);
+    ITEM_COPY(parent);
+#undef ITEM_COPY
+    next[i].disabled = items[i].disabled;
+    next[i].separator = items[i].separator;
+  }
+  *out = next;
+  return TUI_OK;
+}
+static int list_matches(const TuiList *l, size_t i) {
+  Buffer label = {0};
+  char *key;
+  int result;
+  if (!*l->query)
+    return 1;
+  if (l->items[i].separator)
+    return 0;
+  append(&label, l->items[i].label);
+  append(&label, " ");
+  append(&label, l->items[i].secondary);
+  if (label.failed) {
+    free(label.s);
+    return -1;
+  }
+  key = tui_casefold(label.s);
+  free(label.s);
+  if (!key)
+    return -1;
+  result = strstr(key, l->folded) != NULL;
+  free(key);
+  return result;
+}
+static TuiResult list_indices(const TuiList *l, int eligible, size_t **out,
+                              size_t *count) {
+  size_t *ids = malloc((l->count ? l->count : 1) * sizeof(*ids)), used = 0;
+  if (!ids)
+    return TUI_NOMEM;
+  for (size_t i = 0; i < l->count; i++) {
+    int matches = list_matches(l, i);
+    if (matches < 0) {
+      free(ids);
+      return TUI_NOMEM;
+    }
+    if (matches &&
+        (!eligible || (!l->items[i].disabled && !l->items[i].separator)))
+      ids[used++] = i;
+  }
+  *out = ids;
+  *count = used;
+  return TUI_OK;
+}
+static TuiResult list_reconcile(TuiList *l) {
+  size_t *ids, count;
+  TuiResult result = list_indices(l, 1, &ids, &count);
+  int found = 0;
+  if (result != TUI_OK)
+    return result;
+  for (size_t i = 0; i < count; i++)
+    if (ids[i] == l->focused)
+      found = 1;
+  if (!found)
+    l->focused = count ? ids[0] : l->count;
+  free(ids);
+  return TUI_OK;
+}
+void tui_list_free(TuiList *l) {
+  if (!l)
+    return;
+  list_rows_clear(l);
+  list_items_free(l->items, l->count);
+  free((void *)l->selected);
+  free((void *)l->query);
+  free((void *)l->folded);
+  free((void *)l->empty);
+  free(l);
+}
+TuiList *tui_list_new(const TuiItem *items, size_t count) {
+  TuiList *l = calloc(1, sizeof(*l));
+  if (!l)
+    return NULL;
+  l->selected = copy("");
+  l->query = copy("");
+  l->folded = copy("");
+  l->empty = copy("(empty)");
+  if (!l->selected || !l->query || !l->folded || !l->empty ||
+      tui_list_set_items(l, items, count) != TUI_OK) {
+    tui_list_free(l);
+    return NULL;
+  }
+  return l;
+}
+TuiResult tui_list_set_items(TuiList *l, const TuiItem *items, size_t count) {
+  TuiItem *next;
+  TuiResult result;
+  TuiList candidate;
+  size_t focused = count;
+  int selected = 0;
+  char *empty = NULL;
+  if (!l)
+    return TUI_INVALID;
+  result = list_items_copy(items, count, &next);
+  if (result != TUI_OK)
+    return result;
+  for (size_t i = 0; i < count; i++) {
+    if (l->focused < l->count && !strcmp(next[i].id, l->items[l->focused].id))
+      focused = i;
+    if (!strcmp(next[i].id, l->selected))
+      selected = 1;
+  }
+  if (!selected) {
+    empty = copy("");
+    if (!empty) {
+      list_items_free(next, count);
+      return TUI_NOMEM;
+    }
+  }
+  candidate = *l;
+  candidate.items = next;
+  candidate.count = count;
+  candidate.focused = focused;
+  result = list_reconcile(&candidate);
+  if (result != TUI_OK) {
+    free(empty);
+    list_items_free(next, count);
+    return result;
+  }
+  list_rows_clear(l);
+  list_items_free(l->items, l->count);
+  l->items = next;
+  l->count = count;
+  l->focused = candidate.focused;
+  if (!selected) {
+    free((void *)l->selected);
+    l->selected = empty;
+  }
+  return TUI_OK;
+}
+const TuiItem *tui_list_items(const TuiList *l, size_t *count) {
+  if (count)
+    *count = l ? l->count : 0;
+  return l ? l->items : NULL;
+}
+const char *tui_list_focused(const TuiList *l) {
+  return l && l->focused < l->count ? l->items[l->focused].id : "";
+}
+const char *tui_list_selected(const TuiList *l) { return l ? l->selected : ""; }
+const char *tui_list_query(const TuiList *l) { return l ? l->query : ""; }
+TuiResult tui_list_empty(TuiList *l, const char *label) {
+  if (!l || tui_cells(nn(label)) < 0)
+    return TUI_INVALID;
+  return owned_string(&l->empty, label) ? TUI_OK : TUI_NOMEM;
+}
+int tui_list_focus(TuiList *l, const char *id) {
+  if (!l || !id)
+    return 0;
+  for (size_t i = 0; i < l->count; i++)
+    if (!strcmp(l->items[i].id, id) && !l->items[i].disabled &&
+        !l->items[i].separator && list_matches(l, i) == 1) {
+      l->focused = i;
+      return 1;
+    }
+  return 0;
+}
+static TuiCollectionEvent list_event(const TuiList *l, const char *kind,
+                                     const char *id, int query,
+                                     TuiResult result) {
+  TuiCollectionEvent e = {kind, id, query && l ? l->query : "", result};
+  return e;
+}
+static char *query_clean(const char *text) {
+  size_t p = 0, n;
+  Buffer out = {0};
+  unsigned cp;
+  if (!text || strlen(text) > 16 * 1024 * 1024)
+    return NULL;
+  n = strlen(text);
+  append(&out, "");
+  while (p < n) {
+    size_t start = p;
+    if (!decode((const unsigned char *)text, n, &p, &cp)) {
+      free(out.s);
+      return NULL;
+    }
+    if (cp >= 32 && !(cp >= 127 && cp < 160)) {
+      char glyph[5] = {0};
+      memcpy(glyph, text + start, p - start);
+      append(&out, glyph);
+    }
+  }
+  if (out.failed) {
+    free(out.s);
+    return NULL;
+  }
+  return out.s;
+}
+TuiCollectionEvent tui_list_set_query(TuiList *l, const char *query) {
+  char *next, *folded;
+  TuiList candidate;
+  TuiResult result;
+  if (!l || !query || tui_cells(query) < 0)
+    return list_event(l, "", "", 0, TUI_INVALID);
+  next = query_clean(query);
+  if (!next)
+    return list_event(l, "", "", 0, TUI_NOMEM);
+  folded = tui_casefold(next);
+  if (!folded) {
+    free(next);
+    return list_event(l, "", "", 0, TUI_NOMEM);
+  }
+  candidate = *l;
+  candidate.query = next;
+  candidate.folded = folded;
+  result = list_reconcile(&candidate);
+  if (result != TUI_OK) {
+    free(next);
+    free(folded);
+    return list_event(l, "", "", 0, result);
+  }
+  free((void *)l->query);
+  free((void *)l->folded);
+  l->query = next;
+  l->folded = folded;
+  l->focused = candidate.focused;
+  return list_event(l, "query", "", 1, TUI_OK);
+}
+TuiCollectionEvent tui_list_handle(TuiList *l, const char *action, int height) {
+  size_t *ids, count, at = 0;
+  TuiResult result;
+  if (!l || !action)
+    return list_event(l, "", "", 0, TUI_INVALID);
+  result = list_reconcile(l);
+  if (result != TUI_OK)
+    return list_event(l, "", "", 0, result);
+  result = list_indices(l, 1, &ids, &count);
+  if (result != TUI_OK)
+    return list_event(l, "", "", 0, result);
+  if (!count) {
+    free(ids);
+    return list_event(l, "", "", 0, TUI_OK);
+  }
+  for (size_t i = 0; i < count; i++)
+    if (ids[i] == l->focused)
+      at = i;
+  if (!strcmp(action, "activate") || !strcmp(action, "select")) {
+    free(ids);
+    if (!owned_string(&l->selected, tui_list_focused(l)))
+      return list_event(l, "", "", 0, TUI_NOMEM);
+    return list_event(l, !strcmp(action, "activate") ? "activate" : "select",
+                      tui_list_focused(l), 0, TUI_OK);
+  }
+  if (!strcmp(action, "up") || !strcmp(action, "previous"))
+    at = at ? at - 1 : 0;
+  else if (!strcmp(action, "down") || !strcmp(action, "next"))
+    at = at + 1 < count ? at + 1 : count - 1;
+  else if (!strcmp(action, "home") || !strcmp(action, "first"))
+    at = 0;
+  else if (!strcmp(action, "end") || !strcmp(action, "last"))
+    at = count - 1;
+  else if (!strcmp(action, "page_up")) {
+    size_t step = (size_t)(height > 1 ? height - 1 : 1);
+    at = at > step ? at - step : 0;
+  } else if (!strcmp(action, "page_down")) {
+    size_t step = (size_t)(height > 1 ? height - 1 : 1);
+    at = at + step < count ? at + step : count - 1;
+  } else {
+    free(ids);
+    return list_event(l, "", "", 0, TUI_OK);
+  }
+  l->focused = ids[at];
+  free(ids);
+  return list_event(l, "focus", tui_list_focused(l), 0, TUI_OK);
+}
+TuiCollectionEvent tui_list_click_id(TuiList *l, const char *id) {
+  return tui_list_focus(l, id) ? tui_list_handle(l, "activate", 10)
+                               : list_event(l, "", "", 0, TUI_OK);
+}
+TuiCollectionEvent tui_list_click(TuiList *l, int x, int y, int height) {
+  if (!l || x < 0 || x >= l->width || y < 0 || y >= height ||
+      (size_t)y >= l->visible_count)
+    return list_event(l, "", "", 0, TUI_OK);
+  return tui_list_click_id(l, l->rows[l->start + (size_t)y].id);
+}
+static int collection_row(TuiCollectionRow **rows, size_t *count,
+                          const char *id, const char *text, const char *role,
+                          int focused) {
+  TuiCollectionRow *next = realloc(*rows, (*count + 1) * sizeof(*next));
+  char *owned;
+  if (!next)
+    return 0;
+  *rows = next;
+  owned = copy(text);
+  if (!owned)
+    return 0;
+  (*rows)[(*count)++] = (TuiCollectionRow){id, owned, role, focused};
+  return 1;
+}
+TuiResult tui_list_layout(TuiList *l, int width, int height, int ascii,
+                          const TuiCollectionRow **rows, size_t *count) {
+  size_t *ids, n, anchor = 0;
+  TuiResult result;
+  if (!l || !rows || !count)
+    return TUI_INVALID;
+  list_rows_clear(l);
+  width = max(0, width);
+  height = max(0, height);
+  result = list_indices(l, 0, &ids, &n);
+  if (result != TUI_OK)
+    return result;
+  for (size_t j = 0; j < n; j++) {
+    const TuiItem *i = &l->items[ids[j]];
+    int current = ids[j] == l->focused;
+    const char *role = i->disabled                   ? "disabled"
+                       : !strcmp(i->id, l->selected) ? "selection"
+                                                     : "body",
+               *icon = ascii ? i->ascii_icon : i->icon;
+    Buffer text = {0};
+    if (current)
+      anchor = l->row_count;
+    if (i->separator) {
+      append(&text, "--- ");
+      append(&text, i->label);
+      append(&text, " ---");
+    } else {
+      append(&text, current ? "> " : "  ");
+      if (!strcmp(i->id, l->selected))
+        append(&text, "* ");
+      if (*icon) {
+        append(&text, icon);
+        append(&text, " ");
+      }
+      append(&text, i->label);
+      if (*i->shortcut) {
+        append(&text, " [");
+        append(&text, i->shortcut);
+        append(&text, "]");
+      }
+    }
+    if (text.failed || !collection_row(&l->rows, &l->row_count, i->id, text.s,
+                                       i->separator ? "hint" : role,
+                                       current && !i->separator)) {
+      free(text.s);
+      free(ids);
+      goto nomem;
+    }
+    free(text.s);
+    if (*i->secondary && !i->separator) {
+      Buffer secondary = {0};
+      append(&secondary, "    ");
+      append(&secondary, i->secondary);
+      if (secondary.failed ||
+          !collection_row(&l->rows, &l->row_count, i->id, secondary.s,
+                          i->disabled ? "disabled" : "hint", 0)) {
+        free(secondary.s);
+        free(ids);
+        goto nomem;
+      }
+      free(secondary.s);
+    }
+  }
+  free(ids);
+  if (!l->row_count &&
+      !collection_row(&l->rows, &l->row_count, "", l->empty, "hint", 0))
+    goto nomem;
+  l->width = width;
+  l->start = (size_t)min(max(0, (int)anchor - max(0, height - 2)),
+                         max(0, (int)l->row_count - height));
+  l->visible_count = (size_t)min(height, (int)(l->row_count - l->start));
+  for (size_t j = l->start; j < l->start + l->visible_count; j++) {
+    char *clipped = tui_clip(l->rows[j].text, width, 0);
+    if (!clipped)
+      goto nomem;
+    free((void *)l->rows[j].text);
+    l->rows[j].text = clipped;
+  }
+  *rows = l->rows + l->start;
+  *count = l->visible_count;
+  return TUI_OK;
+nomem:
+  list_rows_clear(l);
+  *rows = NULL;
+  *count = 0;
+  return TUI_NOMEM;
+}
+TuiResult tui_list_draw(TuiList *l, TuiCanvas *c, TuiRect r, int focused,
+                        int ascii) {
+  const TuiCollectionRow *rows;
+  size_t count;
+  TuiResult result;
+  if (!l || !c)
+    return TUI_INVALID;
+  result = tui_list_layout(l, r.width, r.height, ascii, &rows, &count);
+  if (result != TUI_OK)
+    return result;
+  tui_canvas_fill(c, r, "surface");
+  for (size_t y = 0; y < count; y++) {
+    tui_canvas_fill(c, (TuiRect){r.x, r.y + (int)y, r.width, 1}, rows[y].role);
+    result = tui_canvas_write(c, r.x, r.y + (int)y, rows[y].text, rows[y].role,
+                              focused && rows[y].focused, r.width);
+    if (result != TUI_OK)
+      return result;
+  }
+  return TUI_OK;
+}
+struct TuiSearchPicker {
+  TuiList *list;
+  const char *value;
+  int open, width, height;
+  TuiCollectionRow *rows;
+  size_t count;
+};
+TuiSearchPicker *tui_picker_new(const TuiItem *items, size_t count) {
+  TuiSearchPicker *p = calloc(1, sizeof(*p));
+  if (!p)
+    return NULL;
+  p->value = copy("");
+  p->list = tui_list_new(items, count);
+  if (!p->value || !p->list) {
+    tui_picker_free(p);
+    return NULL;
+  }
+  return p;
+}
+void tui_picker_free(TuiSearchPicker *p) {
+  if (!p)
+    return;
+  collection_rows_free(p->rows, p->count);
+  tui_list_free(p->list);
+  free((void *)p->value);
+  free(p);
+}
+TuiList *tui_picker_list(TuiSearchPicker *p) { return p ? p->list : NULL; }
+int tui_picker_opened(const TuiSearchPicker *p) { return p ? p->open : 0; }
+const char *tui_picker_value(const TuiSearchPicker *p) {
+  return p ? p->value : "";
+}
+TuiCollectionEvent tui_picker_handle(TuiSearchPicker *p, const char *action,
+                                     const char *text, int height) {
+  TuiCollectionEvent e;
+  if (!p || !action)
+    return list_event(NULL, "", "", 0, TUI_INVALID);
+  if (!strcmp(action, "open")) {
+    e = tui_list_set_query(p->list, "");
+    if (e.result != TUI_OK)
+      return e;
+    p->open = 1;
+    tui_list_focus(p->list, p->value);
+    return list_event(p->list, "open", "", 0, TUI_OK);
+  }
+  if (!strcmp(action, "cancel")) {
+    p->open = 0;
+    return list_event(p->list, "cancel", "", 0, TUI_OK);
+  }
+  if (!strcmp(action, "insert") || !strcmp(action, "backspace")) {
+    Buffer query = {0};
+    if (!p->open) {
+      e = tui_picker_handle(p, "open", "", height);
+      if (e.result != TUI_OK)
+        return e;
+    }
+    append(&query, p->list->query);
+    if (!strcmp(action, "insert"))
+      append(&query, nn(text));
+    else {
+      size_t *offsets, n;
+      if (raw_offsets(query.s, &offsets, &n) != 1) {
+        free(query.s);
+        return list_event(p->list, "", "", 0, TUI_NOMEM);
+      }
+      if (n)
+        query.s[offsets[n - 1]] = 0;
+      free(offsets);
+    }
+    if (query.failed) {
+      free(query.s);
+      return list_event(p->list, "", "", 0, TUI_NOMEM);
+    }
+    e = tui_list_set_query(p->list, query.s);
+    free(query.s);
+    return e;
+  }
+  if (!strcmp(action, "activate")) {
+    if (!p->open)
+      return tui_picker_handle(p, "open", "", height);
+    e = tui_list_handle(p->list, "activate", height);
+    if (*e.id && e.result == TUI_OK) {
+      if (!owned_string(&p->value, e.id))
+        return list_event(p->list, "", "", 0, TUI_NOMEM);
+      p->open = 0;
+      e.kind = "change";
+    }
+    return e;
+  }
+  return p->open ? tui_list_handle(p->list, action, height)
+                 : list_event(p->list, "", "", 0, TUI_OK);
+}
+TuiCollectionEvent tui_picker_click_id(TuiSearchPicker *p, const char *id) {
+  return p && tui_list_focus(p->list, id)
+             ? tui_picker_handle(p, "activate", "", 10)
+             : list_event(p ? p->list : NULL, "", "", 0, TUI_OK);
+}
+TuiCollectionEvent tui_picker_click(TuiSearchPicker *p, int x, int y,
+                                    int height) {
+  TuiCollectionEvent e;
+  if (!p || x < 0 || x >= p->width || y < 0 || y >= min(height, p->height))
+    return list_event(p ? p->list : NULL, "", "", 0, TUI_OK);
+  if (!p->open)
+    return tui_picker_handle(p, "open", "", height);
+  if (y == 0)
+    return list_event(p->list, "", "", 0, TUI_OK);
+  e = tui_list_click(p->list, x, y - 1, max(0, height - 1));
+  if (*e.id && e.result == TUI_OK) {
+    if (!owned_string(&p->value, e.id))
+      return list_event(p->list, "", "", 0, TUI_NOMEM);
+    p->open = 0;
+    e.kind = "change";
+  }
+  return e;
+}
+static char *query_tail(const char *text, int width) {
+  int total = tui_cells(text), w;
+  size_t pos = 0, end, n = strlen(text);
+  width = max(0, width);
+  while (pos < n && total > width) {
+    if (!cluster(text, n, pos, &end, &w))
+      return NULL;
+    pos = end;
+    total -= w;
+  }
+  return copy(text + pos);
+}
+TuiResult tui_picker_layout(TuiSearchPicker *p, int width, int height,
+                            int ascii, const TuiCollectionRow **rows,
+                            size_t *count) {
+  const TuiCollectionRow *body;
+  size_t n;
+  TuiResult result;
+  Buffer header = {0};
+  char *query;
+  if (!p || !rows || !count)
+    return TUI_INVALID;
+  collection_rows_free(p->rows, p->count);
+  p->rows = NULL;
+  p->count = 0;
+  p->width = max(0, width);
+  p->height = max(0, height);
+  width = p->width;
+  height = p->height;
+  if (height <= 0) {
+    *rows = NULL;
+    *count = 0;
+    return TUI_OK;
+  }
+  if (!p->open) {
+    const char *label = p->list->empty;
+    for (size_t i = 0; i < p->list->count; i++)
+      if (!strcmp(p->list->items[i].id, p->value))
+        label = p->list->items[i].label;
+    append(&header, "v ");
+    append(&header, label);
+  } else {
+    query = query_tail(p->list->query, max(0, width - 3));
+    if (!query)
+      return TUI_NOMEM;
+    append(&header, "? ");
+    append(&header, query);
+    free(query);
+  }
+  if (header.failed)
+    goto nomem;
+  query = tui_clip(header.s, width, 0);
+  free(header.s);
+  header.s = NULL;
+  if (!query)
+    goto nomem;
+  if (!collection_row(&p->rows, &p->count, p->value, query, "field", 0)) {
+    free(query);
+    goto nomem;
+  }
+  free(query);
+  if (p->open) {
+    result =
+        tui_list_layout(p->list, width, max(0, height - 1), ascii, &body, &n);
+    if (result != TUI_OK)
+      goto nomem;
+    for (size_t i = 0; i < n; i++)
+      if (!collection_row(&p->rows, &p->count, body[i].id, body[i].text,
+                          body[i].role, body[i].focused))
+        goto nomem;
+  }
+  *rows = p->rows;
+  *count = p->count;
+  return TUI_OK;
+nomem:
+  free(header.s);
+  collection_rows_free(p->rows, p->count);
+  p->rows = NULL;
+  p->count = 0;
+  *rows = NULL;
+  *count = 0;
+  return TUI_NOMEM;
+}
+TuiResult tui_picker_draw(TuiSearchPicker *p, TuiCanvas *c, TuiRect r,
+                          int focused, int ascii) {
+  const TuiCollectionRow *rows;
+  size_t count;
+  TuiResult result;
+  if (!p || !c)
+    return TUI_INVALID;
+  result = tui_picker_layout(p, r.width, r.height, ascii, &rows, &count);
+  if (result != TUI_OK)
+    return result;
+  tui_canvas_fill(c, r, "surface");
+  if (!p->open) {
+    if (count) {
+      tui_canvas_fill(c, (TuiRect){r.x, r.y, r.width, 1}, "field");
+      return tui_canvas_write(c, r.x, r.y, rows[0].text, "field", 0, r.width);
+    }
+    return TUI_OK;
+  }
+  if (r.height > 0) {
+    tui_canvas_fill(c, (TuiRect){r.x, r.y, r.width, 1}, "field");
+    tui_canvas_write(c, r.x, r.y, "? ", "field", 0, r.width);
+    if (r.width > 2) {
+      TuiText *query = tui_text_new(p->list->query);
+      if (!query)
+        return TUI_NOMEM;
+      tui_text_options(query, (TuiState){0}, 0, 0);
+      result = tui_text_draw(query, c, (TuiRect){r.x + 2, r.y, r.width - 2, 1},
+                             focused);
+      tui_text_free(query);
+      if (result != TUI_OK)
+        return result;
+    }
+  }
+  return r.height > 1
+             ? tui_list_draw(p->list, c,
+                             (TuiRect){r.x, r.y + 1, r.width, r.height - 1},
+                             focused, ascii)
+             : TUI_OK;
 }

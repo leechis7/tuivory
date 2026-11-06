@@ -42,7 +42,8 @@ public final class Catalog {
   public static void main(String[] args) throws IOException {
     String theme = "dark", colors = "256";
     boolean en = false, ascii = false, snapshot = false, ansiSnapshot = false, workspace = false,
-            tabFocus = false, textDemo = false, formDemo = false;
+            tabFocus = false, textDemo = false, formDemo = false, listDemo = false,
+            pickerDemo = false;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--lang" -> {
@@ -72,12 +73,16 @@ public final class Catalog {
           workspace = args[i].equals("workspace");
           textDemo = args[i].equals("text");
           formDemo = args[i].equals("form");
-          if (!args[i].equals("tree") && !workspace && !textDemo && !formDemo)
-            throw new IllegalArgumentException("Supported demos: tree, workspace, text, form");
+          listDemo = args[i].equals("list");
+          pickerDemo = args[i].equals("picker");
+          if (!args[i].equals("tree") && !workspace && !textDemo && !formDemo && !listDemo
+              && !pickerDemo)
+            throw new IllegalArgumentException(
+                "Supported demos: tree, workspace, text, form, list, picker");
         }
         case "--help" -> {
-          System.out.println(
-              "--demo tree|workspace|text|form --lang ko|en --theme dark|light|blackwhite --colors "
+          System.out.println("--demo tree|workspace|text|form|list|picker --lang ko|en --theme "
+              + "dark|light|blackwhite --colors "
               + "8|16|256|truecolor --ascii --snapshot");
           return;
         }
@@ -121,6 +126,29 @@ public final class Catalog {
     apply.label = en ? "Apply" : "적용";
     apply.action = "submit";
     var form = new Form(List.of(name, password, off, mode, apply));
+    var group = new Item("group", en ? "Languages" : "지원 언어");
+    group.separator = true;
+    var go = new Item("go", "Go");
+    go.secondary = en ? "Static package" : "정적 패키지";
+    go.icon = "◆";
+    go.asciiIcon = "G";
+    go.shortcut = "G";
+    var inactive = new Item("off", en ? "Disabled" : "비활성");
+    inactive.disabled = true;
+    var rs = new Item("rust", "Rust");
+    rs.secondary = en ? "Independent implementation" : "독립 구현";
+    rs.icon = "◆";
+    rs.asciiIcon = "R";
+    rs.shortcut = "R";
+    var doc = new Item("docs", en ? "Documentation" : "문서");
+    doc.secondary = en ? "Korean and English" : "한글·영어";
+    doc.icon = "◇";
+    doc.asciiIcon = "D";
+    var collectionItems = List.of(group, go, inactive, rs, doc);
+    var list = new ListModel(collectionItems);
+    var picker = new SearchPicker(collectionItems);
+    picker.handle("open");
+    list.empty = picker.list.empty = en ? "(empty)" : "항목 없음";
     var input = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
     var output = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8), true);
     try {
@@ -128,7 +156,11 @@ public final class Catalog {
         var c = new Canvas(72, 18, new Palette(theme, colors));
         var area = c.panel(
             new Rect(0, 0, 72, 17), en ? "Tuivory Java example" : "Tuivory Java 예제", true, ascii);
-        if (formDemo)
+        if (listDemo)
+          list.draw(c, area, true, ascii);
+        else if (pickerDemo)
+          picker.draw(c, area, true, ascii);
+        else if (formDemo)
           form.draw(c, area, true);
         else if (textDemo)
           text.draw(c, area, true);
@@ -136,10 +168,15 @@ public final class Catalog {
           workspaceDraw(tree, tabs, split, c, area, tabFocus, en, ascii);
         else
           tree.draw(c, area, true, ascii);
-        c.write(0, 17,
-            en ? "Type up/down/left/right/activate/quit, then Enter"
-               : "up/down/left/right/activate/quit 입력 후 Enter",
-            "hint");
+        String hint = pickerDemo ? (en ? "Type insert text / activate / cancel / quit, then Enter"
+                                       : "insert 검색어 / activate / cancel / quit 입력 후 Enter")
+            : formDemo           ? (en ? "Type insert text / tab / activate / quit, then Enter"
+                                       : "insert 값 / tab / activate / quit 입력 후 Enter")
+            : textDemo           ? (en ? "Type insert text / home / backspace / quit, then Enter"
+                                       : "insert 값 / home / backspace / quit 입력 후 Enter")
+            : en                 ? "Type up/down/left/right/activate/quit, then Enter"
+                                 : "up/down/left/right/activate/quit 입력 후 Enter";
+        c.write(0, 17, hint, "hint");
         if (snapshot) {
           if (ansiSnapshot) {
             output.print(c.ansi());
@@ -154,11 +191,15 @@ public final class Catalog {
         if (line == null || line.equals("quit"))
           break;
         String action = line.strip();
-        if (textDemo || formDemo) {
+        if (textDemo || formDemo || listDemo || pickerDemo) {
           int space = action.indexOf(' ');
           String command = space < 0 ? action : action.substring(0, space);
           String addition = space < 0 ? "" : action.substring(space + 1);
-          if (formDemo)
+          if (listDemo)
+            list.handle(command, area.height());
+          else if (pickerDemo)
+            picker.handle(command, addition, area.height());
+          else if (formDemo)
             form.handle(command.equals("tab") ? "next" : command, addition);
           else
             text.handle(command, addition);

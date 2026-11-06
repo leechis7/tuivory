@@ -19,3 +19,5 @@ The Go package derives from LazyOra's actual theme/style functions. Source commi
 ## Tuivory origin
 
 Tuivory began in a new repository based on the implementation and language-neutral restructuring work from [TUIS](https://github.com/leechis7/tuis). Existing copyright, AGPL-3.0-only terms, and LazyOra style attribution are preserved. See [installation and usage](docs/installation.en.md) for current usage. This is an origin notice, not the current product name, package, or work-tracking convention.
+
+Independent-language search embeds Unicode17 CaseFolding C+F mappings; source/hash: [data](design/casefold.json), terms: [Unicode License V3](design/casefold.LICENSE).

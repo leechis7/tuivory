@@ -296,6 +296,9 @@ jobs:
           python tools/check_language_focus.py --language c
           python tools/check_language_focus.py --language cpp
           python tools/check_language_focus.py --language java
+          python tools/check_language_collections.py --language c
+          python tools/check_language_collections.py --language cpp
+          python tools/check_language_collections.py --language java
       - name: Build and install runtime packages outside the repository
         run: |
           mkdir -p .cache/packages/javascript
@@ -303,9 +306,44 @@ jobs:
           python -m pip download --only-binary=:all: --dest .cache/packages/python/deps regex wcwidth
           npm pack ./javascript --pack-destination .cache/packages/javascript
           python tools/check_runtime_languages.py
-      - name: Run bilingual independent examples on the native runner
+          python tools/package_languages.py
+          python tools/check_language_archives.py
+  independent-examples:
+    name: Independent examples / ${{ matrix.language }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript, c, cpp, java]
+    env:
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build only the selected language on this native runner
+        shell: bash
         run: |
-          python tools/check_language_examples.py --matrix
-          python tools/check_language_examples.py --demo workspace --matrix
-          python tools/check_language_examples.py --demo text --matrix
-          python tools/check_language_examples.py --demo form --matrix
+          case "${{ matrix.language }}" in
+            python) python -m pip install ./python ;;
+            javascript)
+              npm --prefix javascript ci --ignore-scripts --no-audit --no-fund
+              npm --prefix javascript run build
+              ;;
+            c|cpp|java) python tools/build_language.py "${{ matrix.language }}" ;;
+          esac
+      - name: Validate all locale/theme/profile/glyph combinations
+        shell: bash
+        run: |
+          for demo in tree workspace text form list picker; do
+            python tools/check_language_examples.py --language "${{ matrix.language }}" --demo "$demo" --matrix
+          done

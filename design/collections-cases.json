@@ -1,0 +1,218 @@
+{
+  "items": [
+    {
+      "id": "g",
+      "label": "Languages",
+      "separator": true
+    },
+    {
+      "id": "go",
+      "label": "Go",
+      "secondary": "module",
+      "icon": "◆",
+      "ascii_icon": "*",
+      "shortcut": "G"
+    },
+    {
+      "id": "x",
+      "label": "Disabled",
+      "disabled": true
+    },
+    {
+      "id": "rust",
+      "label": "Rust",
+      "secondary": "crate"
+    },
+    {
+      "id": "strasse",
+      "label": "Straße",
+      "secondary": "German"
+    },
+    {
+      "id": "sigma",
+      "label": "Σίσυφος",
+      "secondary": "Greek"
+    },
+    {
+      "id": "hangul",
+      "label": "한글 é 😀",
+      "secondary": "Unicode"
+    }
+  ],
+  "list": [
+    {
+      "action": "next",
+      "kind": "focus",
+      "id": "rust",
+      "focused": "rust",
+      "selected": ""
+    },
+    {
+      "action": "select",
+      "kind": "select",
+      "id": "rust",
+      "selected": "rust"
+    },
+    {
+      "query": "GO",
+      "kind": "query",
+      "text": "GO",
+      "focused": "go",
+      "selected": "rust"
+    },
+    {
+      "query": "STRASSE",
+      "kind": "query",
+      "text": "STRASSE",
+      "focused": "strasse",
+      "selected": "rust"
+    },
+    {
+      "query": "σίσυφοσ",
+      "kind": "query",
+      "text": "σίσυφοσ",
+      "focused": "sigma"
+    },
+    {
+      "query": "한글",
+      "kind": "query",
+      "text": "한글",
+      "focused": "hangul"
+    },
+    {
+      "query": "missing",
+      "kind": "query",
+      "text": "missing",
+      "focused": ""
+    },
+    {
+      "action": "activate",
+      "kind": "",
+      "id": ""
+    },
+    {
+      "query": "",
+      "kind": "query",
+      "text": "",
+      "focused": "go"
+    },
+    {
+      "click": "x",
+      "kind": "",
+      "id": ""
+    },
+    {
+      "action": "page_down",
+      "height": 2,
+      "kind": "focus",
+      "id": "rust",
+      "focused": "rust"
+    },
+    {
+      "action": "page_up",
+      "height": -2147483648,
+      "kind": "focus",
+      "id": "go",
+      "focused": "go"
+    }
+  ],
+  "picker": [
+    {
+      "action": "open",
+      "kind": "open",
+      "open": true,
+      "value": ""
+    },
+    {
+      "action": "insert",
+      "text": "Rust",
+      "kind": "query",
+      "event_text": "Rust",
+      "focused": "rust",
+      "value": ""
+    },
+    {
+      "action": "activate",
+      "kind": "change",
+      "id": "rust",
+      "open": false,
+      "value": "rust"
+    },
+    {
+      "action": "open",
+      "kind": "open",
+      "open": true,
+      "value": "rust"
+    },
+    {
+      "action": "insert",
+      "text": "Go",
+      "kind": "query",
+      "event_text": "Go",
+      "focused": "go"
+    },
+    {
+      "action": "cancel",
+      "kind": "cancel",
+      "open": false,
+      "value": "rust"
+    },
+    {
+      "action": "open",
+      "kind": "open"
+    },
+    {
+      "action": "insert",
+      "text": "é",
+      "kind": "query",
+      "event_text": "é"
+    },
+    {
+      "action": "backspace",
+      "kind": "query",
+      "event_text": ""
+    },
+    {
+      "action": "insert",
+      "text": "STRASSE",
+      "kind": "query",
+      "event_text": "STRASSE",
+      "focused": "strasse"
+    },
+    {
+      "action": "activate",
+      "kind": "change",
+      "id": "strasse",
+      "open": false,
+      "value": "strasse"
+    },
+    {
+      "click": "x",
+      "kind": "",
+      "id": "",
+      "value": "strasse"
+    }
+  ],
+  "fold": [
+    {
+      "text": "Straße",
+      "expected": "strasse"
+    },
+    {
+      "text": "Σςσ",
+      "expected": "σσσ"
+    },
+    {
+      "text": "İ",
+      "expected": "i̇"
+    },
+    {
+      "text": "한글 é 👩‍💻",
+      "expected": "한글 é 👩‍💻"
+    },
+    {
+      "text": "",
+      "expected": ""
+    }
+  ]
+}

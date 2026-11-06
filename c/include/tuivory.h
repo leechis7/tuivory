@@ -227,6 +227,57 @@ TuiResult tui_focus_update(TuiFocus *focus, const char *id,
 TuiResult tui_focus_close(TuiFocus *focus, const char *id);
 TuiPopupCloseRequest tui_focus_request_close(const TuiFocus *focus);
 TuiInputRoute tui_focus_route(const TuiFocus *focus, const char *target_scope);
+/* Owned Unicode17 C+F search key; no normalization or Turkic override. */
+char *tui_casefold(const char *text);
+/* Collections own item strings. IDs/query/layout views are borrowed. */
+typedef struct {
+  const char *id, *label, *secondary, *shortcut, *icon, *ascii_icon, *parent;
+  int disabled, separator;
+} TuiItem;
+typedef struct {
+  const char *id, *text, *role;
+  int focused;
+} TuiCollectionRow;
+typedef struct {
+  const char *kind, *id, *query;
+  TuiResult result;
+} TuiCollectionEvent;
+typedef struct TuiList TuiList;
+TuiList *tui_list_new(const TuiItem *items, size_t count);
+void tui_list_free(TuiList *list);
+TuiResult tui_list_set_items(TuiList *list, const TuiItem *items, size_t count);
+const TuiItem *tui_list_items(const TuiList *list, size_t *count);
+const char *tui_list_focused(const TuiList *list);
+const char *tui_list_selected(const TuiList *list);
+const char *tui_list_query(const TuiList *list);
+TuiResult tui_list_empty(TuiList *list, const char *label);
+int tui_list_focus(TuiList *list, const char *id);
+TuiCollectionEvent tui_list_set_query(TuiList *list, const char *query);
+TuiCollectionEvent tui_list_handle(TuiList *list, const char *action,
+                                   int height);
+TuiCollectionEvent tui_list_click_id(TuiList *list, const char *id);
+TuiCollectionEvent tui_list_click(TuiList *list, int x, int y, int height);
+TuiResult tui_list_layout(TuiList *list, int width, int height, int ascii,
+                          const TuiCollectionRow **rows, size_t *count);
+TuiResult tui_list_draw(TuiList *list, TuiCanvas *canvas, TuiRect rect,
+                        int focused, int ascii);
+typedef struct TuiSearchPicker TuiSearchPicker;
+TuiSearchPicker *tui_picker_new(const TuiItem *items, size_t count);
+void tui_picker_free(TuiSearchPicker *picker);
+TuiList *tui_picker_list(TuiSearchPicker *picker);
+int tui_picker_opened(const TuiSearchPicker *picker);
+const char *tui_picker_value(const TuiSearchPicker *picker);
+TuiCollectionEvent tui_picker_handle(TuiSearchPicker *picker,
+                                     const char *action, const char *text,
+                                     int height);
+TuiCollectionEvent tui_picker_click_id(TuiSearchPicker *picker, const char *id);
+TuiCollectionEvent tui_picker_click(TuiSearchPicker *picker, int x, int y,
+                                    int height);
+TuiResult tui_picker_layout(TuiSearchPicker *picker, int width, int height,
+                            int ascii, const TuiCollectionRow **rows,
+                            size_t *count);
+TuiResult tui_picker_draw(TuiSearchPicker *picker, TuiCanvas *canvas,
+                          TuiRect rect, int focused, int ascii);
 #ifdef __cplusplus
 }
 #endif
