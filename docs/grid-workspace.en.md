@@ -2,6 +2,8 @@
 
 [한국어 (기본)](grid-workspace.md) · **English** · [Grid basics](grid.en.md)
 
+**Real terminal cursors are available from 0.11.1.** They replace the literal `|` in 0.11.0. Existing editing APIs remain supported; follow the Go/Rust integration below.
+
 These TVR-7 capabilities are available from **0.11.0**. They extend the existing Go `Grid / NewGridView` and Rust `grid::Grid / GridWidget`; no separate advanced grid or direct backend import is required.
 
 ## Availability
@@ -63,9 +65,38 @@ Source values and buffers are separate. `GridValue.Text / Null` distinguishes em
 
 Submission does not write the source. After asynchronous validation, call `ResolveEdit` on the UI thread. A nonempty message rejects; an empty message accepts. Optionally supply the updated source on success. Hosts updating the existing source in place may omit it while retaining stable IDs. Pass source replacements through the approval method: calling `SetSource` first invalidates the old request.
 
-Tab/Shift+Tab opens the next/previous eligible editor only after successful approval. Pending/rejected edits stay in place. Navigation skips hidden columns, read-only cells and host-denied candidates and continues onto the next row. At the final cell editing ends rather than wrapping. The library owns internal focus, grapheme cursor, mouse positioning/selection and clipping. It uses the existing text controls' drawn `|` caret, with no forced terminal cursor escapes.
+Tab/Shift+Tab opens the next/previous eligible editor only after successful approval. Pending/rejected edits stay in place. Navigation skips hidden columns, read-only cells and host-denied candidates and continues onto the next row. At the final cell editing ends rather than wrapping. The library owns internal focus, grapheme cursor, mouse positioning/selection and clipping. Version 0.11.1 replaces the grid editor's literal `|` with a real backend cursor; see the integration below.
 
 Source replacement, sort/filter/global-search requests, column layout replacement and view restoration invalidate older edits/pastes. Call `InvalidateRequests` when switching a host tab/connection/workspace without replacing its source. Request IDs belong to their grid instance. Late replies and duplicate successful replies are rejected. In-place changes to source structure/order/IDs cannot be detected automatically: call this method or `SetSource`.
+
+## Real terminal cursor (0.11.1)
+
+Go `NewGridView` now sets the backend cursor after drawing and hides its owned cursor on blur, pending approval, NULL, clipping, invalidation or editor closure. Rejection restores it for retry. Empty text gets a blank caret cell. The caret always follows grapheme boundaries, padding/dirty markers, column pinning and viewport changes. Editing uses its own left-aligned viewport instead of applying the column's display alignment/pan twice. Mouse positioning uses the same viewport; a literal `|` in user data remains ordinary data.
+
+```go
+screen, err := ui.NewCursorScreen()
+if err != nil { return err }
+app.SetScreen(ui.PasteSafeScreen(screen)).EnablePaste(true)
+view, err := ui.NewGridView(grid, palette, onEvent)
+```
+
+Use **`NewCursorScreen`** for terminal-setting preservation. Raw compatibility `NewScreen`/automatic Application screens can emit backend default DECSCUSR (`CSI 0 q`) and terminfo blink toggles (`?12h/l`) even without an explicit shape request. The new terminfo factory wraps its TTY in `PreserveCursorTty`, filtering those commands while retaining cursor position, visibility, UTF-8 and other output. Custom TTY hosts can pass `PreserveCursorTty(tty)` to the existing terminfo screen constructor. Neither the factory nor the view forces a cursor shape or blink mode. Terminal user settings control blinking; the library does not emulate it. Native TTY availability is required; unsupported targets return an error. Windows with empty TERM uses the backend's xterm-256color terminfo with its explicit native TTY.
+
+Rust's buffer-only `Widget` trait cannot set a terminal cursor. Use the added **`GridWidget::render_frame`** method instead of `frame.render_widget(GridWidget { ... }, area)` when an actual editing cursor is needed:
+
+```rust
+use tuivory::ui::components::GridWidget;
+GridWidget { model: &grid, styles: &styles, focused: grid_has_focus }
+    .render_frame(frame, area);
+```
+
+It draws and registers the visible caret through `Frame::set_cursor_position`; Ratatui applies visibility after flushing. Frames with no cursor owner hide it normally. Unfocused grids do not overwrite another control's registered cursor. Hosts choose global focus and layer order, render only visible layers and supply `focused = false` under a modal. Keep one focused cursor owner per frame; do not mix an independent terminal-cursor workaround with this API. Existing buffer-only rendering remains supported for snapshots and custom composition, without automatic terminal cursor registration.
+
+Both models expose `EditCursor(width, height)` / `edit_cursor(width, height)` for other adapters. `GridCursor.X/Y` (Rust `x/y`) are **local cell coordinates**, and `Width/width` is the complete grapheme's width beneath the caret (at least one). Adapters add their origin and clip the whole glyph to the physical screen. Focus is adapter-owned. NULL labels and pending approvals intentionally have no caret; typing/toggling out of NULL or rejecting a submission restores it. Source/context changes, scrolling out of view, zero/small areas and closure suppress stale positions. These APIs neither modify raw values nor issue shape escapes.
+
+Availability: Go model + RowsView + cursor-preserving terminfo factory and Rust core model + optional Ratatui Frame integration are implemented in 0.11.1. Only native Linux ARM64 PTYs and simulations are exercised locally; Windows/macOS consumer compilation is distinct from physical-console/SecureCRT validation. Forms/find prompts retain their existing presentation; this change addresses the grid cell editor. SVG references show buffer text and cannot capture blinking or terminal cursor metadata.
+
+[Cursor regression evidence](evidence/tvr7-grid-cursor-results.json) · [Shared geometry cases](../design/grid-cursor-cases.json).
 
 ## Dirty cells and row gutters
 

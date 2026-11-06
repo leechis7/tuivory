@@ -112,3 +112,5 @@ See [overlay drawing](overlay-drawing.en.md) for Go popup/external-card usage. E
 ## 0.11.0 grid workspace
 
 Use the existing unified binary: `--demo catalog --mode grid --grid-sample --grid-preset data --lang en`. Add `--grid-edit-preview` to start inline editing. Synthetic host approval, rejection/retry, NULL, paste, find, column management, in-memory view restore and raw details use the same example; no additional executable. [Bindings and screenshots](grid-workspace.en.md).
+
+TVR-7 in 0.11.1: [real grid cursor and backend integration](grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.

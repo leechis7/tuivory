@@ -1,4 +1,4 @@
-# Rust API — source (0.11.0)
+# Rust API — source (0.11.1)
 
 [한국어 (default)](rust.md) · **English**
 
@@ -1436,6 +1436,15 @@ pub struct Grid {
 
 
 
+#### tuivory::grid::Grid::edit_cursor
+
+```rust
+pub fn edit_cursor(&self, width: usize, height: usize) -> Option<GridCursor>;
+```
+
+Returns no caret for pending, NULL, invalidated, uneditable or clipped editors.
+The adapter owns focus and terminal visibility; no terminal I/O occurs here.
+
 #### tuivory::grid::Grid::input
 
 ```rust
@@ -1981,6 +1990,19 @@ pub struct GridColumnOptions {
 ```
 
 
+
+
+### tuivory::grid::GridCursor
+
+```rust
+pub struct GridCursor {
+    pub x: usize,
+    pub y: usize,
+    pub width: usize,
+}
+```
+
+Local terminal-cell coordinates; adapters add their origin and focus policy.
 
 
 ### tuivory::grid::GridDataStatus
@@ -3211,6 +3233,14 @@ pub struct GridWidget<'a> {
 
 
 
+#### tuivory::ratatui::GridWidget::render_frame
+
+```rust
+pub fn render_frame(self, frame: &mut ratatui::Frame<'_>, area: Rect);
+```
+
+Draw the grid and register its real cursor on this frame. No shape/blink commands.
+Buffer-only Widget rendering intentionally cannot update terminal cursor state.
 
 ### tuivory::ratatui::HelpWidget
 

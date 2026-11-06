@@ -18,6 +18,7 @@ TARGETS = [('windows', 'amd64'), ('windows', 'arm64'), ('linux', 'amd64'),
 SOURCE = '''package main
 import ui "github.com/leechis7/tuivory/go"
 var _ func() (ui.Screen,error) = ui.NewScreen
+var _ func() (ui.Screen,error) = ui.NewCursorScreen
 var _ func() (ui.Screen,error) = ui.NewConsoleScreen
 var _ func() (ui.Tty,error) = ui.NewDevTty
 func main() {

@@ -1,6 +1,6 @@
 # Tuivory — TUI 컴포넌트 라이브러리
 
-**0.11.0:** 그리드 편집·열 관리·붙여넣기·찾기를 제공합니다. **0.10.1 사용 금지** · [회수·업그레이드 안내](docs/withdrawn-versions.md).
+**0.11.1:** 그리드 실제 커서와 터미널 설정 보존을 보완합니다. **0.10.1 사용 금지** · [회수·업그레이드 안내](docs/withdrawn-versions.md).
 
 0.11.0 TVR-7: [그리드 셀 내 편집·열 고정/숨김/순서·붙여넣기·찾기·보기 복원·상세 보기](docs/grid-workspace.md). 0.11.0부터 제공합니다.
 
@@ -21,17 +21,17 @@
 
 **Go/tview와 Rust/Ratatui**를 위한 TUI 컴포넌트 라이브러리입니다. 앱이 화면 구성·데이터·업무 동작을 연결합니다. Python·JavaScript는 현재 토큰 읽기 예제를 제공하며 UI 패키지는 계획 단계입니다.
 
-**0.11.0** · [릴리스](docs/release-0.11.0.md) · [문서](docs/README.md) · [API](docs/api/README.md)
+**0.11.1** · [릴리스](docs/release-0.11.1.md) · [문서](docs/README.md) · [API](docs/api/README.md)
 
 ## 설치
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.11.0
+go get github.com/leechis7/tuivory/go@v0.11.1
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.1", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [설치 상세](docs/installation.md)
@@ -62,3 +62,5 @@ make run-menu-rust ARGS="--shadow auto"
 0.6.0 TVR-22~25는 테두리 없는 Surface, 독립/암호 컨트롤, 텍스트 편집·뷰어와 행·열·격자·레이어 컨테이너를 제공합니다. [사용법·제공 상태·예제](docs/controls.md).
 
 0.7.0 TVR-26: Go·Rust에서 Tuivory 경로만 사용하는 UI 구성, 공통 입력·바이트 span 변환과 터미널 수명을 제공합니다. [API 대응·예제·현재 제공 상태](docs/ui-facade.md).
+
+TVR-7 0.11.1: [실제 그리드 커서·backend 연결](docs/grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.

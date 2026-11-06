@@ -1,4 +1,4 @@
-# Go API — source (0.11.0)
+# Go API — source (0.11.1)
 
 [한국어 (default)](go.md) · **English**
 
@@ -2138,6 +2138,11 @@ func (g *Grid) ColumnOptions(id string) GridColumnOptions
 
 func (g *Grid) Columns() []GridColumn
 
+func (g *Grid) EditCursor(width, height int) (GridCursor, bool)
+    EditCursor returns a visible editor position for this viewport. Pending,
+    NULL, invalidated, uneditable and clipped editors have no caret. Focus is
+    view-owned.
+
 func (g *Grid) EditInput(action, text string) GridEvent
     EditInput consumes only internal editor actions. Submit/next/previous wait
     for ResolveEdit.
@@ -2315,6 +2320,17 @@ type GridColumnOptions struct {
 	Expand             int
 	Overflow           string // ellipsis (default), clip, scroll.
 }
+```
+
+## GridCursor
+
+```go
+type GridCursor struct {
+	X, Y  int
+	Width int
+}
+    GridCursor is an editor caret in local terminal-cell coordinates, not bytes.
+    Views apply their own origin, focus and final screen clipping.
 ```
 
 ## GridDataStatus
@@ -3110,6 +3126,9 @@ type Roles struct {
 
 ```go
 type RowsView struct {
+	// Cursor optionally supplies a local backend cursor, without changing its shape/blink.
+	Cursor func(int, int) (GridCursor, bool)
+
 	*tview.Box
 	Rows        func(int, int) []ComponentLine
 	Key         func(*tcell.EventKey)
@@ -3163,6 +3182,8 @@ func NewTextViewView(doc *TextDocument, palette Palette, onEvent func(TextEvent)
 
 func (v *RowsView) AtTabBoundary(previous bool) bool
 
+func (v *RowsView) Blur()
+
 func (v *RowsView) Draw(screen tcell.Screen)
 
 func (v *RowsView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
@@ -3182,6 +3203,11 @@ type Screen = compatterminal.Screen
 
 func NewConsoleScreen() (Screen, error)
     NewConsoleScreen forwards to the SDK compatibility API.
+
+func NewCursorScreen() (Screen, error)
+    NewCursorScreen creates a terminfo screen that preserves terminal cursor
+    shape/blink settings. Connect it with Application.SetScreen before Run.
+    Like NewScreen, this does not initialize the screen. Requires a usable TTY.
 
 func NewScreen() (Screen, error)
     NewScreen forwards to the SDK compatibility API.
@@ -4471,6 +4497,12 @@ func NewDevTtyFromDev(dev string) (Tty, error)
 
 func NewStdIoTty() (Tty, error)
     NewStdIoTty forwards to the SDK compatibility API.
+
+func PreserveCursorTty(tty Tty) Tty
+    PreserveCursorTty filters backend cursor-shape and blink changes, including
+    default DECSCUSR and terminfo ?12h/l. Position and visibility remain intact.
+    Use NewCursorScreen for a ready-to-use screen; no terminal settings are
+    forced.
 
 // Public alias: underlying declaration and methods.
 package terminal // import "github.com/leechis7/tuivory/go/terminal"

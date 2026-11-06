@@ -2,6 +2,8 @@
 
 **한국어 (기본)** · [English](grid-workspace.en.md) · [그리드 기본 사용법](grid.md)
 
+**실제 커서는 0.11.1부터 제공합니다.** 0.11.0의 `|` 문자 표시를 대체합니다. 기존 편집 API는 유지하며 아래 Go/Rust 연결 방법을 따르세요.
+
 TVR-7의 **0.11.0** 기능입니다. Go `Grid / NewGridView`, Rust `grid::Grid / GridWidget`에서 같은 모델을 확장합니다. 별도 고급 그리드나 backend 직접 import는 필요하지 않습니다.
 
 ## 제공 범위
@@ -63,9 +65,38 @@ if let Some(session) = grid.edit_session().cloned() {
 
 제출은 소스를 수정하지 않습니다. 비동기 검증 뒤 UI 스레드에서 `ResolveEdit`를 호출하세요. 오류 메시지가 비어 있지 않으면 실패이며, 성공은 빈 메시지입니다. 성공 시 새 소스를 선택적으로 함께 적용합니다. 기존 소스를 제자리에서 수정하는 호스트는 안정 ID를 유지한 뒤 소스 인자를 생략할 수 있습니다. 소스 교체가 필요하면 승인 함수에 함께 전달하세요. 먼저 `SetSource`를 호출하면 이전 편집 요청은 무효가 됩니다.
 
-Tab/Shift+Tab은 제출 승인이 성공한 뒤 다음/이전 편집 가능 셀을 엽니다. 실패·대기 중에는 이동하지 않습니다. 숨긴 열·읽기 전용 셀·호스트가 거절한 후보를 건너뛰고 다음 행으로 이어집니다. 마지막 셀에서는 편집을 끝내며 첫 셀로 순환하지 않습니다. 편집기 내부 포커스·grapheme 커서·마우스 위치/선택·클리핑은 라이브러리가 관리합니다. 커서는 기존 텍스트 컨트롤과 같은 그려진 `|`이며 강제 터미널 커서 escape를 보내지 않습니다.
+Tab/Shift+Tab은 제출 승인이 성공한 뒤 다음/이전 편집 가능 셀을 엽니다. 실패·대기 중에는 이동하지 않습니다. 숨긴 열·읽기 전용 셀·호스트가 거절한 후보를 건너뛰고 다음 행으로 이어집니다. 마지막 셀에서는 편집을 끝내며 첫 셀로 순환하지 않습니다. 편집기 내부 포커스·grapheme 커서·마우스 위치/선택·클리핑은 라이브러리가 관리합니다. 0.11.1은 그리드 셀 편집의 `|` 문자 대신 실제 backend 커서를 제공합니다. 아래 연결 방법을 따르세요.
 
 소스 교체·정렬/필터/전체 검색 요청·열 구성 교체·보기 복원은 이전 편집/붙여넣기를 무효화합니다. 탭·접속·작업공간만 바뀌면 `InvalidateRequests`를 호출하세요. 요청 ID는 해당 그리드 인스턴스에만 유효합니다. 늦은 응답과 중복 성공 응답은 거부됩니다. 호스트가 소스의 구조/정렬/ID를 제자리에서 바꾸면 자동 감지할 수 없으므로 이 메서드 또는 `SetSource`가 필요합니다.
+
+## 실제 터미널 커서 (0.11.1)
+
+Go `NewGridView`는 그리기 후 실제 backend 커서를 표시하고, 포커스 해제·승인 대기·NULL·클리핑·무효화·편집 종료 때 자신이 소유한 커서를 숨깁니다. 거절 후 재시도에서는 다시 표시합니다. 빈 값은 빈 셀에 커서를 놓습니다. grapheme 경계·여백·변경 표식·고정 열·화면 크기를 반영합니다. 편집 중에는 열의 표시 정렬·가로 pan을 중복 적용하지 않고 독립된 왼쪽 정렬 뷰포트를 사용합니다. 마우스도 같은 계산을 사용합니다. 데이터에 실제로 있는 `|`는 지우지 않습니다.
+
+```go
+screen, err := ui.NewCursorScreen()
+if err != nil { return err }
+app.SetScreen(ui.PasteSafeScreen(screen)).EnablePaste(true)
+view, err := ui.NewGridView(grid, palette, onEvent)
+```
+
+단말 설정을 유지하려면 **`NewCursorScreen`**을 사용하세요. 호환 `NewScreen`이나 Application 자동 화면은 모양을 명시하지 않아도 backend 기본 DECSCUSR(`CSI 0 q`)·terminfo 깜빡임 변경(`?12h/l`)을 보낼 수 있습니다. 새 terminfo 화면 생성기는 TTY를 `PreserveCursorTty`로 감싸 이 명령만 제거하고 위치·표시/숨김·UTF-8·나머지 출력을 유지합니다. 사용자 TTY는 기존 terminfo 화면 생성기에 `PreserveCursorTty(tty)`를 전달하면 됩니다. 화면 생성기와 뷰는 모양·깜빡임을 강제하지 않으며 실제 깜빡임은 터미널 사용자 설정을 따릅니다. 라이브러리가 깜빡임을 흉내 내지 않습니다. 네이티브 TTY가 필요하고 미지원 대상은 오류를 반환합니다. Windows에서 TERM이 비어 있으면 명시적 네이티브 TTY와 backend xterm-256color terminfo를 사용합니다.
+
+Rust의 버퍼 전용 `Widget` trait은 실제 커서를 지정할 수 없습니다. 셀 편집 커서가 필요하면 `frame.render_widget(GridWidget { ... }, area)` 대신 추가한 **`GridWidget::render_frame`**을 사용하세요.
+
+```rust
+use tuivory::ui::components::GridWidget;
+GridWidget { model: &grid, styles: &styles, focused: grid_has_focus }
+    .render_frame(frame, area);
+```
+
+그리기와 `Frame::set_cursor_position` 등록을 함께 처리하고 Ratatui가 출력 버퍼 반영 후 표시합니다. 커서 소유자가 없는 프레임은 표준 동작대로 숨깁니다. 포커스가 없는 그리드는 다른 컨트롤의 커서를 덮어쓰지 않습니다. 전역 포커스·레이어 순서·실제로 보이는 레이어는 앱이 결정하고 모달 아래 그리드는 `focused = false`로 그립니다. 프레임마다 하나의 포커스 커서 소유자를 선택하며 별도 터미널 커서 우회 코드와 섞지 마세요. 기존 버퍼 전용 렌더링은 스냅샷·사용자 조합용으로 유지하되 실제 커서를 자동 등록하지 않습니다.
+
+양 모델은 다른 어댑터용 `EditCursor(width, height)` / `edit_cursor(width, height)`를 제공합니다. `GridCursor.X/Y`(Rust `x/y`)는 **로컬 셀 좌표**, `Width/width`는 커서 아래 완전한 grapheme 폭(최소 1)입니다. 어댑터가 자신의 원점을 더하고 실제 화면 경계에서 glyph 전체를 검사합니다. 포커스는 어댑터가 소유합니다. NULL 표식·승인 대기에는 커서가 없고, NULL 해제/타이핑·제출 거절 시 복원합니다. 소스/문맥 교체·스크롤로 영역 밖 이동·0/작은 영역·편집 종료에는 오래된 좌표를 숨깁니다. 원문 변경이나 모양 escape 강제를 하지 않습니다.
+
+제공 상태: Go 모델·RowsView·설정 보존 terminfo 생성기, Rust 코어 모델·선택적 Ratatui Frame 연결을 현재 소스에 구현했습니다. 로컬 실행은 Linux ARM64 PTY·시뮬레이션이며 Windows/macOS 외부 컴파일과 실제 콘솔/SecureCRT 실기 검증은 구분합니다. 폼·찾기 프롬프트의 기존 표시 방식은 유지하고 그리드 셀 편집만 보완합니다. SVG 참조 화면은 버퍼 텍스트이므로 깜빡임이나 backend 커서 메타데이터를 표현하지 못합니다.
+
+[커서 회귀 검증](evidence/tvr7-grid-cursor-results.json) · [공유 좌표 사례](../design/grid-cursor-cases.json).
 
 ## 변경 셀과 행 번호 표식
 

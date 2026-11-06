@@ -191,14 +191,18 @@ func (g *Grid) cellText(row GridRecord, column GridColumn, width int, selected b
 		if state.Edited {
 			extra = 2
 		}
-		raw = editDisplay(g.work.buffer.Text(), g.work.buffer.Cursor, max(0, width-2*o.Padding-extra), !e.Pending)
-		if e.Value.Null {
-			raw = g.label("null", "NULL")
-		}
 		prefix = ""
-		if state.Edited {
+		if extra > 0 {
 			prefix = "* "
 		}
+		content := max(0, width-2*o.Padding)
+		space := max(0, content-extra)
+		raw, _, _ = gridEditorWindow(g.work.buffer.Text(), g.work.buffer.Cursor, space)
+		if e.Value.Null {
+			raw = gridFit(g.label("null", "NULL"), space, 0, "clip")
+		}
+		text := gridAlign(gridFit(prefix+raw, content, 0, "clip"), content, "left")
+		return gridFit(strings.Repeat(" ", min(o.Padding, width))+text, width, 0, "clip")
 	}
 	content := max(0, width-2*o.Padding)
 	text := gridFit(prefix+raw, content, g.cellPan[column.ID], co.Overflow)

@@ -159,6 +159,31 @@ pub struct GridWidget<'a> {
     pub styles: &'a Styles,
     pub focused: bool,
 }
+impl GridWidget<'_> {
+    /// Draw the grid and register its real cursor on this frame. No shape/blink commands.
+    /// Buffer-only Widget rendering intentionally cannot update terminal cursor state.
+    pub fn render_frame(self, frame: &mut ratatui::Frame<'_>, area: Rect) {
+        let cursor = if self.focused {
+            self.model
+                .edit_cursor(area.width.into(), area.height.into())
+        } else {
+            None
+        };
+        frame.render_widget(self, area);
+        if let Some(c) = cursor {
+            let x = usize::from(area.x) + c.x;
+            let y = usize::from(area.y) + c.y;
+            let bounds = frame.area();
+            if x + c.width <= usize::from(bounds.right())
+                && y < usize::from(bounds.bottom())
+                && x >= usize::from(bounds.x)
+                && y >= usize::from(bounds.y)
+            {
+                frame.set_cursor_position((x as u16, y as u16));
+            }
+        }
+    }
+}
 impl Widget for GridWidget<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let rows = self.model.layout(area.width.into(), area.height.into());
