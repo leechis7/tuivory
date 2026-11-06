@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](AGENTS.en.md)
 
-- 저장소 루트는 언어 중립으로 유지한다. Go 소스·go.mod·go.sum은 go/ 아래에, 공통 테마·토큰·명세는 design/에 둔다. Rust 소스·Cargo.toml·Cargo.lock은 rust/ 아래에 둔다. Python·JavaScript·Shell 구현은 각 언어 디렉터리에서 관리한다.
+- 저장소 루트는 언어 중립으로 유지한다. Go 소스·go.mod·go.sum은 go/ 아래에, 공통 테마·토큰·명세는 design/에 둔다. Rust 소스·Cargo.toml·Cargo.lock은 rust/ 아래에 둔다. Python·JavaScript/TypeScript·C·C++·Java·Shell 구현은 각 언어 디렉터리에서 관리한다.
 
 - Tuivory는 LazyOra와 독립된 프로젝트다. Tuivory의 일감은 Jira의 TVR 프로젝트에서 관리한다. LORA 프로젝트에 Tuivory 작업을 새로 등록하거나 LORA-69를 계속 재사용하지 않는다.
 - 작업 전에 Tuivory의 관련 일감을 확인한다. 일감이 없으면 사용자에게 등록 여부를 확인한 뒤 등록한다. 프로젝트가 아직 없으면 생성이 완료될 때까지 LORA 일감으로 대체하지 않는다.
@@ -19,8 +19,10 @@
 
 - Go·Rust와 별도 예외를 정하지 않은 후속 언어의 배포 실행파일은 동적 로더·공유 라이브러리·별도 설치 언어 런타임을 요구하지 않는 정적 산출물로 제공한다. 이 정적 배포 대상 패키지도 적용 앱의 정적 링크를 막는 필수 네이티브 의존성을 추가하지 않는다. 빌드 시 모듈·crate 의존성은 허용한다. Linux 정적 산출물은 ELF 검사와 실행 가능한 로컬·CI 환경에서 검증한다. 사용자 지시에 따라 CentOS 검증은 수행하지 않는다. 기존 CentOS 결과는 과거 이력으로만 보존한다. Shell 소스는 인터프리터가 필요한 참조 예제이며 독립 실행파일 배포 시 같은 정적 조건을 충족해야 한다. [정적 배포](docs/static-build.md)
 
-- Python·TypeScript·JavaScript 지원은 사용자 지정 예외다. 각 언어의 런타임을 사용하는 일반 Python/npm 패키지와 실행 예제로 제공하며, 정적 링크·독립 실행파일·ELF 정적 검사·CentOS 검증을 필수로 요구하지 않는다. 지원 런타임·버전·의존성을 문서화하고 깨끗한 외부 환경에서 설치·import·실행을 검증한다. [Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) · [TypeScript·JavaScript TVR-16](https://leechis7.atlassian.net/browse/TVR-16)
+- Python·TypeScript·JavaScript·Java 지원은 사용자 지정 예외다. 각 언어의 런타임을 사용하는 일반 Python/npm/JAR 패키지와 실행 예제로 제공하며, 정적 링크·독립 실행파일·ELF 정적 검사·CentOS 검증을 필수로 요구하지 않는다. 지원 런타임·버전·의존성을 문서화하고 깨끗한 외부 환경에서 설치·import·실행을 검증한다. [Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) · [TypeScript·JavaScript TVR-16](https://leechis7.atlassian.net/browse/TVR-16) · [Java TVR-32](https://leechis7.atlassian.net/browse/TVR-32)
 
 - 컴포넌트 단계별 게시·병합은 사용자 승인 후 `dev`까지만 진행한다. 전체 작업 완료 후 별도 릴리스 지시가 있을 때 `main` 반영·태그·Release를 진행한다. 단계 게시 중 `main`과 `dev`를 자동 동기화하지 않는다.
 
 - Tuivory는 TUI 컴포넌트 라이브러리다. 공통 컨트롤·내부 조작·그리기·설정 가능한 배치 도구를 제공하고, 앱 화면 전체·컴포넌트 사이 포커스 순서·전역 키·메뉴/도움말 내용·업무 연결은 적용 앱이 결정한다. 앱의 정상적인 화면 조합 코드를 미이관 결함으로 취급하지 않는다. [책임 범위](docs/component-boundary.md)
+
+- 지원 언어의 구현과 런타임은 서로 독립적으로 유지한다. FFI/JNI·서브프로세스·공유 런타임 라이브러리를 통해 다른 Tuivory 언어 구현을 호출하지 않는다. C++도 Tuivory C에 의존하지 않는다. 공통 디자인 데이터·명세·테스트 사례·개발 시 생성 도구는 공유할 수 있다. TypeScript/JavaScript는 한 TypeScript 구현에서 JavaScript와 타입 선언을 제공한다.

@@ -1,0 +1,1 @@
+{"compilerOptions":{"target":"ES2022","module":"NodeNext","moduleResolution":"NodeNext","strict":true,"declaration":true,"outDir":"dist","rootDir":"src","resolveJsonModule":true,"lib":["ES2022","ES2022.Intl"]},"include":["src/**/*.ts"]}

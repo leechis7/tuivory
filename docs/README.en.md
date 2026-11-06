@@ -29,3 +29,5 @@ Current release: **0.11.1**. Start with installation, choose a component, then c
 [Current release](release-0.11.1.en.md)
 
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](ui-facade.en.md).
+
+[Independent Python·TypeScript/JavaScript·C·C++·Java support](languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.

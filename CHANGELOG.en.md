@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## Unreleased
+
+- TVR-15/16/30/31/32: independent Python, TS/JS, C, C++ and Java package foundations and Tree implementations; shared palettes/fixtures, local installation/linking and bilingual documentation. Epics remain in progress; full catalog parity and external publication are not complete.
+
 ## 0.11.1 — 2026-11-06
 
 - TVR-7: Real Go/Rust inline-grid cursors, shared grapheme/cell/mouse viewport, focus/pending/NULL/clipping/closure lifetime and opt-in Go terminfo factory preserving cursor shape/blink. Rust adds Frame integration while retaining buffer-only Widget. Bilingual APIs/design/examples/references and backend cursor/PTY/escape regressions updated.

@@ -19,7 +19,7 @@ TVR-7 in 0.11.0: [grid in-cell editing, column pinning/visibility/order, paste, 
 
 **0.10.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](docs/ui-facade.en.md).
 
-Reusable TUI components for **Go/tview and Rust/Ratatui**. Hosts compose screens, supply data and execute actions. Python/JavaScript currently provide token-reading examples; reusable UI packages are planned.
+Reusable TUI components for **Go/tview and Rust/Ratatui**. Hosts compose screens, supply data and execute actions. Independent UI packages for additional languages are in unreleased development.
 
 **0.11.1** · [Release](docs/release-0.11.1.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
 
@@ -64,3 +64,5 @@ Korean is the default UI; add `--lang en` for English.
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](docs/ui-facade.en.md).
 
 TVR-7 in 0.11.1: [real grid cursor and backend integration](docs/grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.
+
+[Independent Python·TypeScript/JavaScript·C·C++·Java support](docs/languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.

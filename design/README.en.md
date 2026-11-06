@@ -69,3 +69,5 @@ TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/soli
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](../docs/ui-facade.en.md).
 
 0.10.2 TVR-29 unifies auto/solid as one cell right and half a row down, with backdrop-aware dark contrast, half-block caps and ASCII dots. Reserve a full row; shadow cells replace backdrop text and never receive input. Keep Dim as whole-cell compatibility only. Tags through 0.10.0 retain the previous appearance.
+
+[Independent Python·TypeScript/JavaScript·C·C++·Java support](../docs/languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.

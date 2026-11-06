@@ -19,3 +19,5 @@
 ## 그리드 실제 커서 (0.11.1)
 
 편집 버퍼에 가짜 커서 문자를 넣지 않습니다. 텍스트·마우스·로컬 커서가 같은 grapheme 뷰포트를 사용합니다. 포커스 뷰는 위치·가시성만 소유하며 NULL·승인 대기·클리핑·무효화·포커스 해제 때 오래된 커서를 숨깁니다. Go는 NewGridView와 NewCursorScreen/PreserveCursorTty로 backend 기본 모양·깜빡임 명령을 제거합니다. Rust는 GridWidget::render_frame을 사용하고 버퍼 전용 Widget은 실제 커서를 등록하지 않습니다. 전역 포커스·레이어 선택은 앱 책임입니다. [연결·근거](grid-workspace.md).
+
+[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.

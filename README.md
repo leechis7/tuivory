@@ -19,7 +19,7 @@
 
 **0.10.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](docs/ui-facade.md).
 
-**Go/tview와 Rust/Ratatui**를 위한 TUI 컴포넌트 라이브러리입니다. 앱이 화면 구성·데이터·업무 동작을 연결합니다. Python·JavaScript는 현재 토큰 읽기 예제를 제공하며 UI 패키지는 계획 단계입니다.
+**Go/tview와 Rust/Ratatui**를 위한 TUI 컴포넌트 라이브러리입니다. 앱이 화면 구성·데이터·업무 동작을 연결합니다. 새 언어 독립 UI 패키지는 미배포 구현 단계입니다.
 
 **0.11.1** · [릴리스](docs/release-0.11.1.md) · [문서](docs/README.md) · [API](docs/api/README.md)
 
@@ -64,3 +64,5 @@ make run-menu-rust ARGS="--shadow auto"
 0.7.0 TVR-26: Go·Rust에서 Tuivory 경로만 사용하는 UI 구성, 공통 입력·바이트 span 변환과 터미널 수명을 제공합니다. [API 대응·예제·현재 제공 상태](docs/ui-facade.md).
 
 TVR-7 0.11.1: [실제 그리드 커서·backend 연결](docs/grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.
+
+[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](docs/languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.

@@ -48,6 +48,6 @@ make run-menu-rust ARGS="--shadow auto"
 
 ## 정적 실행파일
 
-릴리스는 Linux ARM64/x86_64의 Go·Rust 정적 실행파일을 제공합니다. 로컬 `make build`와 `make build-rust`는 각각 현재 Linux 호스트 아키텍처의 통합 실행파일 하나를 만듭니다. 산출물은 bin/<언어>/ 아래에 OS·아키텍처를 포함한 이름으로 저장합니다. CentOS는 검증하지 않습니다. Python·JavaScript는 현재 토큰 읽기 예제를 제공하며 UI 패키지는 아직 없습니다.
+릴리스는 Linux ARM64/x86_64의 Go·Rust 정적 실행파일을 제공합니다. 로컬 `make build`와 `make build-rust`는 각각 현재 Linux 호스트 아키텍처의 통합 실행파일 하나를 만듭니다. 산출물은 bin/<언어>/ 아래에 OS·아키텍처를 포함한 이름으로 저장합니다. CentOS는 검증하지 않습니다. 신규 언어 UI 패키지는 [독립 지원](languages.md)의 미배포 검증 단계입니다.
 
 [API](api/README.md) · [컴포넌트](components.md) · [릴리스](release-0.11.1.md) · [정적 배포](static-build.md)

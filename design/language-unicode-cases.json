@@ -1,0 +1,77 @@
+{
+  "policy": "sanitized controls; narrow ambiguous width; whole graphemes",
+  "cases": [
+    {
+      "text": "abc",
+      "cells": 3
+    },
+    {
+      "text": "한글",
+      "cells": 4
+    },
+    {
+      "text": "👩‍💻",
+      "cells": 2
+    },
+    {
+      "text": "👩🏽",
+      "cells": 2
+    },
+    {
+      "text": "🇰🇷",
+      "cells": 2
+    },
+    {
+      "text": "🇰🇷🇺🇸",
+      "cells": 4
+    },
+    {
+      "text": "한",
+      "cells": 2
+    },
+    {
+      "text": "é",
+      "cells": 1
+    },
+    {
+      "text": "☀️",
+      "cells": 2
+    },
+    {
+      "text": "⌚︎",
+      "cells": 1
+    },
+    {
+      "text": "a️",
+      "cells": 1
+    },
+    {
+      "text": "#️⃣",
+      "cells": 2
+    },
+    {
+      "text": "؀a",
+      "cells": 2
+    },
+    {
+      "text": "क्‍ष",
+      "cells": 2
+    },
+    {
+      "text": "🏽",
+      "cells": 2
+    },
+    {
+      "text": "‍",
+      "cells": 0
+    },
+    {
+      "text": "·",
+      "cells": 1
+    },
+    {
+      "text": "\r\n",
+      "cells": 2
+    }
+  ]
+}

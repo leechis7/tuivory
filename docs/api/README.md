@@ -61,3 +61,5 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 [그리드 확장 API와 앱 승인](../grid-workspace.md): TVR-7 0.11.0 소스입니다. Go/Rust API 명세에 추가 공개 선언을 함께 제공합니다.
 
 TVR-7 0.11.1: [실제 그리드 커서·backend 연결](../grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.
+
+[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](../languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.

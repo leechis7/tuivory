@@ -1,0 +1,36 @@
+{
+  "name": "tuivory",
+  "version": "0.11.1",
+  "type": "module",
+  "description": "Independent TypeScript and JavaScript TUI components",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.en.md",
+    "LICENSE",
+    "examples/catalog.mjs",
+    "UNICODE-LICENSE",
+    "NOTICE.md",
+    "NOTICE.en.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node tests/components.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "bin": {
+    "tuivory": "./examples/catalog.mjs"
+  }
+}

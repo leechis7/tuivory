@@ -1,0 +1,493 @@
+package io.tuivory;
+
+import java.util.*;
+import java.util.regex.Pattern;
+
+/** Independent Java 17 component models and terminal-cell drawing. No JNI. */
+public final class Tuivory {
+  private Tuivory() {}
+  private static final Pattern GRAPHEME = Pattern.compile("\\X");
+  private static boolean inRanges(int cp, int[][] ranges) {
+    int lo = 0, hi = ranges.length - 1;
+    while (lo <= hi) {
+      int m = (lo + hi) >>> 1;
+      if (cp < ranges[m][0])
+        hi = m - 1;
+      else if (cp > ranges[m][1])
+        lo = m + 1;
+      else
+        return true;
+    }
+    return false;
+  }
+  public static List<String> graphemes(String text) {
+    var out = new ArrayList<String>();
+    var matcher = GRAPHEME.matcher(text);
+    while (matcher.find()) out.add(matcher.group());
+    return out;
+  }
+  public static String clean(String text) {
+    return text.replaceAll("[\\x00-\\x1f\\x7f-\\x9f]", " ");
+  }
+  private static int clusterWidth(String g) {
+    int[] points = g.codePoints().toArray();
+    int total = 0, cluster = 0, base = -1, lastWidth = 0;
+    boolean available = false, virama = false;
+    for (int i = 0; i < points.length; i++) {
+      int cp = points[i];
+      if (cp == 0x200d) {
+        if (!virama && i + 1 < points.length) {
+          i++;
+          lastWidth = 0;
+        }
+        continue;
+      }
+      if (cp == 0xfe0f && available) {
+        if (inRanges(base, Data.VS16))
+          cluster = 2;
+        available = false;
+        continue;
+      }
+      if (cp == 0xfe0e && available) {
+        if (lastWidth == 2 && inRanges(base, Data.VS15))
+          total--;
+        available = false;
+        continue;
+      }
+      if (cp >= 0x1f1e6 && cp <= 0x1f1ff) {
+        int count = 0;
+        for (int j = i - 1; j >= 0 && points[j] >= 0x1f1e6 && points[j] <= 0x1f1ff; j--) count++;
+        if (count % 2 == 1) {
+          base = cp;
+          continue;
+        }
+      } else if (cp >= 0x1f3fb && cp <= 0x1f3ff && inRanges(base, Data.PICTOGRAPHIC))
+        continue;
+      int w = inRanges(cp, Data.ZERO) ? 0 : inRanges(cp, Data.WIDE) ? 2 : 1;
+      if (w > 0) {
+        if (virama)
+          cluster = 2;
+        else {
+          total += cluster;
+          cluster = w;
+        }
+        base = cp;
+        lastWidth = w;
+        available = true;
+        virama = false;
+      } else if (inRanges(cp, Data.VIRAMA))
+        virama = true;
+      else if (available && inRanges(cp, Data.SPACING_MC)) {
+        cluster = 2;
+        available = false;
+        virama = false;
+      } else
+        virama = false;
+    }
+    return total + cluster;
+  }
+  public static int cells(String text) {
+    int n = 0;
+    for (String g : graphemes(clean(text))) n += clusterWidth(g);
+    return n;
+  }
+  public static String clip(String text, int width, boolean ellipsis) {
+    text = clean(text);
+    if (width <= 0)
+      return "";
+    if (cells(text) <= width)
+      return text;
+    var out = new StringBuilder();
+    int used = 0;
+    for (String g : graphemes(text)) {
+      int n = clusterWidth(g);
+      if (used + n > width - (ellipsis ? 1 : 0))
+        break;
+      out.append(g);
+      used += n;
+    }
+    if (ellipsis)
+      out.append('~');
+    return out.toString();
+  }
+  public record Rect(int x, int y, int width, int height) {
+    public boolean contains(int px, int py) {
+      return px >= x && px < x + width && py >= y && py < y + height;
+    }
+  }
+  public record Event(String kind, String id, String text) {
+    public Event() {
+      this("", "", "");
+    }
+    public Event(String kind, String id) {
+      this(kind, id, "");
+    }
+  }
+  public static final class State {
+    public boolean disabled, readOnly, busy, selected, edited, invalid;
+    public boolean focusable() {
+      return !disabled;
+    }
+    public boolean activatable() {
+      return !disabled && !busy;
+    }
+    public boolean editable() {
+      return activatable() && !readOnly;
+    }
+    public String role() {
+      return disabled ? "disabled"
+          : invalid   ? "error"
+          : selected  ? "selection"
+          : edited    ? "edited"
+                      : "body";
+    }
+    public String markers() {
+      return (disabled ? "-" : "") + (invalid ? "!" : "") + (selected ? ">" : "")
+          + (edited ? "*" : "") + (busy ? "~" : "") + (readOnly ? "=" : "");
+    }
+  }
+  public record
+      Style(int foreground, int background, boolean bold, boolean dim, boolean underline) {
+    private String color(int c, boolean bg) {
+      String base = bg ? "48" : "38";
+      if ((c & 0x1000000) != 0)
+        return base + ";2;" + ((c >> 16) & 255) + ";" + ((c >> 8) & 255) + ";" + (c & 255);
+      return c < 8 ? "" + ((bg ? 40 : 30) + c)
+          : c < 16 ? "" + ((bg ? 100 : 90) + c - 8)
+                   : base + ";5;" + c;
+    }
+    public String sgr() {
+      return "\033[0;" + color(foreground, false) + ";" + color(background, true)
+          + (bold ? ";1" : "") + (dim ? ";2" : "") + (underline ? ";4" : "") + "m";
+    }
+  }
+  public static final class Palette {
+    private final int theme, profile;
+    public Palette() {
+      this("dark", "256");
+    }
+    public Palette(String theme, String colors) {
+      this.theme = List.of("dark", "light", "blackwhite").indexOf(theme);
+      this.profile = List.of("8", "16", "256", "truecolor").indexOf(colors);
+      if (this.theme < 0 || this.profile < 0)
+        throw new IllegalArgumentException("unknown palette");
+    }
+    public Style style(String role) {
+      return style(role, false);
+    }
+    public Style style(String role, boolean focused) {
+      int index = Arrays.asList(Data.ROLES).indexOf(role);
+      if (index < 0)
+        throw new IllegalArgumentException("unknown role");
+      int[] t = Data.PALETTES[(theme * 4 + profile) * 16 + index];
+      return new Style(t[0], t[1], t[2] != 0, role.equals("disabled"), focused);
+    }
+  }
+  public static final class Cell {
+    public String text = " ";
+    public Style style;
+    public int owner = -1;
+    Cell(Style style) {
+      this.style = style;
+    }
+  }
+  public static final class Canvas {
+    public final int width, height;
+    public final Palette palette;
+    public final Cell[][] data;
+    public int cursorX = -1, cursorY = -1;
+    public Canvas(int width, int height) {
+      this(width, height, new Palette());
+    }
+    public Canvas(int width, int height, Palette palette) {
+      if (width < 0 || height < 0 || (long) width * height > 1_000_000)
+        throw new IllegalArgumentException("invalid dimensions");
+      this.width = width;
+      this.height = height;
+      this.palette = palette;
+      data = new Cell[height][width];
+      for (var row : data)
+        for (int x = 0; x < width; x++) row[x] = new Cell(palette.style("surface"));
+    }
+    private void erase(int x, int y) {
+      var row = data[y];
+      int start = row[x].owner >= 0 ? row[x].owner : x, end = start + 1;
+      while (end < width && row[end].owner == start) end++;
+      for (int i = start; i < end; i++) {
+        row[i].text = " ";
+        row[i].owner = -1;
+      }
+    }
+    public void write(int x, int y, String text, String role, boolean focused, int extent) {
+      if (y < 0 || y >= height || extent < 0)
+        return;
+      int limit = Math.min(width, x + extent);
+      Style style = palette.style(role, focused);
+      if (List.of("body", "hint", "info", "success", "warning", "error", "header").contains(role))
+        style = new Style(style.foreground, palette.style("surface").background, style.bold,
+            style.dim, style.underline);
+      for (String g : graphemes(clean(text))) {
+        int n = clusterWidth(g);
+        if (n == 0)
+          continue;
+        if (x >= limit)
+          break;
+        if (x < 0 || x + n > limit) {
+          for (int i = Math.max(0, x); i < Math.min(limit, x + n); i++) {
+            erase(i, y);
+            data[y][i].style = style;
+          }
+          x += n;
+          continue;
+        }
+        for (int i = x; i < x + n; i++) erase(i, y);
+        data[y][x].text = g;
+        data[y][x].style = style;
+        for (int i = x + 1; i < x + n; i++) {
+          data[y][i].text = "";
+          data[y][i].style = style;
+          data[y][i].owner = x;
+        }
+        x += n;
+      }
+    }
+    public void write(int x, int y, String text, String role) {
+      write(x, y, text, role, false, width - x);
+    }
+    public void fill(Rect r, String role) {
+      for (int y = Math.max(0, r.y); y < Math.min(height, r.y + r.height); y++)
+        write(r.x, y, " ".repeat(Math.max(0, r.width)), role, false, r.width);
+    }
+    public Rect panel(Rect r, String title, boolean focused, boolean ascii) {
+      fill(r, "surface");
+      if (r.width < 2 || r.height < 2)
+        return new Rect(r.x, r.y, 0, 0);
+      String[] b = ascii ? new String[] {"+", "+", "+", "+", "-", "|"}
+          : focused      ? new String[] {"╔", "╗", "╚", "╝", "═", "║"}
+                         : new String[] {"┌", "┐", "└", "┘", "─", "│"};
+      String role = focused ? "focus.border" : "hint";
+      write(r.x, r.y, b[0] + b[4].repeat(r.width - 2) + b[1], role);
+      write(r.x, r.y + r.height - 1, b[2] + b[4].repeat(r.width - 2) + b[3], role);
+      for (int y = r.y + 1; y < r.y + r.height - 1; y++) {
+        write(r.x, y, b[5], role);
+        write(r.x + r.width - 1, y, b[5], role);
+      }
+      write(r.x + 2, r.y, clip(title, r.width - 4, false), role);
+      return new Rect(r.x + 1, r.y + 1, r.width - 2, r.height - 2);
+    }
+    public void setCursor(int x, int y, int glyphWidth) {
+      if (x >= 0 && x + Math.max(1, glyphWidth) <= width && y >= 0 && y < height) {
+        cursorX = x;
+        cursorY = y;
+      } else
+        cursorX = cursorY = -1;
+    }
+    public List<String> lines() {
+      var out = new ArrayList<String>();
+      for (var row : data) {
+        var line = new StringBuilder();
+        for (var c : row) line.append(c.text);
+        out.add(line.toString());
+      }
+      return out;
+    }
+    public String ansi() {
+      var out = new StringBuilder("\033[?25l");
+      for (int y = 0; y < height; y++) {
+        out.append("\033[").append(y + 1).append(";1H");
+        String previous = "";
+        for (var c : data[y]) {
+          if (c.owner >= 0)
+            continue;
+          String style = c.style.sgr();
+          if (!style.equals(previous)) {
+            out.append(style);
+            previous = style;
+          }
+          out.append(c.text);
+        }
+      }
+      out.append("\033[0m");
+      if (cursorX >= 0)
+        out.append("\033[")
+            .append(cursorY + 1)
+            .append(';')
+            .append(cursorX + 1)
+            .append("H\033[?25h");
+      return out.toString();
+    }
+  }
+  public static final class Node {
+    public final String id;
+    public String name, parent = "", secondary = "", icon = "", asciiIcon = "";
+    public Long count;
+    public boolean branch;
+    public Node(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+    public Node(String id, String name, String parent) {
+      this(id, name);
+      this.parent = parent;
+    }
+    private Node copy() {
+      var n = new Node(id, name, parent);
+      n.secondary = secondary;
+      n.icon = icon;
+      n.asciiIcon = asciiIcon;
+      n.count = count;
+      n.branch = branch;
+      return n;
+    }
+  }
+  public static final class Tree {
+    private final List<Node> nodes;
+    private final Map<String, Integer> depth = new HashMap<>();
+    private final Set<String> branches = new HashSet<>();
+    public final Set<String> expanded = new HashSet<>();
+    private final Map<String, Node> byId = new HashMap<>();
+    public String selected = "";
+    public int scroll, horizontal;
+    public Tree(List<Node> input) {
+      nodes = input.stream().map(Node::copy).toList();
+      var stack = new ArrayList<String>();
+      for (var n : nodes) {
+        if (n.id.isEmpty() || byId.put(n.id, n) != null)
+          throw new IllegalArgumentException("invalid node ID");
+        if (n.parent.isEmpty())
+          stack.clear();
+        else {
+          int p = stack.indexOf(n.parent);
+          if (p < 0)
+            throw new IllegalArgumentException("tree requires contiguous preorder");
+          stack.subList(p + 1, stack.size()).clear();
+          branches.add(n.parent);
+        }
+        if (stack.size() > 128)
+          throw new IllegalArgumentException("tree depth exceeds 128");
+        depth.put(n.id, stack.size());
+        stack.add(n.id);
+        if (n.branch)
+          branches.add(n.id);
+      }
+      reconcile(1);
+    }
+    public List<Node> visible() {
+      var out = new ArrayList<Node>();
+      var seen = new HashSet<String>();
+      for (var n : nodes)
+        if (n.parent.isEmpty() || seen.contains(n.parent) && expanded.contains(n.parent)) {
+          out.add(n.copy());
+          seen.add(n.id);
+        }
+      return out;
+    }
+    private List<Node> reconcile(int height) {
+      expanded.retainAll(branches);
+      var rows = visible();
+      var ids = rows.stream().map(n -> n.id).toList();
+      while (!selected.isEmpty() && !ids.contains(selected) && byId.containsKey(selected))
+        selected = byId.get(selected).parent;
+      if (!ids.contains(selected))
+        selected = ids.isEmpty() ? "" : ids.get(0);
+      int i = ids.indexOf(selected), h = Math.max(1, height);
+      scroll = Math.max(0, Math.min(scroll, rows.size() - h));
+      if (i >= 0) {
+        if (i < scroll)
+          scroll = i;
+        if (i >= scroll + h)
+          scroll = i - h + 1;
+      }
+      return rows;
+    }
+    public Event handle(String action, int height) {
+      var rows = reconcile(height);
+      if (rows.isEmpty())
+        return new Event();
+      String old = selected;
+      int i = 0;
+      while (!rows.get(i).id.equals(old)) i++;
+      var node = rows.get(i);
+      int target = i;
+      switch (action) {
+        case "up" -> target--;
+        case "down" -> target++;
+        case "home" -> target = 0;
+        case "end" -> target = rows.size() - 1;
+        case "page_up" -> target -= Math.max(1, height);
+        case "page_down" -> target += Math.max(1, height);
+        case "pan_left" -> horizontal = Math.max(0, horizontal - 4);
+        case "pan_right" -> horizontal = Math.min(65535, horizontal + 4);
+        case "activate" -> {
+          return new Event("activate", old);
+        }
+        case "left" -> {
+          if (expanded.remove(old)) {
+            reconcile(height);
+            return new Event("collapse", old);
+          }
+          if (!node.parent.isEmpty())
+            selected = node.parent;
+        }
+        case "right", "toggle" -> {
+          if (branches.contains(old)) {
+            if (action.equals("toggle") && expanded.remove(old)) {
+              reconcile(height);
+              return new Event("collapse", old);
+            }
+            if (expanded.add(old)) {
+              reconcile(height);
+              return new Event("expand", old);
+            }
+            if (i + 1 < rows.size() && rows.get(i + 1).parent.equals(old))
+              target++;
+          }
+        }
+        default -> {
+        }
+      }
+      target = Math.max(0, Math.min(rows.size() - 1, target));
+      if (target != i)
+        selected = rows.get(target).id;
+      reconcile(height);
+      return selected.equals(old) ? new Event() : new Event("select", selected);
+    }
+    public Event click(int x, int y, int height) {
+      var rows = reconcile(height);
+      if (y < 0 || y >= height || scroll + y >= rows.size())
+        return new Event();
+      var node = rows.get(scroll + y);
+      String old = selected;
+      selected = node.id;
+      if (x >= 2 && x + horizontal == 2 + 2 * depth.get(node.id)) {
+        var e = handle("toggle", height);
+        if (!e.kind.isEmpty())
+          return e;
+      }
+      return old.equals(selected) ? new Event() : new Event("select", selected);
+    }
+    public void draw(Canvas c, Rect r, boolean focused, boolean ascii) {
+      c.fill(r, "surface");
+      var rows = reconcile(r.height);
+      for (int y = 0; y < r.height && scroll + y < rows.size(); y++) {
+        var n = rows.get(scroll + y);
+        boolean current = n.id.equals(selected);
+        String arrow = branches.contains(n.id) ? expanded.contains(n.id) ? ascii ? "v" : "▾"
+                : ascii                                                  ? ">"
+                                                                         : "▸"
+                                               : " ",
+               icon = ascii ? n.asciiIcon : n.icon;
+        String text = "  ".repeat(depth.get(n.id)) + arrow + " "
+            + (icon.isEmpty() ? "" : icon + " ") + n.name
+            + (n.secondary.isEmpty() ? "" : "  " + n.secondary)
+            + (n.count == null ? "" : " (" + n.count + ")");
+        var parts = graphemes(text);
+        int start = 0, skipped = 0;
+        while (start < parts.size() && skipped < horizontal) skipped += cells(parts.get(start++));
+        text = String.join("", parts.subList(start, parts.size()));
+        c.write(r.x, r.y + y, (current ? "> " : "  ") + clip(text, Math.max(0, r.width - 2), true),
+            current ? "selection" : "body", focused && current, r.width);
+      }
+    }
+  }
+}
