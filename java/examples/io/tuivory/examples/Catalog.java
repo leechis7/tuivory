@@ -43,7 +43,7 @@ public final class Catalog {
     String theme = "dark", colors = "256";
     boolean en = false, ascii = false, snapshot = false, ansiSnapshot = false, workspace = false,
             tabFocus = false, textDemo = false, formDemo = false, listDemo = false,
-            pickerDemo = false, menuDemo = false, contextDemo = false;
+            pickerDemo = false, menuDemo = false, contextDemo = false, feedbackDemo = false;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--lang" -> {
@@ -76,15 +76,17 @@ public final class Catalog {
           listDemo = args[i].equals("list");
           pickerDemo = args[i].equals("picker");
           contextDemo = args[i].equals("context-menu");
+          feedbackDemo = args[i].equals("feedback");
           menuDemo = contextDemo || args[i].equals("menu");
           if (!args[i].equals("tree") && !workspace && !textDemo && !formDemo && !listDemo
-              && !pickerDemo && !menuDemo)
-            throw new IllegalArgumentException(
-                "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu");
+              && !pickerDemo && !menuDemo && !feedbackDemo)
+            throw new IllegalArgumentException("Supported demos: tree, workspace, text, form, "
+                                               + "list, picker, menu, context-menu, feedback");
         }
         case "--help" -> {
           System.out.println(
-              "--demo tree|workspace|text|form|list|picker|menu|context-menu --lang ko|en --theme "
+              "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback --lang ko|en "
+              + "--theme "
               + "dark|light|blackwhite --colors "
               + "8|16|256|truecolor --ascii --snapshot");
           return;
@@ -93,6 +95,7 @@ public final class Catalog {
       }
     }
     var menuHost = new MenuHost(en, contextDemo);
+    var feedbackHost = new FeedbackHost(en);
     var tree = new Tree(List.of(new Node("root", en ? "Workspace" : "작업 공간"),
         new Node("src", en ? "Sources" : "소스", "root"),
         new Node("components", en ? "Components" : "컴포넌트", "src"),
@@ -160,7 +163,9 @@ public final class Catalog {
         var c = new Canvas(72, 18, new Palette(theme, colors));
         var area = c.panel(
             new Rect(0, 0, 72, 17), en ? "Tuivory Java example" : "Tuivory Java 예제", true, ascii);
-        if (menuDemo)
+        if (feedbackDemo)
+          feedbackHost.draw(c, area, ascii);
+        else if (menuDemo)
           menuHost.draw(c, area, ascii);
         else if (listDemo)
           list.draw(c, area, true, ascii);
@@ -174,16 +179,18 @@ public final class Catalog {
           workspaceDraw(tree, tabs, split, c, area, tabFocus, en, ascii);
         else
           tree.draw(c, area, true, ascii);
-        String hint = menuDemo ? (en ? "Type f10 / down / activate / cancel / quit, then Enter"
-                                     : "f10 / down / activate / cancel / quit 입력 후 Enter")
-            : pickerDemo       ? (en ? "Type insert text / activate / cancel / quit, then Enter"
-                                     : "insert 검색어 / activate / cancel / quit 입력 후 Enter")
-            : formDemo         ? (en ? "Type insert text / tab / activate / quit, then Enter"
-                                     : "insert 값 / tab / activate / quit 입력 후 Enter")
-            : textDemo         ? (en ? "Type insert text / home / backspace / quit, then Enter"
-                                     : "insert 값 / home / backspace / quit 입력 후 Enter")
-            : en               ? "Type up/down/left/right/activate/quit, then Enter"
-                               : "up/down/left/right/activate/quit 입력 후 Enter";
+        String hint = feedbackDemo ? (en ? "Type activate / delete / t / c / quit, then Enter"
+                                         : "activate / delete / t / c / quit 입력 후 Enter")
+            : menuDemo             ? (en ? "Type f10 / down / activate / cancel / quit, then Enter"
+                                         : "f10 / down / activate / cancel / quit 입력 후 Enter")
+            : pickerDemo           ? (en ? "Type insert text / activate / cancel / quit, then Enter"
+                                         : "insert 검색어 / activate / cancel / quit 입력 후 Enter")
+            : formDemo             ? (en ? "Type insert text / tab / activate / quit, then Enter"
+                                         : "insert 값 / tab / activate / quit 입력 후 Enter")
+            : textDemo             ? (en ? "Type insert text / home / backspace / quit, then Enter"
+                                         : "insert 값 / home / backspace / quit 입력 후 Enter")
+            : en                   ? "Type up/down/left/right/activate/quit, then Enter"
+                                   : "up/down/left/right/activate/quit 입력 후 Enter";
         c.write(0, 17, hint, "hint");
         if (snapshot) {
           if (ansiSnapshot) {
@@ -199,11 +206,13 @@ public final class Catalog {
         if (line == null || line.equals("quit"))
           break;
         String action = line.strip();
-        if (textDemo || formDemo || listDemo || pickerDemo || menuDemo) {
+        if (textDemo || formDemo || listDemo || pickerDemo || menuDemo || feedbackDemo) {
           int space = action.indexOf(' ');
           String command = space < 0 ? action : action.substring(0, space);
           String addition = space < 0 ? "" : action.substring(space + 1);
-          if (menuDemo)
+          if (feedbackDemo)
+            feedbackHost.handle(command, addition);
+          else if (menuDemo)
             menuHost.handle(command, addition);
           else if (listDemo)
             list.handle(command, area.height());

@@ -35,3 +35,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Independent lists and search pickers API](../docs/language-collections.en.md)
 
 [Independent menu/context-menu API](../docs/language-menu.en.md)
+
+[Independent notices/progress/data-state API](../docs/language-feedback.en.md)

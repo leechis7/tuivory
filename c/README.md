@@ -35,3 +35,5 @@ make build-c
 [독립 언어 목록·검색 선택기 API](../docs/language-collections.md)
 
 [독립 언어 메뉴·문맥 메뉴 API](../docs/language-menu.md)
+
+[독립 언어 알림·진행·데이터 상태 API](../docs/language-feedback.md)
