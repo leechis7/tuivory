@@ -1,0 +1,13 @@
+{
+  "text": [
+    {"theme":"light","colors":"16","role":"success","surface":"surface","foreground":"0","background":"7"},
+    {"theme":"light","colors":"8","role":"body","surface":"button.focus","foreground":"7","background":"4"},
+    {"theme":"dark","colors":"8","role":"disabled","surface":"editor","foreground":"7","background":"0","dim":true},
+    {"theme":"light","colors":"truecolor","role":"hint","surface":"field","foreground":"#485869","background":"#ffffff"},
+    {"theme":"dark","colors":"256","role":"error","surface":"selection","foreground":"255","background":"24"},
+    {"theme":"blackwhite","colors":"8","role":"success","surface":"editor","foreground":"7","background":"0"}
+  ],
+  "surfaces":["surface","editor","field","button.focus"],
+  "plain_roles":["body","hint","disabled","info","success","warning","error"],
+  "explicit_roles":["field","selection","edited","header","editor","button","button.focus"]
+}

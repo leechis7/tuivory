@@ -232,7 +232,7 @@ public:
         if (local >= 0 && local + n <= r.width)
           c.write(r.x + local, r.y + y, g.text,
                   lo <= g.index && g.index < hi ? "selection" : role, false, n,
-                  true);
+                  false);
         x += n;
       }
     }

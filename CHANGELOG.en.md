@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Independent borderless Surface, actual-background text/control styles, contrast fallback and disabled Dim; preserve explicit selection/edited/field/header backgrounds and provide exact-style drawing. Update bilingual APIs/examples/screens and actual ANSI regressions.
+
 - TVR-15/16/30/31/32: Independent configured row/column/grid/layer containers, modal focus restoration, captured pointer routing, clipped virtual child painting and cell/style/cursor copying; repair both source/destination wide-glyph edges and register Grid cursors after painting. Add bilingual APIs, integrated examples, actual screens and package/output regressions.
 
 - TVR-15/16/30/31/32: Independent spacing/weighted stacks, drawer geometry, badges, request-only removable chips and literal priority hints; bilingual integrated examples, API and all-palette actual-output verification.

@@ -63,6 +63,31 @@ class Style:
         return "\x1b[" + ";".join(codes) + "m"
 
 
+_PLAIN_ROLES = ('body','hint','disabled','info','success','warning','error')
+_ANSI_RGB = ((0,0,0),(128,0,0),(0,128,0),(128,128,0),(0,0,128),(128,0,128),(0,128,128),(192,192,192),(128,128,128),(255,0,0),(0,255,0),(255,255,0),(0,0,255),(255,0,255),(0,255,255),(255,255,255))
+
+def color_rgb(value: str) -> tuple[int,int,int]:
+    if value.startswith('#'):
+        if len(value)!=7:raise ValueError('invalid RGB color')
+        return tuple(int(value[i:i+2],16)for i in (1,3,5))
+    n=int(value)
+    if not 0<=n<=255:raise ValueError('invalid ANSI color')
+    if n<16:return _ANSI_RGB[n]
+    if n>=232:return (8+(n-232)*10,)*3
+    n-=16;cube=(0,95,135,175,215,255)
+    return cube[n//36],cube[(n//6)%6],cube[n%6]
+
+def color_contrast(a: str,b: str) -> float:
+    def luminance(color):
+        def linear(n):
+            v=n/255
+            return v/12.92 if v<=0.04045 else ((v+0.055)/1.055)**2.4
+        r,g,b=map(linear,color_rgb(color))
+        return .2126*r+.7152*g+.0722*b
+    x,y=luminance(a),luminance(b)
+    return (max(x,y)+.05)/(min(x,y)+.05)
+
+
 class Palette:
     def __init__(self, theme: str = "dark", colors: str = "256"):
         document = json.loads(files("tuivory").joinpath("tokens.json").read_text())
@@ -78,6 +103,20 @@ class Palette:
         token = self.roles[role]
         return Style(token["foreground"], token["background"],
                      token["fontWeight"] == "bold", role == "disabled", focused)
+
+
+    def text_on_surface(self, role: str, surface: str = 'surface', *, focused=False) -> Style:
+        text,base=self.style(role),self.style(surface)
+        foreground=text.foreground
+        current=color_contrast(foreground,base.background)
+        if current<(2 if role=='disabled'else 4.5) and color_contrast(base.foreground,base.background)>current:
+            foreground=base.foreground
+        disabled=role=='disabled'
+        return Style(foreground,base.background,False if disabled else text.bold,text.dim or disabled,focused and not disabled)
+
+    def control_on_surface(self,state,surface: str='surface',*,focused=False) -> Style:
+        role=state.role;focus=focused and state.focusable
+        return self.text_on_surface(role,surface,focused=focus)if role in _PLAIN_ROLES else self.style(role,focused=focus)
 
 
 @dataclass(frozen=True)
@@ -101,12 +140,14 @@ class Cell:
 
 class Canvas:
     """Full-frame cell buffer. Overlay writes repair both edges of wide glyphs."""
-    def __init__(self, width: int, height: int, palette: Palette | None = None):
+    def __init__(self, width: int, height: int, palette: Palette | None = None, surface: str = "surface"):
         if width < 0 or height < 0 or width * height > 1_000_000:
             raise ValueError("invalid canvas dimensions")
         self.width, self.height = width, height
         self.palette = palette or Palette()
-        self.data = [[Cell(style=self.palette.style("surface")) for _ in range(width)] for _ in range(height)]
+        self.surface_role = surface
+        self.palette.style(surface)
+        self.data = [[Cell(style=self.palette.style(surface)) for _ in range(width)] for _ in range(height)]
         self.cursor: tuple[int, int] | None = None
         self._cursor_width = 1
 
@@ -122,13 +163,16 @@ class Canvas:
 
     def write(self, x: int, y: int, text: str, role: str = "body", *, focused: bool = False,
               width: int | None = None, preserve_background: bool = False) -> None:
-        if not 0 <= y < self.height:
-            return
-        limit = min(self.width, x + max(0, width)) if width is not None else self.width
-        style = self.palette.style(role, focused=focused)
-        if not preserve_background and role in ("body", "hint", "info", "success", "warning", "error", "header"):
-            style = Style(style.foreground, self.palette.style("surface").background,
-                          style.bold, style.dim, style.underline)
+        actual = self.surface_role if role=='surface'else role
+        style = self.palette.style(actual, focused=focused)
+        if not preserve_background and role in _PLAIN_ROLES:
+            style = self.palette.text_on_surface(role,self.surface_role,focused=focused)
+        self.write_style(x,y,text,style,width=width)
+
+    def write_style(self,x:int,y:int,text:str,style:Style,*,width:int|None=None) -> None:
+        """Paint an exact style; callers own its background and contrast choice."""
+        if not 0 <= y < self.height:return
+        limit=min(self.width,x+max(0,width))if width is not None else self.width
         for g in graphemes(clean(text)):
             n = max(0, wcswidth(g))
             if n == 0:
@@ -150,7 +194,7 @@ class Canvas:
 
     def fill(self, rect: Rect, role: str = "surface") -> None:
         for y in range(max(0, rect.y), min(self.height, rect.y + rect.height)):
-            self.write(rect.x, y, " " * max(0, rect.width), role, width=rect.width, preserve_background=True)
+            self.write(rect.x, y, " " * max(0, rect.width), role, width=rect.width, preserve_background=False)
 
     def panel(self, rect: Rect, title: str = "", focused: bool = False, ascii: bool = False) -> Rect:
         self.fill(rect)
@@ -159,12 +203,13 @@ class Canvas:
         a, b, c, d, horizontal, vertical = ("+", "+", "+", "+", "-", "|") if ascii else (
             ("╔", "╗", "╚", "╝", "═", "║") if focused else ("┌", "┐", "└", "┘", "─", "│"))
         role = "focus.border" if focused else "hint"
-        self.write(rect.x, rect.y, a + horizontal * (rect.width - 2) + b, role)
-        self.write(rect.x, rect.y + rect.height - 1, c + horizontal * (rect.width - 2) + d, role)
+        style=self.palette.text_on_surface(role,self.surface_role)
+        self.write_style(rect.x, rect.y, a + horizontal * (rect.width - 2) + b, style)
+        self.write_style(rect.x, rect.y + rect.height - 1, c + horizontal * (rect.width - 2) + d, style)
         for y in range(rect.y + 1, rect.y + rect.height - 1):
-            self.write(rect.x, y, vertical, role)
-            self.write(rect.x + rect.width - 1, y, vertical, role)
-        self.write(rect.x + 2, rect.y, clip(title, max(0, rect.width - 4)), role)
+            self.write_style(rect.x, y, vertical, style)
+            self.write_style(rect.x + rect.width - 1, y, vertical, style)
+        self.write_style(rect.x + 2, rect.y, clip(title, max(0, rect.width - 4)), style)
         return Rect(rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2)
 
     def set_cursor(self, x: int, y: int, glyph_width: int = 1) -> None:

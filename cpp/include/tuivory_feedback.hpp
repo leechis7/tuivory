@@ -43,9 +43,9 @@ inline void feedback_draw(Canvas &c, Rect r,
   for (int y = 0;
        y < std::max(0, r.height) && y < static_cast<int>(rows.size()); y++) {
     const auto &row = rows[y];
-    c.write(r.x, r.y + y, row.text, row.role, false, r.width, true);
+    c.write(r.x, r.y + y, row.text, row.role, false, r.width, false);
     for (const auto &s : row.spans)
-      c.write(r.x + s.start, r.y + y, s.text, s.role, false, s.width, true);
+      c.write(r.x + s.start, r.y + y, s.text, s.role, false, s.width, false);
   }
 }
 class NoticeQueue {

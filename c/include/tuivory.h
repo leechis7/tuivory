@@ -587,6 +587,27 @@ TuiResult tui_container_draw(TuiContainer *container, TuiCanvas *canvas,
 const TuiLayoutResult *tui_container_layout(const TuiContainer *container);
 TuiResult tui_container_pointer(TuiContainer *container, int x, int y,
                                 int press, int release, const char **id);
+/* Bind plain text to an actual surface; explicit control state backgrounds
+ * remain. */
+TuiResult tui_text_on_surface(const char *theme, const char *profile,
+                              const char *role, const char *surface,
+                              int focused, TuiStyle *out);
+TuiResult tui_control_on_surface(const char *theme, const char *profile,
+                                 TuiState state, const char *surface,
+                                 int focused, TuiStyle *out);
+/* Surface affects subsequent role-based painting, not already drawn cells. */
+TuiResult tui_canvas_surface(TuiCanvas *canvas, const char *surface);
+const char *tui_canvas_surface_role(const TuiCanvas *canvas);
+TuiResult tui_canvas_write_style(TuiCanvas *canvas, int x, int y,
+                                 const char *text, const TuiStyle *style,
+                                 int width);
+typedef struct {
+  const char *role;
+} TuiSurface;
+typedef TuiResult (*TuiSurfacePainter)(void *context, TuiCanvas *child);
+TuiResult tui_surface_draw(const TuiSurface *surface, TuiCanvas *canvas,
+                           TuiRect bounds, TuiSurfacePainter painter,
+                           void *context);
 #ifdef __cplusplus
 }
 #endif

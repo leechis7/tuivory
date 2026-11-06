@@ -453,10 +453,10 @@ public:
       c.fill({r.x, r.y + static_cast<int>(y), r.width, 1}, row.role);
       if (row.spans.empty())
         c.write(r.x, r.y + static_cast<int>(y), row.text, row.role, false,
-                r.width, true);
+                r.width, false);
       for (const auto &s : row.spans)
         c.write(r.x + s.start, r.y + static_cast<int>(y), s.text, s.role, false,
-                s.width, true);
+                s.width, false);
     }
   }
   // The host owns placement/visibility; returned coordinates are used for hits.
@@ -542,7 +542,7 @@ public:
     for (const auto &cell : l.cells) {
       c.fill({r.x + cell.start, r.y, cell.width, 1}, cell.role);
       c.write(r.x + cell.start, r.y, cell.text, cell.role, false, cell.width,
-              true);
+              false);
     }
     if (l.previous)
       c.write(r.x, r.y, "<", "hint", false, 1);

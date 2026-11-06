@@ -349,6 +349,43 @@ struct Style {
            (underline ? ";4" : "") + "m";
   }
 };
+inline bool plain_text_role(const std::string &role) {
+  return role == "body" || role == "hint" || role == "disabled" ||
+         role == "info" || role == "success" || role == "warning" ||
+         role == "error";
+}
+inline std::vector<int> color_rgb(unsigned color) {
+  static const int ansi[16][3] = {
+      {0, 0, 0},       {128, 0, 0},   {0, 128, 0},   {128, 128, 0},
+      {0, 0, 128},     {128, 0, 128}, {0, 128, 128}, {192, 192, 192},
+      {128, 128, 128}, {255, 0, 0},   {0, 255, 0},   {255, 255, 0},
+      {0, 0, 255},     {255, 0, 255}, {0, 255, 255}, {255, 255, 255}};
+  if (color & 0x1000000)
+    return {static_cast<int>((color >> 16) & 255),
+            static_cast<int>((color >> 8) & 255),
+            static_cast<int>(color & 255)};
+  if (color > 255)
+    throw std::invalid_argument("invalid color");
+  if (color < 16)
+    return {ansi[color][0], ansi[color][1], ansi[color][2]};
+  if (color >= 232) {
+    int v = 8 + (color - 232) * 10;
+    return {v, v, v};
+  }
+  int n = color - 16;
+  static const int cube[] = {0, 95, 135, 175, 215, 255};
+  return {cube[n / 36], cube[(n / 6) % 6], cube[n % 6]};
+}
+inline double color_contrast(unsigned a, unsigned b) {
+  auto luminance = [](unsigned color) {
+    auto v = color_rgb(color);
+    return .2126 * detail::tui_luminance[v[0]] +
+           .7152 * detail::tui_luminance[v[1]] +
+           .0722 * detail::tui_luminance[v[2]];
+  };
+  auto x = luminance(a), y = luminance(b);
+  return (std::max(x, y) + .05) / (std::min(x, y) + .05);
+}
 class Palette {
   int theme_, profile_;
 
@@ -376,6 +413,29 @@ public:
     const auto &p = detail::tui_palette_data[(theme_ * 4 + profile_) * 16 + i];
     return {p[0], p[1], p[2] != 0, role == "disabled", focused};
   }
+  Style text_on_surface(const std::string &role,
+                        const std::string &surface = "surface",
+                        bool focused = false) const {
+    auto text = style(role), base = style(surface);
+    double current = color_contrast(text.foreground, base.background);
+    text.background = base.background;
+    if (current < (role == "disabled" ? 2 : 4.5) &&
+        color_contrast(base.foreground, base.background) > current)
+      text.foreground = base.foreground;
+    if (role == "disabled") {
+      text.bold = false;
+      text.dim = true;
+    }
+    text.underline = focused && role != "disabled";
+    return text;
+  }
+  Style control_on_surface(State state, const std::string &surface = "surface",
+                           bool focused = false) const {
+    auto role = state.role();
+    return plain_text_role(role)
+               ? text_on_surface(role, surface, focused && state.focusable())
+               : style(role, focused && state.focusable());
+  }
 };
 class Canvas {
   int cursor_width_ = 1;
@@ -388,16 +448,18 @@ public:
   };
   int width, height;
   Palette palette;
+  std::string surface_role;
   std::vector<std::vector<Cell>> data;
   std::optional<std::pair<int, int>> cursor;
-  Canvas(int w, int h, Palette p = Palette())
-      : width(w), height(h), palette(std::move(p)) {
+  Canvas(int w, int h, Palette p = Palette(), std::string surface = "surface")
+      : width(w), height(h), palette(std::move(p)),
+        surface_role(std::move(surface)) {
     if (w < 0 || h < 0 || static_cast<long long>(w) * h > 1000000)
       throw std::invalid_argument("invalid dimensions");
     data.resize(h, std::vector<Cell>(w));
     for (auto &row : data)
       for (auto &c : row)
-        c.style = palette.style("surface");
+        c.style = palette.style(surface_role);
   }
   void erase(int x, int y) {
     auto &row = data[y];
@@ -414,14 +476,17 @@ public:
   void write(int x, int y, const std::string &text,
              const std::string &role = "body", bool focused = false,
              int extent = -1, bool preserve = false) {
+    auto actual = role == "surface" ? surface_role : role;
+    auto style = !preserve && plain_text_role(role)
+                     ? palette.text_on_surface(role, surface_role, focused)
+                     : palette.style(actual, focused);
+    write_style(x, y, text, style, extent);
+  }
+  void write_style(int x, int y, const std::string &text, Style style,
+                   int extent = -1) {
     if (y < 0 || y >= height)
       return;
     const int limit = std::min(width, extent < 0 ? width : x + extent);
-    auto style = palette.style(role, focused);
-    if (!preserve && (role == "body" || role == "hint" || role == "info" ||
-                      role == "success" || role == "warning" ||
-                      role == "error" || role == "header"))
-      style.background = palette.style("surface").background;
     for (const auto &g : graphemes(clean(text))) {
       if (g.width <= 0)
         continue;
@@ -446,7 +511,7 @@ public:
   void fill(Rect r, const std::string &role = "surface") {
     for (int y = std::max(0, r.y); y < std::min(height, r.y + r.height); y++)
       write(r.x, y, std::string(std::max(0, r.width), ' '), role, false,
-            r.width, true);
+            r.width, false);
   }
   Rect panel(Rect r, const std::string &title = "", bool focused = false,
              bool ascii = false) {
@@ -461,13 +526,14 @@ public:
     std::string h;
     for (int i = 0; i < r.width - 2; i++)
       h += b[4];
-    write(r.x, r.y, b[0] + h + b[1], role);
-    write(r.x, r.y + r.height - 1, b[2] + h + b[3], role);
+    auto style = palette.text_on_surface(role, surface_role);
+    write_style(r.x, r.y, b[0] + h + b[1], style);
+    write_style(r.x, r.y + r.height - 1, b[2] + h + b[3], style);
     for (int y = r.y + 1; y < r.y + r.height - 1; y++) {
-      write(r.x, y, b[5], role);
-      write(r.x + r.width - 1, y, b[5], role);
+      write_style(r.x, y, b[5], style);
+      write_style(r.x + r.width - 1, y, b[5], style);
     }
-    write(r.x + 2, r.y, clip(title, r.width - 4), role);
+    write_style(r.x + 2, r.y, clip(title, r.width - 4), style);
     return {r.x + 1, r.y + 1, r.width - 2, r.height - 2};
   }
   void set_cursor(int x, int y, int glyph_width = 1) {
@@ -787,3 +853,5 @@ inline std::string fold(const std::string &text) {
 #include "tuivory_containers.hpp"
 #include "tuivory_menu.hpp"
 // clang-format on
+
+#include "tuivory_surfaces.hpp"

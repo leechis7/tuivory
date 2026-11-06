@@ -336,6 +336,81 @@ TuiResult tui_style(const char *theme, const char *profile, const char *role,
   }
   return TUI_OK;
 }
+static int plain_text_role(const char *role) {
+  return role && (!strcmp(role, "body") || !strcmp(role, "hint") ||
+                  !strcmp(role, "disabled") || !strcmp(role, "info") ||
+                  !strcmp(role, "success") || !strcmp(role, "warning") ||
+                  !strcmp(role, "error"));
+}
+static int style_rgb(unsigned color, int out[3]) {
+  static const int ansi[16][3] = {
+      {0, 0, 0},       {128, 0, 0},   {0, 128, 0},   {128, 128, 0},
+      {0, 0, 128},     {128, 0, 128}, {0, 128, 128}, {192, 192, 192},
+      {128, 128, 128}, {255, 0, 0},   {0, 255, 0},   {255, 255, 0},
+      {0, 0, 255},     {255, 0, 255}, {0, 255, 255}, {255, 255, 255}};
+  if (color & 0x1000000) {
+    if (color > 0x1ffffff)
+      return 0;
+    out[0] = (color >> 16) & 255;
+    out[1] = (color >> 8) & 255;
+    out[2] = color & 255;
+  } else if (color > 255)
+    return 0;
+  else if (color < 16) {
+    out[0] = ansi[color][0];
+    out[1] = ansi[color][1];
+    out[2] = ansi[color][2];
+  } else if (color >= 232)
+    out[0] = out[1] = out[2] = 8 + (color - 232) * 10;
+  else {
+    static const int cube[] = {0, 95, 135, 175, 215, 255};
+    unsigned n = color - 16;
+    out[0] = cube[n / 36];
+    out[1] = cube[(n / 6) % 6];
+    out[2] = cube[n % 6];
+  }
+  return 1;
+}
+static double style_luminance(unsigned color) {
+  int rgb[3] = {0};
+  style_rgb(color, rgb);
+  return .2126 * tui_luminance[rgb[0]] + .7152 * tui_luminance[rgb[1]] +
+         .0722 * tui_luminance[rgb[2]];
+}
+static double style_contrast(unsigned a, unsigned b) {
+  double x = style_luminance(a), y = style_luminance(b);
+  return ((x > y ? x : y) + .05) / ((x < y ? x : y) + .05);
+}
+TuiResult tui_text_on_surface(const char *theme, const char *profile,
+                              const char *role, const char *surface,
+                              int focused, TuiStyle *out) {
+  TuiStyle text, base;
+  if (!out || !role || !surface ||
+      tui_style(theme, profile, role, 0, &text) != TUI_OK ||
+      tui_style(theme, profile, surface, 0, &base) != TUI_OK)
+    return TUI_INVALID;
+  double current = style_contrast(text.foreground, base.background);
+  text.background = base.background;
+  if (current < (!strcmp(role, "disabled") ? 2 : 4.5) &&
+      style_contrast(base.foreground, base.background) > current)
+    text.foreground = base.foreground;
+  if (!strcmp(role, "disabled")) {
+    text.bold = 0;
+    text.dim = 1;
+  }
+  text.underline = !!focused && strcmp(role, "disabled") != 0;
+  *out = text;
+  return TUI_OK;
+}
+TuiResult tui_control_on_surface(const char *theme, const char *profile,
+                                 TuiState state, const char *surface,
+                                 int focused, TuiStyle *out) {
+  const char *role = tui_state_role(state);
+  return plain_text_role(role)
+             ? tui_text_on_surface(theme, profile, role, surface,
+                                   focused && !state.disabled, out)
+             : tui_style(theme, profile, role, focused && !state.disabled, out);
+}
 typedef struct {
   char *text;
   TuiStyle style;
@@ -343,7 +418,7 @@ typedef struct {
 } Cell;
 struct TuiCanvas {
   int width, height, cursor_x, cursor_y, cursor_width;
-  char theme[12], profile[12];
+  char theme[12], profile[12], surface[32];
   Cell *cells;
 };
 TuiCanvas *tui_canvas_new(int w, int h, const char *theme,
@@ -360,6 +435,7 @@ TuiCanvas *tui_canvas_new(int w, int h, const char *theme,
   c->width = w;
   c->height = h;
   c->cursor_x = c->cursor_y = -1;
+  strcpy(c->surface, "surface");
   strcpy(c->theme, theme);
   strcpy(c->profile, profile);
   c->cells = calloc((size_t)w * h + 1, sizeof(Cell));
@@ -400,25 +476,46 @@ static void erase(TuiCanvas *c, int x, int y) {
     row[i].owner = -1;
   }
 }
+TuiResult tui_canvas_surface(TuiCanvas *c, const char *surface) {
+  TuiStyle style;
+  if (!c || !surface || strlen(surface) >= sizeof c->surface ||
+      tui_style(c->theme, c->profile, surface, 0, &style) != TUI_OK)
+    return TUI_INVALID;
+  strcpy(c->surface, surface);
+  return TUI_OK;
+}
+const char *tui_canvas_surface_role(const TuiCanvas *c) {
+  return c ? c->surface : "";
+}
 TuiResult tui_canvas_write(TuiCanvas *c, int x, int y, const char *text,
                            const char *role, int focused, int width) {
-  TuiStyle style, base;
+  TuiStyle style;
+  if (!c || !role)
+    return TUI_INVALID;
+  const char *actual = !strcmp(role, "surface") ? c->surface : role;
+  TuiResult result =
+      plain_text_role(role)
+          ? tui_text_on_surface(c->theme, c->profile, role, c->surface, focused,
+                                &style)
+          : tui_style(c->theme, c->profile, actual, focused, &style);
+  if (result != TUI_OK)
+    return result;
+  return tui_canvas_write_style(c, x, y, text, &style, width);
+}
+TuiResult tui_canvas_write_style(TuiCanvas *c, int x, int y, const char *text,
+                                 const TuiStyle *raw, int width) {
+  TuiStyle style;
   size_t p = 0, end, n;
-  int w, limit, i;
-  if (!c || !text || width < 0 ||
-      tui_style(c->theme, c->profile, role, focused, &style) != TUI_OK ||
-      tui_cells(text) < 0)
+  int w, limit, i, rgb[3];
+  if (!c || !raw || !text || width < 0 || width > 1000000000 ||
+      x < -1000000000 || x > 1000000000 || tui_cells(text) < 0 ||
+      !style_rgb(raw->foreground, rgb) || !style_rgb(raw->background, rgb))
     return TUI_INVALID;
   if (y < 0 || y >= c->height)
     return TUI_OK;
+  style = *raw;
   limit = min(c->width, x + width);
   n = strlen(text);
-  if (!strcmp(role, "body") || !strcmp(role, "hint") || !strcmp(role, "info") ||
-      !strcmp(role, "success") || !strcmp(role, "warning") ||
-      !strcmp(role, "error") || !strcmp(role, "header")) {
-    tui_style(c->theme, c->profile, "surface", 0, &base);
-    style.background = base.background;
-  }
   while (p < n) {
     char *value;
 
@@ -497,23 +594,30 @@ TuiRect tui_canvas_panel(TuiCanvas *c, TuiRect r, const char *title,
              *s[] = {"┌", "┐", "└", "┘", "─", "│"};
   const char *role = focused ? "focus.border" : "hint";
   int x, y;
+  TuiStyle style;
+  if (!c)
+    return (TuiRect){r.x, r.y, 0, 0};
+  if (tui_text_on_surface(c->theme, c->profile, role, c->surface, 0, &style) !=
+      TUI_OK)
+    return (TuiRect){r.x, r.y, 0, 0};
   tui_canvas_fill(c, r, "surface");
   if (r.width < 2 || r.height < 2)
     return (TuiRect){r.x, r.y, 0, 0};
   b = ascii ? a : focused ? d : s;
-  tui_canvas_write(c, r.x, r.y, b[0], role, 0, 1);
-  tui_canvas_write(c, r.x + r.width - 1, r.y, b[1], role, 0, 1);
-  tui_canvas_write(c, r.x, r.y + r.height - 1, b[2], role, 0, 1);
-  tui_canvas_write(c, r.x + r.width - 1, r.y + r.height - 1, b[3], role, 0, 1);
+  tui_canvas_write_style(c, r.x, r.y, b[0], &style, 1);
+  tui_canvas_write_style(c, r.x + r.width - 1, r.y, b[1], &style, 1);
+  tui_canvas_write_style(c, r.x, r.y + r.height - 1, b[2], &style, 1);
+  tui_canvas_write_style(c, r.x + r.width - 1, r.y + r.height - 1, b[3], &style,
+                         1);
   for (x = 1; x < r.width - 1; x++) {
-    tui_canvas_write(c, r.x + x, r.y, b[4], role, 0, 1);
-    tui_canvas_write(c, r.x + x, r.y + r.height - 1, b[4], role, 0, 1);
+    tui_canvas_write_style(c, r.x + x, r.y, b[4], &style, 1);
+    tui_canvas_write_style(c, r.x + x, r.y + r.height - 1, b[4], &style, 1);
   }
   for (y = 1; y < r.height - 1; y++) {
-    tui_canvas_write(c, r.x, r.y + y, b[5], role, 0, 1);
-    tui_canvas_write(c, r.x + r.width - 1, r.y + y, b[5], role, 0, 1);
+    tui_canvas_write_style(c, r.x, r.y + y, b[5], &style, 1);
+    tui_canvas_write_style(c, r.x + r.width - 1, r.y + y, b[5], &style, 1);
   }
-  tui_canvas_write(c, r.x + 2, r.y, title, role, 0, max(0, r.width - 4));
+  tui_canvas_write_style(c, r.x + 2, r.y, title, &style, max(0, r.width - 4));
   return (TuiRect){r.x + 1, r.y + 1, r.width - 2, r.height - 2};
 }
 void tui_canvas_cursor(TuiCanvas *c, int x, int y, int w) {
@@ -6685,6 +6789,8 @@ TuiResult tui_container_draw(TuiContainer *c, TuiCanvas *canvas, TuiRect bounds,
     tui_layout_free(layout);
     return TUI_NOMEM;
   }
+  tui_canvas_surface(virtual_canvas, canvas->surface);
+  tui_canvas_fill(virtual_canvas, (TuiRect){0, 0, vw, vh}, "surface");
   result = tui_container_reconcile(c->state, c->items, c->count);
   if (result != TUI_OK)
     goto done;
@@ -6700,6 +6806,7 @@ TuiResult tui_container_draw(TuiContainer *c, TuiCanvas *canvas, TuiRect bounds,
       result = TUI_NOMEM;
       goto done;
     }
+    tui_canvas_surface(child, canvas->surface);
     result = tui_canvas_blit(child, virtual_canvas, r, 0, 0);
     tui_canvas_clear_cursor(child, NULL);
     focused = !strcmp(named.id, tui_container_focused(c->state));
@@ -6743,4 +6850,33 @@ TuiResult tui_container_pointer(TuiContainer *c, int x, int y, int press,
   return tui_container_state_pointer(
       c->state, c->items, c->count, c->layout, x - c->bounds.x + c->sx,
       y - c->bounds.y + c->sy, press, release, id);
+}
+
+TuiResult tui_surface_draw(const TuiSurface *s, TuiCanvas *c, TuiRect bounds,
+                           TuiSurfacePainter painter, void *context) {
+  if (!c || !painter || !container_number(bounds.x, 1000000) ||
+      !container_number(bounds.y, 1000000) ||
+      !container_number(bounds.width, 1000000) ||
+      !container_number(bounds.height, 1000000) ||
+      (long long)bounds.width * bounds.height > 1000000)
+    return TUI_INVALID;
+  const char *role = s && s->role ? s->role : "surface";
+  TuiStyle style;
+  if (tui_style(c->theme, c->profile, role, 0, &style) != TUI_OK)
+    return TUI_INVALID;
+  TuiCanvas *child =
+      tui_canvas_new(bounds.width, bounds.height, c->theme, c->profile);
+  if (!child)
+    return TUI_NOMEM;
+  TuiResult result = tui_canvas_surface(child, role);
+  if (result == TUI_OK)
+    result = tui_canvas_fill(child, tui_canvas_bounds(child), "surface");
+  if (result == TUI_OK)
+    result = painter(context, child);
+  if (result == TUI_OK)
+    result =
+        tui_canvas_blit(c, child, (TuiRect){0, 0, bounds.width, bounds.height},
+                        bounds.x, bounds.y);
+  tui_canvas_free(child);
+  return result;
 }

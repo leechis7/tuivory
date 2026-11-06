@@ -63,7 +63,7 @@ class WorkspaceDemo:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu', 'layout', 'container'], default='tree')
+    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu', 'layout', 'container','surface'], default='tree')
     parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
     parser.add_argument('--theme', choices=['dark', 'light', 'blackwhite'], default='dark')
     parser.add_argument('--colors', choices=['8', '16', '256', 'truecolor'], default='256')
@@ -112,6 +112,8 @@ def main():
     models['layout'] = LayoutDemo(not ko)
     from ._container_example import ContainerDemo
     models['container'] = ContainerDemo(not ko,args.ascii)
+    from ._surface_example import SurfaceDemo
+    models['surface'] = SurfaceDemo(not ko)
     model = models[args.demo]
     themes, profiles = ['dark', 'light', 'blackwhite'], ['8', '16', '256', 'truecolor']
     theme, colors = args.theme, args.colors
@@ -123,6 +125,7 @@ def main():
             hint = word('Ctrl+Q 종료 | Enter 재시도 | Del 닫기 | t 만료 | c 취소', 'Ctrl+Q quit | Enter retry | Del dismiss | t expire | c cancel') if isinstance(model, FeedbackDemo) else word('Ctrl+Q 종료 · F1 테마 · F2 색상', 'Ctrl+Q quit · F1 theme · F2 colors')
             if isinstance(model, LayoutDemo): hint=word('Ctrl+Q 종료 | x/Enter 필터 제거 | d 간격 | x 클릭', 'Ctrl+Q quit | x/Enter remove filter | d density | click x')
             if isinstance(model, ContainerDemo): hint=word('Ctrl+Q 종료 | m 팝업 | h/l 스크롤 | Tab 포커스','Ctrl+Q quit | m popup | h/l scroll | Tab focus')
+            if isinstance(model, SurfaceDemo): hint=word('Ctrl+Q 종료 | s 바탕 변경','Ctrl+Q quit | s surface')
             c.write(0, height - 1, hint.replace('·', '|' if args.ascii else '·'), 'hint', width=width)
         return c, area
     if args.snapshot or args.snapshot_ansi:
@@ -145,7 +148,7 @@ def main():
                 theme = themes[(themes.index(theme) + 1) % len(themes)]
             elif event.key == 'f2':
                 colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
-            elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo)):
+            elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo)):
                 model.pointer(event.x, event.y, event.button)
             elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
                 if isinstance(model, (Grid, Text)):
@@ -156,7 +159,7 @@ def main():
                     model.click(event.x - area.x, event.y - area.y, area.height)
             else:
                 action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
-                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo)):
+                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo)):
                     model.handle(action, area.height, event.text)
                 elif isinstance(model, SearchPicker):
                     model.handle(action,event.text,area.height)

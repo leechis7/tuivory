@@ -1,0 +1,2220 @@
+{
+  "checked_at_utc": "2026-11-06T22:53:22.969207+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source_base": "860686211a5a3fdb0ce36ad9832ae37c7538128f",
+  "source_uncommitted": true,
+  "scope": "independent borderless Surface, actual-background plain/control styles and exact-style painting; full catalog remains in progress",
+  "sha256": {
+    "design/surface-cases.json": "c6e412816cfea51f71d680aad99d1bde31acdeeeb8c829da22a50b635e528377",
+    "python/src/tuivory/drawing.py": "f9a5d3e7b74220672fb140b68e39b980b2ac6add18cb4b7edf3470517cb1cbf8",
+    "python/src/tuivory/surfaces.py": "c70a14685e809b212c25835fc9eefb74cb1930a415f1e25bd85ddde222683dd1",
+    "python/src/tuivory/_surface_example.py": "2fb735cdf2d6bdef43c052ea5272ee224cb7da21da37f59e321b189193efb674",
+    "javascript/src/index.ts": "313ff8a0aaa7bcc8c08827e5f66ec5e52222155ea17b006f4659520b0f4ba47a",
+    "javascript/examples/surface-host.mjs": "10130ad0904849773c6210107e9b0002b9178f3375ccbdbd1419f82ac0de2c6d",
+    "c/include/tuivory.h": "b7fc66b88304e1dd68632cefe431aca82a4fed8cff26c3236d1cf36d53d513f4",
+    "c/include/tuivory_data.h": "f0a4fd37d10bc0c5ce7ae0c0cba14a038849c456b7e8bebbfe22832f63eb6043",
+    "c/src/tuivory.c": "323cdab06dfc4401e7c41bd75612647d441fcd0daca06f0a4d0bfdc0f687afd6",
+    "c/examples/surface_host.h": "9ee7c41c5e5fb58b40cfe033a79ce3e4da9147ad4183f538d1d34008119ad918",
+    "cpp/include/tuivory.hpp": "baaad39d2c8d2be4e31d579071ec7a71827f0ec1b890ccd78abd24f2696087f5",
+    "cpp/include/tuivory_surfaces.hpp": "eab3c629177670ec419b2a82726c866a9caf22719c8185ee1520165989c63538",
+    "cpp/examples/surface_host.hpp": "d766c4925756405d1ec209406b1c6e9041d4ed3fffd7044c358508d190786a25",
+    "java/src/main/java/io/tuivory/Tuivory.java": "00c78ed0e9dcea35bae541922269146e11154837e2aa3e7eea27ba3b24f84308",
+    "java/src/main/java/io/tuivory/Data.java": "47a3c4c1845cdbd8902cebe2ac985b979c3abc1f7c6fbcf434aa256eae8f9172",
+    "java/examples/io/tuivory/examples/SurfaceHost.java": "9c673e47fb08a75e0e9d8b9f85e56af456ddd88a930ea51d75ef129b6c3077de",
+    "tools/ansi_cells.py": "be3495f2ad796adbbbb8716b571f1695ddbb9c8a9b7ae3339f509e2c103aa6bb",
+    "tools/check_language_surfaces.py": "ec6b29a3f535aa1288291037724239e8fe6dcb4b61500db09ff1c61843da4c96",
+    "tools/check_language_examples.py": "cd2a5f9f65f5eb19a393e4093691602c78d29b9e0a99bc7e946ccff55e9cd996",
+    "tools/check_runtime_languages.py": "0eea1602f68d8f178abd3d174bd7ae6b4108ea4b34dcae153a2333d50e2fafd3",
+    "tools/check_language_archives.py": "0d95b917593c41ae00d0cc9aa9445c1f722b2ae673911cfdac9a6a74c9beb89f",
+    "tools/export_language_data.py": "26596ba32e8b24fd94abf1825cdd69ba6ca98e4cc89c4cc0d1606aa3a16011e3"
+  },
+  "local_validation": {
+    "python_tests": 44,
+    "javascript": "7 registered groups plus component/host assertions; style-input ownership verified",
+    "native": "C/C++ ASan/UBSan and external static SDK; Java17-compatible external JAR; existing workspace/text/forms/focus/collections/menu/feedback/layout/canvas-copy/containers regressions passed",
+    "native_actual_ansi_cases_per_language": 48,
+    "actual_ansi": "6 known foreground/background cases and12palettes×4surfaces; plain text, disabled Dim, panel borders, nested containers, 7 explicit role backgrounds and raw exact styles checked in actual final buffers",
+    "external_runtime": "fresh external wheel/npm install, one import, strict TS declarations, contrast/Surface APIs and packaged surface execution passed",
+    "actual_archives": "all6 hashes/licenses; actual static SDK and Java JAR compiled prior component and Surface consumers;48finalANSIframes perlanguage validated, archived surface examples executed",
+    "pty": {
+      "count": 240,
+      "cases": [
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "surface",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        }
+      ],
+      "checks": "4 surface cycles, actual foreground/background attributes, disabled Dim, selected/edited backgrounds, readonly value, 40-column raw resize",
+      "actual_resize_cases": 192,
+      "java_scope": "48 fixed-size line-input cases; Java narrow bounds checked through API, not actual Java resize"
+    },
+    "existing_container_pty_smoke": 10,
+    "images": "10 actual localized dark/True Color output captures; full palette/glyph matrix checked in PTYs"
+  },
+  "github_ci": "not run for uncommitted milestone",
+  "dev_merge": "not performed for this milestone",
+  "product_release": "not performed; published0.11.1 unchanged",
+  "centos": "not run per user instruction"
+}

@@ -311,13 +311,13 @@ public:
     int sx = std::min(scroll_x, std::max(0, vw - bounds.width)),
         sy = std::min(scroll_y, std::max(0, vh - bounds.height));
     auto rects = compute_container({0, 0, vw, vh}, items_, options_);
-    Canvas virtual_canvas(vw, vh, canvas.palette);
+    Canvas virtual_canvas(vw, vh, canvas.palette, canvas.surface_role);
     state.reconcile(items_);
     for (const auto &n : rects) {
       auto r = n.rect;
       if (!r.width || !r.height)
         continue;
-      Canvas child(r.width, r.height, canvas.palette);
+      Canvas child(r.width, r.height, canvas.palette, canvas.surface_role);
       child.blit(virtual_canvas, r, 0, 0);
       child.clear_cursor();
       bool focused = n.id == state.focused;
