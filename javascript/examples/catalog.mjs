@@ -9,15 +9,23 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
 const workspace = value("--demo", "tree") === "workspace";
-if (!workspace && value("--demo", "tree") !== "tree")
-  throw new Error("Supported demos: tree, workspace");
+const textDemo = value("--demo", "tree") === "text";
+if (!workspace && !textDemo && value("--demo", "tree") !== "tree")
+  throw new Error("Supported demos: tree, workspace, text");
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
+const text = new ui.Text(
+  en
+    ? ascii
+      ? "Grapheme text\nEdit with real cursor."
+      : "Unicode é 界\nEdit with real cursor."
+    : "한글 é 界\n여러 줄을 편집합니다.",
+);
 let theme = value("--theme", "dark"),
   colors = value("--colors", "256");
 const tree = new ui.Tree([
@@ -119,7 +127,8 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  if (workspace) workspaceDraw(c, area);
+  if (textDemo) text.draw(c, area);
+  else if (workspace) workspaceDraw(c, area);
   else tree.draw(c, area, true, ascii);
   c.write(
     0,
@@ -189,7 +198,9 @@ try {
             y >= area.y &&
             y < area.y + area.height
           ) {
-            if (workspace && y === area.y) {
+            if (textDemo)
+              text.click(x - area.x, y - area.y, area.width, area.height);
+            else if (workspace && y === area.y) {
               tabFocus = true;
               tabs.click(x - area.x, area.width);
             } else if (
@@ -216,11 +227,25 @@ try {
           "\x1b[5~": "page_up",
           "\x1b[6~": "page_down",
           "\r": "activate",
+          "\x7f": "backspace",
+          "\x1b[3~": "delete",
+          "\x01": "select_all",
+          "\x1a": "undo",
+          "\x19": "redo",
           " ": "toggle",
         };
         const key = Object.keys(keys).find((k) => pending.startsWith(k));
         if (key) {
-          if (workspace && tabFocus)
+          if (textDemo)
+            text.handle(
+              keys[key] === "activate"
+                ? "newline"
+                : keys[key] === "toggle"
+                  ? "insert"
+                  : keys[key],
+              keys[key] === "toggle" ? " " : "",
+            );
+          else if (workspace && tabFocus)
             tabs.handle(
               { left: "previous", right: "next" }[keys[key]] ?? keys[key],
             );
@@ -269,7 +294,11 @@ try {
           !/[A-Za-z~]$/.test(pending)
         )
           break;
-        pending = pending.slice(1);
+        if (textDemo && pending.codePointAt(0) >= 32 && pending[0] !== "\x1b") {
+          const cp = String.fromCodePoint(pending.codePointAt(0));
+          text.handle("insert", cp);
+          pending = pending.slice(cp.length);
+        } else pending = pending.slice(1);
       }
       draw();
     } catch (error) {

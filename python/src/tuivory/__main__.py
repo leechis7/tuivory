@@ -87,7 +87,7 @@ def main():
                   list=List([Item('a', word('실행 가능', 'Available')), Item('off', word('비활성', 'Disabled'), disabled=True)]),
                   form=Form([Field('name', label=word('이름', 'Name'), value=word('한글 입력', 'Input')), Field('off', kind='checkbox', label=word('비활성', 'Disabled'), state=ControlState(disabled=True)), Field('run', kind='button', label=word('확인', 'Apply'))]),
                   grid=Grid([Column('name', word('이름', 'Name'), 24, True), Column('state', word('상태', 'State'), 16)], [Record('a', {'name': word('실제 커서', 'Real cursor'), 'state': 'OK'}), Record('b', {'name': 'CJK 한글 👩‍💻', 'state': 'NULL'})]),
-                  text=Text(word('한글과 이모지 👩‍💻\n여러 줄 편집', 'Unicode and emoji 👩‍💻\nMultiline editor')),
+                  text=Text(word('한글 é 界\n여러 줄을 편집합니다.', 'Grapheme text\nEdit with real cursor.' if args.ascii else 'Unicode é 界\nEdit with real cursor.')),
                   menu=Menu([Item('root', word('작업', 'Actions')), Item('run', word('실행', 'Run'), parent='root'), Item('off', word('비활성', 'Disabled'), disabled=True, parent='root')]),
                   feedback=Notices())
     models['workspace'] = WorkspaceDemo(tree, not ko)
@@ -125,16 +125,16 @@ def main():
             elif event.key == 'f2':
                 colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
             elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
-                if isinstance(model, Grid):
+                if isinstance(model, (Grid, Text)):
                     model.click(event.x - area.x, event.y - area.y, area.width, area.height)
                 elif isinstance(model, Tabs):
                     model.click(event.x - area.x, area.width)
                 else:
                     model.click(event.x - area.x, event.y - area.y, area.height)
             else:
-                action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null'}.get(event.key, event.key)
+                action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
                 if isinstance(model, (Form, Text)):
-                    model.handle(action, event.text)
+                    model.handle("newline" if isinstance(model,Text) and action=="activate" else action, event.text)
                 elif isinstance(model, Tabs):
                     model.handle({'left': 'previous', 'right': 'next'}.get(action, action))
                 elif isinstance(model, (Grid, List, Menu)):

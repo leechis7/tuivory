@@ -120,6 +120,34 @@ TuiLineRun tui_line_run(const TuiLine *line, size_t index);
 const char *tui_line_hit(const TuiLine *line, int column);
 char *tui_line_text(const TuiLine *line);
 TuiResult tui_line_draw(const TuiLine *line, TuiCanvas *canvas, TuiRect area);
+/* Literal grapheme text. value() is an explicit raw-value accessor; display()
+ * returns an owned masked value for passwords. Event text is borrowed until the
+ * next text operation. Failed byte ranges leave content/selection/history
+ * intact. */
+typedef struct TuiText TuiText;
+typedef struct {
+  const char *kind, *text;
+  TuiResult result;
+} TuiTextEvent;
+TuiText *tui_text_new(const char *value);
+void tui_text_free(TuiText *text);
+const char *tui_text_value(const TuiText *text);
+char *tui_text_display(const TuiText *text);
+void tui_text_options(TuiText *text, TuiState state, int secret, int multiline);
+void tui_text_select(TuiText *text, size_t anchor, size_t cursor);
+size_t tui_text_cursor(const TuiText *text);
+size_t tui_text_anchor(const TuiText *text);
+TuiResult tui_text_selection_bytes(const TuiText *text, size_t *start,
+                                   size_t *end);
+TuiResult tui_text_select_bytes(TuiText *text, size_t anchor, size_t cursor);
+TuiTextEvent tui_text_replace_bytes(TuiText *text, size_t start, size_t end,
+                                    const char *addition);
+TuiTextEvent tui_text_handle(TuiText *text, const char *action,
+                             const char *addition);
+TuiResult tui_text_draw(TuiText *text, TuiCanvas *canvas, TuiRect rect,
+                        int focused);
+TuiTextEvent tui_text_click(TuiText *text, int x, int y, int width, int height,
+                            int extend);
 #ifdef __cplusplus
 }
 #endif

@@ -42,7 +42,7 @@ public final class Catalog {
   public static void main(String[] args) throws IOException {
     String theme = "dark", colors = "256";
     boolean en = false, ascii = false, snapshot = false, ansiSnapshot = false, workspace = false,
-            tabFocus = false;
+            tabFocus = false, textDemo = false;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--lang" -> {
@@ -70,12 +70,13 @@ public final class Catalog {
           if (++i >= args.length)
             throw new IllegalArgumentException("missing demo");
           workspace = args[i].equals("workspace");
-          if (!args[i].equals("tree") && !workspace)
-            throw new IllegalArgumentException("Supported demos: tree, workspace");
+          textDemo = args[i].equals("text");
+          if (!args[i].equals("tree") && !workspace && !textDemo)
+            throw new IllegalArgumentException("Supported demos: tree, workspace, text");
         }
         case "--help" -> {
           System.out.println(
-              "--demo tree|workspace --lang ko|en --theme dark|light|blackwhite --colors "
+              "--demo tree|workspace|text --lang ko|en --theme dark|light|blackwhite --colors "
               + "8|16|256|truecolor --ascii --snapshot");
           return;
         }
@@ -96,6 +97,9 @@ public final class Catalog {
     disabled.disabled = true;
     var tabs = new Tabs(List.of(new Tab("overview", en ? "Overview" : "개요"), draft, disabled));
     var split = new Split(16, 20, 24);
+    var text = new Text(en ? (ascii ? "Grapheme text\nEdit with real cursor."
+                                    : "Unicode é 界\nEdit with real cursor.")
+                           : "한글 é 界\n여러 줄을 편집합니다.");
     var input = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
     var output = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8), true);
     try {
@@ -103,7 +107,9 @@ public final class Catalog {
         var c = new Canvas(72, 18, new Palette(theme, colors));
         var area = c.panel(
             new Rect(0, 0, 72, 17), en ? "Tuivory Java example" : "Tuivory Java 예제", true, ascii);
-        if (workspace)
+        if (textDemo)
+          text.draw(c, area, true);
+        else if (workspace)
           workspaceDraw(tree, tabs, split, c, area, tabFocus, en, ascii);
         else
           tree.draw(c, area, true, ascii);
@@ -125,7 +131,12 @@ public final class Catalog {
         if (line == null || line.equals("quit"))
           break;
         String action = line.strip();
-        if (workspace && action.equals("tab"))
+        if (textDemo) {
+          int space = action.indexOf(' ');
+          String command = space < 0 ? action : action.substring(0, space);
+          String addition = space < 0 ? "" : action.substring(space + 1);
+          text.handle(command, addition);
+        } else if (workspace && action.equals("tab"))
           tabFocus = !tabFocus;
         else if (workspace && (action.equals("<") || action.equals(">")))
           split.resize(area.width(), split.preferred + (action.equals("<") ? -1 : 1));

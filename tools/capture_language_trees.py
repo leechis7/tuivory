@@ -22,11 +22,13 @@ def indexed(n):
 
 def svg(data):
     rows=[[(' ',('#c0c0c0','#000000',False,False,False))for _ in range(72)]for _ in range(18)]
+    cursor_visible=False
     x=y=pos=0;style=('#c0c0c0','#000000',False,False,False)
     while pos<len(data):
         if data.startswith('\x1b[',pos):
             match=re.match(r'\x1b\[([0-?]*)([ -/]*)([@-~])',data[pos:]);assert match
             params,_,command=match.groups();pos+=match.end()
+            if params=='?25':cursor_visible=command=='h';continue
             if params.startswith('?'):continue
             args=[int(v or '0')for v in params.split(';')]
             if command=='H':y=(args[0]or 1)-1;x=(args[1]or 1)-1 if len(args)>1 else 0
@@ -58,6 +60,7 @@ def svg(data):
                 for cx in range(x+1,x+n):rows[y][cx]=('',style)
             x+=n
         pos=end
+    cursor_x,cursor_y=x,y
     out=['<svg xmlns="http://www.w3.org/2000/svg" width="576" height="324" viewBox="0 0 576 324">','<style>text{font-family:D2Coding,monospace;font-size:16px;white-space:pre}</style>']
     for y,row in enumerate(rows):
         for x,(g,(fg,bg,bold,dim,underline))in enumerate(row):
@@ -65,10 +68,11 @@ def svg(data):
     for y,row in enumerate(rows):
         for x,(g,(fg,bg,bold,dim,underline))in enumerate(row):
             if g and g!=' ':out.append(f'<text x="{x*8}" y="{y*18+14}" fill="{fg}" font-weight="{"bold"if bold else"normal"}" opacity="{0.6 if dim else 1}" text-decoration="{"underline"if underline else"none"}">{html.escape(g)}</text>')
+    if cursor_visible and 0<=cursor_x<72 and 0<=cursor_y<18:out.append(f'<rect x="{cursor_x*8}" y="{cursor_y*18}" width="8" height="18" fill="none" stroke="#00a0ff"/>')
     out.append('</svg>');return '\n'.join(out)+'\n'
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--python',default=sys.executable);p.add_argument('--demo',choices=['tree','workspace'],default='tree');args=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--python',default=sys.executable);p.add_argument('--demo',choices=['tree','workspace','text'],default='tree');args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     cmds={'python':[args.python,'-m','tuivory'],'javascript':['node','javascript/examples/catalog.mjs'],'c':[f'bin/c/tuivory-linux-{arch}'],'cpp':[f'bin/cpp/tuivory-linux-{arch}'],'java':['java','-jar',f'.cache/packages/java/tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}
     for language,cmd in cmds.items():
@@ -78,7 +82,7 @@ def main():
             output=subprocess.check_output([*cmd,'--demo',args.demo,'--lang',lang,'--theme','dark','--colors','truecolor','--snapshot-ansi'],cwd=ROOT,env=env,text=True)
             assert '\x1b['in output,(language,output[:200])
             literal=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', output)
-            assert ('작업 공간'if lang=='ko'else'Workspace')in literal
+            assert (('한글'if lang=='ko'else'Unicode')if args.demo=='text'else('작업 공간'if lang=='ko'else'Workspace'))in literal
             if lang=='en':assert '작업 공간'not in literal
             path=ROOT/'docs/images'/f'language-{language}-{args.demo}{"-en"if lang=="en"else""}.png'
             intermediate=ROOT/'.cache/validation/languages/snapshots'/path.with_suffix('.svg').name;intermediate.parent.mkdir(parents=True,exist_ok=True);intermediate.write_text(svg(output))

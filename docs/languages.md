@@ -18,7 +18,7 @@
 | [C++](../cpp/README.md) | `#include "tuivory.hpp"` | 독립 C++17 헤더 패키지 | 독립 캔버스·POSIX RAII 예제 |
 | [Java](../java/README.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, JNI 없음 | 독립 캔버스·줄 입력 예제. raw 터미널 어댑터 없음 |
 
-Python/TS의 탭·목록·입력·폼·그리드·메뉴·배치·피드백 등은 후속 초안입니다. 이들 API의 존재를 C/C++/Java 제공 또는 기존 Go/Rust와의 전체 동등성으로 해석하지 않습니다. 전체 카탈로그·고급 그리드·드래그 앤 드롭·팝업 그림자·선택적 구문 분석·프레임워크 어댑터는 각 에픽에서 별도 검증·구체화해야 합니다.
+다섯 언어의 [작업 영역](language-workspace.md)과 [입력·편집](language-text.md)은 공유 사례와 외부 소비자로 검증합니다. Python/TS의 목록·폼·그리드·메뉴·배치·피드백 등은 후속 초안이며 기존 Go/Rust와의 전체 동등성을 뜻하지 않습니다. 전체 카탈로그·고급 그리드·드래그 앤 드롭·팝업 그림자·선택적 구문 분석·프레임워크 어댑터는 각 에픽에서 별도 검증·구체화해야 합니다.
 
 ## API 사용
 
@@ -118,3 +118,5 @@ python tools/capture_language_trees.py
 C/C++/Java는 위의 명령으로 먼저 빌드합니다. 참조 화면 캡처에는 한글을 지원하는 D2Coding 폰트와 Cairo도 필요하며 개발 도구 조건입니다. 실제 로컬 검증은 Python 3.14.4, Node 26.13.0, TypeScript 7.0.2, JDK 27로 수행했습니다. Java는 `--release 17`로 컴파일했고 JVM 17 실행은 로컬에서 수행하지 않았습니다. `python tools/package_languages.py`는 `.cache/packages/languages/`에 미배포 로컬 미리보기 6개와 체크섬을 모으며 레지스트리 게시 명령은 실행하지 않습니다.
 
 [독립 언어 workspace API·예제](language-workspace.md): 탭·패널·분할·경로·상태줄을 다섯 구현에서 검증했습니다. 나머지 카탈로그 이식은 진행 중입니다.
+
+[독립 언어 입력·편집 API](language-text.md)

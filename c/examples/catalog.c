@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "tuivory.h"
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +71,8 @@ static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split,
 }
 int main(int argc, char **argv) {
   const char *theme = "dark", *profile = "256";
-  int en = 0, ascii = 0, snapshot = 0, workspace = 0, tab_focus = 0;
+  int en = 0, ascii = 0, snapshot = 0, workspace = 0, tab_focus = 0,
+      text_demo = 0;
   TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
@@ -88,12 +90,14 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[i], "--demo") && i + 1 < argc) {
       const char *demo = argv[++i];
       workspace = !strcmp(demo, "workspace");
-      if (strcmp(demo, "tree") && !workspace) {
-        fputs("Supported demos: tree, workspace\n", stderr);
+      text_demo = !strcmp(demo, "text");
+      if (strcmp(demo, "tree") && !workspace && !text_demo) {
+        fputs("Supported demos: tree, workspace, text\n", stderr);
         return 2;
       }
     } else {
-      puts("--demo tree|workspace --lang ko|en --theme dark|light|blackwhite "
+      puts("--demo tree|workspace|text --lang ko|en --theme "
+           "dark|light|blackwhite "
            "--colors "
            "8|16|256|truecolor --ascii --snapshot");
       return !strcmp(argv[i], "--help") ? 0 : 2;
@@ -126,6 +130,15 @@ int main(int argc, char **argv) {
                         {"disabled", en ? "Disabled" : "비활성", 0, 0, 1}};
   TuiTabs *tabs = tui_tabs_new(tab_items, 3);
   if (!tabs) {
+    tui_tabs_free(tabs);
+    tui_tree_free(tree);
+    return 1;
+  }
+  TuiText *text =
+      tui_text_new(en ? (ascii ? "Grapheme text\nEdit with real cursor."
+                               : "Unicode é 界\nEdit with real cursor.")
+                      : "한글 é 界\n여러 줄을 편집합니다.");
+  if (!text) {
     tui_tabs_free(tabs);
     tui_tree_free(tree);
     return 1;
@@ -173,13 +186,18 @@ int main(int argc, char **argv) {
     TuiRect inner = tui_canvas_panel(
         canvas, (TuiRect){0, 0, width, height > 0 ? height - 1 : 0},
         en ? "Tuivory C example" : "Tuivory C 예제", 1, ascii);
-    if (workspace)
+    if (text_demo)
+      tui_text_draw(text, canvas, inner, 1);
+    else if (workspace)
       workspace_draw(tree, tabs, split, canvas, inner, tab_focus, en, ascii);
     else
       tui_tree_draw(tree, canvas, inner, 1, ascii);
     tui_canvas_write(canvas, 0, height - 1,
-                     en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
-                        : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택",
+                     text_demo
+                         ? (en ? "Ctrl+Q quit | type, arrows | Ctrl+Z/Y history"
+                               : "Ctrl+Q 종료 | 문자·방향키 | Ctrl+Z/Y 기록")
+                     : en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
+                          : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택",
                      "hint", 0, width);
     if (snapshot) {
       if (snapshot == 2) {
@@ -231,7 +249,50 @@ int main(int argc, char **argv) {
                          : key == '\r' || key == '\n' ? "activate"
                          : key == ' '                 ? "toggle"
                                                       : "";
-    if (workspace && key == 9)
+    if (text_demo) {
+      char input[8] = {0};
+      const char *edit_action = "";
+      if (key == 27) {
+        char seq[24] = {0};
+        int n = 0;
+        struct pollfd fd = {STDIN_FILENO, POLLIN, 0};
+        while (n < 23 && poll(&fd, 1, 30) > 0 &&
+               read(STDIN_FILENO, &seq[n], 1) == 1) {
+          n++;
+          if (n > 1 &&
+              ((seq[n - 1] >= 'A' && seq[n - 1] <= 'Z') || seq[n - 1] == '~'))
+            break;
+        }
+        edit_action = !strcmp(seq, "[A")    ? "up"
+                      : !strcmp(seq, "[B")  ? "down"
+                      : !strcmp(seq, "[C")  ? "right"
+                      : !strcmp(seq, "[D")  ? "left"
+                      : !strcmp(seq, "[H")  ? "home"
+                      : !strcmp(seq, "[F")  ? "end"
+                      : !strcmp(seq, "[3~") ? "delete"
+                                            : "";
+      } else if (key == 127 || key == 8)
+        edit_action = "backspace";
+      else if (key == 13 || key == 10)
+        edit_action = "newline";
+      else if (key == 1)
+        edit_action = "select_all";
+      else if (key == 26)
+        edit_action = "undo";
+      else if (key == 25)
+        edit_action = "redo";
+      else if (key >= 32) {
+        input[0] = (char)key;
+        int n = key < 128 ? 1 : key < 224 ? 2 : key < 240 ? 3 : 4;
+        for (int i = 1; i < n; i++)
+          if (read(STDIN_FILENO, &input[i], 1) != 1) {
+            input[0] = 0;
+            break;
+          }
+        edit_action = "insert";
+      }
+      tui_text_handle(text, edit_action, input);
+    } else if (workspace && key == 9)
       tab_focus = !tab_focus;
     else if (workspace && (key == '<' || key == '>'))
       tui_split_resize(&split, inner.width,
@@ -244,6 +305,7 @@ int main(int argc, char **argv) {
       tui_tree_handle(tree, action, inner.height);
   }
   restore();
+  tui_text_free(text);
   tui_tabs_free(tabs);
   tui_tree_free(tree);
   return 0;

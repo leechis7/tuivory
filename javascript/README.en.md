@@ -27,3 +27,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Support/API/verification](../docs/languages.en.md) · [Examples](../docs/examples.en.md) · [TVR-16](https://leechis7.atlassian.net/browse/TVR-16)
 
 [Workspace follow-up](../docs/language-workspace.en.md): select `--demo workspace` for validated tabs, panels, splits, breadcrumbs and status lines.
+
+[Independent text editing API](../docs/language-text.en.md)

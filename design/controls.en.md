@@ -39,3 +39,5 @@ Reuse the existing grid model and renderer. Optional in-cell editing owns the bu
 The editor buffer contains no synthetic caret character. Share grapheme viewport geometry across text, mouse and local cursor projection. Focused views own only position/visibility; NULL, pending, clipping, invalidation and blur suppress stale cursors. Go uses NewGridView with NewCursorScreen/PreserveCursorTty to remove backend default shape/blink controls. Rust uses GridWidget::render_frame; buffer-only Widget cannot register a terminal cursor. Hosts retain global focus/layer choice. [Integration and evidence](../docs/grid-workspace.en.md).
 
 [Independent-language workspace APIs and examples](../docs/language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.
+
+[Independent text editing API](../docs/language-text.en.md)

@@ -762,4 +762,250 @@ public final class Tuivory {
       out.add(marker, "hint", "");
     return out;
   }
+  /** Literal grapheme buffer. Raw value is available only via explicit value(). */
+  public static final class Text {
+    private String value;
+    public int cursor, anchor, scrollX, scrollY;
+    public State state = new State();
+    public boolean secret, multiline = true;
+    private record Snapshot(String value, int cursor, int anchor) {}
+    private final ArrayList<Snapshot> undo = new ArrayList<>(), redo = new ArrayList<>();
+    public Text(String text) {
+      value = Objects.requireNonNull(text);
+      cursor = anchor = graphemes(text).size();
+    }
+    public String value() {
+      return value;
+    }
+    public String display() {
+      return secret ? "*".repeat(graphemes(value).size()) : value;
+    }
+    @Override
+    public String toString() {
+      return "Text[" + display() + ", cursor=" + cursor + ", anchor=" + anchor + "]";
+    }
+    private static boolean br(String g) {
+      return g.equals("\r") || g.equals("\n") || g.equals("\r\n");
+    }
+    private static int chars(List<String> g, int n) {
+      int out = 0;
+      for (int i = 0; i < Math.min(n, g.size()); i++) out += g.get(i).length();
+      return out;
+    }
+    public void select(int a, int c) {
+      int n = graphemes(value).size();
+      anchor = Math.max(0, Math.min(n, a));
+      cursor = Math.max(0, Math.min(n, c));
+    }
+    private int byteIndex(int byteOffset) {
+      var g = graphemes(value);
+      int n = 0;
+      for (int i = 0; i < g.size(); i++) {
+        if (n == byteOffset)
+          return i;
+        n += g.get(i).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+      }
+      if (n == byteOffset)
+        return g.size();
+      throw new IllegalArgumentException("offset splits a grapheme or is outside text");
+    }
+    public int[] selectionBytes() {
+      var g = graphemes(value);
+      return new int[] {value.substring(0, chars(g, Math.min(anchor, cursor)))
+                            .getBytes(java.nio.charset.StandardCharsets.UTF_8)
+                            .length,
+          value.substring(0, chars(g, Math.max(anchor, cursor)))
+              .getBytes(java.nio.charset.StandardCharsets.UTF_8)
+              .length};
+    }
+    public void selectBytes(int a, int c) {
+      int ai = byteIndex(a), ci = byteIndex(c);
+      select(ai, ci);
+    }
+    public Event replaceBytes(int a, int b, String text) {
+      if (a > b)
+        throw new IllegalArgumentException("reversed byte range");
+      return replace(byteIndex(a), byteIndex(b), text);
+    }
+    private Event replace(int a, int b, String text) {
+      if (!state.editable() || a == b && text.isEmpty())
+        return new Event();
+      var g = graphemes(value);
+      String prefix = value.substring(0, chars(g, a)) + text;
+      String next = prefix + value.substring(chars(g, b));
+      int offset = 0, at = 0;
+      for (String c : graphemes(next)) {
+        if (offset >= prefix.length())
+          break;
+        offset += c.length();
+        at++;
+      }
+      undo.add(new Snapshot(value, cursor, anchor));
+      if (undo.size() > 128)
+        undo.remove(0);
+      redo.clear();
+      value = next;
+      select(at, at);
+      state.edited = true;
+      return new Event("change", "");
+    }
+    private String sanitize(String s) {
+      s = s.replace("\r\n", "\n").replace('\r', '\n');
+      var out = new StringBuilder();
+      s.codePoints().forEach(cp -> {
+        if (cp == '\t')
+          out.append(' ');
+        else if (cp == '\n') {
+          if (multiline)
+            out.append('\n');
+        } else if (cp >= 32 && !(cp >= 127 && cp < 160))
+          out.appendCodePoint(cp);
+      });
+      return out.toString();
+    }
+    public Event handle(String action) {
+      return handle(action, "");
+    }
+    public Event handle(String action, String text) {
+      if (state.disabled)
+        return new Event();
+      select(anchor, cursor);
+      var g = graphemes(value);
+      int lo = Math.min(anchor, cursor), hi = Math.max(anchor, cursor), at = cursor, start = at,
+          end = at;
+      while (start > 0 && !br(g.get(start - 1))) start--;
+      while (end < g.size() && !br(g.get(end))) end++;
+      boolean extend = action.startsWith("select_");
+      String move = extend ? action.substring(7) : action;
+      int target = -1;
+      if (extend && move.equals("all")) {
+        select(0, g.size());
+        return new Event("select", "");
+      }
+      if (move.equals("left"))
+        target = !extend && lo != hi ? lo : Math.max(0, at - 1);
+      if (move.equals("right"))
+        target = !extend && lo != hi ? hi : Math.min(g.size(), at + 1);
+      if (move.equals("home"))
+        target = start;
+      if (move.equals("end"))
+        target = end;
+      if (move.equals("up")) {
+        int p = Math.max(0, start - 1);
+        while (p > 0 && !br(g.get(p - 1))) p--;
+        target = start > 0 ? Math.min(p + at - start, start - 1) : at;
+      }
+      if (move.equals("down")) {
+        int e = Math.min(g.size(), end + 1);
+        while (e < g.size() && !br(g.get(e))) e++;
+        target = end < g.size() ? Math.min(end + 1 + at - start, e) : at;
+      }
+      if (target >= 0) {
+        select(extend ? anchor : target, target);
+        return new Event("select", "");
+      }
+      if (action.equals("copy") || action.equals("cut")) {
+        if (secret || lo == hi || action.equals("cut") && !state.editable())
+          return new Event();
+        String copied = value.substring(chars(g, lo), chars(g, hi));
+        if (action.equals("cut"))
+          replace(lo, hi, "");
+        return new Event(action, "", copied);
+      }
+      if (!state.editable())
+        return new Event();
+      if (action.equals("undo") || action.equals("redo")) {
+        var src = action.equals("undo") ? undo : redo;
+        var dst = action.equals("undo") ? redo : undo;
+        if (src.isEmpty())
+          return new Event();
+        dst.add(new Snapshot(value, cursor, anchor));
+        var previous = src.remove(src.size() - 1);
+        value = previous.value;
+        cursor = previous.cursor;
+        anchor = previous.anchor;
+        state.edited = true;
+        return new Event("change", "");
+      }
+      String addition = "";
+      if (action.equals("backspace")) {
+        if (lo == hi && lo > 0)
+          lo--;
+      } else if (action.equals("delete")) {
+        if (lo == hi && hi < g.size())
+          hi++;
+      } else if (action.equals("insert") || action.equals("paste") || action.equals("newline"))
+        addition = sanitize(action.equals("newline") ? "\n" : text);
+      else
+        return new Event();
+      return replace(lo, hi, addition);
+    }
+    private record Glyph(int index, String text) {}
+    private List<List<Glyph>> rows() {
+      var out = new ArrayList<List<Glyph>>();
+      out.add(new ArrayList<>());
+      var g = graphemes(value);
+      for (int i = 0; i < g.size(); i++) {
+        if (multiline && br(g.get(i)))
+          out.add(new ArrayList<>());
+        else
+          out.get(out.size() - 1).add(new Glyph(i, secret ? "*" : g.get(i)));
+      }
+      return out;
+    }
+    public void draw(Canvas c, Rect r, boolean focused) {
+      String role = state.disabled ? "disabled" : state.readOnly ? "body" : "field";
+      c.fill(r, role);
+      if (r.width <= 0 || r.height <= 0)
+        return;
+      var rs = rows();
+      var raw = graphemes(value);
+      int cy = 0, cx = 0, cw = 1;
+      for (int i = 0; i < Math.min(cursor, raw.size()); i++)
+        if (multiline && br(raw.get(i)))
+          cy++;
+      cy = Math.min(cy, rs.size() - 1);
+      for (var g : rs.get(cy)) {
+        if (g.index < cursor)
+          cx += cells(g.text);
+        if (g.index == cursor)
+          cw = Math.max(1, cells(g.text));
+      }
+      scrollY = Math.max(0, Math.max(Math.min(scrollY, cy), cy - r.height + 1));
+      scrollX = Math.max(0, Math.max(Math.min(scrollX, cx), cx + Math.min(cw, r.width) - r.width));
+      int lo = Math.min(anchor, cursor), hi = Math.max(anchor, cursor);
+      for (int y = 0; y < r.height && y + scrollY < rs.size(); y++) {
+        int x = 0;
+        for (var g : rs.get(y + scrollY)) {
+          int n = cells(g.text), local = x - scrollX;
+          if (local >= 0 && local + n <= r.width)
+            c.write(r.x + local, r.y + y, g.text,
+                lo <= g.index && g.index < hi ? "selection" : role, false, n);
+          x += n;
+        }
+      }
+      if (focused && state.editable() && cw <= r.width)
+        c.setCursor(r.x + cx - scrollX, r.y + cy - scrollY, cw);
+    }
+    public Event click(int x, int y, int width, int height, boolean extend) {
+      if (state.disabled || x < 0 || y < 0 || x >= width || y >= height)
+        return new Event();
+      var rs = rows();
+      int row = Math.min(Math.max(0, scrollY + y), rs.size() - 1), target = 0;
+      for (int i = 0; i < row; i++) target += rs.get(i).size() + 1;
+      if (!rs.get(row).isEmpty())
+        target = rs.get(row).get(rs.get(row).size() - 1).index + 1;
+      int cell = 0;
+      for (var g : rs.get(row)) {
+        int n = cells(g.text);
+        if (x + scrollX < cell + n) {
+          target = g.index;
+          break;
+        }
+        cell += n;
+      }
+      select(extend ? anchor : target, target);
+      return new Event("select", "");
+    }
+  }
 }

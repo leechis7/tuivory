@@ -287,6 +287,9 @@ jobs:
           python tools/check_language_workspace.py --language c
           python tools/check_language_workspace.py --language cpp
           python tools/check_language_workspace.py --language java
+          python tools/check_language_text.py --language c
+          python tools/check_language_text.py --language cpp
+          python tools/check_language_text.py --language java
       - name: Build and install runtime packages outside the repository
         run: |
           mkdir -p .cache/packages/javascript
@@ -298,3 +301,4 @@ jobs:
         run: |
           python tools/check_language_examples.py --matrix
           python tools/check_language_examples.py --demo workspace --matrix
+          python tools/check_language_examples.py --demo text --matrix

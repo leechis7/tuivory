@@ -1,6 +1,7 @@
 #include "tuivory.hpp"
 #include <csignal>
 #include <iostream>
+#include <poll.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
     using namespace tuivory;
     std::string theme = "dark", colors = "256";
     bool en = false, ascii = false, snapshot = false, ansi_snapshot = false,
-         workspace = false, tab_focus = false;
+         workspace = false, tab_focus = false, text_demo = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -99,10 +100,11 @@ int main(int argc, char **argv) {
       } else if (arg == "--demo" && i + 1 < argc) {
         std::string demo = argv[++i];
         workspace = demo == "workspace";
-        if (demo != "tree" && !workspace)
-          throw std::invalid_argument("Supported demos: tree, workspace");
+        text_demo = demo == "text";
+        if (demo != "tree" && !workspace && !text_demo)
+          throw std::invalid_argument("Supported demos: tree, workspace, text");
       } else {
-        std::cout << "--demo tree|workspace --lang ko|en --theme "
+        std::cout << "--demo tree|workspace|text --lang ko|en --theme "
                      "dark|light|blackwhite "
                      "--colors 8|16|256|truecolor --ascii --snapshot\n";
         return arg == "--help" ? 0 : 2;
@@ -120,6 +122,9 @@ int main(int argc, char **argv) {
          {"draft", en ? "Draft document" : "초안 문서", true, true, false},
          {"disabled", en ? "Disabled" : "비활성", false, false, true}});
     Split split(16, 20, 24);
+    Text text(en ? (ascii ? "Grapheme text\nEdit with real cursor."
+                          : "Unicode é 界\nEdit with real cursor.")
+                 : "한글 é 界\n여러 줄을 편집합니다.");
     std::optional<Session> session;
     if (!snapshot)
       session.emplace();
@@ -135,13 +140,18 @@ int main(int argc, char **argv) {
       auto area = canvas.panel({0, 0, width, std::max(0, height - 1)},
                                en ? "Tuivory C++ example" : "Tuivory C++ 예제",
                                true, ascii);
-      if (workspace)
+      if (text_demo)
+        text.draw(canvas, area);
+      else if (workspace)
         workspace_draw(tree, tabs, split, canvas, area, tab_focus, en, ascii);
       else
         tree.draw(canvas, area, true, ascii);
       canvas.write(0, height - 1,
-                   en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
-                      : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택",
+                   text_demo
+                       ? (en ? "Ctrl+Q quit | type, arrows | Ctrl+Z/Y history"
+                             : "Ctrl+Q 종료 | 문자·방향키 | Ctrl+Z/Y 기록")
+                   : en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
+                        : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택",
                    "hint", false, width);
       if (snapshot) {
         if (ansi_snapshot)
@@ -164,7 +174,49 @@ int main(int argc, char **argv) {
                           : key == '\r' || key == '\n' ? "activate"
                           : key == ' '                 ? "toggle"
                                                        : "";
-      if (workspace && key == 9)
+      if (text_demo) {
+        std::string input, edit_action;
+        if (key == 27) {
+          std::string seq;
+          pollfd fd{STDIN_FILENO, POLLIN, 0};
+          char next;
+          while (seq.size() < 23 && poll(&fd, 1, 30) > 0 &&
+                 read(STDIN_FILENO, &next, 1) == 1) {
+            seq += next;
+            if (seq.size() > 1 && ((next >= 'A' && next <= 'Z') || next == '~'))
+              break;
+          }
+          edit_action = seq == "[A"    ? "up"
+                        : seq == "[B"  ? "down"
+                        : seq == "[C"  ? "right"
+                        : seq == "[D"  ? "left"
+                        : seq == "[H"  ? "home"
+                        : seq == "[F"  ? "end"
+                        : seq == "[3~" ? "delete"
+                                       : "";
+        } else if (key == 127 || key == 8)
+          edit_action = "backspace";
+        else if (key == 13 || key == 10)
+          edit_action = "newline";
+        else if (key == 1)
+          edit_action = "select_all";
+        else if (key == 26)
+          edit_action = "undo";
+        else if (key == 25)
+          edit_action = "redo";
+        else if (key >= 32) {
+          input += static_cast<char>(key);
+          int n = key < 128 ? 1 : key < 224 ? 2 : key < 240 ? 3 : 4;
+          for (int i = 1; i < n; i++) {
+            char next;
+            if (read(STDIN_FILENO, &next, 1) != 1)
+              break;
+            input += next;
+          }
+          edit_action = "insert";
+        }
+        text.handle(edit_action, input);
+      } else if (workspace && key == 9)
         tab_focus = !tab_focus;
       else if (workspace && (key == '<' || key == '>'))
         split.resize(area.width, split.preferred + (key == '<' ? -1 : 1));

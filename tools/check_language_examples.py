@@ -46,21 +46,33 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             if process.poll()is not None:break
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
-        # Row one contains the selected root. The actual VT buffer is inspected.
-        root=4 if demo=='workspace' else 1
-        wait_row(root,True)
-        down=b'down\n'if language=='java'else b's'if language in ['c','cpp']else b'\x1b[B'
-        up=b'up\n'if language=='java'else b'w'if language in ['c','cpp']else b'\x1b[A'
-        os.write(master,down);wait_row(root+1,True);wait_row(root,False)
-        os.write(master,up);wait_row(root,True)
-        if language in ['python','javascript']:
-            os.write(master,b'\x1bOP\x1bOQ');drain(.05);wait_row(root,True)
-        if demo=='workspace':
-            os.write(master,b'tab\n'if language=='java'else b'\t');drain(.05)
-            os.write(master,b'right\n'if language=='java'else b'd'if language in ['c','cpp']else b'\x1b[C');drain(.05)
-            os.write(master,b'activate\n'if language=='java'else b'\r');drain(.1)
-            visible='\n'.join(''.join(row)for row in screen.rows)
-            assert ('Draft'if lang=='en'else'초안')in visible.replace(' ',''),(language,'tab activation',visible)
+        if demo=='text':
+            drain(.25)
+            # Move to line start and insert a sentinel; backspace must restore it.
+            os.write(master,b'home\n'if language=='java'else b'\x1b[H');drain(.06)
+            os.write(master,b'insert Z\n'if language=='java'else b'Z');drain(.08)
+            visible='\n'.join(''.join(r)for r in screen.rows[1:17])
+            assert 'Z'in visible,(language,'text insert',visible)
+            os.write(master,b'backspace\n'if language=='java'else b'\x7f');drain(.08)
+            visible='\n'.join(''.join(r)for r in screen.rows[1:17])
+            assert 'Z'not in visible,(language,'text deletion',visible)
+            assert b'\x1b[?25h'in captured,(language,'real cursor absent')
+        else:
+            # Row one contains the selected root. The actual VT buffer is inspected.
+            root=4 if demo=='workspace' else 1
+            wait_row(root,True)
+            down=b'down\n'if language=='java'else b's'if language in ['c','cpp']else b'\x1b[B'
+            up=b'up\n'if language=='java'else b'w'if language in ['c','cpp']else b'\x1b[A'
+            os.write(master,down);wait_row(root+1,True);wait_row(root,False)
+            os.write(master,up);wait_row(root,True)
+            if language in ['python','javascript']:
+                os.write(master,b'\x1bOP\x1bOQ');drain(.05);wait_row(root,True)
+            if demo=='workspace':
+                os.write(master,b'tab\n'if language=='java'else b'\t');drain(.05)
+                os.write(master,b'right\n'if language=='java'else b'd'if language in ['c','cpp']else b'\x1b[C');drain(.05)
+                os.write(master,b'activate\n'if language=='java'else b'\r');drain(.1)
+                visible='\n'.join(''.join(row)for row in screen.rows)
+                assert ('Draft'if lang=='en'else'초안')in visible.replace(' ',''),(language,'tab activation',visible)
         os.write(master,b'quit\n'if language=='java'else b'\x11')
         process.wait(timeout=5);drain(.02)
         assert process.returncode==0,(language,process.returncode,bytes(captured[-1000:]))
@@ -82,7 +94,7 @@ def main():
     p.add_argument('--python',default=sys.executable)
     p.add_argument('--language',choices=['python','javascript','c','cpp','java'])
     p.add_argument('--matrix',action='store_true')
-    p.add_argument('--demo',choices=['tree','workspace'],default='tree')
+    p.add_argument('--demo',choices=['tree','workspace','text'],default='tree')
     args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     commands={'python':[args.python,'-m','tuivory'],'javascript':['node',ROOT/'javascript/examples/catalog.mjs'],'c':[ROOT/'bin/c'/f'tuivory-linux-{arch}'],'cpp':[ROOT/'bin/cpp'/f'tuivory-linux-{arch}'],'java':['java','-jar',ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}
@@ -95,6 +107,6 @@ def main():
                     for ascii in [False,True]if args.matrix else[False]:
                         r=check(language,cmd,lang,theme,colors,ascii,args.demo);results.append(r)
                         print('PASS',language,lang,theme,colors,'ascii='+str(ascii),args.demo,flush=True)
-    out=ROOT/'.cache/validation/languages'/('pty-results.json'if args.demo=='tree'else'pty-workspace-results.json');out.parent.mkdir(parents=True,exist_ok=True);out.write_text(json.dumps(results,indent=2)+'\n')
+    out=ROOT/'.cache/validation/languages'/('pty-results.json'if args.demo=='tree'else'pty-'+args.demo+'-results.json');out.parent.mkdir(parents=True,exist_ok=True);out.write_text(json.dumps(results,indent=2)+'\n')
 
 if __name__=='__main__':main()

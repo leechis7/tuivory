@@ -25,3 +25,5 @@ make build-cpp
 [Support/API/verification](../docs/languages.md) · [Examples](../docs/examples.md) · [TVR-31](https://leechis7.atlassian.net/browse/TVR-31)
 
 [Workspace 후속](../docs/language-workspace.md): `--demo workspace`로 검증한 탭·패널·분할·경로·상태줄을 실행합니다.
+
+[독립 언어 입력·편집 API](../docs/language-text.md)
