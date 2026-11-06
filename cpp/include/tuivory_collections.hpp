@@ -150,7 +150,7 @@ public:
     auto end = std::min(rows.size(), static_cast<std::size_t>(scroll + height));
     hits_ = {rows.begin() + scroll, rows.begin() + end};
     for (auto &r : hits_)
-      r.text = clip(r.text, width);
+      r.text = clip(r.text, width, true);
     return hits_;
   }
   Event click_id(const std::string &id) {

@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
+#include "menu_host.h"
 #include "tuivory.h"
 #include <poll.h>
 #include <signal.h>
@@ -18,7 +19,7 @@ static void stop_signal(int signal_number) {
 }
 static void restore(void) {
   if (active) {
-    fputs("\033[0m\033[?25h\033[?1049l", stdout);
+    fputs("\033[0m\033[?1000l\033[?1006l\033[?25h\033[?1049l", stdout);
     fflush(stdout);
     tcsetattr(STDIN_FILENO, TCSADRAIN, &saved);
     active = 0;
@@ -72,7 +73,8 @@ static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split,
 int main(int argc, char **argv) {
   const char *theme = "dark", *profile = "256";
   int en = 0, ascii = 0, snapshot = 0, workspace = 0, tab_focus = 0,
-      text_demo = 0, form_demo = 0, list_demo = 0, picker_demo = 0;
+      text_demo = 0, form_demo = 0, list_demo = 0, picker_demo = 0,
+      menu_demo = 0, context_demo = 0;
   TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
@@ -94,20 +96,27 @@ int main(int argc, char **argv) {
       form_demo = !strcmp(demo, "form");
       list_demo = !strcmp(demo, "list");
       picker_demo = !strcmp(demo, "picker");
+      context_demo = !strcmp(demo, "context-menu");
+      menu_demo = context_demo || !strcmp(demo, "menu");
       if (strcmp(demo, "tree") && !workspace && !text_demo && !form_demo &&
-          !list_demo && !picker_demo) {
-        fputs("Supported demos: tree, workspace, text, form, list, picker\n",
+          !list_demo && !picker_demo && !menu_demo) {
+        fputs("Supported demos: tree, workspace, text, form, list, picker, "
+              "menu, context-menu\n",
               stderr);
         return 2;
       }
     } else {
-      puts("--demo tree|workspace|text|form|list|picker --lang ko|en --theme "
+      puts("--demo tree|workspace|text|form|list|picker|menu|context-menu "
+           "--lang ko|en --theme "
            "dark|light|blackwhite "
            "--colors "
            "8|16|256|truecolor --ascii --snapshot");
       return !strcmp(argv[i], "--help") ? 0 : 2;
     }
   }
+  MenuDemo menu_host;
+  if (!menu_demo_init(&menu_host, en, context_demo))
+    return 1;
   TuiNode nodes[] = {
       {.id = "root", .name = en ? "Workspace" : "작업 공간"},
       {.id = "src", .name = en ? "Sources" : "소스", .parent = "root"},
@@ -237,6 +246,8 @@ int main(int argc, char **argv) {
       return 1;
     }
     fputs("\033[?1049h", stdout);
+    if (menu_demo)
+      fputs("\033[?1000h\033[?1006h", stdout);
     signal(SIGTERM, stop_signal);
     signal(SIGINT, stop_signal);
   }
@@ -258,7 +269,9 @@ int main(int argc, char **argv) {
     TuiRect inner = tui_canvas_panel(
         canvas, (TuiRect){0, 0, width, height > 0 ? height - 1 : 0},
         en ? "Tuivory C example" : "Tuivory C 예제", 1, ascii);
-    if (list_demo)
+    if (menu_demo)
+      menu_demo_draw(&menu_host, canvas, inner, ascii);
+    else if (list_demo)
       tui_list_draw(list, canvas, inner, 1, ascii);
     else if (picker_demo)
       tui_picker_draw(picker, canvas, inner, 1, ascii);
@@ -271,7 +284,9 @@ int main(int argc, char **argv) {
     else
       tui_tree_draw(tree, canvas, inner, 1, ascii);
     const char *hint =
-        picker_demo
+        menu_demo ? (en ? "Ctrl+Q quit | F10 menu | arrows | Enter | Esc"
+                        : "Ctrl+Q 종료 | F10 메뉴 | 방향키 | Enter | Esc")
+        : picker_demo
             ? (en ? "Ctrl+Q quit | type to filter | Enter select | Esc cancel"
                   : "Ctrl+Q 종료 | 문자로 검색 | Enter 선택 | Esc 취소")
         : form_demo ? (en ? "Ctrl+Q quit | Tab next | Enter activate | arrows"
@@ -334,7 +349,7 @@ int main(int argc, char **argv) {
                          : key == '\r' || key == '\n' ? "activate"
                          : key == ' '                 ? "toggle"
                                                       : "";
-    if (text_demo || form_demo || list_demo || picker_demo) {
+    if (text_demo || form_demo || list_demo || picker_demo || menu_demo) {
       char input[8] = {0};
       const char *edit_action = "";
       if (key == 27) {
@@ -344,18 +359,32 @@ int main(int argc, char **argv) {
         while (n < 23 && poll(&fd, 1, 30) > 0 &&
                read(STDIN_FILENO, &seq[n], 1) == 1) {
           n++;
-          if (n > 1 &&
-              ((seq[n - 1] >= 'A' && seq[n - 1] <= 'Z') || seq[n - 1] == '~'))
+          if (seq[n - 1] == 17 || seq[n - 1] == 3) {
+            stopped = 1;
+            break;
+          }
+          if (n > 1 && ((seq[n - 1] >= 'A' && seq[n - 1] <= 'Z') ||
+                        seq[n - 1] == 'm' || seq[n - 1] == '~'))
             break;
         }
-        edit_action = !strcmp(seq, "[A")    ? "up"
-                      : !strcmp(seq, "[B")  ? "down"
-                      : !strcmp(seq, "[C")  ? "right"
-                      : !strcmp(seq, "[D")  ? "left"
-                      : !strcmp(seq, "[H")  ? "home"
-                      : !strcmp(seq, "[F")  ? "end"
-                      : !strcmp(seq, "[3~") ? "delete"
-                                            : (n == 0 ? "cancel" : "");
+        int button = 0, x = 0, y = 0;
+        char ending = 0;
+        if (menu_demo &&
+            sscanf(seq, "[<%d;%d;%d%c", &button, &x, &y, &ending) == 4) {
+          if (ending == 'M' && x > 0 && y > 0)
+            menu_demo_pointer(&menu_host, x - 1, y - 1, button);
+          continue;
+        }
+        edit_action = !strcmp(seq, "[21~")     ? "f10"
+                      : !strcmp(seq, "[21;2~") ? "shift_f10"
+                      : !strcmp(seq, "[A")     ? "up"
+                      : !strcmp(seq, "[B")     ? "down"
+                      : !strcmp(seq, "[C")     ? "right"
+                      : !strcmp(seq, "[D")     ? "left"
+                      : !strcmp(seq, "[H")     ? "home"
+                      : !strcmp(seq, "[F")     ? "end"
+                      : !strcmp(seq, "[3~")    ? "delete"
+                                               : (n == 0 ? "cancel" : "");
       } else if (key == 127 || key == 8)
         edit_action = "backspace";
       else if (key == 13 || key == 10)
@@ -376,7 +405,11 @@ int main(int argc, char **argv) {
           }
         edit_action = "insert";
       }
-      if (list_demo)
+      if (menu_demo)
+        menu_demo_handle(
+            &menu_host,
+            !strcmp(edit_action, "newline") ? "activate" : edit_action, input);
+      else if (list_demo)
         tui_list_handle(list,
                         key == 27   ? edit_action
                         : key == 32 ? "select"
@@ -407,6 +440,7 @@ int main(int argc, char **argv) {
       tui_tree_handle(tree, action, inner.height);
   }
   restore();
+  menu_demo_free(&menu_host);
   tui_list_free(list);
   tui_picker_free(picker);
   tui_form_free(form);

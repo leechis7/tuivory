@@ -46,7 +46,50 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             if process.poll()is not None:break
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
-        if demo=='picker':
+        if demo in ('menu','context-menu'):
+            def visible():return '\n'.join(''.join(row) for row in screen.rows[:17])
+            def wait_text(value):
+                deadline=time.monotonic()+5
+                while time.monotonic()<deadline:
+                    drain(.02)
+                    if value.replace(' ','') in visible().replace(' ',''):return
+                    if process.poll()is not None:break
+                raise AssertionError((language,demo,value,visible(),bytes(captured[-500:])))
+            def send(command,raw):
+                os.write(master,(command+'\n').encode()if language=='java'else raw);drain(.10)
+            wait_text(('Context menu'if lang=='en'else'문맥 메뉴')if demo=='context-menu'else('New document'if lang=='en'else'새 문서'))
+            send('insert Z',b'Z')
+            assert 'Z'not in ''.join(''.join(row)for row in screen.rows[1:3]),(language,'popup leaked text to editor')
+            if demo=='menu':
+                send('down',b'\x1b[B');send('activate',b'\r');wait_text('Example A'if lang=='en'else'예제 A')
+                send('cancel',b'\x1b')
+                wait_text('New document'if lang=='en'else'새 문서')
+            else:
+                send('activate',b'\r');wait_text('New document'if lang=='en'else'새 문서')
+                send('cancel',b'\x1b');wait_text('Context menu'if lang=='en'else'문맥 메뉴')
+            send('cancel',b'\x1b')
+            send('home',b'\x1b[H');send('insert Z',b'Z')
+            deadline=time.monotonic()+5
+            while 'Z'not in ''.join(''.join(row)for row in screen.rows[1:3]) and time.monotonic()<deadline:
+                drain(.02)
+            assert 'Z'in ''.join(''.join(row)for row in screen.rows[1:3]),(language,'editor not restored',visible())
+            send('context 52 14',b'\x1b[<2;53;15M')
+            wait_text('Context menu'if lang=='en'else'문맥 메뉴')
+            # Read actual VT output after the popup overlays two-cell background text.
+            title='Context menu'if lang=='en'else'문맥 메뉴'
+            rows=[''.join(row)for row in screen.rows]
+            pattern='\\s*'.join(re.escape(ch)for ch in title if ch!=' ')
+            top=next(y for y,row in enumerate(rows)if re.search(pattern,row))
+            match=re.search(pattern,rows[top])
+            left=rows[top].rfind('+'if ascii else'┌',0,match.start())
+            right=rows[top].find('+'if ascii else'┐',match.end())
+            assert 1<=left<right<79,(language,'popup columns',rows[top])
+            bottom=next(y for y in range(top+1,len(rows))if rows[y][left:left+1]==('+'if ascii else'└'))
+            assert bottom<23,(language,'popup escaped viewport')
+            for y in range(top+1,bottom):
+                assert rows[y][left]==('|'if ascii else'│')and rows[y][right]==('|'if ascii else'│'),(language,'wide text damaged popup border',y,rows[y])
+            send('cancel',b'\x1b')
+        elif demo=='picker':
             drain(.25)
             def wait_text(value):
                 deadline=time.monotonic()+5
@@ -104,7 +147,7 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
                 os.write(master,b'activate\n'if language=='java'else b'\r');drain(.1)
                 visible='\n'.join(''.join(row)for row in screen.rows)
                 assert ('Draft'if lang=='en'else'초안')in visible.replace(' ',''),(language,'tab activation',visible)
-        os.write(master,b'quit\n'if language=='java'else b'\x11')
+        os.write(master,b'quit\n'if language=='java'else b'\x1b\x11'if demo in ('menu','context-menu')else b'\x11')
         deadline=time.monotonic()+5
         while process.poll()is None and time.monotonic()<deadline:drain(.02)
         process.wait(timeout=.1);drain(.02)
@@ -127,7 +170,7 @@ def main():
     p.add_argument('--python',default=sys.executable)
     p.add_argument('--language',choices=['python','javascript','c','cpp','java'])
     p.add_argument('--matrix',action='store_true')
-    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker'],default='tree')
+    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu'],default='tree')
     args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     commands={'python':[args.python,'-m','tuivory'],'javascript':['node',ROOT/'javascript/examples/catalog.mjs'],'c':[ROOT/'bin/c'/f'tuivory-linux-{arch}'],'cpp':[ROOT/'bin/cpp'/f'tuivory-linux-{arch}'],'java':['java','-jar',ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}
@@ -140,7 +183,7 @@ def main():
                     for ascii in [False,True]if args.matrix else[False]:
                         r=check(language,cmd,lang,theme,colors,ascii,args.demo);results.append(r)
                         print('PASS',language,lang,theme,colors,'ascii='+str(ascii),args.demo,flush=True)
-    name='pty'+(''if args.demo=='tree'else'-'+args.demo)+('-'+args.language if args.language else'')+'-results.json'
+    name='pty'+(''if args.demo=='tree'else'-'+args.demo)+('-'+args.language if args.language else'')+(''if args.matrix else'-smoke')+'-results.json'
     out=ROOT/'.cache/validation/languages'/name;out.parent.mkdir(parents=True,exist_ok=True);out.write_text(json.dumps(results,indent=2)+'\n')
 
 if __name__=='__main__':main()

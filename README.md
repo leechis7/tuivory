@@ -65,4 +65,4 @@ make run-menu-rust ARGS="--shadow auto"
 
 TVR-7 0.11.1: [실제 그리드 커서·backend 연결](docs/grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.
 
-[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](docs/languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.
+[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](docs/languages.md): 미배포 독립 컴포넌트 구현 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.

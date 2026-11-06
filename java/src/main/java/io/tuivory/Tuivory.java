@@ -1697,7 +1697,7 @@ public final class Tuivory {
       var out = new ArrayList<CollectionRow>();
       for (var row : rows.subList(scroll, Math.min(rows.size(), scroll + height)))
         out.add(
-            new CollectionRow(row.id(), clip(row.text(), width, false), row.role(), row.focused()));
+            new CollectionRow(row.id(), clip(row.text(), width, true), row.role(), row.focused()));
       hits = out;
       return List.copyOf(out);
     }
@@ -1837,5 +1837,531 @@ public final class Tuivory {
       if (r.height() > 1)
         list.draw(c, new Rect(r.x(), r.y() + 1, r.width(), r.height() - 1), focused, ascii);
     }
+  }
+  public static final class MenuItem {
+    public String id, parent = "", label = "", secondary = "", shortcut = "", mnemonic = "",
+                      icon = "", asciiIcon = "";
+    public boolean disabled, separator;
+    public MenuItem(String id) {
+      this.id = id;
+    }
+    public MenuItem(String id, String label) {
+      this.id = id;
+      this.label = label;
+    }
+  }
+  public record MenuEvent(String kind, String id, String returnId) {
+    public MenuEvent() {
+      this("", "", "");
+    }
+  }
+  public record MenuSpan(int start, int width, String text, String role) {}
+  public record
+      MenuRow(String id, String text, String role, List<MenuSpan> spans, boolean focused) {}
+  public record
+      MenuBarCell(String id, String text, String role, int start, int width, boolean focused) {}
+  public record MenuBarLayout(List<MenuBarCell> cells, boolean previous, boolean next) {}
+  public static final class Menu {
+    private List<MenuItem> items = List.of();
+    private Map<String, MenuItem> index = new LinkedHashMap<>();
+    private Map<String, List<String>> children = new LinkedHashMap<>();
+    private final List<String> path = new ArrayList<>();
+    private final Map<String, String> focusMap = new HashMap<>();
+    private final Map<String, Integer> tops = new HashMap<>();
+    private List<MenuRow> hits = List.of();
+    private boolean opened, context;
+    private String caller = "", bar = "";
+    private int barFirst, width;
+    public String backLabel = "Back", emptyLabel = "(empty)";
+    public Menu(List<MenuItem> items) {
+      setItems(items);
+    }
+    private static MenuItem copy(MenuItem i) {
+      var v = new MenuItem(i.id, i.label);
+      v.parent = i.parent;
+      v.secondary = i.secondary;
+      v.shortcut = i.shortcut;
+      v.mnemonic = i.mnemonic;
+      v.icon = i.icon;
+      v.asciiIcon = i.asciiIcon;
+      v.disabled = i.disabled;
+      v.separator = i.separator;
+      return v;
+    }
+    private static boolean mnemonic(String s) {
+      return s.matches("[A-Za-z0-9]");
+    }
+    private static void validate(List<MenuItem> items) {
+      if (items.size() > 10000)
+        throw new IllegalArgumentException("too many menu items");
+      var index = new HashMap<String, MenuItem>();
+      var keys = new HashMap<String, Set<String>>();
+      var parents = new HashSet<String>();
+      for (var i : items) {
+        if (i.id.isEmpty() || i.id.startsWith("@") || index.putIfAbsent(i.id, i) != null)
+          throw new IllegalArgumentException("invalid menu ID");
+        parents.add(i.parent);
+        if (!i.mnemonic.isEmpty()) {
+          String key = i.mnemonic.toLowerCase(Locale.ROOT);
+          if (!mnemonic(i.mnemonic) || i.separator
+              || !keys.computeIfAbsent(i.parent, p -> new HashSet<>()).add(key))
+            throw new IllegalArgumentException("invalid sibling mnemonic");
+        }
+      }
+      for (var i : items) {
+        if (i.separator && parents.contains(i.id))
+          throw new IllegalArgumentException("separator children");
+        var seen = new HashSet<String>();
+        seen.add(i.id);
+        String parent = i.parent;
+        int depth = 1;
+        while (!parent.isEmpty()) {
+          var p = index.get(parent);
+          if (p == null || !seen.add(parent) || p.separator)
+            throw new IllegalArgumentException("invalid parent/cycle");
+          if (++depth > 32)
+            throw new IllegalArgumentException("menu depth exceeds32");
+          parent = p.parent;
+        }
+      }
+    }
+    public MenuEvent setItems(List<MenuItem> source) {
+      var owned = new ArrayList<MenuItem>();
+      for (var i : source) owned.add(copy(i));
+      validate(owned);
+      var idx = new LinkedHashMap<String, MenuItem>();
+      var ch = new LinkedHashMap<String, List<String>>();
+      for (var i : owned) {
+        idx.put(i.id, i);
+        ch.computeIfAbsent(i.parent, p -> new ArrayList<>()).add(i.id);
+      }
+      items = owned;
+      index = idx;
+      children = ch;
+      focusMap.keySet().removeIf(p -> !p.isEmpty() && !index.containsKey(p));
+      tops.keySet().removeIf(p -> !p.isEmpty() && !index.containsKey(p));
+      hits = List.of();
+      if (!usable(bar, ""))
+        bar = first("");
+      for (int n = 0; n < path.size(); n++)
+        if (!usable(path.get(n), n > 0 ? path.get(n - 1) : "") || childIds(path.get(n)).isEmpty())
+          return close();
+      if (opened)
+        reconcile();
+      return new MenuEvent();
+    }
+    public List<MenuItem> items() {
+      var out = new ArrayList<MenuItem>();
+      for (var i : items) out.add(copy(i));
+      return out;
+    }
+    public boolean opened() {
+      return opened;
+    }
+    public List<String> path() {
+      return List.copyOf(path);
+    }
+    public String focusedId() {
+      return focusMap.getOrDefault(parent(), "");
+    }
+    public String returnId() {
+      return caller;
+    }
+    public String barFocusedId() {
+      return bar;
+    }
+    private List<String> childIds(String p) {
+      return children.getOrDefault(p, List.of());
+    }
+    private String parent() {
+      return path.isEmpty() ? "" : path.get(path.size() - 1);
+    }
+    private boolean usable(String id, String p) {
+      var i = index.get(id);
+      return i != null && i.parent.equals(p) && !i.disabled && !i.separator;
+    }
+    private String first(String p) {
+      for (var id : childIds(p))
+        if (usable(id, p))
+          return id;
+      return "";
+    }
+    private boolean backAllowed() {
+      return path.size() > 1 || context && !path.isEmpty();
+    }
+    private void reconcile() {
+      String p = parent(), id = focusedId();
+      if (id.equals("@back") && backAllowed())
+        return;
+      if (!usable(id, p)) {
+        String first = first(p);
+        focusMap.put(p, first.isEmpty() && backAllowed() ? "@back" : first);
+      }
+    }
+    public String title() {
+      var labels = new ArrayList<String>();
+      for (String id : path) labels.add(clean(index.get(id).label));
+      return String.join(" / ", labels);
+    }
+    private MenuEvent event(String kind, String id) {
+      return new MenuEvent(kind, id, caller);
+    }
+    private MenuEvent finish(String kind, String id) {
+      opened = false;
+      path.clear();
+      hits = List.of();
+      return event(kind, id);
+    }
+    public MenuEvent open(String id, String returnId) {
+      var next = new ArrayList<String>();
+      String at = id;
+      while (!at.isEmpty()) {
+        var i = index.get(at);
+        if (i == null || i.disabled || i.separator)
+          return new MenuEvent();
+        next.add(0, at);
+        at = i.parent;
+      }
+      caller = returnId;
+      path.clear();
+      path.addAll(next);
+      hits = List.of();
+      for (int n = 0; n < path.size(); n++) focusMap.put(n > 0 ? path.get(n - 1) : "", path.get(n));
+      context = id.isEmpty();
+      opened = true;
+      if (!path.isEmpty())
+        bar = path.get(0);
+      if (!id.isEmpty() && childIds(id).isEmpty())
+        return finish("activate", id);
+      reconcile();
+      return event("open", id);
+    }
+    public MenuEvent close() {
+      return opened ? finish("close", "") : new MenuEvent();
+    }
+    public MenuEvent back() {
+      if (!opened)
+        return new MenuEvent();
+      if (!backAllowed())
+        return close();
+      path.remove(path.size() - 1);
+      reconcile();
+      return event("back", parent());
+    }
+    public boolean focus(String id) {
+      if (!opened)
+        return false;
+      if (id.equals("@back") && backAllowed() || usable(id, parent())) {
+        focusMap.put(parent(), id);
+        return true;
+      }
+      return false;
+    }
+    private MenuEvent enter(String id) {
+      path.add(id);
+      reconcile();
+      return event("open", id);
+    }
+    private MenuEvent switchRoot(boolean next) {
+      var ids = new ArrayList<String>();
+      for (String id : childIds(""))
+        if (usable(id, ""))
+          ids.add(id);
+      if (ids.isEmpty())
+        return new MenuEvent();
+      int at = Math.max(0, ids.indexOf(bar)), step = next ? 1 : ids.size() - 1;
+      for (int n = 0; n < ids.size(); n++) {
+        at = (at + step) % ids.size();
+        if (!ids.get(at).equals(bar) && !childIds(ids.get(at)).isEmpty())
+          return open(ids.get(at), caller);
+      }
+      return new MenuEvent();
+    }
+    public MenuEvent handle(String action) {
+      return handle(action, "", 10);
+    }
+    public MenuEvent handle(String action, String value, int height) {
+      if (!opened)
+        return new MenuEvent();
+      reconcile();
+      String p = parent(), id = focusedId();
+      if (action.equals("cancel") || action.equals("back"))
+        return back();
+      if (action.equals("close"))
+        return close();
+      if (action.equals("left"))
+        return backAllowed() ? back() : context ? new MenuEvent() : switchRoot(false);
+      if (action.equals("right")) {
+        if (usable(id, p) && !childIds(id).isEmpty())
+          return enter(id);
+        return !backAllowed() && !context ? switchRoot(true) : new MenuEvent();
+      }
+      if (action.equals("activate")) {
+        if (id.equals("@back"))
+          return back();
+        if (!usable(id, p))
+          return new MenuEvent();
+        return childIds(id).isEmpty() ? finish("activate", id) : enter(id);
+      }
+      if (action.equals("mnemonic")) {
+        if (!mnemonic(value))
+          return new MenuEvent();
+        for (String candidate : childIds(p)) {
+          var i = index.get(candidate);
+          if (usable(candidate, p) && !i.mnemonic.isEmpty() && i.mnemonic.equalsIgnoreCase(value)) {
+            focusMap.put(p, candidate);
+            return handle("activate", "", height);
+          }
+        }
+        return new MenuEvent();
+      }
+      var ids = new ArrayList<String>();
+      if (backAllowed())
+        ids.add("@back");
+      for (String candidate : childIds(p))
+        if (usable(candidate, p))
+          ids.add(candidate);
+      if (ids.isEmpty())
+        return new MenuEvent();
+      int at = Math.max(0, ids.indexOf(id)), step = height > 1 ? height - 1 : 1;
+      switch (action) {
+        case "previous", "up" -> at = (at + ids.size() - 1) % ids.size();
+        case "next", "down" -> at = (at + 1) % ids.size();
+        case "first", "home" -> at = 0;
+        case "last", "end" -> at = ids.size() - 1;
+        case "page_up" -> at = Math.max(0, at - step);
+        case "page_down" -> at = (int) Math.min(ids.size() - 1, (long) at + step);
+        default -> {
+          return new MenuEvent();
+        }
+      }
+      focusMap.put(p, ids.get(at));
+      return event("focus", ids.get(at));
+    }
+    public MenuEvent handleBar(String action, String value) {
+      var ids = new ArrayList<String>();
+      for (String id : childIds(""))
+        if (usable(id, ""))
+          ids.add(id);
+      if (ids.isEmpty())
+        return new MenuEvent();
+      int at = Math.max(0, ids.indexOf(bar));
+      switch (action) {
+        case "previous", "left" -> at = (at + ids.size() - 1) % ids.size();
+        case "next", "right" -> at = (at + 1) % ids.size();
+        case "first", "home" -> at = 0;
+        case "last", "end" -> at = ids.size() - 1;
+        case "activate", "down" -> {
+          return new MenuEvent("open_request", ids.get(at), "");
+        }
+        case "mnemonic" -> {
+          if (!mnemonic(value))
+            return new MenuEvent();
+          for (String id : ids) {
+            var i = index.get(id);
+            if (!i.mnemonic.isEmpty() && i.mnemonic.equalsIgnoreCase(value)) {
+              bar = id;
+              return new MenuEvent("open_request", id, "");
+            }
+          }
+          return new MenuEvent();
+        }
+        default -> {
+          return new MenuEvent();
+        }
+      }
+      bar = ids.get(at);
+      return new MenuEvent("focus", bar, "");
+    }
+    public MenuEvent clickId(String id) {
+      return focus(id) ? handle("activate") : new MenuEvent();
+    }
+    public MenuEvent click(int x, int y, int height) {
+      return opened && x >= 0 && x < width && y >= 0 && y < height && y < hits.size()
+          ? clickId(hits.get(y).id())
+          : new MenuEvent();
+    }
+    private static String label(MenuItem i) {
+      return i.label
+          + (i.mnemonic.isEmpty() ? "" : " (" + i.mnemonic.toUpperCase(Locale.ROOT) + ")");
+    }
+    private List<MenuItem> rows() {
+      var out = new ArrayList<MenuItem>();
+      if (backAllowed()) {
+        out.add(new MenuItem("@back", backLabel));
+        var separator = new MenuItem("");
+        separator.separator = true;
+        out.add(separator);
+      }
+      for (String id : childIds(parent())) out.add(index.get(id));
+      return out;
+    }
+    public int[] contentSize() {
+      var rows = rows();
+      int width = 12;
+      for (var i : rows)
+        width = Math.max(
+            width, cells(label(i)) + cells(i.secondary) + cells(i.shortcut) + cells(i.icon) + 8);
+      return new int[] {Math.min(4096, width), Math.max(1, rows.size())};
+    }
+    public List<MenuRow> layout(int width, int height, boolean ascii) {
+      hits = List.of();
+      this.width = width = Math.max(0, Math.min(65535, width));
+      height = Math.max(0, Math.min(4096, height));
+      if (!opened || width == 0 || height == 0)
+        return List.of();
+      reconcile();
+      var rows = rows();
+      if (rows.isEmpty()) {
+        hits = List.of(new MenuRow("", clip(emptyLabel, width, true), "hint", List.of(), false));
+        return hits;
+      }
+      int at = 0;
+      for (int n = 0; n < rows.size(); n++)
+        if (rows.get(n).id.equals(focusedId()))
+          at = n;
+      String p = parent();
+      int top = Math.min(tops.getOrDefault(p, 0), at);
+      if (at >= top + height)
+        top = at - height + 1;
+      top = Math.min(top, Math.max(0, rows.size() - height));
+      tops.put(p, top);
+      var out = new ArrayList<MenuRow>();
+      for (var i : rows.subList(top, Math.min(rows.size(), top + height))) {
+        if (i.separator) {
+          out.add(new MenuRow("", (ascii ? "-" : "─").repeat(width), "hint", List.of(), false));
+          continue;
+        }
+        boolean current = i.id.equals(focusedId());
+        String role = i.disabled ? "disabled"
+            : current            ? "selection"
+                                 : "surface",
+               icon = ascii ? (i.asciiIcon.isEmpty() && !i.icon.isEmpty() ? "*" : i.asciiIcon)
+                            : i.icon,
+               text = (current ? "> " : "  ") + (icon.isEmpty() ? "" : icon + " ")
+            + (i.id.equals("@back") ? "< " + i.label : label(i))
+            + (i.secondary.isEmpty() ? "" : "  " + i.secondary),
+               suffix = childIds(i.id).isEmpty() ? ""
+            : ascii                              ? " >"
+                                                 : " ›",
+               shortcut = clean(i.shortcut);
+        int reserve = Math.min(width / 3, cells(shortcut));
+        String tail = reserve > 0 ? " " + clip(shortcut, reserve, false) + suffix : suffix;
+        int tw = Math.min(width, cells(tail));
+        String left = clip(text, width - tw, true);
+        var spans = new ArrayList<MenuSpan>();
+        spans.add(new MenuSpan(0, width, left, role));
+        if (tw > 0)
+          spans.add(new MenuSpan(
+              width - tw, tw, clip(tail, tw, false), role.equals("surface") ? "hint" : role));
+        out.add(new MenuRow(i.id,
+            left + " ".repeat(Math.max(0, width - tw - cells(left))) + clip(tail, tw, false), role,
+            List.copyOf(spans), current));
+      }
+      hits = out;
+      return List.copyOf(out);
+    }
+    public void draw(Canvas c, Rect r, boolean ascii) {
+      if (!opened)
+        return;
+      c.fill(r, "surface");
+      var rows = layout(r.width(), r.height(), ascii);
+      for (int y = 0; y < rows.size(); y++) {
+        var row = rows.get(y);
+        c.fill(new Rect(r.x(), r.y() + y, r.width(), 1), row.role());
+        if (row.spans().isEmpty())
+          c.write(r.x(), r.y() + y, row.text(), row.role(), false, r.width());
+        for (var s : row.spans())
+          c.write(r.x() + s.start(), r.y() + y, s.text(), s.role(), false, s.width());
+      }
+    }
+    /** Paint a host-positioned popup and return the content rectangle for hits. */
+    public Rect drawPopup(Canvas c, Rect r, String title, int padding, boolean ascii) {
+      if (!opened)
+        return new Rect(r.x(), r.y(), 0, 0);
+      var inner = c.panel(r, title, false, ascii);
+      padding = Math.max(0, Math.min(4096, padding));
+      int px = Math.min(padding, inner.width() / 2), py = Math.min(padding, inner.height() / 2);
+      var content = new Rect(inner.x() + px, inner.y() + py, Math.max(0, inner.width() - 2 * px),
+          Math.max(0, inner.height() - 2 * py));
+      draw(c, content, ascii);
+      return content;
+    }
+    public MenuBarLayout barLayout(int width) {
+      width = Math.max(0, Math.min(65535, width));
+      if (width < 3)
+        return new MenuBarLayout(List.of(), false, false);
+      var ids = new ArrayList<String>();
+      for (String id : childIds(""))
+        if (!index.get(id).separator)
+          ids.add(id);
+      if (ids.isEmpty())
+        return new MenuBarLayout(List.of(), false, false);
+      int target = Math.max(0, ids.indexOf(bar));
+      barFirst = Math.min(barFirst, target);
+      int[] sizes = new int[ids.size()];
+      for (int n = 0; n < ids.size(); n++)
+        sizes[n] = Math.min(24, cells(label(index.get(ids.get(n)))) + 2);
+      while (barFirst < target && sum(sizes, barFirst, target) > width - 2) barFirst++;
+      while (barFirst > 0 && sum(sizes, barFirst - 1, target) <= width - 2) barFirst--;
+      int x = 1, last = barFirst;
+      var out = new ArrayList<MenuBarCell>();
+      for (int n = barFirst; n < ids.size(); n++) {
+        if (x >= width - 1)
+          break;
+        var i = index.get(ids.get(n));
+        int w = Math.min(sizes[n], width - 1 - x);
+        boolean current = i.id.equals(bar);
+        String role = i.disabled ? "disabled" : current ? "selection" : "header";
+        out.add(new MenuBarCell(i.id, clip(" " + label(i) + " ", w, true), role, x, w, current));
+        x += w;
+        last = n + 1;
+      }
+      return new MenuBarLayout(List.copyOf(out), barFirst > 0, last < ids.size());
+    }
+    private static int sum(int[] values, int a, int b) {
+      int sum = 0;
+      for (int n = a; n <= b; n++) sum += values[n];
+      return sum;
+    }
+    public MenuEvent barClick(int x, int width) {
+      if (x < 0 || x >= width)
+        return new MenuEvent();
+      var l = barLayout(width);
+      if (x == 0 && l.previous())
+        return handleBar("previous", "");
+      if (x + 1 == width && l.next())
+        return handleBar("next", "");
+      for (var c : l.cells())
+        if (x >= c.start() && x < c.start() + c.width() && usable(c.id(), "")) {
+          bar = c.id();
+          return new MenuEvent("open_request", c.id(), "");
+        }
+      return new MenuEvent();
+    }
+    public void drawBar(Canvas c, Rect r) {
+      if (r.height() <= 0)
+        return;
+      c.fill(new Rect(r.x(), r.y(), r.width(), 1), "surface");
+      var l = barLayout(r.width());
+      for (var cell : l.cells()) {
+        c.fill(new Rect(r.x() + cell.start(), r.y(), cell.width(), 1), cell.role());
+        c.write(r.x() + cell.start(), r.y(), cell.text(), cell.role(), false, cell.width());
+      }
+      if (l.previous())
+        c.write(r.x(), r.y(), "<", "hint", false, 1);
+      if (l.next())
+        c.write(r.x() + r.width() - 1, r.y(), ">", "hint", false, 1);
+    }
+  }
+  public static Rect menuPlacement(Rect anchor, Rect viewport, int width, int height) {
+    long vw = Math.max(0, viewport.width()), vh = Math.max(0, viewport.height()),
+         w = Math.min(Math.max(0, width), vw), h = Math.min(Math.max(0, height), vh),
+         x = Math.max(viewport.x(), Math.min((long) viewport.x() + vw - w, anchor.x())),
+         y = (long) anchor.y() + Math.max(0, anchor.height());
+    if (y + h > (long) viewport.y() + vh)
+      y = (long) anchor.y() - h;
+    y = Math.max(viewport.y(), Math.min((long) viewport.y() + vh - h, y));
+    return new Rect((int) x, (int) y, (int) w, (int) h);
   }
 }

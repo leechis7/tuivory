@@ -30,3 +30,6 @@ __all__ += ["fold"]
 
 from .models import CollectionRow, SearchPicker
 __all__ += ["CollectionRow", "SearchPicker"]
+
+from .workspace import MenuItem, MenuEvent, MenuSpan, MenuRow, MenuBarCell, MenuBarLayout, menu_placement
+__all__ += ["MenuItem", "MenuEvent", "MenuSpan", "MenuRow", "MenuBarCell", "MenuBarLayout", "menu_placement"]

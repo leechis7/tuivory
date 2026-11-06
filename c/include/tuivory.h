@@ -278,6 +278,75 @@ TuiResult tui_picker_layout(TuiSearchPicker *picker, int width, int height,
                             size_t *count);
 TuiResult tui_picker_draw(TuiSearchPicker *picker, TuiCanvas *canvas,
                           TuiRect rect, int focused, int ascii);
+/* Menu content/actions/anchors are host-owned. Rendering uses selection only.
+ */
+typedef struct {
+  const char *id, *parent, *label, *secondary, *shortcut, *mnemonic, *icon,
+      *ascii_icon;
+  int disabled, separator;
+} TuiMenuItem;
+typedef struct TuiMenu TuiMenu;
+typedef struct {
+  const char *kind, *id, *return_id;
+  TuiResult result;
+} TuiMenuEvent;
+typedef struct {
+  int start, width;
+  const char *text, *role;
+} TuiMenuSpan;
+typedef struct {
+  const char *id, *text, *role;
+  TuiMenuSpan spans[2];
+  size_t span_count;
+  int focused;
+} TuiMenuRow;
+typedef struct {
+  const char *id, *text, *role;
+  int start, width, focused;
+} TuiMenuBarCell;
+typedef struct {
+  const TuiMenuBarCell *cells;
+  size_t count;
+  int previous, next;
+} TuiMenuBarLayout;
+TuiMenu *tui_menu_new(const TuiMenuItem *items, size_t count);
+void tui_menu_free(TuiMenu *menu);
+TuiMenuEvent tui_menu_set_items(TuiMenu *menu, const TuiMenuItem *items,
+                                size_t count);
+const TuiMenuItem *tui_menu_items(const TuiMenu *menu, size_t *count);
+int tui_menu_opened(const TuiMenu *menu);
+const char *tui_menu_focused(const TuiMenu *menu);
+const char *tui_menu_return_id(const TuiMenu *menu);
+const char *tui_menu_bar_focused(const TuiMenu *menu);
+size_t tui_menu_path(const TuiMenu *menu, const char **ids, size_t capacity);
+char *tui_menu_title(const TuiMenu *menu);
+TuiResult tui_menu_labels(TuiMenu *menu, const char *back, const char *empty);
+TuiMenuEvent tui_menu_open(TuiMenu *menu, const char *id,
+                           const char *return_id);
+TuiMenuEvent tui_menu_close(TuiMenu *menu);
+TuiMenuEvent tui_menu_back(TuiMenu *menu);
+int tui_menu_focus(TuiMenu *menu, const char *id);
+TuiMenuEvent tui_menu_handle(TuiMenu *menu, const char *action,
+                             const char *value, int height);
+TuiMenuEvent tui_menu_handle_bar(TuiMenu *menu, const char *action,
+                                 const char *value);
+TuiMenuEvent tui_menu_click_id(TuiMenu *menu, const char *id);
+TuiMenuEvent tui_menu_click(TuiMenu *menu, int x, int y, int height);
+TuiResult tui_menu_content_size(const TuiMenu *menu, int *width, int *height);
+TuiResult tui_menu_layout(TuiMenu *menu, int width, int height, int ascii,
+                          const TuiMenuRow **rows, size_t *count);
+TuiResult tui_menu_draw(TuiMenu *menu, TuiCanvas *canvas, TuiRect area,
+                        int ascii);
+/* Host-owned popup placement. content receives the rectangle for menu clicks.
+ */
+TuiResult tui_menu_draw_popup(TuiMenu *menu, TuiCanvas *canvas, TuiRect area,
+                              const char *title, int padding, int ascii,
+                              TuiRect *content);
+TuiResult tui_menu_bar_layout(TuiMenu *menu, int width, TuiMenuBarLayout *out);
+TuiMenuEvent tui_menu_bar_click(TuiMenu *menu, int x, int width);
+TuiResult tui_menu_draw_bar(TuiMenu *menu, TuiCanvas *canvas, TuiRect area);
+TuiRect tui_menu_placement(TuiRect anchor, TuiRect viewport, int width,
+                           int height);
 #ifdef __cplusplus
 }
 #endif

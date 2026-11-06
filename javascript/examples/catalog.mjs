@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as ui from "../dist/index.js";
+import { MenuDemo } from "./menu-host.mjs";
 import { stdin, stdout, argv } from "node:process";
 import { StringDecoder } from "node:string_decoder";
 const args = argv.slice(2);
@@ -9,16 +10,18 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text|form|list|picker --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form|list|picker|menu|context-menu --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
+const menuDemo = ["menu", "context-menu"].includes(value("--demo", "tree"));
 const workspace = value("--demo", "tree") === "workspace";
 const textDemo = value("--demo", "tree") === "text";
 const formDemo = value("--demo", "tree") === "form";
 const listDemo = value("--demo", "tree") === "list",
   pickerDemo = value("--demo", "tree") === "picker";
 if (
+  !menuDemo &&
   !workspace &&
   !textDemo &&
   !formDemo &&
@@ -26,9 +29,12 @@ if (
   !pickerDemo &&
   value("--demo", "tree") !== "tree"
 )
-  throw new Error("Supported demos: tree, workspace, text, form, list, picker");
+  throw new Error(
+    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu",
+  );
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
+const menuHost = new MenuDemo(en, value("--demo", "tree") === "context-menu");
 const text = new ui.Text(
   en
     ? ascii
@@ -205,7 +211,8 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  if (listDemo) list.draw(c, area, true, ascii);
+  if (menuDemo) menuHost.draw(c, area, ascii);
+  else if (listDemo) list.draw(c, area, true, ascii);
   else if (pickerDemo) picker.draw(c, area, true, ascii);
   else if (formDemo) form.draw(c, area);
   else if (textDemo) text.draw(c, area);
@@ -268,12 +275,26 @@ try {
           restore();
           process.exit(0);
         }
+        // A queued Escape must not swallow a following control key or UTF-8 text.
+        if (
+          pending[0] === "\x1b" &&
+          pending.length > 1 &&
+          !["[", "O"].includes(pending[1])
+        ) {
+          pending = pending.slice(1);
+          if (menuDemo) menuHost.handle("cancel");
+          else if (pickerDemo) picker.handle("cancel");
+          else if (formDemo) form.handle("cancel");
+          continue;
+        }
         const mouse = pending.match(/^\x1b\[<(\d+);(\d+);(\d+)([Mm])/);
         if (mouse) {
           pending = pending.slice(mouse[0].length);
           const x = Number(mouse[2]) - 1,
             y = Number(mouse[3]) - 1;
-          if (
+          if (menuDemo && mouse[4] === "M") {
+            menuHost.pointer(x, y, Number(mouse[1]));
+          } else if (
             mouse[4] === "M" &&
             Number(mouse[1]) === 0 &&
             x >= area.x &&
@@ -305,6 +326,8 @@ try {
           continue;
         }
         const keys = {
+          "\x1b[21~": "f10",
+          "\x1b[21;2~": "shift_f10",
           "\x1b[A": "up",
           "\x1b[B": "down",
           "\x1b[C": "right",
@@ -323,7 +346,12 @@ try {
         };
         const key = Object.keys(keys).find((k) => pending.startsWith(k));
         if (key) {
-          if (listDemo)
+          if (menuDemo)
+            menuHost.handle(
+              keys[key] === "toggle" ? "insert" : keys[key],
+              keys[key] === "toggle" ? " " : "",
+            );
+          else if (listDemo)
             list.handle(
               keys[key] === "toggle" ? "select" : keys[key],
               area.height,
@@ -403,12 +431,19 @@ try {
         )
           break;
         if (
-          (textDemo || formDemo || pickerDemo) &&
+          (menuDemo || textDemo || formDemo || pickerDemo) &&
           pending.codePointAt(0) >= 32 &&
           pending[0] !== "\x1b"
         ) {
           const cp = String.fromCodePoint(pending.codePointAt(0));
-          (pickerDemo ? picker : formDemo ? form : text).handle("insert", cp);
+          (menuDemo
+            ? menuHost
+            : pickerDemo
+              ? picker
+              : formDemo
+                ? form
+                : text
+          ).handle("insert", cp);
           pending = pending.slice(cp.length);
         } else pending = pending.slice(1);
       }
@@ -416,7 +451,8 @@ try {
         escapeTimer = setTimeout(() => {
           if (pending === "\x1b") {
             pending = "";
-            if (pickerDemo) picker.handle("cancel");
+            if (menuDemo) menuHost.handle("cancel");
+            else if (pickerDemo) picker.handle("cancel");
             else if (formDemo) form.handle("cancel");
             draw();
           }

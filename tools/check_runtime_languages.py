@@ -32,11 +32,13 @@ focus=ui.Focus("root",[ui.FocusTarget("open")]);focus.open("popup",[]);assert fo
 assert ui.fold("Straße Σςσ")=="strasse σσσ"
 l=ui.List([ui.Item("de","Straße")]);assert l.set_query("STRASSE").kind=="query" and l.focused=="de"
 picker=ui.SearchPicker([ui.Item("rust","Rust")]);picker.handle("open");picker.handle("insert","RUST");assert picker.value=="";assert picker.handle("activate").id=="rust" and picker.value=="rust"
+m=ui.Menu([ui.MenuItem("file","File"),ui.MenuItem("run","Run",parent="file")]);m.open("file","editor");assert m.draw_popup(c,ui.Rect(0,0,30,4),"Menu").width==26;assert m.handle("activate").return_id=="editor"
 from importlib.metadata import distribution
 assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").files)
 ''')
  run([p,'-I',b/'consumer.py'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','tree','--lang','en'],b)
+ run([p,'-I','-m','tuivory','--snapshot','--demo','context-menu','--lang','en'],b)
  print('Independent Python wheel: isolated external venv install/import/Tree/example passed')
 with tempfile.TemporaryDirectory(prefix='tuivory-javascript-')as directory:
  b=Path(directory);(b/'package.json').write_text('{"type":"module"}\n')
@@ -56,6 +58,7 @@ const f=new ui.Form([{id:"p",kind:"password",value:"secret"}]);if(f.fields[0].va
 const s=new ui.Form([{id:"s",kind:"select",options:[{id:"a"},{id:"b"}]}]);s.handle("activate");s.handle("down");if(s.fields[0].choice)throw new Error("pending");s.handle("activate");if(s.fields[0].choice!=="b")throw new Error("choice");
 const focus=new ui.Focus("root",[{id:"open"}]);focus.open("popup",[]);if(!focus.route("root").blocked||focus.route().blocked||focus.requestClose()?.id!=="popup")throw new Error("focus routing");focus.close("popup");if(focus.focused!=="open")throw new Error("focus restoration");
 if(ui.fold("Straße Σςσ")!=="strasse σσσ")throw new Error("fold");const l=new ui.List([{id:"de",label:"Straße"}]);l.setQuery("STRASSE");if(l.focused!=="de")throw new Error("Unicode filter");
+const menu=new ui.Menu([{id:"file",label:"File"},{id:"run",parent:"file",label:"Run"}]);menu.open("file","editor");if(menu.drawPopup(c,ui.rect(0,0,30,4),"Menu").width!==26||menu.handle("activate").returnId!=="editor")throw new Error("menu");
 const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open");picker.handle("insert","RUST");if(picker.value||picker.handle("activate").id!=="rust"||picker.value!=="rust")throw new Error("picker");
 '''
  assert (b/'node_modules/tuivory/CASEFOLD-LICENSE').read_text().startswith('UNICODE LICENSE V3')
@@ -63,4 +66,5 @@ const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open
  run(['node','consumer.mjs'],b)
  run(['node',args.typescript_compiler.resolve(),'--strict','--module','NodeNext','--target','ES2022','--noEmit','consumer.ts'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--lang','en'],b)
+ run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','context-menu','--lang','en'],b)
  print('Independent npm package: isolated external JS import/runtime, TS declarations and example passed')

@@ -63,7 +63,7 @@ class WorkspaceDemo:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker'], default='tree')
+    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu'], default='tree')
     parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
     parser.add_argument('--theme', choices=['dark', 'light', 'blackwhite'], default='dark')
     parser.add_argument('--colors', choices=['8', '16', '256', 'truecolor'], default='256')
@@ -103,7 +103,9 @@ def main():
     models['list'].empty=models['picker'].list.empty=word('항목 없음','(empty)')
     models['workspace'] = WorkspaceDemo(tree, not ko)
     models['grid'].edit_enabled = True
-    models['menu'].open('root')
+    from ._menu_example import MenuDemo
+    models['menu'] = MenuDemo(not ko)
+    models['context-menu'] = MenuDemo(not ko, True)
     models['feedback'].push(Notice('ok', word('준비 완료', 'Ready'), 'success'))
     model = models[args.demo]
     themes, profiles = ['dark', 'light', 'blackwhite'], ['8', '16', '256', 'truecolor']
@@ -135,6 +137,8 @@ def main():
                 theme = themes[(themes.index(theme) + 1) % len(themes)]
             elif event.key == 'f2':
                 colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
+            elif event.key == 'mouse' and isinstance(model, MenuDemo):
+                model.pointer(event.x, event.y, event.button)
             elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
                 if isinstance(model, (Grid, Text)):
                     model.click(event.x - area.x, event.y - area.y, area.width, area.height)
@@ -144,7 +148,9 @@ def main():
                     model.click(event.x - area.x, event.y - area.y, area.height)
             else:
                 action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
-                if isinstance(model, SearchPicker):
+                if isinstance(model, MenuDemo):
+                    model.handle(action, area.height, event.text)
+                elif isinstance(model, SearchPicker):
                     model.handle(action,event.text,area.height)
                 elif isinstance(model,List) and action=="insert" and event.text==" ":
                     model.handle("select",area.height)
@@ -152,7 +158,9 @@ def main():
                     model.handle("newline" if isinstance(model,Text) and action=="activate" else action, event.text)
                 elif isinstance(model, Tabs):
                     model.handle({'left': 'previous', 'right': 'next'}.get(action, action))
-                elif isinstance(model, (Grid, List, Menu)):
+                elif isinstance(model, Menu):
+                    model.handle("mnemonic" if action=="insert" else action,event.text,area.height)
+                elif isinstance(model, (Grid, List)):
                     model.handle(action, area.height, event.text)
                 elif isinstance(model, Tree):
                     model.handle(action, area.height)
