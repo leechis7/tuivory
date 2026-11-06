@@ -42,7 +42,7 @@ public final class Catalog {
   public static void main(String[] args) throws IOException {
     String theme = "dark", colors = "256";
     boolean en = false, ascii = false, snapshot = false, ansiSnapshot = false, workspace = false,
-            tabFocus = false, textDemo = false;
+            tabFocus = false, textDemo = false, formDemo = false;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--lang" -> {
@@ -71,12 +71,13 @@ public final class Catalog {
             throw new IllegalArgumentException("missing demo");
           workspace = args[i].equals("workspace");
           textDemo = args[i].equals("text");
-          if (!args[i].equals("tree") && !workspace && !textDemo)
-            throw new IllegalArgumentException("Supported demos: tree, workspace, text");
+          formDemo = args[i].equals("form");
+          if (!args[i].equals("tree") && !workspace && !textDemo && !formDemo)
+            throw new IllegalArgumentException("Supported demos: tree, workspace, text, form");
         }
         case "--help" -> {
           System.out.println(
-              "--demo tree|workspace|text --lang ko|en --theme dark|light|blackwhite --colors "
+              "--demo tree|workspace|text|form --lang ko|en --theme dark|light|blackwhite --colors "
               + "8|16|256|truecolor --ascii --snapshot");
           return;
         }
@@ -100,6 +101,26 @@ public final class Catalog {
     var text = new Text(en ? (ascii ? "Grapheme text\nEdit with real cursor."
                                     : "Unicode é 界\nEdit with real cursor.")
                            : "한글 é 界\n여러 줄을 편집합니다.");
+    var name = new Field("name", "text");
+    name.label = en ? "Name" : "이름";
+    name.value = en ? "Input" : "한글 입력";
+    name.required = true;
+    var password = new Field("password", "password");
+    password.label = en ? "Password" : "비밀번호";
+    password.value = "example";
+    var off = new Field("off", "checkbox");
+    off.label = en ? "Disabled" : "비활성";
+    off.state.disabled = true;
+    var mode = new Field("mode", "select");
+    mode.label = en ? "Mode" : "모드";
+    mode.choice = "a";
+    mode.options = List.of(new FormOption("a", en ? "Default" : "기본"),
+        new FormOption("off", en ? "Unavailable" : "사용 불가", true),
+        new FormOption("b", en ? "Alternative" : "다른 값"));
+    var apply = new Field("apply", "button");
+    apply.label = en ? "Apply" : "적용";
+    apply.action = "submit";
+    var form = new Form(List.of(name, password, off, mode, apply));
     var input = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
     var output = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8), true);
     try {
@@ -107,7 +128,9 @@ public final class Catalog {
         var c = new Canvas(72, 18, new Palette(theme, colors));
         var area = c.panel(
             new Rect(0, 0, 72, 17), en ? "Tuivory Java example" : "Tuivory Java 예제", true, ascii);
-        if (textDemo)
+        if (formDemo)
+          form.draw(c, area, true);
+        else if (textDemo)
           text.draw(c, area, true);
         else if (workspace)
           workspaceDraw(tree, tabs, split, c, area, tabFocus, en, ascii);
@@ -131,11 +154,14 @@ public final class Catalog {
         if (line == null || line.equals("quit"))
           break;
         String action = line.strip();
-        if (textDemo) {
+        if (textDemo || formDemo) {
           int space = action.indexOf(' ');
           String command = space < 0 ? action : action.substring(0, space);
           String addition = space < 0 ? "" : action.substring(space + 1);
-          text.handle(command, addition);
+          if (formDemo)
+            form.handle(command.equals("tab") ? "next" : command, addition);
+          else
+            text.handle(command, addition);
         } else if (workspace && action.equals("tab"))
           tabFocus = !tabFocus;
         else if (workspace && (action.equals("<") || action.equals(">")))

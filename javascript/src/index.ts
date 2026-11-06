@@ -822,6 +822,9 @@ export class Text {
   display(): string {
     return this.secret ? "*".repeat(graphemes(this.value).length) : this.value;
   }
+  [Symbol.for("nodejs.util.inspect.custom")](): unknown {
+    return this.toJSON();
+  }
   toJSON(): unknown {
     return {
       display: this.display(),
@@ -1087,6 +1090,11 @@ export class Text {
     return event("select");
   }
 }
+export interface FormOption {
+  id: string;
+  label?: string;
+  disabled?: boolean;
+}
 export interface Field {
   id: string;
   kind?:
@@ -1101,158 +1109,396 @@ export interface Field {
   value?: string;
   required?: boolean;
   checked?: boolean;
-  options?: { id: string; label: string; disabled?: boolean }[];
+  options?: FormOption[];
   state?: Partial<ControlState>;
+  help?: string;
   error?: string;
+  choice?: string;
+  action?: string;
+  open?: boolean;
+  pending?: string;
+  height?: number;
+}
+export interface FormRow {
+  id: string;
+  text: string;
+  role: string;
+  option?: string;
+  input?: boolean;
+  focused?: boolean;
+  sourceRow?: number;
 }
 export class Form {
   readonly fields: Field[];
   readonly inputs = new Map<string, Text>();
   focused = "";
   scroll = 0;
+  private hits: FormRow[] = [];
+  private layoutWidth = 0;
   constructor(fields: Field[]) {
     unique(fields);
     this.fields = clone(fields);
     for (const f of this.fields) {
       f.kind ??= "text";
       f.state = new ControlState(f.state);
-      if (["text", "textarea", "password"].includes(f.kind))
-        this.inputs.set(
-          f.id,
-          new Text(f.value ?? "", {
-            secret: f.kind === "password",
-            multiline: f.kind === "textarea",
-          }),
-        );
+      f.options ??= [];
+      unique(f.options);
+      if (
+        ![
+          "text",
+          "textarea",
+          "password",
+          "button",
+          "checkbox",
+          "radio",
+          "select",
+        ].includes(f.kind) ||
+        f.open
+      )
+        throw new Error("invalid kind/open select");
+      if (f.choice && !f.options.some((o) => o.id === f.choice))
+        throw new Error("unknown choice");
+      if (["text", "textarea", "password"].includes(f.kind)) {
+        const t = new Text(f.value ?? "", {
+          secret: f.kind === "password",
+          multiline: f.kind === "textarea",
+        });
+        this.inputs.set(f.id, t);
+        f.value = t.display();
+      }
     }
-    for (const f of this.fields)
-      if (f.kind === "password") f.value = this.inputs.get(f.id)!.display();
     this.eligible();
   }
+  private field(id: string): Field | undefined {
+    return this.fields.find((f) => f.id === id);
+  }
   private eligible(): Field[] {
-    const items = this.fields.filter((f) => !f.state?.disabled);
+    const items = this.fields.filter(
+      (f) => new ControlState(f.state).focusable,
+    );
     if (!items.some((f) => f.id === this.focused))
       this.focused = items[0]?.id ?? "";
     return items;
   }
+  focus(id: string): boolean {
+    const f = this.field(id);
+    if (!f || !new ControlState(f.state).focusable) return false;
+    for (const v of this.fields) v.open = false;
+    this.focused = id;
+    return true;
+  }
+  atTabBoundary(previous = false): boolean {
+    const items = this.eligible();
+    return (
+      !items.length ||
+      this.focused === items[previous ? 0 : items.length - 1].id
+    );
+  }
+  setState(id: string, state: Partial<ControlState>): boolean {
+    const f = this.field(id);
+    if (!f) return false;
+    f.state = new ControlState(state);
+    if (!new ControlState(f.state).editable) f.open = false;
+    this.eligible();
+    return true;
+  }
+  setFeedback(id: string, help = "", error = ""): boolean {
+    const f = this.field(id);
+    if (!f) return false;
+    f.help = help;
+    f.error = error;
+    f.state = new ControlState({ ...f.state, invalid: !!error });
+    return true;
+  }
   value(id: string): string {
-    const f = this.fields.find((f) => f.id === id);
+    const f = this.field(id);
     if (!f) throw new Error("unknown field");
     return this.inputs.get(id)?.value ?? f.value ?? "";
   }
+  selectText(id: string, a: number, c: number): boolean {
+    const t = this.inputs.get(id);
+    if (!t) return false;
+    t.select(a, c);
+    return true;
+  }
+  missing(): string[] {
+    return this.fields
+      .filter((f) => {
+        const empty = this.inputs.has(f.id)
+          ? /^\p{White_Space}*$/u.test(this.value(f.id))
+          : f.kind === "checkbox"
+            ? !f.checked
+            : ["radio", "select"].includes(f.kind!)
+              ? !f.choice
+              : false;
+        return (
+          !f.state?.disabled &&
+          (f.error || f.state?.invalid || (f.required && empty))
+        );
+      })
+      .map((f) => f.id);
+  }
   handle(action: string, text = ""): Event {
     const items = this.eligible();
-    if (action === "cancel") return event("cancel");
+    if (action === "next" || action === "previous") {
+      if (items.length) {
+        const i = items.findIndex((f) => f.id === this.focused);
+        this.focus(
+          items[
+            (i + items.length + (action === "next" ? 1 : -1)) % items.length
+          ].id,
+        );
+      }
+      return event();
+    }
     if (action === "submit") {
-      const missing = this.fields
-        .filter((f) => !f.state?.disabled && f.required && !this.value(f.id))
-        .map((f) => f.id);
+      const missing = this.missing();
       return event(missing.length ? "invalid" : "submit", "", "", missing);
     }
-    if (!items.length) return event();
-    const i = items.findIndex((f) => f.id === this.focused),
-      f = items[i],
-      state = new ControlState(f.state);
-    if (action === "next" || action === "previous") {
-      this.focused =
-        items[
-          (i + (action === "next" ? 1 : -1) + items.length) % items.length
-        ].id;
-      return event("focus", this.focused);
+    const f = this.field(this.focused);
+    if (!f) return event();
+    const state = new ControlState(f.state);
+    if (action === "cancel") {
+      if (f.open) {
+        f.open = false;
+        return event();
+      }
+      return event("cancel", f.id);
     }
-    if (!state.activatable) return event();
-    if (action === "activate" && f.kind === "button")
-      return event("activate", f.id);
-    if (!state.editable) return event();
+    if (action === "insert" && text === " " && !this.inputs.has(f.id))
+      action = "toggle";
     const input = this.inputs.get(f.id);
     if (input) {
-      const result = input.handle(action, text);
+      input.disabled = state.disabled;
+      input.readOnly = !state.editable;
+      if (action === "activate" && f.kind !== "textarea")
+        return state.activatable ? this.handle("submit") : event();
+      const e = input.handle(action === "activate" ? "newline" : action, text);
       f.value = input.display();
-      return { ...result, id: f.id };
+      if (["change", "cut"].includes(e.kind))
+        f.state = new ControlState({ ...f.state, edited: true });
+      return { ...e, id: f.id };
     }
     if (
-      ["checkbox", "radio"].includes(f.kind!) &&
-      ["activate", "toggle"].includes(action)
+      f.kind === "button" &&
+      ["left", "right"].includes(action) &&
+      !state.disabled
     ) {
-      f.checked = f.kind === "radio" || !f.checked;
-      return event("change", f.id, "", f.checked);
+      this.handle(action === "left" ? "previous" : "next");
+      return event();
     }
-    if (
-      f.kind === "select" &&
-      ["activate", "left", "right", "up", "down"].includes(action)
-    ) {
-      const options = (f.options ?? []).filter((o) => !o.disabled);
-      if (!options.length) return event();
-      const at = Math.max(
-        0,
-        options.findIndex((o) => o.id === f.value),
-      );
-      f.value =
-        options[
-          (at + (["left", "up"].includes(action) ? -1 : 1) + options.length) %
-            options.length
-        ].id;
-      return event("change", f.id, f.value);
+    if (!state.activatable) return event();
+    if (f.kind === "button" && ["activate", "toggle"].includes(action))
+      return f.action === "submit"
+        ? this.handle("submit")
+        : event(f.action === "cancel" ? "cancel" : "activate", f.id);
+    if (!state.editable) return event();
+    let changed = false;
+    if (f.kind === "checkbox" && ["activate", "toggle"].includes(action)) {
+      f.checked = !f.checked;
+      changed = true;
+    } else if (f.kind === "radio" || f.kind === "select") {
+      if (f.kind === "select" && ["activate", "toggle"].includes(action)) {
+        if (f.open) {
+          f.choice = f.pending;
+          f.open = false;
+          changed = true;
+        } else {
+          f.open = true;
+          f.pending = f.choice || f.options?.find((o) => !o.disabled)?.id || "";
+          return event();
+        }
+      } else if (
+        ["left", "right", "up", "down", "activate", "toggle"].includes(action)
+      ) {
+        if (f.kind === "select" && !f.open) return event();
+        const ids = (f.options ?? [])
+          .filter((o) => !o.disabled)
+          .map((o) => o.id);
+        if (!ids.length) return event();
+        const at = ids.indexOf((f.open ? f.pending : f.choice) ?? "");
+        const target = ["left", "up"].includes(action)
+          ? (Math.max(0, at) + ids.length - 1) % ids.length
+          : at < 0
+            ? 0
+            : (at + 1) % ids.length;
+        if (f.kind === "select") f.pending = ids[target];
+        else {
+          f.choice = ids[target];
+          changed = true;
+        }
+      }
+    }
+    if (changed) {
+      f.state = new ControlState({ ...f.state, edited: true });
+      return event("change", f.id);
     }
     return event();
   }
-  click(x: number, y: number, height = 10): Event {
-    const f = this.fields[this.scroll + y];
-    if (y < 0 || y >= height || !f || f.state?.disabled) return event();
-    this.focused = f.id;
-    return ["button", "checkbox", "radio", "select"].includes(f.kind!)
+  clickField(id: string, option = ""): Event {
+    const f = this.field(id);
+    if (
+      !f ||
+      f.state?.disabled ||
+      (f.options ?? []).some((o) => o.id === option && o.disabled)
+    )
+      return event();
+    if (this.focused !== id) this.focus(id);
+    const state = new ControlState(f.state);
+    if (f.kind === "button") return this.handle("activate");
+    if (!state.editable) return event();
+    if (f.kind === "select" && !f.open) return this.handle("activate");
+    if (option && ["radio", "select"].includes(f.kind!)) {
+      if (!(f.options ?? []).some((o) => o.id === option && !o.disabled))
+        return event();
+      f.choice = option;
+      f.open = false;
+      f.state = new ControlState({ ...f.state, edited: true });
+      return event("change", f.id);
+    }
+    return ["checkbox", "select"].includes(f.kind!)
       ? this.handle("activate")
-      : event("focus", f.id);
+      : event();
+  }
+  layout(width: number, height: number): FormRow[] {
+    const rows: FormRow[] = [];
+    let anchor = 0;
+    for (const f of this.fields) {
+      const current = f.id === this.focused,
+        state = new ControlState(f.state),
+        role = state.disabled
+          ? "disabled"
+          : f.error || state.invalid
+            ? "error"
+            : state.role;
+      let markers = state.markers;
+      if (state.disabled) markers = markers.replace(/^-/, "");
+      if (current) anchor = rows.length;
+      rows.push({
+        id: f.id,
+        text:
+          (current ? "> " : "  ") +
+          (f.label ?? "") +
+          (f.required ? " *" : "") +
+          (markers ? " " + markers : ""),
+        role,
+        focused: current,
+      });
+      if (this.inputs.has(f.id)) {
+        const display = this.inputs.get(f.id)!.display(),
+          lines =
+            f.kind === "textarea" ? display.split(/\r\n|\r|\n/) : [display];
+        lines
+          .slice(0, f.kind === "textarea" ? Math.max(1, f.height ?? 3) : 1)
+          .forEach((line, i) =>
+            rows.push({
+              id: f.id,
+              text: "  " + line,
+              role: state.disabled ? "disabled" : "field",
+              input: true,
+              sourceRow: i,
+            }),
+          );
+      } else if (f.kind === "checkbox")
+        rows.push({ id: f.id, text: f.checked ? "  [x]" : "  [ ]", role });
+      else if (f.kind === "button")
+        rows.push({
+          id: f.id,
+          text: "  [ " + (f.label ?? "") + (state.busy ? " ~" : "") + " ]",
+          role: state.disabled ? "disabled" : state.busy ? "hint" : "button",
+          focused: current,
+        });
+      else
+        for (const o of f.options ?? []) {
+          if (f.kind === "select" && !f.open && o.id !== f.choice) continue;
+          rows.push({
+            id: f.id,
+            text:
+              "  (" +
+              (o.id === (f.open ? f.pending : f.choice) ? "*" : " ") +
+              ") " +
+              (o.label ?? ""),
+            role: o.disabled || state.disabled ? "disabled" : role,
+            option: o.id,
+          });
+        }
+      if (f.error) rows.push({ id: f.id, text: "! " + f.error, role: "error" });
+      else if (f.help)
+        rows.push({ id: f.id, text: "  " + f.help, role: "hint" });
+    }
+    width = Math.max(0, width);
+    height = Math.max(0, height);
+    this.scroll = Math.min(
+      Math.max(0, anchor - Math.max(0, height - 2)),
+      Math.max(0, rows.length - height),
+    );
+    this.layoutWidth = width;
+    this.hits = rows
+      .slice(this.scroll, this.scroll + height)
+      .map((r) => ({ ...r, text: clip(r.text, width) }));
+    return this.hits;
+  }
+  click(x: number, y: number, height = 10): Event {
+    if (x < 0) return event();
+    if (!this.hits.length) return event();
+    if (
+      x >= this.layoutWidth ||
+      y < 0 ||
+      y >= Math.min(height, this.hits.length)
+    )
+      return event();
+    const row = this.hits[y];
+    if (row.input && x >= 2) {
+      const f = this.field(row.id)!;
+      if (f.state?.disabled) return event();
+      if (this.focused !== f.id) this.focus(f.id);
+      const indices = this.hits
+        .map((r, i) => (r.id === row.id && r.input ? i : -1))
+        .filter((i) => i >= 0);
+      return this.inputs
+        .get(row.id)!
+        .click(
+          x - 2,
+          y - indices[0],
+          Math.max(0, this.layoutWidth - 2),
+          indices.length,
+        );
+    }
+    return this.clickField(row.id, row.option);
   }
   draw(c: Canvas, r: Rect, focused = true): void {
     c.fill(r);
-    this.eligible();
-    const index = Math.max(
-      0,
-      this.fields.findIndex((f) => f.id === this.focused),
+    const rows = this.layout(r.width, r.height);
+    rows.forEach((row, y) =>
+      c.write(
+        r.x,
+        r.y + y,
+        row.text,
+        row.role,
+        focused && !!row.focused,
+        r.width,
+      ),
     );
-    this.scroll = Math.max(0, Math.min(this.scroll, index));
-    if (index >= this.scroll + Math.max(1, r.height))
-      this.scroll = index - Math.max(1, r.height) + 1;
-    this.fields.slice(this.scroll, this.scroll + r.height).forEach((f, y) => {
-      const current = focused && f.id === this.focused,
-        prefix = f.label ? f.label + ": " : "",
-        start = Math.min(cells(prefix), r.width),
-        width = r.width - start,
-        role = f.state?.disabled ? "disabled" : f.error ? "error" : "body";
-      c.write(r.x, r.y + y, clip(prefix, r.width), role, current, r.width);
-      const input = this.inputs.get(f.id);
-      if (input) {
-        const p = input.window(width);
-        c.write(
-          r.x + start,
-          r.y + y,
-          p.text + " ".repeat(Math.max(0, width - cells(p.text))),
-          f.state?.disabled ? "disabled" : "field",
-          false,
-          width,
-          true,
-        );
-        if (current && new ControlState(f.state).editable && width)
-          c.setCursor(r.x + start + p.x, r.y + y, p.glyphWidth);
-      } else {
-        const value = ["checkbox", "radio"].includes(f.kind!)
-          ? (f.checked ? "[x] " : "[ ] ") + (f.label ?? "")
-          : f.kind === "button"
-            ? `[ ${f.label ?? ""} ]`
-            : ((f.options ?? []).find((o) => o.id === f.value)?.label ??
-              f.value ??
-              "");
-        c.write(
-          r.x + start,
-          r.y + y,
-          clip(value, width, true),
-          role,
-          current,
-          width,
-        );
-      }
-    });
+    for (const f of this.fields) {
+      const indices = rows
+        .map((row, i) => (row.id === f.id && row.input ? i : -1))
+        .filter((i) => i >= 0);
+      if (!indices.length) continue;
+      const t = this.inputs.get(f.id)!,
+        state = new ControlState(f.state);
+      t.disabled = state.disabled;
+      t.readOnly = !state.editable;
+      t.draw(
+        c,
+        rect(
+          r.x + Math.min(2, r.width),
+          r.y + indices[0],
+          Math.max(0, r.width - 2),
+          indices.length,
+        ),
+        focused && this.focused === f.id,
+      );
+    }
   }
 }
 export class Control extends Form {

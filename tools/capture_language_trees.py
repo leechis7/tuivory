@@ -72,7 +72,7 @@ def svg(data):
     out.append('</svg>');return '\n'.join(out)+'\n'
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--python',default=sys.executable);p.add_argument('--demo',choices=['tree','workspace','text'],default='tree');args=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--python',default=sys.executable);p.add_argument('--demo',choices=['tree','workspace','text','form'],default='tree');args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     cmds={'python':[args.python,'-m','tuivory'],'javascript':['node','javascript/examples/catalog.mjs'],'c':[f'bin/c/tuivory-linux-{arch}'],'cpp':[f'bin/cpp/tuivory-linux-{arch}'],'java':['java','-jar',f'.cache/packages/java/tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}
     for language,cmd in cmds.items():
@@ -82,7 +82,7 @@ def main():
             output=subprocess.check_output([*cmd,'--demo',args.demo,'--lang',lang,'--theme','dark','--colors','truecolor','--snapshot-ansi'],cwd=ROOT,env=env,text=True)
             assert '\x1b['in output,(language,output[:200])
             literal=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', output)
-            assert (('한글'if lang=='ko'else'Unicode')if args.demo=='text'else('작업 공간'if lang=='ko'else'Workspace'))in literal
+            assert (('이름'if lang=='ko'else'Name')if args.demo=='form'else('한글'if lang=='ko'else'Unicode')if args.demo=='text'else('작업 공간'if lang=='ko'else'Workspace'))in literal
             if lang=='en':assert '작업 공간'not in literal
             path=ROOT/'docs/images'/f'language-{language}-{args.demo}{"-en"if lang=="en"else""}.png'
             intermediate=ROOT/'.cache/validation/languages/snapshots'/path.with_suffix('.svg').name;intermediate.parent.mkdir(parents=True,exist_ok=True);intermediate.write_text(svg(output))

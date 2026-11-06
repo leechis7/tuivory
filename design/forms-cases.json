@@ -1,0 +1,436 @@
+{
+  "scenarios": [
+    {
+      "name": "validation-editing-state",
+      "fields": [
+        {
+          "id": "name",
+          "kind": "text",
+          "required": true
+        },
+        {
+          "id": "read",
+          "kind": "text",
+          "value": "keep",
+          "state": {
+            "read_only": true
+          }
+        },
+        {
+          "id": "check",
+          "kind": "checkbox",
+          "required": true
+        },
+        {
+          "id": "submit",
+          "kind": "button",
+          "action": "submit"
+        }
+      ],
+      "steps": [
+        {
+          "action": "submit",
+          "kind": "invalid",
+          "missing": [
+            "name",
+            "check"
+          ]
+        },
+        {
+          "action": "insert",
+          "text": "가👩‍💻é",
+          "kind": "change",
+          "values": {
+            "name": "가👩‍💻é"
+          }
+        },
+        {
+          "action": "backspace",
+          "kind": "change",
+          "values": {
+            "name": "가👩‍💻"
+          }
+        },
+        {
+          "action": "left",
+          "kind": "select"
+        },
+        {
+          "action": "delete",
+          "kind": "change",
+          "values": {
+            "name": "가"
+          }
+        },
+        {
+          "action": "next",
+          "kind": "",
+          "focused": "read"
+        },
+        {
+          "action": "select_all",
+          "kind": "select"
+        },
+        {
+          "action": "copy",
+          "kind": "copy",
+          "event_text": "keep"
+        },
+        {
+          "action": "insert",
+          "text": "bad",
+          "kind": "",
+          "values": {
+            "read": "keep"
+          }
+        },
+        {
+          "focus": "check"
+        },
+        {
+          "action": "toggle",
+          "kind": "change",
+          "checked": {
+            "check": true
+          }
+        },
+        {
+          "focus": "submit"
+        },
+        {
+          "action": "activate",
+          "kind": "submit",
+          "missing": []
+        },
+        {
+          "feedback": "name",
+          "error": "host error"
+        },
+        {
+          "action": "submit",
+          "kind": "invalid",
+          "missing": [
+            "name"
+          ]
+        },
+        {
+          "state": "name",
+          "value": {
+            "disabled": true
+          }
+        },
+        {
+          "action": "submit",
+          "kind": "submit",
+          "missing": []
+        }
+      ]
+    },
+    {
+      "name": "pending-select-and-radio",
+      "fields": [
+        {
+          "id": "select",
+          "kind": "select",
+          "choice": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "A"
+            },
+            {
+              "id": "x",
+              "label": "X",
+              "disabled": true
+            },
+            {
+              "id": "b",
+              "label": "B"
+            }
+          ]
+        },
+        {
+          "id": "radio",
+          "kind": "radio",
+          "options": [
+            {
+              "id": "a",
+              "label": "A"
+            },
+            {
+              "id": "x",
+              "label": "X",
+              "disabled": true
+            },
+            {
+              "id": "b",
+              "label": "B"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "action": "down",
+          "kind": "",
+          "choices": {
+            "select": "a"
+          }
+        },
+        {
+          "action": "activate",
+          "kind": "",
+          "open": {
+            "select": true
+          }
+        },
+        {
+          "action": "down",
+          "kind": "",
+          "pending": {
+            "select": "b"
+          },
+          "choices": {
+            "select": "a"
+          }
+        },
+        {
+          "action": "cancel",
+          "kind": "",
+          "open": {
+            "select": false
+          },
+          "choices": {
+            "select": "a"
+          }
+        },
+        {
+          "action": "activate",
+          "kind": ""
+        },
+        {
+          "action": "down",
+          "kind": ""
+        },
+        {
+          "action": "activate",
+          "kind": "change",
+          "choices": {
+            "select": "b"
+          },
+          "open": {
+            "select": false
+          }
+        },
+        {
+          "state": "select",
+          "value": {
+            "read_only": true
+          }
+        },
+        {
+          "click": "select",
+          "option": "a",
+          "kind": "",
+          "choices": {
+            "select": "b"
+          }
+        },
+        {
+          "focus": "radio"
+        },
+        {
+          "action": "down",
+          "kind": "change",
+          "choices": {
+            "radio": "a"
+          }
+        },
+        {
+          "action": "down",
+          "kind": "change",
+          "choices": {
+            "radio": "b"
+          }
+        },
+        {
+          "click": "radio",
+          "option": "x",
+          "kind": "",
+          "choices": {
+            "radio": "b"
+          }
+        }
+      ]
+    },
+    {
+      "name": "password-and-initial-copy",
+      "fields": [
+        {
+          "id": "password",
+          "kind": "password",
+          "value": "秘密😀"
+        },
+        {
+          "id": "cancel",
+          "kind": "button",
+          "action": "cancel"
+        }
+      ],
+      "steps": [
+        {
+          "action": "select_all",
+          "kind": "select"
+        },
+        {
+          "action": "copy",
+          "kind": ""
+        },
+        {
+          "action": "cut",
+          "kind": ""
+        },
+        {
+          "action": "insert",
+          "text": "new",
+          "kind": "change",
+          "values": {
+            "password": "new"
+          },
+          "display": {
+            "password": "***"
+          }
+        },
+        {
+          "action": "undo",
+          "kind": "change",
+          "values": {
+            "password": "秘密😀"
+          },
+          "display": {
+            "password": "***"
+          }
+        },
+        {
+          "focus": "cancel"
+        },
+        {
+          "action": "activate",
+          "kind": "cancel"
+        }
+      ]
+    },
+    {
+      "name": "busy-disabled-and-feedback",
+      "fields": [
+        {
+          "id": "off",
+          "kind": "checkbox",
+          "state": {
+            "disabled": true
+          }
+        },
+        {
+          "id": "busy",
+          "kind": "button",
+          "state": {
+            "busy": true
+          }
+        },
+        {
+          "id": "on",
+          "kind": "button"
+        }
+      ],
+      "steps": [
+        {
+          "click": "off",
+          "kind": "",
+          "focused": "busy",
+          "checked": {
+            "off": false
+          }
+        },
+        {
+          "action": "activate",
+          "kind": ""
+        },
+        {
+          "action": "next",
+          "kind": "",
+          "focused": "on"
+        },
+        {
+          "action": "activate",
+          "kind": "activate"
+        },
+        {
+          "feedback": "on",
+          "error": "server rejected"
+        },
+        {
+          "action": "submit",
+          "kind": "invalid",
+          "missing": [
+            "on"
+          ]
+        },
+        {
+          "feedback": "on",
+          "error": ""
+        },
+        {
+          "action": "submit",
+          "kind": "submit",
+          "missing": []
+        }
+      ]
+    },
+    {
+      "name": "unicode-required-whitespace",
+      "fields": [
+        {
+          "id": "name",
+          "kind": "text",
+          "value": " 　",
+          "required": true
+        }
+      ],
+      "steps": [
+        {
+          "action": "submit",
+          "kind": "invalid",
+          "missing": [
+            "name"
+          ]
+        },
+        {
+          "action": "select_all",
+          "kind": "select"
+        },
+        {
+          "action": "insert",
+          "text": "x",
+          "kind": "change",
+          "values": {
+            "name": "x"
+          }
+        },
+        {
+          "action": "submit",
+          "kind": "submit",
+          "missing": []
+        }
+      ]
+    }
+  ],
+  "invalid": [
+    "duplicate field ID",
+    "empty field ID",
+    "unknown kind",
+    "duplicate option ID",
+    "empty option ID",
+    "unknown initial choice",
+    "initially open select"
+  ]
+}

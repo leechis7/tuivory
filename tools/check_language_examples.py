@@ -46,7 +46,22 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             if process.poll()is not None:break
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
-        if demo=='text':
+        if demo=='form':
+            drain(.25)
+            os.write(master,b'select_all\n'if language=='java'else b'\x01');drain(.05)
+            os.write(master,b'insert Z\n'if language=='java'else b'Z');drain(.08)
+            visible='\n'.join(''.join(row)for row in screen.rows[1:17])
+            assert 'Z'in visible,(language,'form text edit',visible)
+            # Disabled checkbox is skipped while tabbing to the select.
+            for _ in range(2):os.write(master,b'tab\n'if language=='java'else b'\t');drain(.06)
+            os.write(master,b'activate\n'if language=='java'else b'\r');drain(.05)
+            os.write(master,b'down\n'if language=='java'else b'\x1b[B');drain(.05)
+            os.write(master,b'activate\n'if language=='java'else b'\r');drain(.08)
+            visible='\n'.join(''.join(row)for row in screen.rows[1:17]).replace(' ','')
+            assert ('Alternative'if lang=='en'else'다른값')in visible,(language,'form select commit',visible)
+            assert 'example'not in visible,(language,'raw password in output')
+            assert b'\x1b[?25h'in captured,(language,'real form cursor absent')
+        elif demo=='text':
             drain(.25)
             # Move to line start and insert a sentinel; backspace must restore it.
             os.write(master,b'home\n'if language=='java'else b'\x1b[H');drain(.06)
@@ -94,7 +109,7 @@ def main():
     p.add_argument('--python',default=sys.executable)
     p.add_argument('--language',choices=['python','javascript','c','cpp','java'])
     p.add_argument('--matrix',action='store_true')
-    p.add_argument('--demo',choices=['tree','workspace','text'],default='tree')
+    p.add_argument('--demo',choices=['tree','workspace','text','form'],default='tree')
     args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     commands={'python':[args.python,'-m','tuivory'],'javascript':['node',ROOT/'javascript/examples/catalog.mjs'],'c':[ROOT/'bin/c'/f'tuivory-linux-{arch}'],'cpp':[ROOT/'bin/cpp'/f'tuivory-linux-{arch}'],'java':['java','-jar',ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}

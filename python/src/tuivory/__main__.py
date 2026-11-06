@@ -2,7 +2,7 @@
 import argparse
 import json
 from . import (Canvas, Palette, Rect, Tree, Node, Tabs, Tab, List, Item, Form, Field,
-               Grid, Column, Record, Text, ControlState, Menu, Progress, DataState,
+               Grid, Column, Record, Text, ControlState, FormOption, Menu, Progress, DataState,
                Notices, Notice, Terminal)
 
 
@@ -85,7 +85,11 @@ def main():
     models = dict(tree=tree,
                   tabs=Tabs([Tab('a', word('개요', 'Overview')), Tab('b', word('편집 중', 'Editing'), edited=True, closable=True), Tab('off', word('비활성', 'Disabled'), disabled=True)]),
                   list=List([Item('a', word('실행 가능', 'Available')), Item('off', word('비활성', 'Disabled'), disabled=True)]),
-                  form=Form([Field('name', label=word('이름', 'Name'), value=word('한글 입력', 'Input')), Field('off', kind='checkbox', label=word('비활성', 'Disabled'), state=ControlState(disabled=True)), Field('run', kind='button', label=word('확인', 'Apply'))]),
+                  form=Form([Field('name', label=word('이름', 'Name'), value=word('한글 입력', 'Input'),required=True),
+                    Field('password',kind='password',label=word('비밀번호','Password'),value='example'),
+                    Field('off',kind='checkbox',label=word('비활성','Disabled'),state=ControlState(disabled=True)),
+                    Field('mode',kind='select',label=word('모드','Mode'),choice='a',options=[FormOption('a',word('기본','Default')),FormOption('off',word('사용 불가','Unavailable'),True),FormOption('b',word('다른 값','Alternative'))]),
+                    Field('apply',kind='button',label=word('적용','Apply'),action='submit')]),
                   grid=Grid([Column('name', word('이름', 'Name'), 24, True), Column('state', word('상태', 'State'), 16)], [Record('a', {'name': word('실제 커서', 'Real cursor'), 'state': 'OK'}), Record('b', {'name': 'CJK 한글 👩‍💻', 'state': 'NULL'})]),
                   text=Text(word('한글 é 界\n여러 줄을 편집합니다.', 'Grapheme text\nEdit with real cursor.' if args.ascii else 'Unicode é 界\nEdit with real cursor.')),
                   menu=Menu([Item('root', word('작업', 'Actions')), Item('run', word('실행', 'Run'), parent='root'), Item('off', word('비활성', 'Disabled'), disabled=True, parent='root')]),

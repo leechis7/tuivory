@@ -1,0 +1,2207 @@
+{
+  "checked_at_utc": "2026-11-06T17:49:00.179582+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source_base": "e9cc6ec1cd8e1f6a150fd7af15282c2ae5f0b3e1",
+  "source_uncommitted": true,
+  "sha256": {
+    "design/forms-cases.json": "06f378cf7e262b2419ccf72c3243de0800ffcff89420e296df440ba4202ce637",
+    "python/src/tuivory/editing.py": "89f2d61169a3d648bbf4fa3d2e7df06ced196d7c5a8251161c7636249fd0ab30",
+    "javascript/src/index.ts": "49a4e3392d49103e4d6df9f94da2116e9be201f9655d1671fff4ea85f90a9d13",
+    "c/src/tuivory.c": "59a2c06407b323c70e18d702ec14bf8437c9f9f7683ec42f14ab06799ee7709a",
+    "c/include/tuivory.h": "2e00678f7f622e325d2072c1bb12fe7d814ab2171f2480312bb460f4e9c18669",
+    "cpp/include/tuivory_forms.hpp": "2a14dc7e9588e4eb6e0b61826ea7f384ca554ac24fe33c13c67c92906799ce7f",
+    "java/src/main/java/io/tuivory/Tuivory.java": "ef8b0d5bcfa41481ffdfacf7523dff814b8f56dfeb23162f30317408d9c1b908",
+    "tools/check_language_forms.py": "b0233502a6244a3132cb7c5c4b4c938602358f770d4e14b9be8d219936cb618c"
+  },
+  "scope": "independent forms/controls milestone; full catalog continues",
+  "shared": "design/forms-cases.json",
+  "local_validation": {
+    "python_tests": 21,
+    "js": "7 registered groups plus Text/Form shared scenarios and rendering tests",
+    "native": "C/C++ ASan/UBSan and isolated static SDK consumers; Java17-compatible external JAR consumer passed",
+    "palettes": "12, widths0..19, secret display and disabled action checks",
+    "pty": {
+      "count": 240,
+      "cases": [
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "demo": "form",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        }
+      ],
+      "checks": "actual VT input/select commit, password masking, all locales/themes/profiles/glyph modes, ASCII output, restored terminal, no shape/blink forcing"
+    },
+    "external_runtime": "refreshed wheel/npm installed into isolated external Python and JS/TS consumers; pending select API passed",
+    "images": 10
+  },
+  "integration": {
+    "text_pr": "https://github.com/leechis7/tuivory/pull/51",
+    "text_ci": "10 passed",
+    "text_dev_merge": "4a38a20f6326517dd9dc6669e764b2c18e806790",
+    "forms_commit": "pending",
+    "forms_ci": "not yet run",
+    "product_release": "not performed; public0.11.1 unchanged"
+  },
+  "centos": "not run per user instruction"
+}

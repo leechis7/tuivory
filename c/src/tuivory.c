@@ -99,7 +99,7 @@ static enum Gcb property(unsigned c) {
   PROP(grapheme_lv, G_LV)
   PROP(grapheme_lvt, G_LVT)
 #undef PROP
-      return G_OTHER;
+  return G_OTHER;
 }
 static int pictographic(unsigned c) {
   return range(c, tui_extended_pictographic,
@@ -2060,4 +2060,693 @@ TuiTextEvent tui_text_click(TuiText *t, int x, int y, int width, int height,
   free(o);
   tui_text_select(t, extend ? t->anchor : target, target);
   return text_event(t, "select", TUI_OK);
+}
+
+struct TuiForm {
+  TuiField *fields;
+  TuiText **inputs;
+  size_t count, focused;
+  const char **missing;
+  TuiFormRow *rows;
+  size_t row_count, visible_start, visible_count;
+  int layout_width;
+};
+static const char *nn(const char *s) { return s ? s : ""; }
+static int field_index(const TuiForm *f, const char *id, size_t *out) {
+  if (!f || !id)
+    return 0;
+  for (size_t i = 0; i < f->count; i++)
+    if (!strcmp(f->fields[i].id, id)) {
+      *out = i;
+      return 1;
+    }
+  return 0;
+}
+static void form_eligible(TuiForm *f) {
+  if (f->focused < f->count && tui_state_focusable(f->fields[f->focused].state))
+    return;
+  f->focused = f->count;
+  for (size_t i = 0; i < f->count; i++)
+    if (tui_state_focusable(f->fields[i].state)) {
+      f->focused = i;
+      break;
+    }
+}
+static int owned_string(const char **target, const char *source) {
+  char *next = copy(nn(source));
+  if (!next)
+    return 0;
+  free((void *)*target);
+  *target = next;
+  return 1;
+}
+static void form_rows_clear(TuiForm *f) {
+  for (size_t i = 0; i < f->row_count; i++)
+    free((void *)f->rows[i].text);
+  free(f->rows);
+  f->rows = NULL;
+  f->row_count = f->visible_count = f->visible_start = 0;
+}
+void tui_form_free(TuiForm *f) {
+  if (!f)
+    return;
+  form_rows_clear(f);
+  if (f->fields)
+    for (size_t i = 0; i < f->count; i++) {
+      TuiField *v = &f->fields[i];
+      free((void *)v->id);
+      free((void *)v->kind);
+      free((void *)v->label);
+      free((void *)v->value);
+      free((void *)v->help);
+      free((void *)v->error);
+      free((void *)v->choice);
+      free((void *)v->action);
+      free((void *)v->pending);
+      if (v->options)
+        for (size_t j = 0; j < v->option_count; j++) {
+          free((void *)v->options[j].id);
+          free((void *)v->options[j].label);
+        }
+      free((void *)v->options);
+      if (f->inputs)
+        tui_text_free(f->inputs[i]);
+    }
+  free(f->fields);
+  free(f->inputs);
+  free(f->missing);
+  free(f);
+}
+TuiForm *tui_form_new(const TuiField *fields, size_t count) {
+  TuiForm *f;
+  size_t total_options = 0;
+  if ((count && !fields) || count > 4096)
+    return NULL;
+  f = calloc(1, sizeof(*f));
+  if (!f)
+    return NULL;
+  f->count = count;
+  f->focused = count;
+  f->fields = calloc(count ? count : 1, sizeof(*f->fields));
+  f->inputs = calloc(count ? count : 1, sizeof(*f->inputs));
+  f->missing = calloc(count ? count : 1, sizeof(*f->missing));
+  if (!f->fields || !f->inputs || !f->missing) {
+    tui_form_free(f);
+    return NULL;
+  }
+  for (size_t i = 0; i < count; i++) {
+    const TuiField *s = &fields[i];
+    TuiField *d = &f->fields[i];
+    const char *kind = s->kind && *s->kind ? s->kind : "text";
+    int valid = 0;
+    const char *kinds[] = {"text",  "textarea", "password", "checkbox",
+                           "radio", "select",   "button"};
+    if (!s->id || !*s->id || s->open || s->option_count > 4096 ||
+        (s->option_count && !s->options))
+      goto bad;
+    total_options += s->option_count;
+    if (total_options > 65536)
+      goto bad;
+    for (size_t j = 0; j < i; j++)
+      if (!strcmp(s->id, f->fields[j].id))
+        goto bad;
+    for (size_t j = 0; j < 7; j++)
+      if (!strcmp(kind, kinds[j]))
+        valid = 1;
+    if (!valid)
+      goto bad;
+#define FORM_COPY(name, source)                                                \
+  if (!owned_string(&d->name, source) || tui_cells(d->name) < 0)               \
+  goto bad
+    FORM_COPY(id, s->id);
+    FORM_COPY(kind, kind);
+    FORM_COPY(label, s->label);
+    FORM_COPY(value, s->value);
+    FORM_COPY(help, s->help);
+    FORM_COPY(error, s->error);
+    FORM_COPY(choice, s->choice);
+    FORM_COPY(action, s->action);
+    FORM_COPY(pending, s->pending);
+#undef FORM_COPY
+    d->state = s->state;
+    d->required = s->required;
+    d->checked = s->checked;
+    d->height = s->height > 0 ? s->height : 3;
+    if (s->option_count) {
+      TuiFormOption *options = calloc(s->option_count, sizeof(*options));
+      if (!options)
+        goto bad;
+      d->options = options;
+      d->option_count = s->option_count;
+      for (size_t j = 0; j < s->option_count; j++) {
+        if (!s->options[j].id || !*s->options[j].id)
+          goto bad;
+        for (size_t k = 0; k < j; k++)
+          if (!strcmp(options[k].id, s->options[j].id))
+            goto bad;
+        options[j].id = copy(s->options[j].id);
+        options[j].label = copy(nn(s->options[j].label));
+        options[j].disabled = s->options[j].disabled;
+        if (!options[j].id || !options[j].label ||
+            tui_cells(options[j].label) < 0)
+          goto bad;
+      }
+    }
+    if (*d->choice) {
+      valid = 0;
+      for (size_t j = 0; j < d->option_count; j++)
+        if (!strcmp(d->choice, d->options[j].id))
+          valid = 1;
+      if (!valid)
+        goto bad;
+    }
+    if (!strcmp(kind, "text") || !strcmp(kind, "textarea") ||
+        !strcmp(kind, "password")) {
+      char *display;
+      f->inputs[i] = tui_text_new(d->value);
+      if (!f->inputs[i])
+        goto bad;
+      tui_text_options(f->inputs[i], d->state, !strcmp(kind, "password"),
+                       !strcmp(kind, "textarea"));
+      display = tui_text_display(f->inputs[i]);
+      if (!display)
+        goto bad;
+      free((void *)d->value);
+      d->value = display;
+    }
+  }
+  form_eligible(f);
+  return f;
+bad:
+  tui_form_free(f);
+  return NULL;
+}
+TuiForm *tui_control_new(TuiField field) { return tui_form_new(&field, 1); }
+const TuiField *tui_form_field(const TuiForm *f, const char *id) {
+  size_t i;
+  return field_index(f, id, &i) ? &f->fields[i] : NULL;
+}
+const char *tui_form_value(const TuiForm *f, const char *id) {
+  size_t i;
+  if (!field_index(f, id, &i))
+    return NULL;
+  return f->inputs[i] ? tui_text_value(f->inputs[i]) : f->fields[i].value;
+}
+const char *tui_form_focused(const TuiForm *f) {
+  return f && f->focused < f->count ? f->fields[f->focused].id : "";
+}
+int tui_form_focus(TuiForm *f, const char *id) {
+  size_t i;
+  if (!field_index(f, id, &i) || !tui_state_focusable(f->fields[i].state))
+    return 0;
+  for (size_t j = 0; j < f->count; j++)
+    f->fields[j].open = 0;
+  f->focused = i;
+  return 1;
+}
+int tui_form_at_tab_boundary(const TuiForm *f, int previous) {
+  size_t first = f ? f->count : 0, last = first;
+  if (!f)
+    return 1;
+  for (size_t i = 0; i < f->count; i++)
+    if (tui_state_focusable(f->fields[i].state)) {
+      if (first == f->count)
+        first = i;
+      last = i;
+    }
+  return first == f->count || f->focused == (previous ? first : last);
+}
+TuiResult tui_form_set_state(TuiForm *f, const char *id, TuiState state) {
+  size_t i;
+  if (!field_index(f, id, &i))
+    return TUI_INVALID;
+  f->fields[i].state = state;
+  if (!tui_state_editable(state))
+    f->fields[i].open = 0;
+  form_eligible(f);
+  return TUI_OK;
+}
+TuiResult tui_form_set_feedback(TuiForm *f, const char *id, const char *help,
+                                const char *error) {
+  size_t i;
+  char *h, *e;
+  if (!field_index(f, id, &i) || tui_cells(nn(help)) < 0 ||
+      tui_cells(nn(error)) < 0)
+    return TUI_INVALID;
+  h = copy(nn(help));
+  e = copy(nn(error));
+  if (!h || !e) {
+    free(h);
+    free(e);
+    return TUI_NOMEM;
+  }
+  free((void *)f->fields[i].help);
+  free((void *)f->fields[i].error);
+  f->fields[i].help = h;
+  f->fields[i].error = e;
+  f->fields[i].state.invalid = !!*e;
+  return TUI_OK;
+}
+TuiResult tui_form_select_text(TuiForm *f, const char *id, size_t a, size_t c) {
+  size_t i;
+  if (!field_index(f, id, &i) || !f->inputs[i])
+    return TUI_INVALID;
+  tui_text_select(f->inputs[i], a, c);
+  return TUI_OK;
+}
+static TuiFormEvent form_event(TuiForm *f, const char *kind, const char *id,
+                               const char *text, size_t missing,
+                               TuiResult result) {
+  TuiFormEvent e = {kind, id, text, f ? f->missing : NULL, missing, result};
+  return e;
+}
+static int whitespace(unsigned cp) {
+  return (cp >= 9 && cp <= 13) || cp == 32 || cp == 0x85 || cp == 0xa0 ||
+         cp == 0x1680 || (cp >= 0x2000 && cp <= 0x200a) || cp == 0x2028 ||
+         cp == 0x2029 || cp == 0x202f || cp == 0x205f || cp == 0x3000;
+}
+static int text_empty(const char *s) {
+  size_t p = 0, n = strlen(s);
+  unsigned cp;
+  while (p < n)
+    if (!decode((const unsigned char *)s, n, &p, &cp) || !whitespace(cp))
+      return 0;
+  return 1;
+}
+static size_t form_missing(TuiForm *f) {
+  size_t count = 0;
+  for (size_t i = 0; i < f->count; i++) {
+    TuiField *v = &f->fields[i];
+    int empty = f->inputs[i] ? text_empty(tui_text_value(f->inputs[i]))
+                : !strcmp(v->kind, "checkbox") ? !v->checked
+                : (!strcmp(v->kind, "select") || !strcmp(v->kind, "radio"))
+                    ? !*v->choice
+                    : 0;
+    if (!v->state.disabled &&
+        (v->state.invalid || *v->error || (v->required && empty)))
+      f->missing[count++] = v->id;
+  }
+  return count;
+}
+TuiFormEvent tui_form_handle(TuiForm *f, const char *action, const char *text) {
+  TuiField *v;
+  size_t i;
+  int changed = 0;
+  if (!f || !action)
+    return form_event(f, "", "", "", 0, TUI_INVALID);
+  text = nn(text);
+  form_eligible(f);
+  if (!strcmp(action, "next") || !strcmp(action, "previous")) {
+    int previous = !strcmp(action, "previous");
+    if (f->focused < f->count)
+      for (size_t step = 1; step <= f->count; step++) {
+        size_t at = previous ? (f->focused + f->count - step) % f->count
+                             : (f->focused + step) % f->count;
+        if (tui_state_focusable(f->fields[at].state)) {
+          tui_form_focus(f, f->fields[at].id);
+          break;
+        }
+      }
+    return form_event(f, "", "", "", 0, TUI_OK);
+  }
+  if (!strcmp(action, "submit")) {
+    size_t n = form_missing(f);
+    return form_event(f, n ? "invalid" : "submit", "", "", n, TUI_OK);
+  }
+  if (f->focused >= f->count)
+    return form_event(f, "", "", "", 0, TUI_OK);
+  i = f->focused;
+  v = &f->fields[i];
+  if (!strcmp(action, "cancel")) {
+    if (v->open) {
+      v->open = 0;
+      return form_event(f, "", "", "", 0, TUI_OK);
+    }
+    return form_event(f, "cancel", v->id, "", 0, TUI_OK);
+  }
+  if (!strcmp(action, "insert") && !strcmp(text, " ") && !f->inputs[i])
+    action = "toggle";
+  if (f->inputs[i]) {
+    TuiText *t = f->inputs[i];
+    TuiTextEvent e;
+    char *display;
+    t->state = v->state;
+    if (!strcmp(action, "activate") && strcmp(v->kind, "textarea"))
+      return tui_state_activatable(v->state)
+                 ? tui_form_handle(f, "submit", "")
+                 : form_event(f, "", "", "", 0, TUI_OK);
+    e = tui_text_handle(t, !strcmp(action, "activate") ? "newline" : action,
+                        text);
+    display = tui_text_display(t);
+    if (!display)
+      return form_event(f, "", v->id, "", 0, TUI_NOMEM);
+    free((void *)v->value);
+    v->value = display;
+    v->state = t->state;
+    return form_event(f, e.kind, v->id, e.text, 0, e.result);
+  }
+  if (!strcmp(v->kind, "button") &&
+      (!strcmp(action, "left") || !strcmp(action, "right")) &&
+      !v->state.disabled)
+    return tui_form_handle(f, !strcmp(action, "left") ? "previous" : "next",
+                           "");
+  if (!tui_state_activatable(v->state))
+    return form_event(f, "", "", "", 0, TUI_OK);
+  if (!strcmp(v->kind, "button") &&
+      (!strcmp(action, "activate") || !strcmp(action, "toggle"))) {
+    if (!strcmp(v->action, "submit"))
+      return tui_form_handle(f, "submit", "");
+    return form_event(f, !strcmp(v->action, "cancel") ? "cancel" : "activate",
+                      v->id, "", 0, TUI_OK);
+  }
+  if (!tui_state_editable(v->state))
+    return form_event(f, "", "", "", 0, TUI_OK);
+  if (!strcmp(v->kind, "checkbox") &&
+      (!strcmp(action, "activate") || !strcmp(action, "toggle"))) {
+    v->checked = !v->checked;
+    changed = 1;
+  } else if (!strcmp(v->kind, "radio") || !strcmp(v->kind, "select")) {
+    if (!strcmp(v->kind, "select") &&
+        (!strcmp(action, "activate") || !strcmp(action, "toggle"))) {
+      if (v->open) {
+        if (!owned_string(&v->choice, v->pending))
+          return form_event(f, "", "", "", 0, TUI_NOMEM);
+        v->open = 0;
+        changed = 1;
+      } else {
+        const char *pending = v->choice;
+        if (!*pending)
+          for (size_t j = 0; j < v->option_count; j++)
+            if (!v->options[j].disabled) {
+              pending = v->options[j].id;
+              break;
+            }
+        if (!owned_string(&v->pending, pending))
+          return form_event(f, "", "", "", 0, TUI_NOMEM);
+        v->open = 1;
+        return form_event(f, "", "", "", 0, TUI_OK);
+      }
+    } else if (!strcmp(action, "left") || !strcmp(action, "right") ||
+               !strcmp(action, "up") || !strcmp(action, "down") ||
+               !strcmp(action, "activate") || !strcmp(action, "toggle")) {
+      size_t *ids, count = 0, at = 0, target;
+      int found = 0,
+          previous = !strcmp(action, "left") || !strcmp(action, "up");
+      const char *current = v->open ? v->pending : v->choice;
+      if (!strcmp(v->kind, "select") && !v->open)
+        return form_event(f, "", "", "", 0, TUI_OK);
+      ids = malloc((v->option_count ? v->option_count : 1) * sizeof(*ids));
+      if (!ids)
+        return form_event(f, "", "", "", 0, TUI_NOMEM);
+      for (size_t j = 0; j < v->option_count; j++)
+        if (!v->options[j].disabled) {
+          ids[count] = j;
+          if (!strcmp(v->options[j].id, current)) {
+            at = count;
+            found = 1;
+          }
+          count++;
+        }
+      if (!count) {
+        free(ids);
+        return form_event(f, "", "", "", 0, TUI_OK);
+      }
+      target = previous ? (at + count - 1) % count
+               : found  ? (at + 1) % count
+                        : 0;
+      if (!owned_string(!strcmp(v->kind, "select") ? &v->pending : &v->choice,
+                        v->options[ids[target]].id)) {
+        free(ids);
+        return form_event(f, "", "", "", 0, TUI_NOMEM);
+      }
+      free(ids);
+      changed = strcmp(v->kind, "select") != 0;
+    }
+  }
+  if (changed) {
+    v->state.edited = 1;
+    return form_event(f, "change", v->id, "", 0, TUI_OK);
+  }
+  return form_event(f, "", "", "", 0, TUI_OK);
+}
+TuiFormEvent tui_form_click_field(TuiForm *f, const char *id,
+                                  const char *option) {
+  size_t i;
+  TuiField *v;
+  if (!field_index(f, id, &i))
+    return form_event(f, "", "", "", 0, TUI_OK);
+  option = nn(option);
+  v = &f->fields[i];
+  if (v->state.disabled)
+    return form_event(f, "", "", "", 0, TUI_OK);
+  for (size_t j = 0; j < v->option_count; j++)
+    if (!strcmp(v->options[j].id, option) && v->options[j].disabled)
+      return form_event(f, "", "", "", 0, TUI_OK);
+  if (f->focused != i)
+    tui_form_focus(f, id);
+  if (!strcmp(v->kind, "button"))
+    return tui_form_handle(f, "activate", "");
+  if (!tui_state_editable(v->state))
+    return form_event(f, "", "", "", 0, TUI_OK);
+  if (!strcmp(v->kind, "select") && !v->open)
+    return tui_form_handle(f, "activate", "");
+  if (*option && (!strcmp(v->kind, "radio") || !strcmp(v->kind, "select"))) {
+    for (size_t j = 0; j < v->option_count; j++)
+      if (!strcmp(v->options[j].id, option) && !v->options[j].disabled) {
+        if (!owned_string(&v->choice, option))
+          return form_event(f, "", "", "", 0, TUI_NOMEM);
+        v->open = 0;
+        v->state.edited = 1;
+        return form_event(f, "change", v->id, "", 0, TUI_OK);
+      }
+    return form_event(f, "", "", "", 0, TUI_OK);
+  }
+  return (!strcmp(v->kind, "checkbox") || !strcmp(v->kind, "select"))
+             ? tui_form_handle(f, "activate", "")
+             : form_event(f, "", "", "", 0, TUI_OK);
+}
+static int form_row(TuiForm *f, const TuiField *v, const char *text,
+                    const char *role, const char *option, int input,
+                    int focused, int source) {
+  TuiFormRow *next = realloc(f->rows, (f->row_count + 1) * sizeof(*next));
+  char *owned;
+  if (!next)
+    return 0;
+  f->rows = next;
+  owned = copy(text);
+  if (!owned)
+    return 0;
+  f->rows[f->row_count++] =
+      (TuiFormRow){v->id, owned, role, option, input, focused, source};
+  return 1;
+}
+TuiResult tui_form_layout(TuiForm *f, int width, int height,
+                          const TuiFormRow **rows, size_t *count) {
+  size_t anchor = 0;
+  if (!f || !rows || !count)
+    return TUI_INVALID;
+  form_rows_clear(f);
+  width = max(0, width);
+  height = max(0, height);
+  f->layout_width = width;
+  for (size_t i = 0; i < f->count; i++) {
+    TuiField *v = &f->fields[i];
+    int current = i == f->focused;
+    const char *role = v->state.disabled ? "disabled"
+                       : *v->error || v->state.invalid
+                           ? "error"
+                           : tui_state_role(v->state);
+    char markers[7];
+    Buffer b = {0};
+    if (current)
+      anchor = f->row_count;
+    tui_state_markers(v->state, markers);
+    append(&b, current ? "> " : "  ");
+    append(&b, v->label);
+    if (v->required)
+      append(&b, " *");
+    if (*(markers + (v->state.disabled ? 1 : 0))) {
+      append(&b, " ");
+      append(&b, markers + (v->state.disabled ? 1 : 0));
+    }
+    if (b.failed || !form_row(f, v, b.s, role, "", 0, current, 0)) {
+      free(b.s);
+      goto nomem;
+    }
+    free(b.s);
+    if (f->inputs[i]) {
+      size_t *offsets, n, start = 0;
+      int line = 0;
+      char *display = tui_text_display(f->inputs[i]);
+      if (!display)
+        goto nomem;
+      if (raw_offsets(display, &offsets, &n) != 1) {
+        free(display);
+        goto nomem;
+      }
+      for (size_t j = 0; j <= n; j++) {
+        int br = j == n || (!strcmp(v->kind, "textarea") &&
+                            raw_break(display, offsets[j], offsets[j + 1]));
+        if (br) {
+          size_t len = offsets[j] - start;
+          char *row = malloc(len + 3);
+          if (!row) {
+            free(offsets);
+            free(display);
+            goto nomem;
+          }
+          memcpy(row, "  ", 2);
+          memcpy(row + 2, display + start, len);
+          row[len + 2] = 0;
+          if (!form_row(f, v, row, v->state.disabled ? "disabled" : "field", "",
+                        1, 0, line)) {
+            free(row);
+            free(offsets);
+            free(display);
+            goto nomem;
+          }
+          free(row);
+          line++;
+          if (strcmp(v->kind, "textarea") || line >= max(1, v->height) ||
+              j == n)
+            break;
+          start = offsets[j + 1];
+        }
+      }
+      free(offsets);
+      free(display);
+    } else if (!strcmp(v->kind, "checkbox")) {
+      if (!form_row(f, v, v->checked ? "  [x]" : "  [ ]", role, "", 0, 0, 0))
+        goto nomem;
+    } else if (!strcmp(v->kind, "button")) {
+      Buffer button = {0};
+      append(&button, "  [ ");
+      append(&button, v->label);
+      if (v->state.busy)
+        append(&button, " ~");
+      append(&button, " ]");
+      if (button.failed || !form_row(f, v, button.s,
+                                     v->state.disabled ? "disabled"
+                                     : v->state.busy   ? "hint"
+                                                       : "button",
+                                     "", 0, current, 0)) {
+        free(button.s);
+        goto nomem;
+      }
+      free(button.s);
+    } else
+      for (size_t j = 0; j < v->option_count; j++) {
+        const TuiFormOption *o = &v->options[j];
+        Buffer option = {0};
+        if (!strcmp(v->kind, "select") && !v->open && strcmp(o->id, v->choice))
+          continue;
+        append(&option, !strcmp(o->id, v->open ? v->pending : v->choice)
+                            ? "  (*) "
+                            : "  ( ) ");
+        append(&option, o->label);
+        if (option.failed ||
+            !form_row(f, v, option.s,
+                      o->disabled || v->state.disabled ? "disabled" : role,
+                      o->id, 0, 0, 0)) {
+          free(option.s);
+          goto nomem;
+        }
+        free(option.s);
+      }
+    if (*v->error || *v->help) {
+      Buffer feedback = {0};
+      append(&feedback, *v->error ? "! " : "  ");
+      append(&feedback, *v->error ? v->error : v->help);
+      if (feedback.failed ||
+          !form_row(f, v, feedback.s, *v->error ? "error" : "hint", "", 0, 0,
+                    0)) {
+        free(feedback.s);
+        goto nomem;
+      }
+      free(feedback.s);
+    }
+  }
+  f->visible_start = (size_t)min(max(0, (int)anchor - max(0, height - 2)),
+                                 max(0, (int)f->row_count - height));
+  f->visible_count =
+      (size_t)min(height, (int)(f->row_count - f->visible_start));
+  for (size_t i = f->visible_start; i < f->visible_start + f->visible_count;
+       i++) {
+    char *clipped = tui_clip(f->rows[i].text, width, 0);
+    if (!clipped)
+      goto nomem;
+    free((void *)f->rows[i].text);
+    f->rows[i].text = clipped;
+  }
+  *rows = f->rows ? f->rows + f->visible_start : NULL;
+  *count = f->visible_count;
+  return TUI_OK;
+nomem:
+  form_rows_clear(f);
+  *rows = NULL;
+  *count = 0;
+  return TUI_NOMEM;
+}
+TuiFormEvent tui_form_click(TuiForm *f, int x, int y, int height) {
+  if (!f || x < 0 || x >= f->layout_width || y < 0 || y >= height ||
+      (size_t)y >= f->visible_count)
+    return form_event(f, "", "", "", 0, TUI_OK);
+  const TuiFormRow *r = &f->rows[f->visible_start + (size_t)y];
+  if (r->input && x >= 2) {
+    size_t i;
+    if (!field_index(f, r->id, &i) || f->fields[i].state.disabled)
+      return form_event(f, "", "", "", 0, TUI_OK);
+    if (f->focused != i)
+      tui_form_focus(f, r->id);
+    int first = -1, count = 0;
+    for (size_t j = 0; j < f->visible_count; j++) {
+      const TuiFormRow *row = &f->rows[f->visible_start + j];
+      if (row->input && !strcmp(row->id, r->id)) {
+        if (first < 0)
+          first = (int)j;
+        count++;
+      }
+    }
+    TuiTextEvent e = tui_text_click(f->inputs[i], x - 2, y - first,
+                                    max(0, f->layout_width - 2), count, 0);
+    return form_event(f, e.kind, r->id, e.text, 0, e.result);
+  }
+  return tui_form_click_field(f, r->id, r->option);
+}
+TuiResult tui_form_draw(TuiForm *f, TuiCanvas *c, TuiRect r, int focused) {
+  const TuiFormRow *rows;
+  size_t count;
+  TuiResult result;
+  if (!f || !c)
+    return TUI_INVALID;
+  result = tui_form_layout(f, r.width, r.height, &rows, &count);
+  if (result != TUI_OK)
+    return result;
+  tui_canvas_fill(c, r, "surface");
+  for (size_t i = 0; i < count; i++) {
+    result = tui_canvas_write(c, r.x, r.y + (int)i, rows[i].text, rows[i].role,
+                              focused && rows[i].focused, r.width);
+    if (result != TUI_OK)
+      return result;
+  }
+  for (size_t i = 0; i < f->count; i++)
+    if (f->inputs[i]) {
+      int first = -1, height = 0;
+      for (size_t j = 0; j < count; j++)
+        if (rows[j].input && !strcmp(rows[j].id, f->fields[i].id)) {
+          if (first < 0)
+            first = (int)j;
+          height++;
+        }
+      if (first >= 0) {
+        f->inputs[i]->state = f->fields[i].state;
+        result = tui_text_draw(f->inputs[i], c,
+                               (TuiRect){r.x + min(2, r.width), r.y + first,
+                                         max(0, r.width - 2), height},
+                               focused && f->focused == i);
+        if (result != TUI_OK)
+          return result;
+      }
+    }
+  return TUI_OK;
 }

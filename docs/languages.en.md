@@ -18,7 +18,7 @@ The first verification unit covers installation/import/include, 12 embedded pale
 | [C++](../cpp/README.en.md) | `#include "tuivory.hpp"` | Independent C++17 header package | Independent canvas and POSIX RAII example |
 | [Java](../java/README.en.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, no JNI | Independent canvas and line-input example; no raw-terminal adapter |
 
-All five languages provide [workspace](language-workspace.en.md) and [text editing](language-text.en.md), checked with shared fixtures and external consumers. Python/TS lists, forms, grids, menus, layouts and feedback remain follow-up prototypes and do not imply full Go/Rust parity. Remaining catalog components, advanced grids, drag/drop, popup shadows, optional syntax analysis and framework adapters require separate implementation/validation in each epic.
+All five languages provide [workspace](language-workspace.en.md) and [text editing](language-text.en.md), checked with shared fixtures and external consumers. [Forms and controls](language-forms.en.md) are also validated in all five languages. Python/TS lists, grids, menus, layouts and feedback remain follow-up prototypes and do not imply full Go/Rust parity. Remaining catalog components, advanced grids, drag/drop, popup shadows, optional syntax analysis and framework adapters require separate implementation/validation in each epic.
 
 ## API use
 
@@ -120,3 +120,5 @@ Build C/C++/Java first as shown above. Reference capture also needs a CJK-capabl
 [Independent-language workspace APIs and examples](language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.
 
 [Independent text editing API](language-text.en.md)
+
+[Independent forms and controls API](language-forms.en.md)

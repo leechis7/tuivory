@@ -18,7 +18,7 @@
 | [C++](../cpp/README.md) | `#include "tuivory.hpp"` | 독립 C++17 헤더 패키지 | 독립 캔버스·POSIX RAII 예제 |
 | [Java](../java/README.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, JNI 없음 | 독립 캔버스·줄 입력 예제. raw 터미널 어댑터 없음 |
 
-다섯 언어의 [작업 영역](language-workspace.md)과 [입력·편집](language-text.md)은 공유 사례와 외부 소비자로 검증합니다. Python/TS의 목록·폼·그리드·메뉴·배치·피드백 등은 후속 초안이며 기존 Go/Rust와의 전체 동등성을 뜻하지 않습니다. 전체 카탈로그·고급 그리드·드래그 앤 드롭·팝업 그림자·선택적 구문 분석·프레임워크 어댑터는 각 에픽에서 별도 검증·구체화해야 합니다.
+다섯 언어의 [작업 영역](language-workspace.md)과 [입력·편집](language-text.md)은 공유 사례와 외부 소비자로 검증합니다. [폼·컨트롤](language-forms.md)도 다섯 언어에서 검증합니다. Python/TS의 목록·그리드·메뉴·배치·피드백 등은 후속 초안이며 기존 Go/Rust와의 전체 동등성을 뜻하지 않습니다. 전체 카탈로그·고급 그리드·드래그 앤 드롭·팝업 그림자·선택적 구문 분석·프레임워크 어댑터는 각 에픽에서 별도 검증·구체화해야 합니다.
 
 ## API 사용
 
@@ -120,3 +120,5 @@ C/C++/Java는 위의 명령으로 먼저 빌드합니다. 참조 화면 캡처�
 [독립 언어 workspace API·예제](language-workspace.md): 탭·패널·분할·경로·상태줄을 다섯 구현에서 검증했습니다. 나머지 카탈로그 이식은 진행 중입니다.
 
 [독립 언어 입력·편집 API](language-text.md)
+
+[독립 언어 폼·컨트롤 API](language-forms.md)
