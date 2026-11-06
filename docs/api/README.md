@@ -79,3 +79,5 @@ TVR-7 0.11.1: [실제 그리드 커서·backend 연결](../grid-workspace.md). 0
 [독립 언어 알림·진행·데이터 상태 API](../language-feedback.md)
 
 [독립 언어 간격·스택·배지·칩·단축키 안내 API](../language-layout.md)
+
+[독립 언어 컨테이너·셀 복사 API](../language-containers.md)

@@ -25,7 +25,8 @@
     "UNICODE-LICENSE",
     "NOTICE.md",
     "NOTICE.en.md",
-    "CASEFOLD-LICENSE"
+    "CASEFOLD-LICENSE",
+    "examples/container-host.mjs"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

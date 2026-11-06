@@ -46,7 +46,45 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             if process.poll()is not None:break
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
-        if demo=='layout':
+        if demo=='container':
+            def visible():return '\n'.join(''.join(row)for row in screen.rows[:24])
+            def wait_text(value):
+                deadline=time.monotonic()+5
+                while time.monotonic()<deadline:
+                    drain(.02)
+                    if value.replace(' ','')in visible().replace(' ',''):return
+                    if process.poll()is not None:break
+                raise AssertionError((language,demo,value,visible()))
+            def send(command,raw):
+                frames=captured.count(b'\x1b[0m');os.write(master,(command+'\n').encode()if language=='java'else raw)
+                deadline=time.monotonic()+5
+                while captured.count(b'\x1b[0m')<=frames and time.monotonic()<deadline:drain(.02)
+                assert captured.count(b'\x1b[0m')>frames,(language,'container frame',visible())
+            def cursor_visible():
+                frame=captured.rsplit(b'\x1b[?25l',1)[-1]
+                if language=='java':frame=frame.split(b'\x1b[19;1H',1)[0]
+                return b'\x1b[?25h'in frame
+            wait_text('Navigator'if lang=='en'else'탐색')
+            deadline=time.monotonic()+5
+            while not captured.count(b'\x1b[0m')and time.monotonic()<deadline:drain(.02)
+            assert cursor_visible(),(language,'editor cursor missing')
+            send('m',b'm');wait_text('Popup open'if lang=='en'else'팝업 열림');wait_text('Background input blocked'if lang=='en'else'배경 입력 차단')
+            assert not cursor_visible(),(language,'modal leaked background cursor')
+            send('insert Z',b'Z');assert not cursor_visible(),(language,'modal leaked editor input/cursor')
+            send('m',b'm');wait_text('Popup closed'if lang=='en'else'팝업 닫힘');assert cursor_visible(),(language,'editor cursor not restored')
+            assert 'Z'not in ''.join(screen.rows[2]),(language,'background text changed while modal open')
+            send('l',b'l');wait_text('Scroll: 4'if lang=='en'else'스크롤: 4');assert cursor_visible(),(language,'scroll cursor lost')
+            send('next',b'\t');assert not cursor_visible(),(language,'unfocused editor cursor visible')
+            # The host translates terminal coordinates into the nested child viewport.
+            send('click 26 2',b'\x1b[<0;27;3M');assert cursor_visible(),(language,'translated editor click failed')
+            if language!='java':
+                fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',18,40,0,0));send('h',b'h');wait_text('Scroll: 0'if lang=='en'else'스크롤: 0')
+                deadline=time.monotonic()+5
+                while screen.rows[0][39]!=('+'if ascii else'╗')and time.monotonic()<deadline:drain(.02)
+                assert screen.rows[0][39]==('+'if ascii else'╗'),(language,'container resize frame',visible())
+                send('m',b'm');wait_text('Popup open'if lang=='en'else'팝업 열림');assert not cursor_visible()
+                for yy in range(1,16):assert screen.rows[yy][0]==('|'if ascii else'║')and screen.rows[yy][39]==('|'if ascii else'║'),(language,'container clipped bounds',yy,visible())
+        elif demo=='layout':
             def visible():return '\n'.join(''.join(row)for row in screen.rows[:24])
             def wait_text(value):
                 deadline=time.monotonic()+5
@@ -239,7 +277,7 @@ def main():
     p.add_argument('--python',default=sys.executable)
     p.add_argument('--language',choices=['python','javascript','c','cpp','java'])
     p.add_argument('--matrix',action='store_true')
-    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout'],default='tree')
+    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout','container'],default='tree')
     args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     commands={'python':[args.python,'-m','tuivory'],'javascript':['node',ROOT/'javascript/examples/catalog.mjs'],'c':[ROOT/'bin/c'/f'tuivory-linux-{arch}'],'cpp':[ROOT/'bin/cpp'/f'tuivory-linux-{arch}'],'java':['java','-jar',ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { ContainerDemo } from "./container-host.mjs";
 import * as ui from "../dist/index.js";
 import { MenuDemo } from "./menu-host.mjs";
 import { FeedbackDemo } from "./feedback-host.mjs";
@@ -12,10 +13,11 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
+const containerDemo = value("--demo", "tree") === "container";
 const layoutDemo = value("--demo", "tree") === "layout";
 const feedbackDemo = value("--demo", "tree") === "feedback";
 const menuDemo = ["menu", "context-menu"].includes(value("--demo", "tree"));
@@ -26,6 +28,7 @@ const listDemo = value("--demo", "tree") === "list",
   pickerDemo = value("--demo", "tree") === "picker";
 if (
   !layoutDemo &&
+  !containerDemo &&
   !feedbackDemo &&
   !menuDemo &&
   !workspace &&
@@ -36,11 +39,12 @@ if (
   value("--demo", "tree") !== "tree"
 )
   throw new Error(
-    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout",
+    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container",
   );
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 const layoutHost = new LayoutDemo(en);
+const containerHost = new ContainerDemo(en, ascii);
 const feedbackHost = new FeedbackDemo(en);
 const menuHost = new MenuDemo(en, value("--demo", "tree") === "context-menu");
 const text = new ui.Text(
@@ -219,7 +223,8 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  if (layoutDemo) layoutHost.draw(c, area, ascii);
+  if (containerDemo) containerHost.draw(c, area, ascii);
+  else if (layoutDemo) layoutHost.draw(c, area, ascii);
   else if (feedbackDemo) feedbackHost.draw(c, area, ascii);
   else if (menuDemo) menuHost.draw(c, area, ascii);
   else if (listDemo) list.draw(c, area, true, ascii);
@@ -231,17 +236,21 @@ function draw(snapshot = false, ansiSnapshot = false) {
   c.write(
     0,
     height - 1,
-    (layoutDemo
+    (containerDemo
       ? en
-        ? "Ctrl+Q quit | x/Enter remove filter | d density | click x"
-        : "Ctrl+Q 종료 | x/Enter 필터 제거 | d 간격 | x 클릭"
-      : feedbackDemo
+        ? "Ctrl+Q quit | m popup | h/l scroll | Tab focus"
+        : "Ctrl+Q 종료 | m 팝업 | h/l 스크롤 | Tab 포커스"
+      : layoutDemo
         ? en
-          ? "Ctrl+Q quit | Enter retry | Del dismiss | t expire | c cancel"
-          : "Ctrl+Q 종료 | Enter 재시도 | Del 닫기 | t 만료 | c 취소"
-        : en
-          ? "Ctrl+Q quit · arrows navigate · F1 theme · F2 colors"
-          : "Ctrl+Q 종료 · 방향키 탐색 · F1 테마 · F2 색상"
+          ? "Ctrl+Q quit | x/Enter remove filter | d density | click x"
+          : "Ctrl+Q 종료 | x/Enter 필터 제거 | d 간격 | x 클릭"
+        : feedbackDemo
+          ? en
+            ? "Ctrl+Q quit | Enter retry | Del dismiss | t expire | c cancel"
+            : "Ctrl+Q 종료 | Enter 재시도 | Del 닫기 | t 만료 | c 취소"
+          : en
+            ? "Ctrl+Q quit · arrows navigate · F1 theme · F2 colors"
+            : "Ctrl+Q 종료 · 방향키 탐색 · F1 테마 · F2 색상"
     ).replaceAll("·", ascii ? "|" : "·"),
     "hint",
     false,
@@ -300,7 +309,8 @@ try {
           !["[", "O"].includes(pending[1])
         ) {
           pending = pending.slice(1);
-          if (menuDemo) menuHost.handle("cancel");
+          if (containerDemo) containerHost.handle("cancel");
+          else if (menuDemo) menuHost.handle("cancel");
           else if (pickerDemo) picker.handle("cancel");
           else if (formDemo) form.handle("cancel");
           continue;
@@ -310,12 +320,17 @@ try {
           pending = pending.slice(mouse[0].length);
           const x = Number(mouse[2]) - 1,
             y = Number(mouse[3]) - 1;
-          if ((menuDemo || feedbackDemo || layoutDemo) && mouse[4] === "M") {
-            (layoutDemo
-              ? layoutHost
-              : feedbackDemo
-                ? feedbackHost
-                : menuHost
+          if (
+            (menuDemo || feedbackDemo || layoutDemo || containerDemo) &&
+            mouse[4] === "M"
+          ) {
+            (containerDemo
+              ? containerHost
+              : layoutDemo
+                ? layoutHost
+                : feedbackDemo
+                  ? feedbackHost
+                  : menuHost
             ).pointer(x, y, Number(mouse[1]));
           } else if (
             mouse[4] === "M" &&
@@ -369,12 +384,14 @@ try {
         };
         const key = Object.keys(keys).find((k) => pending.startsWith(k));
         if (key) {
-          if (menuDemo || feedbackDemo || layoutDemo)
-            (layoutDemo
-              ? layoutHost
-              : feedbackDemo
-                ? feedbackHost
-                : menuHost
+          if (menuDemo || feedbackDemo || layoutDemo || containerDemo)
+            (containerDemo
+              ? containerHost
+              : layoutDemo
+                ? layoutHost
+                : feedbackDemo
+                  ? feedbackHost
+                  : menuHost
             ).handle(
               keys[key] === "toggle" ? "insert" : keys[key],
               keys[key] === "toggle" ? " " : "",
@@ -411,6 +428,11 @@ try {
           else
             tree.handle(keys[key], workspace ? treeArea.height : area.height);
           pending = pending.slice(key.length);
+          continue;
+        }
+        if (containerDemo && pending.startsWith("\t")) {
+          containerHost.handle("next");
+          pending = pending.slice(1);
           continue;
         }
         if (formDemo && pending.startsWith("\t")) {
@@ -459,7 +481,8 @@ try {
         )
           break;
         if (
-          (layoutDemo ||
+          (containerDemo ||
+            layoutDemo ||
             feedbackDemo ||
             menuDemo ||
             textDemo ||
@@ -469,17 +492,19 @@ try {
           pending[0] !== "\x1b"
         ) {
           const cp = String.fromCodePoint(pending.codePointAt(0));
-          (layoutDemo
-            ? layoutHost
-            : feedbackDemo
-              ? feedbackHost
-              : menuDemo
-                ? menuHost
-                : pickerDemo
-                  ? picker
-                  : formDemo
-                    ? form
-                    : text
+          (containerDemo
+            ? containerHost
+            : layoutDemo
+              ? layoutHost
+              : feedbackDemo
+                ? feedbackHost
+                : menuDemo
+                  ? menuHost
+                  : pickerDemo
+                    ? picker
+                    : formDemo
+                      ? form
+                      : text
           ).handle("insert", cp);
           pending = pending.slice(cp.length);
         } else pending = pending.slice(1);
@@ -488,7 +513,8 @@ try {
         escapeTimer = setTimeout(() => {
           if (pending === "\x1b") {
             pending = "";
-            if (menuDemo) menuHost.handle("cancel");
+            if (containerDemo) containerHost.handle("cancel");
+            else if (menuDemo) menuHost.handle("cancel");
             else if (pickerDemo) picker.handle("cancel");
             else if (formDemo) form.handle("cancel");
             draw();

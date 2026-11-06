@@ -15,6 +15,7 @@ static char *copy(const char *s) {
 }
 static int min(int a, int b) { return a < b ? a : b; }
 static int max(int a, int b) { return a > b ? a : b; }
+static long long min64(long long a, long long b) { return a < b ? a : b; }
 static int range(unsigned c, const unsigned (*table)[2], size_t n) {
   size_t lo = 0, hi = n;
   while (lo < hi) {
@@ -341,7 +342,7 @@ typedef struct {
   int owner;
 } Cell;
 struct TuiCanvas {
-  int width, height, cursor_x, cursor_y;
+  int width, height, cursor_x, cursor_y, cursor_width;
   char theme[12], profile[12];
   Cell *cells;
 };
@@ -372,6 +373,9 @@ TuiCanvas *tui_canvas_new(int w, int h, const char *theme,
   }
   return c;
 }
+TuiRect tui_canvas_bounds(const TuiCanvas *c) {
+  return c ? (TuiRect){0, 0, c->width, c->height} : (TuiRect){0};
+}
 void tui_canvas_free(TuiCanvas *c) {
   size_t i;
   if (!c)
@@ -386,6 +390,10 @@ static void erase(TuiCanvas *c, int x, int y) {
   int start = row[x].owner >= 0 ? row[x].owner : x, end = start + 1, i;
   while (end < c->width && row[end].owner == start)
     end++;
+  {
+    TuiRect r = {start, y, end - start, 1};
+    tui_canvas_clear_cursor(c, &r);
+  }
   for (i = start; i < end; i++) {
     free(row[i].text);
     row[i].text = NULL;
@@ -511,11 +519,92 @@ TuiRect tui_canvas_panel(TuiCanvas *c, TuiRect r, const char *title,
 void tui_canvas_cursor(TuiCanvas *c, int x, int y, int w) {
   if (!c)
     return;
-  if (x >= 0 && x + max(1, w) <= c->width && y >= 0 && y < c->height) {
+  c->cursor_width = max(1, w);
+  if (x >= 0 && (long long)x + max(1, w) <= c->width && y >= 0 &&
+      y < c->height) {
     c->cursor_x = x;
     c->cursor_y = y;
   } else
     c->cursor_x = c->cursor_y = -1;
+}
+void tui_canvas_clear_cursor(TuiCanvas *c, const TuiRect *r) {
+  if (!c)
+    return;
+  if (!r ||
+      (c->cursor_x >= 0 && r->width > 0 && (long long)r->y <= c->cursor_y &&
+       c->cursor_y < (long long)r->y + r->height &&
+       (long long)r->x < c->cursor_x + (long long)c->cursor_width &&
+       c->cursor_x < (long long)r->x + r->width))
+    c->cursor_x = c->cursor_y = -1;
+}
+TuiResult tui_canvas_blit(TuiCanvas *c, const TuiCanvas *source, TuiRect r,
+                          int x, int y) {
+  int left, top, right, bottom, sx, sy, cx, cy, cw;
+  Cell *copy;
+  size_t count, index;
+  if (!c || !source || r.width < 0 || r.height < 0)
+    return TUI_INVALID;
+  {
+    int values[] = {r.x, r.y, r.width, r.height, x, y};
+    size_t i;
+    for (i = 0; i < 6; i++)
+      if (values[i] < -1000000000 || values[i] > 1000000000)
+        return TUI_INVALID;
+  }
+  left = max(0, max(r.x, r.x - x));
+  top = max(0, max(r.y, r.y - y));
+  right = (int)min64(
+      (long long)source->width,
+      min64((long long)r.x + r.width, (long long)r.x + c->width - x));
+  bottom = (int)min64(
+      (long long)source->height,
+      min64((long long)r.y + r.height, (long long)r.y + c->height - y));
+  if (left >= right || top >= bottom)
+    return TUI_OK;
+  cx = source->cursor_x;
+  cy = source->cursor_y;
+  cw = source->cursor_width;
+  count = (size_t)(right - left) * (bottom - top);
+  copy = calloc(count, sizeof(Cell));
+  if (!copy)
+    return TUI_NOMEM;
+  for (sy = top; sy < bottom; sy++)
+    for (sx = left; sx < right; sx++) {
+      const Cell *row = source->cells + (size_t)sy * source->width,
+                 *cell = row + sx;
+      int start = cell->owner >= 0 ? cell->owner : sx, end = start + 1;
+      Cell *out = copy + (size_t)(sy - top) * (right - left) + sx - left;
+      while (end < source->width && row[end].owner == start)
+        end++;
+      out->style = cell->style;
+      out->owner = -1;
+      if (start >= left && end <= right) {
+        if (cell->owner >= 0)
+          out->owner = x + start - r.x;
+        if (cell->text) {
+          size_t len = strlen(cell->text);
+          out->text = malloc(len + 1);
+          if (!out->text) {
+            for (index = 0; index < count; index++)
+              free(copy[index].text);
+            free(copy);
+            return TUI_NOMEM;
+          }
+          memcpy(out->text, cell->text, len + 1);
+        }
+      }
+    }
+  for (sy = top; sy < bottom; sy++)
+    for (sx = left; sx < right; sx++)
+      erase(c, x + sx - r.x, y + sy - r.y);
+  for (sy = top; sy < bottom; sy++)
+    for (sx = left; sx < right; sx++)
+      c->cells[(size_t)(y + sy - r.y) * c->width + x + sx - r.x] =
+          copy[(size_t)(sy - top) * (right - left) + sx - left];
+  free(copy);
+  if (cx >= left && cx + cw <= right && cy >= top && cy < bottom)
+    tui_canvas_cursor(c, x + cx - r.x, y + cy - r.y, cw);
+  return TUI_OK;
 }
 void tui_string_free(char *s) { free(s); }
 typedef struct {
@@ -5997,4 +6086,661 @@ TuiResult tui_help_draw(const TuiHelp *h, TuiCanvas *c, TuiRect r) {
     result = tui_feedback_draw(v, c, r);
   tui_feedback_free(v);
   return result;
+}
+
+static int container_number(int n, int max_value) {
+  return n >= 0 && n <= max_value;
+}
+static int container_track(TuiTrack t) {
+  return container_number(t.min, 1000000) && container_number(t.max, 1000000) &&
+         container_number(t.fixed, 1000000) &&
+         container_number(t.weight, 1000000) &&
+         (!t.max || (t.max >= t.min && t.fixed <= t.max));
+}
+static TuiResult container_allocate(const TuiTrack *input, size_t count,
+                                    int total, int gap, int **out,
+                                    int *out_gap) {
+  size_t n;
+  int available, budget;
+  long long minimum = 0, weight;
+  TuiTrack *tracks;
+  int *sizes;
+  *out = NULL;
+  *out_gap = 0;
+  if (!count)
+    return TUI_OK;
+  tracks = malloc(count * sizeof *tracks);
+  sizes = calloc(count, sizeof *sizes);
+  if (!tracks || !sizes) {
+    free(tracks);
+    free(sizes);
+    return TUI_NOMEM;
+  }
+  memcpy(tracks, input, count * sizeof *tracks);
+  for (n = 0; n < count; n++) {
+    TuiTrack *t = tracks + n;
+    if (!t->min && !t->max && !t->fixed && !t->weight)
+      t->weight = 1;
+    minimum += max(t->min, t->fixed);
+  }
+  gap = min(gap, total / (int)count);
+  available = total - gap * ((int)count - 1);
+  if (minimum > available) {
+    gap = 0;
+    available = total;
+  }
+  for (n = 0; n < count; n++) {
+    sizes[n] = min(available, max(tracks[n].min, tracks[n].fixed));
+    available -= sizes[n];
+  }
+  while (available) {
+    weight = 0;
+    for (n = 0; n < count; n++) {
+      TuiTrack t = tracks[n];
+      if (!t.fixed && t.weight && (!t.max || sizes[n] < t.max))
+        weight += t.weight;
+    }
+    if (!weight)
+      break;
+    budget = available;
+    for (n = 0; n < count; n++) {
+      TuiTrack t = tracks[n];
+      int add;
+      if (t.fixed || !t.weight || (t.max && sizes[n] >= t.max))
+        continue;
+      add =
+          min(available, max(1, (int)((long long)budget * t.weight / weight)));
+      if (t.max)
+        add = min(add, t.max - sizes[n]);
+      sizes[n] += add;
+      available -= add;
+    }
+  }
+  free(tracks);
+  *out = sizes;
+  *out_gap = gap;
+  return TUI_OK;
+}
+static TuiResult container_validate(TuiRect bounds, const TuiLayoutItem *items,
+                                    size_t count,
+                                    const TuiContainerOptions *o) {
+  size_t n, k;
+  int values[] = {bounds.x,      bounds.y,         bounds.width,
+                  bounds.height, o->virtual_width, o->virtual_height};
+  if (count > 1024 || o->row_count > 1024 || o->column_count > 1024 ||
+      (!items && count) || (!o->rows && o->row_count) ||
+      (!o->columns && o->column_count) || !container_number(o->gap, 1024) ||
+      !container_number(o->padding, 1024))
+    return TUI_INVALID;
+  for (n = 0; n < 6; n++)
+    if (!container_number(values[n], 1000000))
+      return TUI_INVALID;
+  if (strcmp(o->kind, "row") && strcmp(o->kind, "column") &&
+      strcmp(o->kind, "grid") && strcmp(o->kind, "layers"))
+    return TUI_INVALID;
+  for (n = 0; n < o->row_count; n++)
+    if (!container_track(o->rows[n]))
+      return TUI_INVALID;
+  for (n = 0; n < o->column_count; n++)
+    if (!container_track(o->columns[n]))
+      return TUI_INVALID;
+  for (n = 0; n < count; n++) {
+    const TuiLayoutItem *i = items + n;
+    int v[] = {i->row,    i->column, i->row_span,   i->column_span,
+               i->area.x, i->area.y, i->area.width, i->area.height};
+    if (!i->id || !*i->id || !container_track(i->track))
+      return TUI_INVALID;
+    for (k = 0; k < n; k++)
+      if (!strcmp(items[k].id, i->id))
+        return TUI_INVALID;
+    for (k = 0; k < 8; k++)
+      if (!container_number(v[k], 1000000))
+        return TUI_INVALID;
+    if (i->drawer && *i->drawer &&
+        (strcmp(o->kind, "layers") || i->centered ||
+         (strcmp(i->drawer, "left") && strcmp(i->drawer, "right"))))
+      return TUI_INVALID;
+  }
+  return TUI_OK;
+}
+TuiResult tui_compute_container(TuiRect bounds, const TuiLayoutItem *items,
+                                size_t count,
+                                const TuiContainerOptions *options,
+                                TuiLayoutResult **out) {
+  TuiContainerOptions o = options ? *options : (TuiContainerOptions){0};
+  TuiLayoutResult *r;
+  TuiRect inner;
+  TuiResult result;
+  TuiTrack *tracks = NULL;
+  int *sizes = NULL, *widths = NULL, *heights = NULL, gap = 0, gx = 0, gy = 0;
+  size_t n, k, visible = 0;
+  int at = 0;
+  if (!out)
+    return TUI_INVALID;
+  *out = NULL;
+  if (!o.kind)
+    o.kind = "row";
+  result = container_validate(bounds, items, count, &o);
+  if (result != TUI_OK)
+    return result;
+  tui_rect_inset(bounds, o.padding, &inner);
+  r = calloc(1, sizeof *r);
+  if (!r)
+    return TUI_NOMEM;
+  r->rects = calloc(count + 1, sizeof *r->rects);
+  r->hidden = calloc(count + 1, sizeof *r->hidden);
+  if (!r->rects || !r->hidden) {
+    result = TUI_NOMEM;
+    goto fail;
+  }
+  for (n = 0; n < count; n++)
+    if (!items[n].hidden)
+      visible++;
+  if (!strcmp(o.kind, "row") || !strcmp(o.kind, "column")) {
+    int total = !strcmp(o.kind, "row") ? inner.width : inner.height;
+    tracks = calloc(visible + 1, sizeof *tracks);
+    if (!tracks) {
+      result = TUI_NOMEM;
+      goto fail;
+    }
+    for (n = 0, k = 0; n < count; n++)
+      if (!items[n].hidden)
+        tracks[k++] = items[n].track;
+    result = container_allocate(tracks, visible, total, o.gap, &sizes, &gap);
+    if (result != TUI_OK)
+      goto fail;
+  }
+  if (!strcmp(o.kind, "grid")) {
+    result = container_allocate(o.columns, o.column_count, inner.width, o.gap,
+                                &widths, &gx);
+    if (result != TUI_OK)
+      goto fail;
+    result = container_allocate(o.rows, o.row_count, inner.height, o.gap,
+                                &heights, &gy);
+    if (result != TUI_OK)
+      goto fail;
+  }
+  for (n = 0, k = 0; n < count; n++) {
+    const TuiLayoutItem *i = items + n;
+    TuiRect box = inner;
+    if (i->hidden)
+      continue;
+    if (!strcmp(o.kind, "row")) {
+      at = min(at, inner.width);
+      box.x += at;
+      box.width = sizes[k++];
+      at += box.width + gap;
+    } else if (!strcmp(o.kind, "column")) {
+      at = min(at, inner.height);
+      box.y += at;
+      box.height = sizes[k++];
+      at += box.height + gap;
+    } else if (!strcmp(o.kind, "grid")) {
+      int rs = max(1, i->row_span), cs = max(1, i->column_span), x = 0, y = 0,
+          w = gx * (cs - 1), h = gy * (rs - 1), j;
+      if ((size_t)(i->row + rs) > o.row_count ||
+          (size_t)(i->column + cs) > o.column_count) {
+        result = TUI_INVALID;
+        goto fail;
+      }
+      for (j = 0; j < i->column; j++)
+        x += widths[j] + gx;
+      for (j = 0; j < i->row; j++)
+        y += heights[j] + gy;
+      for (j = i->column; j < i->column + cs; j++)
+        w += widths[j];
+      for (j = i->row; j < i->row + rs; j++)
+        h += heights[j];
+      box = (TuiRect){
+          inner.x + min(x, inner.width), inner.y + min(y, inner.height),
+          min(w, max(0, inner.width - x)), min(h, max(0, inner.height - y))};
+    } else {
+      int ax = min(i->area.x, inner.width), ay = min(i->area.y, inner.height);
+      box.x += ax;
+      box.y += ay;
+      box.width -= ax;
+      box.height -= ay;
+      if (i->area.width)
+        box.width = min(box.width, i->area.width);
+      if (i->area.height)
+        box.height = min(box.height, i->area.height);
+      if (i->centered) {
+        box.x = inner.x + (inner.width - box.width) / 2;
+        box.y = inner.y + (inner.height - box.height) / 2;
+      }
+      if (i->drawer && *i->drawer) {
+        box.width =
+            min(inner.width, i->area.width ? i->area.width : inner.width);
+        box.x = inner.x +
+                (!strcmp(i->drawer, "right") ? inner.width - box.width : 0);
+      }
+    }
+    r->rects[r->count].id = copy(i->id);
+    r->rects[r->count].rect = box;
+    if (!r->rects[r->count].id) {
+      result = TUI_NOMEM;
+      goto fail;
+    }
+    r->count++;
+    if (!box.width || !box.height) {
+      r->hidden[r->hidden_count] = copy(i->id);
+      if (!r->hidden[r->hidden_count]) {
+        result = TUI_NOMEM;
+        goto fail;
+      }
+      r->hidden_count++;
+    }
+  }
+  free(tracks);
+  free(sizes);
+  free(widths);
+  free(heights);
+  *out = r;
+  return TUI_OK;
+fail:
+  free(tracks);
+  free(sizes);
+  free(widths);
+  free(heights);
+  tui_layout_free(r);
+  return result;
+}
+struct TuiContainerState {
+  char *focused, *captured, *modal, *last;
+  char *restore_id[1024], *restore_value[1024];
+  size_t restore_count;
+};
+static const char *container_string(const char *s) { return s ? s : ""; }
+static int container_assign(char **destination, const char *value) {
+  char *owned = copy(value);
+  if (!owned)
+    return 0;
+  free(*destination);
+  *destination = owned;
+  return 1;
+}
+TuiContainerState *tui_container_state_new(void) {
+  return calloc(1, sizeof(TuiContainerState));
+}
+void tui_container_state_free(TuiContainerState *s) {
+  if (s) {
+    free(s->focused);
+    free(s->captured);
+    free(s->modal);
+    free(s->last);
+    for (size_t n = 0; n < s->restore_count; n++) {
+      free(s->restore_id[n]);
+      free(s->restore_value[n]);
+    }
+    free(s);
+  }
+}
+const char *tui_container_focused(const TuiContainerState *s) {
+  return s ? container_string(s->focused) : "";
+}
+const char *tui_container_captured(const TuiContainerState *s) {
+  return s ? container_string(s->captured) : "";
+}
+static size_t container_modal_start(const TuiLayoutItem *items, size_t count) {
+  size_t start = 0;
+  for (size_t n = 0; n < count; n++)
+    if (items[n].modal && !items[n].hidden)
+      start = n;
+  return start;
+}
+static int container_eligible(const TuiLayoutItem *items, size_t count,
+                              const char *id) {
+  size_t start = container_modal_start(items, count);
+  for (size_t n = start; n < count; n++)
+    if (!items[n].hidden && !items[n].disabled &&
+        !strcmp(items[n].id, container_string(id)))
+      return 1;
+  return 0;
+}
+static char *container_restore_take(TuiContainerState *s, const char *id) {
+  for (size_t n = 0; n < s->restore_count; n++)
+    if (!strcmp(s->restore_id[n], container_string(id))) {
+      char *value = s->restore_value[n];
+      free(s->restore_id[n]);
+      s->restore_count--;
+      s->restore_id[n] = s->restore_id[s->restore_count];
+      s->restore_value[n] = s->restore_value[s->restore_count];
+      return value;
+    }
+  return NULL;
+}
+TuiResult tui_container_reconcile(TuiContainerState *s,
+                                  const TuiLayoutItem *items, size_t count) {
+  const char *modal = "";
+  int old_visible = 0;
+  size_t n;
+  TuiContainerOptions o = {.kind = "layers"};
+  if (!s || container_validate((TuiRect){0}, items, count, &o) != TUI_OK)
+    return TUI_INVALID;
+  for (n = 0; n < count; n++)
+    if (items[n].modal && !items[n].hidden) {
+      modal = items[n].id;
+      if (!strcmp(modal, container_string(s->modal)))
+        old_visible = 1;
+    }
+  if (strcmp(modal, container_string(s->modal))) {
+    if (s->modal && *s->modal && !old_visible) {
+      char *previous = container_restore_take(s, s->modal);
+      size_t remaining = s->restore_count + 1;
+      while (previous && remaining--) {
+        if (container_eligible(items, count, previous)) {
+          free(s->focused);
+          s->focused = previous;
+          previous = NULL;
+          break;
+        }
+        char *next = container_restore_take(s, previous);
+        free(previous);
+        previous = next;
+      }
+      free(previous);
+    }
+    if (*modal) {
+      for (n = 0; n < s->restore_count; n++)
+        if (!strcmp(modal, s->restore_id[n]))
+          break;
+      if (n == s->restore_count) {
+        char *key, *value;
+        if (n == 1024)
+          return TUI_INVALID;
+        key = copy(modal);
+        value = copy(s->focused);
+        if (!key || !value) {
+          free(key);
+          free(value);
+          return TUI_NOMEM;
+        }
+        s->restore_id[n] = key;
+        s->restore_value[n] = value;
+        s->restore_count++;
+      }
+    }
+    if (!container_assign(&s->modal, modal))
+      return TUI_NOMEM;
+  }
+  if (!container_eligible(items, count, s->focused)) {
+    const char *first = "";
+    for (n = container_modal_start(items, count); n < count; n++)
+      if (!items[n].hidden && !items[n].disabled) {
+        first = items[n].id;
+        break;
+      }
+    if (!container_assign(&s->focused, first))
+      return TUI_NOMEM;
+  }
+  if (!container_eligible(items, count, s->captured) &&
+      !container_assign(&s->captured, ""))
+    return TUI_NOMEM;
+  return TUI_OK;
+}
+TuiResult tui_container_move_focus(TuiContainerState *s,
+                                   const TuiLayoutItem *items, size_t count,
+                                   int previous) {
+  size_t ids[1024], length = 0, at = 0, n;
+  TuiResult result = tui_container_reconcile(s, items, count);
+  if (result != TUI_OK)
+    return result;
+  for (n = container_modal_start(items, count); n < count; n++)
+    if (!items[n].hidden && !items[n].disabled) {
+      ids[length] = n;
+      if (!strcmp(items[n].id, tui_container_focused(s)))
+        at = length;
+      length++;
+    }
+  if (length && !container_assign(
+                    &s->focused,
+                    items[ids[(at + (previous ? length - 1 : 1)) % length]].id))
+    return TUI_NOMEM;
+  return TUI_OK;
+}
+const char *tui_container_hit(const TuiLayoutItem *items, size_t count,
+                              const TuiLayoutResult *r, int x, int y) {
+  if (!r || (!items && count) || count > 1024)
+    return "";
+  for (size_t n = r->count; n > 0; n--) {
+    TuiNamedRect box = r->rects[n - 1];
+    if (x >= box.rect.x && y >= box.rect.y && x < box.rect.x + box.rect.width &&
+        y < box.rect.y + box.rect.height &&
+        container_eligible(items, count, box.id))
+      return box.id;
+  }
+  return "";
+}
+TuiResult tui_container_state_pointer(TuiContainerState *s,
+                                      const TuiLayoutItem *items, size_t count,
+                                      const TuiLayoutResult *r, int x, int y,
+                                      int press, int release, const char **id) {
+  TuiResult result;
+  const char *target;
+  if (!id)
+    return TUI_INVALID;
+  *id = "";
+  result = tui_container_reconcile(s, items, count);
+  if (result != TUI_OK)
+    return result;
+  target = *tui_container_captured(s)
+               ? tui_container_captured(s)
+               : tui_container_hit(items, count, r, x, y);
+  if (!container_assign(&s->last, target))
+    return TUI_NOMEM;
+  if (press && *s->last) {
+    if (!container_assign(&s->focused, s->last) ||
+        !container_assign(&s->captured, s->last))
+      return TUI_NOMEM;
+  }
+  if (release && !container_assign(&s->captured, ""))
+    return TUI_NOMEM;
+  *id = s->last;
+  return TUI_OK;
+}
+struct TuiContainer {
+  TuiLayoutItem *items;
+  size_t count;
+  TuiContainerOptions options;
+  TuiContainerState *state;
+  TuiLayoutResult *layout;
+  TuiRect bounds;
+  int scroll_x, scroll_y, sx, sy;
+};
+static void container_clear_items(TuiContainer *c) {
+  for (size_t n = 0; n < c->count; n++) {
+    free((void *)c->items[n].id);
+    free((void *)c->items[n].drawer);
+  }
+  free(c->items);
+  free((void *)c->options.kind);
+  free((void *)c->options.rows);
+  free((void *)c->options.columns);
+}
+void tui_container_free(TuiContainer *c) {
+  if (c) {
+    container_clear_items(c);
+    tui_container_state_free(c->state);
+    tui_layout_free(c->layout);
+    free(c);
+  }
+}
+TuiContainer *tui_container_new(const TuiLayoutItem *items, size_t count,
+                                const TuiContainerOptions *o) {
+  TuiContainer *c = calloc(1, sizeof *c);
+  if (!c)
+    return NULL;
+  c->state = tui_container_state_new();
+  if (!c->state || tui_container_set_items(c, items, count, o) != TUI_OK) {
+    tui_container_free(c);
+    return NULL;
+  }
+  return c;
+}
+TuiResult tui_container_set_items(TuiContainer *c, const TuiLayoutItem *items,
+                                  size_t count,
+                                  const TuiContainerOptions *options) {
+  TuiContainerOptions o =
+      options ? *options
+              : (c && c->options.kind ? c->options : (TuiContainerOptions){0});
+  TuiLayoutResult *checked = NULL;
+  TuiContainer candidate = {0};
+  TuiTrack *rows = NULL, *columns = NULL;
+  TuiResult result;
+  if (!c)
+    return TUI_INVALID;
+  if (!o.kind)
+    o.kind = "row";
+  result =
+      tui_compute_container((TuiRect){0, 0, 1, 1}, items, count, &o, &checked);
+  tui_layout_free(checked);
+  if (result != TUI_OK)
+    return result;
+  candidate.options = o;
+  candidate.options.kind = NULL;
+  candidate.options.rows = NULL;
+  candidate.options.columns = NULL;
+  candidate.items = calloc(count + 1, sizeof *candidate.items);
+  if (!candidate.items)
+    return TUI_NOMEM;
+  candidate.count = count;
+  for (size_t n = 0; n < count; n++) {
+    candidate.items[n] = items[n];
+    candidate.items[n].id = copy(items[n].id);
+    candidate.items[n].drawer = copy(items[n].drawer);
+    if (!candidate.items[n].id || !candidate.items[n].drawer) {
+      result = TUI_NOMEM;
+      goto fail;
+    }
+  }
+  candidate.options.kind = copy(o.kind);
+  if (o.row_count) {
+    rows = malloc(o.row_count * sizeof *rows);
+    if (rows)
+      memcpy(rows, o.rows, o.row_count * sizeof *rows);
+  }
+  if (o.column_count) {
+    columns = malloc(o.column_count * sizeof *columns);
+    if (columns)
+      memcpy(columns, o.columns, o.column_count * sizeof *columns);
+  }
+  candidate.options.rows = rows;
+  candidate.options.columns = columns;
+  if (!candidate.options.kind || (o.row_count && !rows) ||
+      (o.column_count && !columns)) {
+    result = TUI_NOMEM;
+    goto fail;
+  }
+  container_clear_items(c);
+  c->items = candidate.items;
+  c->count = candidate.count;
+  c->options = candidate.options;
+  tui_layout_free(c->layout);
+  c->layout = NULL;
+  c->bounds = (TuiRect){0};
+  free(c->state->captured);
+  c->state->captured = NULL;
+  return tui_container_reconcile(c->state, c->items, c->count);
+fail:
+  container_clear_items(&candidate);
+  return result;
+}
+TuiContainerState *tui_container_state(TuiContainer *c) {
+  return c ? c->state : NULL;
+}
+TuiResult tui_container_scroll(TuiContainer *c, int x, int y) {
+  if (!c || !container_number(x, 1000000) || !container_number(y, 1000000))
+    return TUI_INVALID;
+  c->scroll_x = x;
+  c->scroll_y = y;
+  return TUI_OK;
+}
+const TuiLayoutResult *tui_container_layout(const TuiContainer *c) {
+  return c ? c->layout : NULL;
+}
+TuiResult tui_container_draw(TuiContainer *c, TuiCanvas *canvas, TuiRect bounds,
+                             TuiChildPainter painter, void *context) {
+  int vw, vh, sx, sy;
+  TuiCanvas *virtual_canvas;
+  TuiLayoutResult *layout = NULL;
+  TuiResult result;
+  if (!c || !canvas || !painter)
+    return TUI_INVALID;
+  int values[] = {bounds.x, bounds.y, bounds.width, bounds.height};
+  for (size_t n = 0; n < 4; n++)
+    if (!container_number(values[n], 1000000))
+      return TUI_INVALID;
+  vw = max(bounds.width, c->options.virtual_width);
+  vh = max(bounds.height, c->options.virtual_height);
+  if ((long long)vw * vh > 1000000)
+    return TUI_INVALID;
+  sx = min(c->scroll_x, max(0, vw - bounds.width));
+  sy = min(c->scroll_y, max(0, vh - bounds.height));
+  result = tui_compute_container((TuiRect){0, 0, vw, vh}, c->items, c->count,
+                                 &c->options, &layout);
+  if (result != TUI_OK)
+    return result;
+  virtual_canvas = tui_canvas_new(vw, vh, canvas->theme, canvas->profile);
+  if (!virtual_canvas) {
+    tui_layout_free(layout);
+    return TUI_NOMEM;
+  }
+  result = tui_container_reconcile(c->state, c->items, c->count);
+  if (result != TUI_OK)
+    goto done;
+  for (size_t n = 0; n < layout->count; n++) {
+    TuiNamedRect named = layout->rects[n];
+    TuiRect r = named.rect;
+    TuiCanvas *child;
+    int focused;
+    if (!r.width || !r.height)
+      continue;
+    child = tui_canvas_new(r.width, r.height, canvas->theme, canvas->profile);
+    if (!child) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    result = tui_canvas_blit(child, virtual_canvas, r, 0, 0);
+    tui_canvas_clear_cursor(child, NULL);
+    focused = !strcmp(named.id, tui_container_focused(c->state));
+    if (result == TUI_OK)
+      result = painter(context, named.id, child, focused);
+    if (!focused)
+      tui_canvas_clear_cursor(child, NULL);
+    if (result == TUI_OK)
+      result = tui_canvas_blit(virtual_canvas, child,
+                               (TuiRect){0, 0, r.width, r.height}, r.x, r.y);
+    tui_canvas_free(child);
+    if (result != TUI_OK)
+      goto done;
+  }
+  result = tui_canvas_blit(canvas, virtual_canvas,
+                           (TuiRect){sx, sy, bounds.width, bounds.height},
+                           bounds.x, bounds.y);
+  if (result == TUI_OK) {
+    c->scroll_x = c->sx = sx;
+    c->scroll_y = c->sy = sy;
+    c->bounds = bounds;
+    tui_layout_free(c->layout);
+    c->layout = layout;
+    layout = NULL;
+  }
+done:
+  tui_canvas_free(virtual_canvas);
+  tui_layout_free(layout);
+  return result;
+}
+TuiResult tui_container_pointer(TuiContainer *c, int x, int y, int press,
+                                int release, const char **id) {
+  if (!c || !id)
+    return TUI_INVALID;
+  *id = "";
+  if (!*tui_container_captured(c->state) &&
+      (x < c->bounds.x || y < c->bounds.y ||
+       x >= c->bounds.x + c->bounds.width ||
+       y >= c->bounds.y + c->bounds.height))
+    return TUI_OK;
+  return tui_container_state_pointer(
+      c->state, c->items, c->count, c->layout, x - c->bounds.x + c->sx,
+      y - c->bounds.y + c->sy, press, release, id);
 }

@@ -108,6 +108,7 @@ class Canvas:
         self.palette = palette or Palette()
         self.data = [[Cell(style=self.palette.style("surface")) for _ in range(width)] for _ in range(height)]
         self.cursor: tuple[int, int] | None = None
+        self._cursor_width = 1
 
     def _erase(self, x: int, y: int) -> None:
         c = self.data[y][x]
@@ -115,6 +116,7 @@ class Canvas:
         end = start + 1
         while end < self.width and self.data[y][end].continuation and self.data[y][end].owner == start:
             end += 1
+        self.clear_cursor(Rect(start, y, end-start, 1))
         for i in range(start, end):
             self.data[y][i] = Cell(style=self.data[y][i].style)
 
@@ -166,7 +168,52 @@ class Canvas:
         return Rect(rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2)
 
     def set_cursor(self, x: int, y: int, glyph_width: int = 1) -> None:
+        self._cursor_width = max(1, glyph_width)
         self.cursor = (x, y) if 0 <= x and x + max(1, glyph_width) <= self.width and 0 <= y < self.height else None
+
+    def clear_cursor(self, rect: Rect | None = None) -> None:
+        """Hide a cursor intersecting an opaque paint region, or hide unconditionally."""
+        if rect is None or (self.cursor is not None and
+                rect.y <= self.cursor[1] < rect.y + rect.height and
+                rect.x < self.cursor[0] + self._cursor_width and
+                self.cursor[0] < rect.x + rect.width and rect.width > 0):
+            self.cursor = None
+
+    def blit(self, source: Canvas, region: Rect, x: int, y: int) -> None:
+        """Copy clipped cells/styles; incomplete glyphs become blanks. Self-copy is safe."""
+        values = (region.x, region.y, region.width, region.height, x, y)
+        if any(type(v) is not int or abs(v) > 10**9 for v in values) or min(region.width, region.height) < 0:
+            raise ValueError("invalid blit bounds")
+        left = max(0, region.x, region.x-x)
+        top = max(0, region.y, region.y-y)
+        right = min(source.width, region.x+region.width, region.x+self.width-x)
+        bottom = min(source.height, region.y+region.height, region.y+self.height-y)
+        if left >= right or top >= bottom:
+            return
+        cursor, cw = source.cursor, source._cursor_width
+        rows = []
+        for sy in range(top, bottom):
+            row = []
+            for sx in range(left, right):
+                cell = source.data[sy][sx]
+                start = cell.owner if cell.continuation else sx
+                end = start+1
+                while end < source.width and source.data[sy][end].continuation and source.data[sy][end].owner == start:
+                    end += 1
+                if start < left or end > right:
+                    row.append(Cell(style=cell.style))
+                else:
+                    row.append(Cell(cell.text, cell.style, cell.continuation,
+                                    x+start-region.x if cell.continuation else -1))
+            rows.append(row)
+        for sy in range(top, bottom):
+            for sx in range(left, right):
+                self._erase(x+sx-region.x, y+sy-region.y)
+        for offset, row in enumerate(rows):
+            dy = y+top+offset-region.y
+            self.data[dy][x+left-region.x:x+right-region.x] = row
+        if cursor is not None and left <= cursor[0] and cursor[0]+cw <= right and top <= cursor[1] < bottom:
+            self.set_cursor(x+cursor[0]-region.x, y+cursor[1]-region.y, cw)
 
     def lines(self) -> list[str]:
         return ["".join(c.text for c in row) for row in self.data]

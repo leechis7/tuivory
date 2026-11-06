@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Independent configured row/column/grid/layer containers, modal focus restoration, captured pointer routing, clipped virtual child painting and cell/style/cursor copying; repair both source/destination wide-glyph edges and register Grid cursors after painting. Add bilingual APIs, integrated examples, actual screens and package/output regressions.
+
 - TVR-15/16/30/31/32: Independent spacing/weighted stacks, drawer geometry, badges, request-only removable chips and literal priority hints; bilingual integrated examples, API and all-palette actual-output verification.
 
 - TVR-15/16/30/31/32: Add independent notice queues, progress and data states with important-notice retention, atomic overflow rejection, expiry, host-handled retry/dismiss/cancel requests and disabled-action blocking. Include bilingual integrated examples, APIs, captures and actual-output checks.

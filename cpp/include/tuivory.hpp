@@ -171,7 +171,7 @@ inline Break property(unsigned cp) {
   PROPERTY(grapheme_lv, LV)
   PROPERTY(grapheme_lvt, LVT)
 #undef PROPERTY
-      return Break::Other;
+  return Break::Other;
 }
 inline bool pictographic(unsigned c) {
   return range(c, tui_extended_pictographic,
@@ -378,6 +378,8 @@ public:
   }
 };
 class Canvas {
+  int cursor_width_ = 1;
+
 public:
   struct Cell {
     std::string text = " ";
@@ -403,6 +405,7 @@ public:
     int end = start + 1;
     while (end < width && row[end].owner == start)
       end++;
+    clear_cursor(Rect{start, y, end - start, 1});
     for (int i = start; i < end; i++) {
       row[i].text = " ";
       row[i].owner = -1;
@@ -468,10 +471,63 @@ public:
     return {r.x + 1, r.y + 1, r.width - 2, r.height - 2};
   }
   void set_cursor(int x, int y, int glyph_width = 1) {
-    if (x >= 0 && x + std::max(1, glyph_width) <= width && y >= 0 && y < height)
+    cursor_width_ = std::max(1, glyph_width);
+    if (x >= 0 && (long long)x + std::max(1, glyph_width) <= width && y >= 0 &&
+        y < height)
       cursor = {{x, y}};
     else
       cursor.reset();
+  }
+  void clear_cursor(std::optional<Rect> r = std::nullopt) {
+    if (!r || (cursor && r->width > 0 && r->y <= cursor->second &&
+               (long long)cursor->second < (long long)r->y + r->height &&
+               (long long)r->x < (long long)cursor->first + cursor_width_ &&
+               (long long)cursor->first < (long long)r->x + r->width))
+      cursor.reset();
+  }
+  void blit(const Canvas &source, Rect r, int x, int y) {
+    for (int v : {r.x, r.y, r.width, r.height, x, y})
+      if (v < -1000000000 || v > 1000000000)
+        throw std::invalid_argument("invalid blit bounds");
+    if (r.width < 0 || r.height < 0)
+      throw std::invalid_argument("invalid blit bounds");
+    int left = std::max({0, r.x, r.x - x}), top = std::max({0, r.y, r.y - y}),
+        right = static_cast<int>(
+            std::min({(long long)source.width, (long long)r.x + r.width,
+                      (long long)r.x + width - x})),
+        bottom = static_cast<int>(
+            std::min({(long long)source.height, (long long)r.y + r.height,
+                      (long long)r.y + height - y}));
+    if (left >= right || top >= bottom)
+      return;
+    auto saved = source.cursor;
+    int cw = source.cursor_width_;
+    std::vector<std::vector<Cell>> rows;
+    for (int sy = top; sy < bottom; sy++) {
+      std::vector<Cell> row;
+      for (int sx = left; sx < right; sx++) {
+        auto cell = source.data[sy][sx];
+        int start = cell.owner >= 0 ? cell.owner : sx, end = start + 1;
+        while (end < source.width && source.data[sy][end].owner == start)
+          end++;
+        if (start < left || end > right) {
+          cell.text = " ";
+          cell.owner = -1;
+        } else if (cell.owner >= 0)
+          cell.owner = x + start - r.x;
+        row.push_back(std::move(cell));
+      }
+      rows.push_back(std::move(row));
+    }
+    for (int sy = top; sy < bottom; sy++)
+      for (int sx = left; sx < right; sx++)
+        erase(x + sx - r.x, y + sy - r.y);
+    for (int sy = top; sy < bottom; sy++)
+      for (int sx = left; sx < right; sx++)
+        data[y + sy - r.y][x + sx - r.x] = std::move(rows[sy - top][sx - left]);
+    if (saved && left <= saved->first && saved->first + cw <= right &&
+        top <= saved->second && saved->second < bottom)
+      set_cursor(x + saved->first - r.x, y + saved->second - r.y, cw);
   }
   std::vector<std::string> lines() const {
     std::vector<std::string> out;
@@ -724,6 +780,10 @@ inline std::string fold(const std::string &text) {
 
 #include "tuivory_collections.hpp"
 
-#include "tuivory_menu.hpp"
+// Dependency order: layout uses feedback; containers use layout.
+// clang-format off
 #include "tuivory_feedback.hpp"
 #include "tuivory_layout.hpp"
+#include "tuivory_containers.hpp"
+#include "tuivory_menu.hpp"
+// clang-format on

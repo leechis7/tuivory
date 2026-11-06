@@ -196,6 +196,7 @@ public final class Tuivory {
     public final Palette palette;
     public final Cell[][] data;
     public int cursorX = -1, cursorY = -1;
+    private int cursorWidth = 1;
     public Canvas(int width, int height) {
       this(width, height, new Palette());
     }
@@ -213,6 +214,7 @@ public final class Tuivory {
       var row = data[y];
       int start = row[x].owner >= 0 ? row[x].owner : x, end = start + 1;
       while (end < width && row[end].owner == start) end++;
+      clearCursor(new Rect(start, y, end - start, 1));
       for (int i = start; i < end; i++) {
         row[i].text = " ";
         row[i].owner = -1;
@@ -276,11 +278,55 @@ public final class Tuivory {
       return new Rect(r.x + 1, r.y + 1, r.width - 2, r.height - 2);
     }
     public void setCursor(int x, int y, int glyphWidth) {
-      if (x >= 0 && x + Math.max(1, glyphWidth) <= width && y >= 0 && y < height) {
+      cursorWidth = Math.max(1, glyphWidth);
+      if (x >= 0 && (long) x + Math.max(1, glyphWidth) <= width && y >= 0 && y < height) {
         cursorX = x;
         cursorY = y;
       } else
         cursorX = cursorY = -1;
+    }
+    public void clearCursor() {
+      cursorX = cursorY = -1;
+    }
+    public void clearCursor(Rect r) {
+      if (cursorX >= 0 && r.width > 0 && r.y <= cursorY && (long) cursorY < (long) r.y + r.height
+          && (long) r.x < (long) cursorX + cursorWidth && (long) cursorX < (long) r.x + r.width)
+        clearCursor();
+    }
+    public void blit(Canvas source, Rect r, int x, int y) {
+      for (int v : new int[] {r.x, r.y, r.width, r.height, x, y})
+        if (v < -1000000000 || v > 1000000000)
+          throw new IllegalArgumentException("invalid blit bounds");
+      if (r.width < 0 || r.height < 0)
+        throw new IllegalArgumentException("invalid blit bounds");
+      int left = Math.max(0, Math.max(r.x, r.x - x)), top = Math.max(0, Math.max(r.y, r.y - y)),
+          right =
+              (int) Math.min(source.width, Math.min((long) r.x + r.width, (long) r.x + width - x)),
+          bottom = (int) Math.min(
+              source.height, Math.min((long) r.y + r.height, (long) r.y + height - y));
+      if (left >= right || top >= bottom)
+        return;
+      int cx = source.cursorX, cy = source.cursorY, cw = source.cursorWidth;
+      Cell[][] rows = new Cell[bottom - top][right - left];
+      for (int sy = top; sy < bottom; sy++)
+        for (int sx = left; sx < right; sx++) {
+          var cell = source.data[sy][sx];
+          int start = cell.owner >= 0 ? cell.owner : sx, end = start + 1;
+          while (end < source.width && source.data[sy][end].owner == start) end++;
+          var copy = new Cell(cell.style);
+          if (start >= left && end <= right) {
+            copy.text = cell.text;
+            copy.owner = cell.owner < 0 ? -1 : x + start - r.x;
+          }
+          rows[sy - top][sx - left] = copy;
+        }
+      for (int sy = top; sy < bottom; sy++)
+        for (int sx = left; sx < right; sx++) erase(x + sx - r.x, y + sy - r.y);
+      for (int sy = top; sy < bottom; sy++)
+        for (int sx = left; sx < right; sx++)
+          data[y + sy - r.y][x + sx - r.x] = rows[sy - top][sx - left];
+      if (cx >= left && cx + cw <= right && cy >= top && cy < bottom)
+        setCursor(x + cx - r.x, y + cy - r.y, cw);
     }
     public List<String> lines() {
       var out = new ArrayList<String>();
@@ -2980,6 +3026,345 @@ public final class Tuivory {
     }
     public void draw(Canvas c, Rect r) {
       feedbackDraw(c, r, layout(Math.max(0, r.width()), Math.max(0, r.height())));
+    }
+  }
+  public static final class Track {
+    public int min, max, fixed, weight;
+    public Track() {}
+    public Track(int min, int max, int fixed, int weight) {
+      this.min = min;
+      this.max = max;
+      this.fixed = fixed;
+      this.weight = weight;
+    }
+    Track copy() {
+      return new Track(min, max, fixed, weight);
+    }
+  }
+  public static final class LayoutItem {
+    public String id, drawer = "";
+    public Track track = new Track();
+    public int row, column, rowSpan, columnSpan;
+    public boolean hidden, disabled, modal, centered;
+    public Rect area = new Rect(0, 0, 0, 0);
+    public LayoutItem(String id) {
+      this.id = id;
+    }
+    LayoutItem copy() {
+      var i = new LayoutItem(id);
+      i.drawer = drawer;
+      i.track = track.copy();
+      i.row = row;
+      i.column = column;
+      i.rowSpan = rowSpan;
+      i.columnSpan = columnSpan;
+      i.hidden = hidden;
+      i.disabled = disabled;
+      i.modal = modal;
+      i.centered = centered;
+      i.area = area;
+      return i;
+    }
+  }
+  public static final class ContainerOptions {
+    public String kind = "row";
+    public int gap, padding, virtualWidth, virtualHeight;
+    public List<Track> rows = new ArrayList<>(), columns = new ArrayList<>();
+    ContainerOptions copy() {
+      var o = new ContainerOptions();
+      o.kind = kind;
+      o.gap = gap;
+      o.padding = padding;
+      o.virtualWidth = virtualWidth;
+      o.virtualHeight = virtualHeight;
+      o.rows = rows.stream().map(Track::copy).toList();
+      o.columns = columns.stream().map(Track::copy).toList();
+      return o;
+    }
+  }
+  private static void containerNumber(int n, int max) {
+    if (n < 0 || n > max)
+      throw new IllegalArgumentException("invalid container constraints");
+  }
+  private static void containerTrack(Track t) {
+    for (int n : new int[] {t.min, t.max, t.fixed, t.weight}) containerNumber(n, 1000000);
+    if (t.max > 0 && (t.max < t.min || t.fixed > t.max))
+      throw new IllegalArgumentException("invalid track maximum");
+  }
+  private record TrackAllocation(int[] sizes, int gap) {}
+  private static TrackAllocation allocateTracks(List<Track> input, int total, int gap) {
+    if (input.isEmpty())
+      return new TrackAllocation(new int[0], 0);
+    var tracks = input.stream().map(Track::copy).toList();
+    for (var t : tracks)
+      if (t.min == 0 && t.max == 0 && t.fixed == 0 && t.weight == 0)
+        t.weight = 1;
+    gap = Math.min(gap, total / tracks.size());
+    int available = total - gap * (tracks.size() - 1);
+    long minimum = 0;
+    for (var t : tracks) minimum += Math.max(t.min, t.fixed);
+    if (minimum > available) {
+      gap = 0;
+      available = total;
+    }
+    var sizes = new int[tracks.size()];
+    for (int n = 0; n < sizes.length; n++) {
+      var t = tracks.get(n);
+      sizes[n] = Math.min(available, Math.max(t.min, t.fixed));
+      available -= sizes[n];
+    }
+    while (available > 0) {
+      long weight = 0;
+      for (int n = 0; n < sizes.length; n++) {
+        var t = tracks.get(n);
+        if (t.fixed == 0 && t.weight > 0 && (t.max == 0 || sizes[n] < t.max))
+          weight += t.weight;
+      }
+      if (weight == 0)
+        break;
+      int budget = available;
+      for (int n = 0; n < sizes.length; n++) {
+        var t = tracks.get(n);
+        if (t.fixed > 0 || t.weight == 0 || t.max > 0 && sizes[n] >= t.max)
+          continue;
+        int add = Math.min(available, Math.max(1, (int) ((long) budget * t.weight / weight)));
+        if (t.max > 0)
+          add = Math.min(add, t.max - sizes[n]);
+        sizes[n] += add;
+        available -= add;
+      }
+    }
+    return new TrackAllocation(sizes, gap);
+  }
+  public static List<NamedRect> computeContainer(
+      Rect bounds, List<LayoutItem> items, ContainerOptions o) {
+    for (int v : new int[] {
+             bounds.x, bounds.y, bounds.width, bounds.height, o.virtualWidth, o.virtualHeight})
+      containerNumber(v, 1000000);
+    containerNumber(o.gap, 1024);
+    containerNumber(o.padding, 1024);
+    if (!List.of("row", "column", "grid", "layers").contains(o.kind)
+        || Math.max(items.size(), Math.max(o.rows.size(), o.columns.size())) > 1024)
+      throw new IllegalArgumentException("invalid container kind/count");
+    for (var t : o.rows) containerTrack(t);
+    for (var t : o.columns) containerTrack(t);
+    var seen = new HashSet<String>();
+    for (var i : items) {
+      if (i.id == null || i.id.isEmpty() || !seen.add(i.id))
+        throw new IllegalArgumentException("invalid container ID");
+      containerTrack(i.track);
+      for (int v : new int[] {i.row, i.column, i.rowSpan, i.columnSpan, i.area.x, i.area.y,
+               i.area.width, i.area.height})
+        containerNumber(v, 1000000);
+      if (!i.drawer.isEmpty()
+          && (!o.kind.equals("layers") || i.centered
+              || !List.of("left", "right").contains(i.drawer)))
+        throw new IllegalArgumentException("invalid drawer");
+    }
+    var inner = insetRect(bounds, o.padding);
+    var visible = items.stream().filter(i -> !i.hidden).toList();
+    var out = new ArrayList<NamedRect>();
+    if (o.kind.equals("row") || o.kind.equals("column")) {
+      boolean horizontal = o.kind.equals("row");
+      int total = horizontal ? inner.width : inner.height, at = 0;
+      var a = allocateTracks(visible.stream().map(i -> i.track).toList(), total, o.gap);
+      for (int n = 0; n < visible.size(); n++) {
+        at = Math.min(at, total);
+        int size = a.sizes[n];
+        out.add(new NamedRect(visible.get(n).id,
+            horizontal ? new Rect(inner.x + at, inner.y, size, inner.height)
+                       : new Rect(inner.x, inner.y + at, inner.width, size)));
+        at += size + a.gap;
+      }
+    } else if (o.kind.equals("grid")) {
+      var widths = allocateTracks(o.columns, inner.width, o.gap);
+      var heights = allocateTracks(o.rows, inner.height, o.gap);
+      for (var i : visible) {
+        int rs = Math.max(1, i.rowSpan), cs = Math.max(1, i.columnSpan);
+        if (i.row + rs > heights.sizes.length || i.column + cs > widths.sizes.length)
+          throw new IllegalArgumentException("invalid grid span");
+        int x = 0, y = 0, w = widths.gap * (cs - 1), h = heights.gap * (rs - 1);
+        for (int n = 0; n < i.column; n++) x += widths.sizes[n] + widths.gap;
+        for (int n = 0; n < i.row; n++) y += heights.sizes[n] + heights.gap;
+        for (int n = i.column; n < i.column + cs; n++) w += widths.sizes[n];
+        for (int n = i.row; n < i.row + rs; n++) h += heights.sizes[n];
+        out.add(new NamedRect(i.id,
+            new Rect(inner.x + Math.min(x, inner.width), inner.y + Math.min(y, inner.height),
+                Math.min(w, Math.max(0, inner.width - x)),
+                Math.min(h, Math.max(0, inner.height - y)))));
+      }
+    } else {
+      for (var i : visible) {
+        int ax = Math.min(i.area.x, inner.width), ay = Math.min(i.area.y, inner.height),
+            w = inner.width - ax, h = inner.height - ay, x = inner.x + ax, y = inner.y + ay;
+        if (i.area.width > 0)
+          w = Math.min(w, i.area.width);
+        if (i.area.height > 0)
+          h = Math.min(h, i.area.height);
+        if (i.centered) {
+          x = inner.x + (inner.width - w) / 2;
+          y = inner.y + (inner.height - h) / 2;
+        }
+        if (!i.drawer.isEmpty()) {
+          w = Math.min(inner.width, i.area.width == 0 ? inner.width : i.area.width);
+          x = inner.x + (i.drawer.equals("right") ? inner.width - w : 0);
+        }
+        out.add(new NamedRect(i.id, new Rect(x, y, w, h)));
+      }
+    }
+    return List.copyOf(out);
+  }
+  public static final class ContainerState {
+    public String focused = "", captured = "";
+    private String modal = "";
+    private final Map<String, String> restore = new HashMap<>();
+    public List<String> eligible(List<LayoutItem> items) {
+      int start = 0;
+      for (int n = 0; n < items.size(); n++)
+        if (items.get(n).modal && !items.get(n).hidden)
+          start = n;
+      return items.subList(start, items.size())
+          .stream()
+          .filter(i -> !i.hidden && !i.disabled)
+          .map(i -> i.id)
+          .toList();
+    }
+    public void reconcile(List<LayoutItem> items) {
+      var ids = eligible(items);
+      String next = "";
+      boolean oldVisible = false;
+      for (var i : items)
+        if (i.modal && !i.hidden) {
+          next = i.id;
+          if (i.id.equals(modal))
+            oldVisible = true;
+        }
+      if (!next.equals(modal)) {
+        if (!modal.isEmpty() && !oldVisible) {
+          String previous = restore.remove(modal);
+          int count = restore.size() + 1;
+          for (int n = 0; n < count && previous != null; n++) {
+            if (ids.contains(previous)) {
+              focused = previous;
+              break;
+            }
+            previous = restore.remove(previous);
+          }
+        }
+        if (!next.isEmpty())
+          restore.putIfAbsent(next, focused);
+        modal = next;
+      }
+      if (!ids.contains(focused))
+        focused = ids.isEmpty() ? "" : ids.get(0);
+      if (!ids.contains(captured))
+        captured = "";
+    }
+    public String moveFocus(List<LayoutItem> items, boolean previous) {
+      reconcile(items);
+      var ids = eligible(items);
+      if (!ids.isEmpty())
+        focused = ids.get((ids.indexOf(focused) + (previous ? ids.size() - 1 : 1)) % ids.size());
+      return focused;
+    }
+    public String hit(List<LayoutItem> items, List<NamedRect> rects, int x, int y) {
+      var ids = eligible(items);
+      for (int n = rects.size() - 1; n >= 0; n--) {
+        var r = rects.get(n);
+        if (ids.contains(r.id) && r.rect.contains(x, y))
+          return r.id;
+      }
+      return "";
+    }
+    public String pointer(List<LayoutItem> items, List<NamedRect> rects, int x, int y,
+        boolean press, boolean release) {
+      reconcile(items);
+      var id = captured.isEmpty() ? hit(items, rects, x, y) : captured;
+      if (press && !id.isEmpty()) {
+        focused = id;
+        captured = id;
+      }
+      if (release)
+        captured = "";
+      return id;
+    }
+  }
+  @FunctionalInterface
+  public interface ChildPainter {
+    void draw(String id, Canvas child, boolean focused);
+  }
+  public static final class Container {
+    public final ContainerState state = new ContainerState();
+    public int scrollX, scrollY;
+    private List<LayoutItem> items = List.of();
+    private ContainerOptions options = new ContainerOptions();
+    private List<NamedRect> rects = List.of();
+    private Rect bounds = new Rect(0, 0, 0, 0);
+    private int sx, sy;
+    public Container(List<LayoutItem> items, ContainerOptions options) {
+      setItems(items, options);
+    }
+    public Container(List<LayoutItem> items) {
+      this(items, new ContainerOptions());
+    }
+    public List<LayoutItem> items() {
+      return items.stream().map(LayoutItem::copy).toList();
+    }
+    public ContainerOptions options() {
+      return options.copy();
+    }
+    public void setItems(List<LayoutItem> items) {
+      setItems(items, options);
+    }
+    public void setItems(List<LayoutItem> input, ContainerOptions o) {
+      computeContainer(new Rect(0, 0, 1, 1), input, o);
+      var owned = input.stream().map(LayoutItem::copy).toList();
+      var config = o.copy();
+      items = owned;
+      options = config;
+      rects = List.of();
+      bounds = new Rect(0, 0, 0, 0);
+      state.reconcile(items);
+      state.captured = "";
+    }
+    public List<NamedRect> draw(Canvas canvas, Rect bounds, ChildPainter painter) {
+      for (int v : new int[] {bounds.x, bounds.y, bounds.width, bounds.height, scrollX, scrollY})
+        containerNumber(v, 1000000);
+      int vw = Math.max(bounds.width, options.virtualWidth),
+          vh = Math.max(bounds.height, options.virtualHeight);
+      if ((long) vw * vh > 1000000)
+        throw new IllegalArgumentException("container virtual area exceeds limit");
+      int sx = Math.min(scrollX, Math.max(0, vw - bounds.width)),
+          sy = Math.min(scrollY, Math.max(0, vh - bounds.height));
+      var rects = computeContainer(new Rect(0, 0, vw, vh), items, options);
+      var virtual = new Canvas(vw, vh, canvas.palette);
+      state.reconcile(items);
+      for (var named : rects) {
+        var r = named.rect;
+        if (r.width == 0 || r.height == 0)
+          continue;
+        var child = new Canvas(r.width, r.height, canvas.palette);
+        child.blit(virtual, r, 0, 0);
+        child.clearCursor();
+        boolean focused = named.id.equals(state.focused);
+        painter.draw(named.id, child, focused);
+        if (!focused)
+          child.clearCursor();
+        virtual.blit(child, new Rect(0, 0, r.width, r.height), r.x, r.y);
+      }
+      canvas.blit(virtual, new Rect(sx, sy, bounds.width, bounds.height), bounds.x, bounds.y);
+      scrollX = sx;
+      scrollY = sy;
+      this.sx = sx;
+      this.sy = sy;
+      this.bounds = bounds;
+      this.rects = rects;
+      return rects;
+    }
+    public String pointer(int x, int y, boolean press, boolean release) {
+      if (!bounds.contains(x, y) && state.captured.isEmpty())
+        return "";
+      return state.pointer(items, rects, x - bounds.x + sx, y - bounds.y + sy, press, release);
     }
   }
 }
