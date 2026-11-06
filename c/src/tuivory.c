@@ -5464,3 +5464,537 @@ TuiResult tui_data_state_draw(const TuiDataState *s, TuiCanvas *c, TuiRect r) {
   tui_feedback_free(v);
   return result;
 }
+
+struct TuiStackResult {
+  TuiStackSlot *slots;
+  size_t count;
+  int gap;
+};
+struct TuiLayoutResult {
+  TuiNamedRect *rects;
+  size_t count;
+  char **hidden;
+  size_t hidden_count;
+};
+static int layout_extent(int value, int maximum) {
+  return value >= 0 && value <= maximum;
+}
+static int layout_rect(TuiRect r) {
+  return layout_extent(r.x, 1000000000) && layout_extent(r.y, 1000000000) &&
+         layout_extent(r.width, 1000000000) &&
+         layout_extent(r.height, 1000000000);
+}
+TuiResult tui_spacing_tokens(const char *density, int columns,
+                             TuiSpacingTokens *out) {
+  if (!density || !out || !layout_extent(columns, 1000000000) ||
+      (strcmp(density, "auto") && strcmp(density, "compact") &&
+       strcmp(density, "comfortable")))
+    return TUI_INVALID;
+  *out =
+      !strcmp(density, "compact") || (!strcmp(density, "auto") && columns < 80)
+          ? (TuiSpacingTokens){0, 0, 1, 80}
+          : (TuiSpacingTokens){2, 1, 2, 80};
+  return TUI_OK;
+}
+TuiResult tui_rect_inset(TuiRect r, int padding, TuiRect *out) {
+  if (!out || !layout_rect(r) || !layout_extent(padding, 1024))
+    return TUI_INVALID;
+  *out =
+      (TuiRect){r.x + min(padding, r.width), r.y + min(padding, r.height),
+                max(0, r.width - 2 * padding), max(0, r.height - 2 * padding)};
+  return TUI_OK;
+}
+void tui_stack_free(TuiStackResult *r) {
+  if (r) {
+    for (size_t i = 0; i < r->count; i++)
+      free((void *)r->slots[i].id);
+    free(r->slots);
+    free(r);
+  }
+}
+size_t tui_stack_slot_count(const TuiStackResult *r) {
+  return r ? r->count : 0;
+}
+const TuiStackSlot *tui_stack_slot_at(const TuiStackResult *r, size_t index) {
+  return r && index < r->count ? &r->slots[index] : NULL;
+}
+size_t tui_stack_hidden_count(const TuiStackResult *r) {
+  size_t count = 0;
+  if (r)
+    for (size_t i = 0; i < r->count; i++)
+      count += r->slots[i].size == 0;
+  return count;
+}
+const char *tui_stack_hidden_at(const TuiStackResult *r, size_t index) {
+  if (r)
+    for (size_t i = 0; i < r->count; i++)
+      if (!r->slots[i].size) {
+        if (!index)
+          return r->slots[i].id;
+        index--;
+      }
+  return NULL;
+}
+int tui_stack_gap(const TuiStackResult *r) { return r ? r->gap : 0; }
+TuiResult tui_stack_layout(const TuiStackItem *items, size_t count, int total,
+                           int gap, TuiStackResult **out) {
+  if (!out || count > 1024 || (count && !items) ||
+      !layout_extent(total, 1000000000) || !layout_extent(gap, 1024))
+    return TUI_INVALID;
+  *out = NULL;
+  long long minimum = 0;
+  for (size_t i = 0; i < count; i++) {
+    const TuiStackItem *v = &items[i];
+    if (!v->id || !*v->id || tui_cells(v->id) < 0 || v->min < 1 ||
+        !layout_extent(v->min, 1000000) ||
+        !layout_extent(v->preferred, 1000000) ||
+        !layout_extent(v->weight, 1000000))
+      return TUI_INVALID;
+    for (size_t j = 0; j < i; j++)
+      if (!strcmp(v->id, items[j].id))
+        return TUI_INVALID;
+    minimum += v->min;
+  }
+  TuiStackResult *r = calloc(1, sizeof *r);
+  if (!r)
+    return TUI_NOMEM;
+  if (!count) {
+    *out = r;
+    return TUI_OK;
+  }
+  r->slots = calloc(count, sizeof *r->slots);
+  int *active = calloc(count, sizeof *active);
+  if (!r->slots || !active) {
+    free(active);
+    tui_stack_free(r);
+    return TUI_NOMEM;
+  }
+  r->count = count;
+  int gaps = gap * (int)(count - 1);
+  if (gaps > total || total - gaps < minimum)
+    gap = 0;
+  r->gap = gap;
+  int available = total - gap * (int)(count - 1);
+  for (size_t i = 0; i < count; i++) {
+    r->slots[i].id = copy(items[i].id);
+    if (!r->slots[i].id) {
+      free(active);
+      tui_stack_free(r);
+      return TUI_NOMEM;
+    }
+    if (items[i].min > available && i > 0)
+      continue;
+    r->slots[i].size = min(items[i].min, available);
+    available -= r->slots[i].size;
+    active[i] = 1;
+  }
+  for (size_t i = 0; i < count; i++)
+    if (active[i]) {
+      int add = min(max(0, items[i].preferred - r->slots[i].size), available);
+      r->slots[i].size += add;
+      available -= add;
+    }
+  long long weights = 0;
+  for (size_t i = 0; i < count; i++)
+    if (active[i])
+      weights += items[i].weight;
+  if (weights) {
+    int extra = available;
+    for (size_t i = 0; i < count; i++)
+      if (active[i]) {
+        int add = (int)((long long)extra * items[i].weight / weights);
+        r->slots[i].size += add;
+        available -= add;
+      }
+    for (size_t i = 0; i < count; i++)
+      if (available && active[i] && items[i].weight) {
+        r->slots[i].size++;
+        available--;
+      }
+  }
+  int start = 0, visible = 0;
+  for (size_t i = 0; i < count; i++) {
+    if (r->slots[i].size) {
+      if (visible)
+        start += gap;
+      visible++;
+    }
+    r->slots[i].start = start;
+    start += r->slots[i].size;
+  }
+  free(active);
+  *out = r;
+  return TUI_OK;
+}
+void tui_layout_free(TuiLayoutResult *r) {
+  if (r) {
+    for (size_t i = 0; i < r->count; i++)
+      free((void *)r->rects[i].id);
+    for (size_t i = 0; i < r->hidden_count; i++)
+      free(r->hidden[i]);
+    free(r->rects);
+    free(r->hidden);
+    free(r);
+  }
+}
+size_t tui_layout_rect_count(const TuiLayoutResult *r) {
+  return r ? r->count : 0;
+}
+const TuiNamedRect *tui_layout_rect_at(const TuiLayoutResult *r, size_t index) {
+  return r && index < r->count ? &r->rects[index] : NULL;
+}
+size_t tui_layout_hidden_count(const TuiLayoutResult *r) {
+  return r ? r->hidden_count : 0;
+}
+const char *tui_layout_hidden_at(const TuiLayoutResult *r, size_t index) {
+  return r && index < r->hidden_count ? r->hidden[index] : NULL;
+}
+TuiResult tui_stack_rects(TuiRect parent, const TuiStackItem *items,
+                          size_t count, TuiSpacingTokens tokens, int vertical,
+                          TuiLayoutResult **out) {
+  if (!out)
+    return TUI_INVALID;
+  *out = NULL;
+  TuiRect inner;
+  TuiResult result = tui_rect_inset(parent, tokens.padding, &inner);
+  if (result != TUI_OK)
+    return result;
+  TuiStackResult *stack = NULL;
+  result = tui_stack_layout(items, count, vertical ? inner.height : inner.width,
+                            tokens.gap, &stack);
+  if (result != TUI_OK)
+    return result;
+  TuiLayoutResult *r = calloc(1, sizeof *r);
+  if (!r) {
+    tui_stack_free(stack);
+    return TUI_NOMEM;
+  }
+  if (count) {
+    r->rects = calloc(count, sizeof *r->rects);
+    r->hidden = calloc(count, sizeof *r->hidden);
+    if (!r->rects || !r->hidden) {
+      tui_stack_free(stack);
+      tui_layout_free(r);
+      return TUI_NOMEM;
+    }
+  }
+  r->count = count;
+  for (size_t i = 0; i < count; i++) {
+    const TuiStackSlot *s = &stack->slots[i];
+    r->rects[i].id = copy(s->id);
+    if (!r->rects[i].id)
+      goto nomem;
+    TuiRect rect =
+        vertical
+            ? (TuiRect){inner.x, inner.y + s->start, inner.width, s->size}
+            : (TuiRect){inner.x + s->start, inner.y, s->size, inner.height};
+    r->rects[i].rect = rect;
+    if (!rect.width || !rect.height) {
+      r->hidden[r->hidden_count] = copy(s->id);
+      if (!r->hidden[r->hidden_count])
+        goto nomem;
+      r->hidden_count++;
+    }
+  }
+  tui_stack_free(stack);
+  *out = r;
+  return TUI_OK;
+nomem:
+  tui_stack_free(stack);
+  tui_layout_free(r);
+  return TUI_NOMEM;
+}
+TuiResult tui_drawer_layout(TuiRect parent, int preferred, int min_content,
+                            TuiDrawerPlacement *out) {
+  if (!out || !layout_rect(parent) || !layout_extent(preferred, 1000000000) ||
+      !layout_extent(min_content, 1000000000))
+    return TUI_INVALID;
+  *out = (TuiDrawerPlacement){
+      {parent.x, parent.y, min(parent.width, preferred), parent.height},
+      parent.width < preferred + min_content};
+  return TUI_OK;
+}
+TuiResult tui_badge_line(const TuiBadge *b, int width, TuiFeedbackView **view) {
+  if (!b || !view || !layout_extent(width, 65535) ||
+      !feedback_number(b->limit) ||
+      (b->has_count && !feedback_number(b->count)) ||
+      tui_cells(feedback_string(b->id)) < 0 ||
+      tui_cells(feedback_string(b->label)) < 0)
+    return TUI_INVALID;
+  *view = NULL;
+  TuiFeedbackView *v = feedback_new(1);
+  if (!v)
+    return TUI_NOMEM;
+  char markers[7];
+  tui_state_markers(b->state, markers);
+  Buffer value = {0};
+  append(&value, markers[0] == '-' ? markers + 1 : markers);
+  append(&value, feedback_string(b->label));
+  if (b->has_count) {
+    unsigned long long limit = b->limit ? b->limit : 99ULL;
+    char number[64];
+    snprintf(number, sizeof number, " [%llu%s]",
+             b->count > limit ? limit : b->count, b->count > limit ? "+" : "");
+    append(&value, number);
+  }
+  TuiResult result = value.failed
+                         ? TUI_NOMEM
+                         : feedback_row_set(&v->rows[0], b->id, value.s,
+                                            tui_state_role(b->state), width);
+  free(value.s);
+  if (result != TUI_OK) {
+    tui_feedback_free(v);
+    return result;
+  }
+  *view = v;
+  return TUI_OK;
+}
+TuiResult tui_badge_draw(const TuiBadge *b, TuiCanvas *c, TuiRect r) {
+  if (!c)
+    return TUI_INVALID;
+  TuiFeedbackView *v = NULL;
+  TuiResult result = tui_badge_line(b, max(0, r.width), &v);
+  if (result == TUI_OK)
+    result = tui_feedback_draw(v, c, r);
+  tui_feedback_free(v);
+  return result;
+}
+TuiResult tui_chip_line(const TuiChip *chip, int width,
+                        TuiFeedbackView **view) {
+  if (!chip || !view || !layout_extent(width, 65535) ||
+      tui_cells(feedback_string(chip->id)) < 0 ||
+      tui_cells(feedback_string(chip->label)) < 0)
+    return TUI_INVALID;
+  *view = NULL;
+  TuiFeedbackView *v = feedback_new(1);
+  if (!v)
+    return TUI_NOMEM;
+  char markers[7];
+  tui_state_markers(chip->state, markers);
+  Buffer value = {0};
+  append(&value, markers[0] == '-' ? markers + 1 : markers);
+  append(&value, "[");
+  const char *suffix = chip->removable ? "] x" : "]";
+  int available =
+      max(0, width - tui_cells(feedback_string(value.s)) - tui_cells(suffix));
+  char *label = tui_clip(feedback_string(chip->label), available, 1);
+  if (!label) {
+    free(value.s);
+    tui_feedback_free(v);
+    return TUI_NOMEM;
+  }
+  append(&value, label);
+  free(label);
+  append(&value, suffix);
+  TuiResult result = value.failed
+                         ? TUI_NOMEM
+                         : feedback_row_set(&v->rows[0], chip->id, value.s,
+                                            tui_state_role(chip->state), width);
+  free(value.s);
+  if (result != TUI_OK) {
+    tui_feedback_free(v);
+    return result;
+  }
+  TuiFeedbackRow *row = &v->rows[0];
+  size_t n = strlen(row->text);
+  if (chip->removable && n >= 2 && !strcmp(row->text + n - 2, " x")) {
+    TuiFeedbackSpan *s = calloc(1, sizeof *s);
+    if (!s) {
+      tui_feedback_free(v);
+      return TUI_NOMEM;
+    }
+    row->spans = s;
+    row->span_count = 1;
+    s->start = tui_cells(row->text) - 1;
+    s->width = 1;
+    s->text = copy("x");
+    s->role = copy(tui_state_editable(chip->state) ? tui_state_role(chip->state)
+                                                   : "disabled");
+    s->action = copy("remove");
+    s->disabled = !tui_state_editable(chip->state);
+    if (!s->text || !s->role || !s->action) {
+      tui_feedback_free(v);
+      return TUI_NOMEM;
+    }
+  }
+  *view = v;
+  return TUI_OK;
+}
+TuiResult tui_chip_draw(const TuiChip *chip, TuiCanvas *c, TuiRect r) {
+  if (!c)
+    return TUI_INVALID;
+  TuiFeedbackView *v = NULL;
+  TuiResult result = tui_chip_line(chip, max(0, r.width), &v);
+  if (result == TUI_OK)
+    result = tui_feedback_draw(v, c, r);
+  tui_feedback_free(v);
+  return result;
+}
+TuiEvent tui_chip_request_remove(const TuiChip *chip) {
+  return chip && chip->id && *chip->id && tui_cells(chip->id) >= 0 &&
+                 chip->removable && tui_state_editable(chip->state)
+             ? (TuiEvent){"remove", chip->id}
+             : (TuiEvent){"", ""};
+}
+typedef struct {
+  TuiShortcut item;
+  size_t order;
+  char *normal;
+} HelpEntry;
+struct TuiHelp {
+  HelpEntry *items;
+  size_t count;
+};
+static char *shortcut_key(const char *key) {
+  if (!key)
+    return NULL;
+  char *clean = clean_copy(key);
+  if (!clean)
+    return NULL;
+  char *folded = tui_casefold(clean);
+  free(clean);
+  if (!folded)
+    return NULL;
+  size_t p = 0, n = strlen(folded), start = n, end = 0;
+  unsigned cp;
+  while (p < n) {
+    size_t before = p;
+    if (!decode((const unsigned char *)folded, n, &p, &cp)) {
+      free(folded);
+      return NULL;
+    }
+    if (!whitespace(cp)) {
+      if (before < start)
+        start = before;
+      end = p;
+    }
+  }
+  if (end <= start) {
+    free(folded);
+    return copy("");
+  }
+  memmove(folded, folded + start, end - start);
+  folded[end - start] = 0;
+  return folded;
+}
+void tui_help_free(TuiHelp *h) {
+  if (h) {
+    for (size_t i = 0; i < h->count; i++) {
+      free((void *)h->items[i].item.key);
+      free((void *)h->items[i].item.text);
+      free(h->items[i].normal);
+    }
+    free(h->items);
+    free(h);
+  }
+}
+static int help_key_compare(const void *a, const void *b) {
+  return strcmp(*(const char *const *)a, *(const char *const *)b);
+}
+static int help_priority_compare(const void *a, const void *b) {
+  const HelpEntry *x = a, *y = b;
+  if (x->item.priority != y->item.priority)
+    return x->item.priority > y->item.priority ? -1 : 1;
+  return x->order < y->order ? -1 : x->order > y->order ? 1 : 0;
+}
+TuiHelp *tui_help_new(const TuiShortcut *items, size_t count) {
+  if (count > 65536 || (count && !items))
+    return NULL;
+  TuiHelp *h = calloc(1, sizeof *h);
+  if (!h)
+    return NULL;
+  if (count) {
+    h->items = calloc(count, sizeof *h->items);
+    if (!h->items) {
+      free(h);
+      return NULL;
+    }
+  }
+  h->count = count;
+  char **keys = count ? malloc(count * sizeof *keys) : NULL;
+  if (count && !keys) {
+    tui_help_free(h);
+    return NULL;
+  }
+  for (size_t i = 0; i < count; i++) {
+    HelpEntry *v = &h->items[i];
+    if (!items[i].key || tui_cells(feedback_string(items[i].text)) < 0)
+      goto failed;
+    v->normal = shortcut_key(items[i].key);
+    if (!v->normal || !*v->normal)
+      goto failed;
+    v->item = (TuiShortcut){copy(items[i].key), copy(items[i].text),
+                            items[i].priority, items[i].disabled};
+    v->order = i;
+    if (!v->item.key || !v->item.text)
+      goto failed;
+    keys[i] = v->normal;
+  }
+  if (count)
+    qsort(keys, count, sizeof *keys, help_key_compare);
+  for (size_t i = 1; i < count; i++)
+    if (!strcmp(keys[i - 1], keys[i]))
+      goto failed;
+  free(keys);
+  if (count)
+    qsort(h->items, count, sizeof *h->items, help_priority_compare);
+  return h;
+failed:
+  free(keys);
+  tui_help_free(h);
+  return NULL;
+}
+TuiResult tui_help_layout(const TuiHelp *h, int width, int height,
+                          TuiFeedbackView **view) {
+  if (!h || !view || !layout_extent(width, 65535) ||
+      !layout_extent(height, 4096))
+    return TUI_INVALID;
+  *view = NULL;
+  size_t limit = h->count > (size_t)height && height > 1 ? (size_t)height - 1
+                                                         : (size_t)height,
+         shown = h->count < limit ? h->count : limit;
+  TuiFeedbackView *v =
+      feedback_new(shown + (h->count > limit && (size_t)height > shown));
+  if (!v)
+    return TUI_NOMEM;
+  for (size_t i = 0; i < shown; i++) {
+    const TuiShortcut *s = &h->items[i].item;
+    Buffer text = {0};
+    append(&text, "[");
+    append(&text, s->key);
+    append(&text, "] ");
+    append(&text, s->text);
+    TuiResult result =
+        text.failed
+            ? TUI_NOMEM
+            : feedback_row_set(&v->rows[i], "", text.s,
+                               s->disabled ? "disabled" : "body", width);
+    free(text.s);
+    if (result != TUI_OK) {
+      tui_feedback_free(v);
+      return result;
+    }
+  }
+  if (v->count > shown) {
+    char text[32];
+    snprintf(text, sizeof text, "+%zu", h->count - limit);
+    TuiResult result =
+        feedback_row_set(&v->rows[shown], "", text, "hint", width);
+    if (result != TUI_OK) {
+      tui_feedback_free(v);
+      return result;
+    }
+  }
+  *view = v;
+  return TUI_OK;
+}
+TuiResult tui_help_draw(const TuiHelp *h, TuiCanvas *c, TuiRect r) {
+  if (!c)
+    return TUI_INVALID;
+  TuiFeedbackView *v = NULL;
+  TuiResult result = tui_help_layout(h, max(0, r.width), max(0, r.height), &v);
+  if (result == TUI_OK)
+    result = tui_feedback_draw(v, c, r);
+  tui_feedback_free(v);
+  return result;
+}

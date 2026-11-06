@@ -35,6 +35,10 @@ picker=ui.SearchPicker([ui.Item("rust","Rust")]);picker.handle("open");picker.ha
 m=ui.Menu([ui.MenuItem("file","File"),ui.MenuItem("run","Run",parent="file")]);m.open("file","editor");assert m.draw_popup(c,ui.Rect(0,0,30,4),"Menu").width==26;assert m.handle("activate").return_id=="editor"
 q=ui.NoticeQueue(2);q.push(ui.Notice("error","Failure","error",actions=[ui.NoticeAction("off","Unavailable",True),ui.NoticeAction("retry","Retry")]));assert q.handle("activate").action=="retry" and q.handle("dismiss").kind=="dismiss" and len(q.items)==1;assert len(q.visible(100))==1
 p=ui.Progress("job",current=40,total=100,cancellable=True);assert p.request_cancel().kind=="cancel" and "40%"in p.layout(40)[1].text;assert ui.DataState("ready","Ready").layout(10)[0].role=="body"
+assert ui.stack_layout([ui.StackItem("main",12,40,1),ui.StackItem("aside",10,24,0)],80,2).slots[0].size==54
+assert ui.Badge(label="Items",count=123).line(40).text=="Items [99+]"
+chip=ui.Chip("tag","Recent",removable=True);assert chip.request_remove().kind=="remove" and chip.removable
+assert ui.Help([ui.Shortcut("F1","Help")]).layout(40,1)[0].text=="[F1] Help"
 from importlib.metadata import distribution
 assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").files)
 ''')
@@ -42,6 +46,7 @@ assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").f
  run([p,'-I','-m','tuivory','--snapshot','--demo','tree','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','context-menu','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','feedback','--lang','en'],b)
+ run([p,'-I','-m','tuivory','--snapshot','--demo','layout','--lang','en'],b)
  print('Independent Python wheel: isolated external venv install/import/Tree/example passed')
 with tempfile.TemporaryDirectory(prefix='tuivory-javascript-')as directory:
  b=Path(directory);(b/'package.json').write_text('{"type":"module"}\n')
@@ -64,6 +69,8 @@ if(ui.fold("Straße Σςσ")!=="strasse σσσ")throw new Error("fold");const l=
 const menu=new ui.Menu([{id:"file",label:"File"},{id:"run",parent:"file",label:"Run"}]);menu.open("file","editor");if(menu.drawPopup(c,ui.rect(0,0,30,4),"Menu").width!==26||menu.handle("activate").returnId!=="editor")throw new Error("menu");
 const notices=new ui.NoticeQueue(2);notices.push({id:"error",text:"Failure",severity:"error",actions:[{id:"off",disabled:true},{id:"retry",label:"Retry"}]});if(notices.handle("activate").action!=="retry"||notices.handle("dismiss").kind!=="dismiss"||notices.items.length!==1||notices.visible(100).length!==1)throw new Error("notice requests");
 const progress=new ui.Progress({id:"job",current:40,total:100,cancellable:true});if(progress.requestCancel().kind!=="cancel"||!progress.layout(40)[1].text.includes("40%")||new ui.DataState("ready","Ready").layout(10)[0].role!=="body")throw new Error("progress/states");
+if(ui.stackLayout([{id:"main",min:12,preferred:40,weight:1},{id:"aside",min:10,preferred:24,weight:0}],80,2).slots[0].size!==54)throw new Error("stack");
+const chip=new ui.Chip({id:"tag",label:"Recent",removable:true});if(chip.requestRemove().kind!=="remove"||!chip.removable||new ui.Badge({label:"Items",count:123}).line(40).text!=="Items [99+]"||new ui.Help([{key:"F1",text:"Help"}]).layout(40,1)[0].text!=="[F1] Help")throw new Error("supporting components");
 const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open");picker.handle("insert","RUST");if(picker.value||picker.handle("activate").id!=="rust"||picker.value!=="rust")throw new Error("picker");
 '''
  assert (b/'node_modules/tuivory/CASEFOLD-LICENSE').read_text().startswith('UNICODE LICENSE V3')
@@ -73,4 +80,5 @@ const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','context-menu','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','feedback','--lang','en'],b)
+ run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','layout','--lang','en'],b)
  print('Independent npm package: isolated external JS import/runtime, TS declarations and example passed')

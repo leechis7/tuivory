@@ -2725,4 +2725,261 @@ public final class Tuivory {
       feedbackDraw(c, r, layout(r.width()));
     }
   }
+  private static int layoutExtent(int value, int maximum) {
+    if (value < 0 || value > maximum)
+      throw new IllegalArgumentException("invalid layout extent");
+    return value;
+  }
+  private static void layoutRect(Rect r) {
+    for (int value : new int[] {r.x(), r.y(), r.width(), r.height()})
+      layoutExtent(value, 1000000000);
+  }
+  public record SpacingTokens(int gap, int padding, int controlGap, int compactBelow) {
+    public SpacingTokens() {
+      this(0, 0, 1, 80);
+    }
+    public SpacingTokens(int gap, int padding, int controlGap) {
+      this(gap, padding, controlGap, 80);
+    }
+    public static SpacingTokens forWidth(String density, int columns) {
+      layoutExtent(columns, 1000000000);
+      if (!List.of("auto", "compact", "comfortable").contains(density))
+        throw new IllegalArgumentException("invalid density");
+      return density.equals("compact") || density.equals("auto") && columns < 80
+          ? new SpacingTokens()
+          : new SpacingTokens(2, 1, 2);
+    }
+  }
+  public static Rect insetRect(Rect r, int padding) {
+    layoutRect(r);
+    layoutExtent(padding, 1024);
+    return new Rect(r.x() + Math.min(padding, r.width()), r.y() + Math.min(padding, r.height()),
+        Math.max(0, r.width() - 2 * padding), Math.max(0, r.height() - 2 * padding));
+  }
+  public record StackItem(String id, int min, int preferred, int weight) {
+    public StackItem(String id) {
+      this(id, 1, 0, 1);
+    }
+  }
+  public record StackSlot(String id, int start, int size) {}
+  public record StackResult(List<StackSlot> slots, List<String> hidden, int gap) {
+    public StackResult {
+      slots = List.copyOf(slots);
+      hidden = List.copyOf(hidden);
+    }
+  }
+  public static StackResult stackLayout(List<StackItem> items, int total, int gap) {
+    layoutExtent(total, 1000000000);
+    layoutExtent(gap, 1024);
+    if (items.size() > 1024)
+      throw new IllegalArgumentException("too many stack items");
+    var ids = new HashSet<String>();
+    int minimum = 0;
+    for (var i : items) {
+      if (i.id() == null || i.id().isEmpty() || !ids.add(i.id())
+          || layoutExtent(i.min(), 1000000) == 0)
+        throw new IllegalArgumentException("invalid stack minimum/ID");
+      layoutExtent(i.preferred(), 1000000);
+      layoutExtent(i.weight(), 1000000);
+      minimum += i.min();
+    }
+    if (items.isEmpty())
+      return new StackResult(List.of(), List.of(), 0);
+    int gaps = gap * (items.size() - 1);
+    if (gaps > total || total - gaps < minimum)
+      gap = 0;
+    int available = total - gap * (items.size() - 1);
+    int[] sizes = new int[items.size()];
+    boolean[] active = new boolean[items.size()];
+    for (int n = 0; n < items.size(); n++) {
+      var i = items.get(n);
+      if (i.min() > available && n > 0)
+        continue;
+      sizes[n] = Math.min(i.min(), available);
+      available -= sizes[n];
+      active[n] = true;
+    }
+    for (int n = 0; n < items.size(); n++)
+      if (active[n]) {
+        int add = Math.min(Math.max(0, items.get(n).preferred() - sizes[n]), available);
+        sizes[n] += add;
+        available -= add;
+      }
+    long weights = 0;
+    for (int n = 0; n < items.size(); n++)
+      if (active[n])
+        weights += items.get(n).weight();
+    if (weights > 0) {
+      int extra = available;
+      for (int n = 0; n < items.size(); n++)
+        if (active[n]) {
+          int add = (int) ((long) extra * items.get(n).weight() / weights);
+          sizes[n] += add;
+          available -= add;
+        }
+      for (int n = 0; n < items.size(); n++)
+        if (available > 0 && active[n] && items.get(n).weight() > 0) {
+          sizes[n]++;
+          available--;
+        }
+    }
+    var slots = new ArrayList<StackSlot>();
+    var hidden = new ArrayList<String>();
+    int start = 0, visible = 0;
+    for (int n = 0; n < items.size(); n++) {
+      var item = items.get(n);
+      if (sizes[n] == 0)
+        hidden.add(item.id());
+      else {
+        if (visible > 0)
+          start += gap;
+        visible++;
+      }
+      slots.add(new StackSlot(item.id(), start, sizes[n]));
+      start += sizes[n];
+    }
+    return new StackResult(slots, hidden, gap);
+  }
+  public record NamedRect(String id, Rect rect) {}
+  public record LayoutResult(List<NamedRect> rects, List<String> hidden) {
+    public LayoutResult {
+      rects = List.copyOf(rects);
+      hidden = List.copyOf(hidden);
+    }
+  }
+  public static LayoutResult stackRects(
+      Rect parent, List<StackItem> items, SpacingTokens tokens, boolean vertical) {
+    var inner = insetRect(parent, tokens.padding());
+    var result = stackLayout(items, vertical ? inner.height() : inner.width(), tokens.gap());
+    var rects = new ArrayList<NamedRect>();
+    var hidden = new ArrayList<String>();
+    for (var s : result.slots()) {
+      var r = vertical ? new Rect(inner.x(), inner.y() + s.start(), inner.width(), s.size())
+                       : new Rect(inner.x() + s.start(), inner.y(), s.size(), inner.height());
+      rects.add(new NamedRect(s.id(), r));
+      if (r.width() == 0 || r.height() == 0)
+        hidden.add(s.id());
+    }
+    return new LayoutResult(rects, hidden);
+  }
+  public record DrawerPlacement(Rect rect, boolean overlay) {}
+  public static DrawerPlacement drawerLayout(Rect parent, int preferred, int minContent) {
+    layoutRect(parent);
+    layoutExtent(preferred, 1000000000);
+    layoutExtent(minContent, 1000000000);
+    return new DrawerPlacement(
+        new Rect(parent.x(), parent.y(), Math.min(parent.width(), preferred), parent.height()),
+        parent.width() < preferred + minContent);
+  }
+  public static final class Badge {
+    public String id = "", label = "";
+    public Long count;
+    public long limit = 99;
+    public State state = new State();
+    public FeedbackRow line(int width) {
+      layoutExtent(width, 65535);
+      feedbackNumber(limit);
+      String text = label;
+      if (count != null) {
+        feedbackNumber(count);
+        long cap = limit == 0 ? 99 : limit;
+        text += " [" + (count > cap ? cap + "+" : Long.toString(count)) + "]";
+      }
+      String markers = state.markers();
+      if (markers.startsWith("-"))
+        markers = markers.substring(1);
+      return new FeedbackRow(id, clip(markers + text, width, true), state.role());
+    }
+    public void draw(Canvas c, Rect r) {
+      feedbackDraw(c, r, List.of(line(Math.max(0, r.width()))));
+    }
+  }
+  public static final class Chip {
+    public String id = "", label = "";
+    public State state = new State();
+    public boolean removable;
+    public Chip() {}
+    public Chip(String id, String label) {
+      this.id = id;
+      this.label = label;
+    }
+    public FeedbackRow line(int width) {
+      layoutExtent(width, 65535);
+      String markers = state.markers();
+      if (markers.startsWith("-"))
+        markers = markers.substring(1);
+      String prefix = markers + "[", suffix = removable ? "] x" : "]";
+      String text = clip(
+          prefix + clip(label, Math.max(0, width - cells(prefix) - cells(suffix)), true) + suffix,
+          width, true);
+      var spans = new ArrayList<FeedbackSpan>();
+      if (removable && text.endsWith(" x"))
+        spans.add(new FeedbackSpan(cells(text) - 1, 1, "x",
+            state.editable() ? state.role() : "disabled", "remove", !state.editable()));
+      return new FeedbackRow(id, text, state.role(), false, spans);
+    }
+    public Event requestRemove() {
+      return !id.isEmpty() && removable && state.editable() ? new Event("remove", id) : new Event();
+    }
+    public void draw(Canvas c, Rect r) {
+      feedbackDraw(c, r, List.of(line(Math.max(0, r.width()))));
+    }
+  }
+  public static final class Shortcut {
+    public String key, text;
+    public int priority;
+    public boolean disabled;
+    public Shortcut(String key, String text) {
+      this.key = key;
+      this.text = text;
+    }
+  }
+  private static boolean layoutSpace(int cp) {
+    return cp >= 9 && cp <= 13 || cp == 32 || cp == 0x85 || cp == 0xa0 || cp == 0x1680
+        || cp >= 0x2000 && cp <= 0x200a || cp == 0x2028 || cp == 0x2029 || cp == 0x202f
+        || cp == 0x205f || cp == 0x3000;
+  }
+  private static String shortcutKey(String key) {
+    int[] points = clean(key).codePoints().toArray();
+    int start = 0, end = points.length;
+    while (start < end && layoutSpace(points[start])) start++;
+    while (end > start && layoutSpace(points[end - 1])) end--;
+    return fold(new String(points, start, end - start));
+  }
+  /** Literal hints only; applications own bindings and context-specific contents. */
+  public static final class Help {
+    private final List<Shortcut> items;
+    public Help(List<Shortcut> source) {
+      if (source.size() > 65536)
+        throw new IllegalArgumentException("too many shortcuts");
+      var keys = new HashSet<String>();
+      var owned = new ArrayList<Shortcut>();
+      for (var i : source) {
+        String key = shortcutKey(i.key);
+        if (key.isEmpty() || !keys.add(key))
+          throw new IllegalArgumentException("empty or duplicate shortcut");
+        var s = new Shortcut(i.key, i.text);
+        s.priority = i.priority;
+        s.disabled = i.disabled;
+        owned.add(s);
+      }
+      owned.sort((a, b) -> Integer.compare(b.priority, a.priority));
+      items = List.copyOf(owned);
+    }
+    public List<FeedbackRow> layout(int width, int height) {
+      layoutExtent(width, 65535);
+      layoutExtent(height, 4096);
+      int limit = items.size() > height && height > 1 ? height - 1 : height;
+      var rows = new ArrayList<FeedbackRow>();
+      for (var s : items.subList(0, Math.min(items.size(), limit)))
+        rows.add(new FeedbackRow(
+            "", clip("[" + s.key + "] " + s.text, width, true), s.disabled ? "disabled" : "body"));
+      if (items.size() > limit && height > rows.size())
+        rows.add(new FeedbackRow("", clip("+" + (items.size() - limit), width, true), "hint"));
+      return List.copyOf(rows);
+    }
+    public void draw(Canvas c, Rect r) {
+      feedbackDraw(c, r, layout(Math.max(0, r.width()), Math.max(0, r.height())));
+    }
+  }
 }

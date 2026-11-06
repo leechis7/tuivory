@@ -11,3 +11,4 @@ import "./collections.mjs";
 
 import "./menu.mjs";
 import './feedback.mjs';
+import './layout.mjs';

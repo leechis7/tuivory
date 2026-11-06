@@ -3401,3 +3401,365 @@ export function fold(text: string): string {
   const mapping = foldData.mappings as Dict<string, string>;
   return [...text].map((c) => mapping[String(c.codePointAt(0))] ?? c).join("");
 }
+
+function layoutExtent(value: number, maximum = 1_000_000_000): number {
+  if (!Number.isInteger(value) || value < 0 || value > maximum)
+    throw new Error("invalid layout extent");
+  return value;
+}
+function layoutRect(r: Rect): void {
+  for (const v of [r.x, r.y, r.width, r.height]) layoutExtent(v);
+}
+export class SpacingTokens {
+  constructor(
+    readonly gap = 0,
+    readonly padding = 0,
+    readonly controlGap = 1,
+    readonly compactBelow = 80,
+  ) {}
+  static forWidth(density: string, columns: number): SpacingTokens {
+    layoutExtent(columns);
+    if (!["auto", "compact", "comfortable"].includes(density))
+      throw new Error("invalid density");
+    return density === "compact" || (density === "auto" && columns < 80)
+      ? new SpacingTokens()
+      : new SpacingTokens(2, 1, 2);
+  }
+}
+export function insetRect(r: Rect, padding: number): Rect {
+  layoutRect(r);
+  layoutExtent(padding, 1024);
+  return rect(
+    r.x + Math.min(padding, r.width),
+    r.y + Math.min(padding, r.height),
+    Math.max(0, r.width - 2 * padding),
+    Math.max(0, r.height - 2 * padding),
+  );
+}
+export interface StackItem {
+  id: string;
+  min?: number;
+  preferred?: number;
+  weight?: number;
+}
+export interface StackSlot {
+  id: string;
+  start: number;
+  size: number;
+}
+export interface StackResult {
+  slots: StackSlot[];
+  hidden: string[];
+  gap: number;
+}
+export function stackLayout(
+  source: StackItem[],
+  total: number,
+  gap = 0,
+): StackResult {
+  const items = source.map((i) => ({
+    id: i.id,
+    min: i.min ?? 1,
+    preferred: i.preferred ?? 0,
+    weight: i.weight ?? 1,
+  }));
+  layoutExtent(total);
+  layoutExtent(gap, 1024);
+  if (
+    items.length > 1024 ||
+    new Set(items.map((i) => i.id)).size !== items.length
+  )
+    throw new Error("invalid stack items");
+  for (const i of items) {
+    if (!i.id || !layoutExtent(i.min, 1_000_000))
+      throw new Error("invalid stack minimum/ID");
+    layoutExtent(i.preferred, 1_000_000);
+    layoutExtent(i.weight, 1_000_000);
+  }
+  if (!items.length) return { slots: [], hidden: [], gap: 0 };
+  const minimum = items.reduce((sum, i) => sum + i.min, 0),
+    gaps = gap * (items.length - 1);
+  if (gaps > total || total - gaps < minimum) gap = 0;
+  let available = total - gap * (items.length - 1);
+  const sizes = items.map(() => 0),
+    active = items.map(() => false);
+  items.forEach((i, n) => {
+    if (i.min > available && n > 0) return;
+    sizes[n] = Math.min(i.min, available);
+    available -= sizes[n];
+    active[n] = true;
+  });
+  items.forEach((i, n) => {
+    if (active[n]) {
+      const add = Math.min(Math.max(0, i.preferred - sizes[n]), available);
+      sizes[n] += add;
+      available -= add;
+    }
+  });
+  const weights = items.reduce(
+    (sum, i, n) => sum + (active[n] ? i.weight : 0),
+    0,
+  );
+  if (weights) {
+    const extra = available;
+    items.forEach((i, n) => {
+      if (active[n]) {
+        const add = Math.floor((extra * i.weight) / weights);
+        sizes[n] += add;
+        available -= add;
+      }
+    });
+    items.forEach((i, n) => {
+      if (available && active[n] && i.weight) {
+        sizes[n]++;
+        available--;
+      }
+    });
+  }
+  const result: StackResult = { slots: [], hidden: [], gap };
+  let start = 0,
+    visible = 0;
+  items.forEach((i, n) => {
+    if (!sizes[n]) result.hidden.push(i.id);
+    else {
+      if (visible) start += gap;
+      visible++;
+    }
+    result.slots.push({ id: i.id, start, size: sizes[n] });
+    start += sizes[n];
+  });
+  return result;
+}
+export interface NamedRect {
+  id: string;
+  rect: Rect;
+}
+export interface LayoutResult {
+  rects: NamedRect[];
+  hidden: string[];
+}
+export function stackRects(
+  parent: Rect,
+  items: StackItem[],
+  tokens = new SpacingTokens(),
+  vertical = false,
+): LayoutResult {
+  const inner = insetRect(parent, tokens.padding),
+    result = stackLayout(
+      items,
+      vertical ? inner.height : inner.width,
+      tokens.gap,
+    );
+  const rects = result.slots.map((s) => ({
+    id: s.id,
+    rect: vertical
+      ? rect(inner.x, inner.y + s.start, inner.width, s.size)
+      : rect(inner.x + s.start, inner.y, s.size, inner.height),
+  }));
+  return {
+    rects,
+    hidden: rects
+      .filter((r) => !r.rect.width || !r.rect.height)
+      .map((r) => r.id),
+  };
+}
+export interface DrawerPlacement {
+  rect: Rect;
+  overlay: boolean;
+}
+export function drawerLayout(
+  parent: Rect,
+  preferred: number,
+  minContent = 0,
+): DrawerPlacement {
+  layoutRect(parent);
+  layoutExtent(preferred);
+  layoutExtent(minContent);
+  return {
+    rect: rect(
+      parent.x,
+      parent.y,
+      Math.min(parent.width, preferred),
+      parent.height,
+    ),
+    overlay: parent.width < preferred + minContent,
+  };
+}
+export interface BadgeOptions {
+  id?: string;
+  label?: string;
+  count?: number | null;
+  limit?: number;
+  state?: Partial<ControlState>;
+}
+export class Badge {
+  id: string;
+  label: string;
+  count: number | null;
+  limit: number;
+  state: ControlState;
+  constructor(o: BadgeOptions = {}) {
+    this.id = o.id ?? "";
+    this.label = o.label ?? "";
+    this.count = o.count ?? null;
+    this.limit = o.limit ?? 99;
+    this.state = new ControlState(o.state);
+  }
+  line(width: number): FeedbackRow {
+    layoutExtent(width, 65535);
+    feedbackNumber(this.limit);
+    let text = this.label;
+    if (this.count !== null) {
+      feedbackNumber(this.count);
+      const limit = this.limit || 99;
+      text +=
+        " [" + (this.count > limit ? limit + "+" : String(this.count)) + "]";
+    }
+    const state = new ControlState(this.state);
+    return feedbackRow(
+      this.id,
+      clip(state.markers.replace(/^-/, "") + text, width, true),
+      state.role,
+    );
+  }
+  draw(c: Canvas, r: Rect): void {
+    feedbackDraw(c, r, [this.line(Math.max(0, r.width))]);
+  }
+}
+export interface ChipOptions {
+  id?: string;
+  label?: string;
+  state?: Partial<ControlState>;
+  removable?: boolean;
+}
+export class Chip {
+  id: string;
+  label: string;
+  state: ControlState;
+  removable: boolean;
+  constructor(o: ChipOptions = {}) {
+    this.id = o.id ?? "";
+    this.label = o.label ?? "";
+    this.state = new ControlState(o.state);
+    this.removable = o.removable ?? false;
+  }
+  line(width: number): FeedbackRow {
+    layoutExtent(width, 65535);
+    const state = new ControlState(this.state),
+      prefix = state.markers.replace(/^-/, "") + "[",
+      suffix = this.removable ? "] x" : "]",
+      text = clip(
+        prefix +
+          clip(
+            this.label,
+            Math.max(0, width - cells(prefix) - cells(suffix)),
+            true,
+          ) +
+          suffix,
+        width,
+        true,
+      ),
+      spans: FeedbackSpan[] = [];
+    if (this.removable && text.endsWith(" x"))
+      spans.push({
+        start: cells(text) - 1,
+        width: 1,
+        text: "x",
+        role: state.editable ? state.role : "disabled",
+        action: "remove",
+        disabled: !state.editable,
+      });
+    return feedbackRow(this.id, text, state.role, false, spans);
+  }
+  requestRemove(): Event {
+    return this.id && this.removable && new ControlState(this.state).editable
+      ? event("remove", this.id)
+      : event();
+  }
+  draw(c: Canvas, r: Rect): void {
+    feedbackDraw(c, r, [this.line(Math.max(0, r.width))]);
+  }
+}
+export interface Shortcut {
+  key: string;
+  text?: string;
+  priority?: number;
+  disabled?: boolean;
+}
+function layoutSpace(cp: number): boolean {
+  return (
+    (cp >= 9 && cp <= 13) ||
+    [32, 0x85, 0xa0, 0x1680, 0x2028, 0x2029, 0x202f, 0x205f, 0x3000].includes(
+      cp,
+    ) ||
+    (cp >= 0x2000 && cp <= 0x200a)
+  );
+}
+function shortcutKey(key: string): string {
+  const points = [...clean(key)];
+  let start = 0,
+    end = points.length;
+  while (start < end && layoutSpace(points[start].codePointAt(0)!)) start++;
+  while (end > start && layoutSpace(points[end - 1].codePointAt(0)!)) end--;
+  return fold(points.slice(start, end).join(""));
+}
+/** Literal hints; host applications own actual bindings and context contents. */
+export class Help {
+  private readonly items: Shortcut[];
+  constructor(items: Shortcut[]) {
+    if (items.length > 65536) throw new Error("too many shortcuts");
+    const keys = new Set<string>();
+    this.items = items
+      .map((i) => {
+        const key = shortcutKey(i.key),
+          priority = i.priority ?? 0;
+        if (!key || keys.has(key))
+          throw new Error("empty or duplicate shortcut");
+        if (
+          !Number.isInteger(priority) ||
+          priority < -(2 ** 31) ||
+          priority >= 2 ** 31
+        )
+          throw new Error("priority must be a signed 32-bit integer");
+        keys.add(key);
+        return {
+          key: i.key,
+          text: i.text ?? "",
+          priority,
+          disabled: Boolean(i.disabled),
+        };
+      })
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+  }
+  layout(width: number, height: number): FeedbackRow[] {
+    layoutExtent(width, 65535);
+    layoutExtent(height, 4096);
+    const limit =
+      this.items.length > height && height > 1 ? height - 1 : height;
+    const rows = this.items
+      .slice(0, limit)
+      .map((s) =>
+        feedbackRow(
+          "",
+          clip("[" + s.key + "] " + s.text, width, true),
+          s.disabled ? "disabled" : "body",
+        ),
+      );
+    if (this.items.length > limit && height > rows.length)
+      rows.push(
+        feedbackRow(
+          "",
+          clip("+" + (this.items.length - limit), width, true),
+          "hint",
+        ),
+      );
+    return rows;
+  }
+  draw(c: Canvas, r: Rect): void {
+    feedbackDraw(
+      c,
+      r,
+      this.layout(Math.max(0, r.width), Math.max(0, r.height)),
+    );
+  }
+}

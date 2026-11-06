@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Independent spacing/weighted stacks, drawer geometry, badges, request-only removable chips and literal priority hints; bilingual integrated examples, API and all-palette actual-output verification.
+
 - TVR-15/16/30/31/32: Add independent notice queues, progress and data states with important-notice retention, atomic overflow rejection, expiry, host-handled retry/dismiss/cancel requests and disabled-action blocking. Include bilingual integrated examples, APIs, captures and actual-output checks.
 
 - TVR-15/16/30/31/32: Add independent hierarchical menus, bars, context popups and placement, disabled blocking, mnemonics, return targets and background input blocking. Provide bilingual examples in five languages, narrow-area and actual-output wide-edge checks, and API documentation.

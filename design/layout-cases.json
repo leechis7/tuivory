@@ -1,0 +1,357 @@
+{
+  "spacing": [
+    {
+      "density": "auto",
+      "columns": 79,
+      "gap": 0,
+      "padding": 0,
+      "control_gap": 1
+    },
+    {
+      "density": "auto",
+      "columns": 80,
+      "gap": 2,
+      "padding": 1,
+      "control_gap": 2
+    },
+    {
+      "density": "compact",
+      "columns": 120,
+      "gap": 0,
+      "padding": 0,
+      "control_gap": 1
+    },
+    {
+      "density": "comfortable",
+      "columns": 20,
+      "gap": 2,
+      "padding": 1,
+      "control_gap": 2
+    }
+  ],
+  "items": [
+    {
+      "id": "main",
+      "min": 12,
+      "preferred": 40,
+      "weight": 1
+    },
+    {
+      "id": "aside",
+      "min": 10,
+      "preferred": 24,
+      "weight": 0
+    }
+  ],
+  "stacks": [
+    {
+      "total": 80,
+      "gap": 2,
+      "actual_gap": 2,
+      "slots": [
+        [
+          "main",
+          0,
+          54
+        ],
+        [
+          "aside",
+          56,
+          24
+        ]
+      ],
+      "hidden": []
+    },
+    {
+      "total": 8,
+      "gap": 2,
+      "actual_gap": 0,
+      "slots": [
+        [
+          "main",
+          0,
+          8
+        ],
+        [
+          "aside",
+          8,
+          0
+        ]
+      ],
+      "hidden": [
+        "aside"
+      ]
+    },
+    {
+      "total": 0,
+      "gap": 2,
+      "actual_gap": 0,
+      "slots": [
+        [
+          "main",
+          0,
+          0
+        ],
+        [
+          "aside",
+          0,
+          0
+        ]
+      ],
+      "hidden": [
+        "main",
+        "aside"
+      ]
+    },
+    {
+      "total": 22,
+      "gap": 2,
+      "actual_gap": 0,
+      "slots": [
+        [
+          "main",
+          0,
+          12
+        ],
+        [
+          "aside",
+          12,
+          10
+        ]
+      ],
+      "hidden": []
+    },
+    {
+      "total": 24,
+      "gap": 2,
+      "actual_gap": 2,
+      "slots": [
+        [
+          "main",
+          0,
+          12
+        ],
+        [
+          "aside",
+          14,
+          10
+        ]
+      ],
+      "hidden": []
+    },
+    {
+      "items": [
+        {
+          "id": "a",
+          "min": 1,
+          "preferred": 1,
+          "weight": 1
+        },
+        {
+          "id": "b",
+          "min": 1,
+          "preferred": 1,
+          "weight": 2
+        },
+        {
+          "id": "c",
+          "min": 1,
+          "preferred": 1,
+          "weight": 1
+        }
+      ],
+      "total": 10,
+      "gap": 1,
+      "actual_gap": 1,
+      "slots": [
+        [
+          "a",
+          0,
+          3
+        ],
+        [
+          "b",
+          4,
+          3
+        ],
+        [
+          "c",
+          8,
+          2
+        ]
+      ],
+      "hidden": []
+    },
+    {
+      "items": [
+        {
+          "id": "a",
+          "min": 2,
+          "preferred": 2,
+          "weight": 0
+        },
+        {
+          "id": "large",
+          "min": 10,
+          "preferred": 10,
+          "weight": 0
+        },
+        {
+          "id": "last",
+          "min": 2,
+          "preferred": 2,
+          "weight": 1
+        }
+      ],
+      "total": 7,
+      "gap": 1,
+      "actual_gap": 0,
+      "slots": [
+        [
+          "a",
+          0,
+          2
+        ],
+        [
+          "large",
+          2,
+          0
+        ],
+        [
+          "last",
+          2,
+          5
+        ]
+      ],
+      "hidden": [
+        "large"
+      ]
+    }
+  ],
+  "badges": [
+    {
+      "label": "Count",
+      "count": 0,
+      "text": "Count [0]",
+      "role": "body"
+    },
+    {
+      "label": "Count",
+      "count": 123,
+      "text": "Count [99+]",
+      "role": "body"
+    },
+    {
+      "label": "Count",
+      "count": 9,
+      "limit": 5,
+      "text": "Count [5+]",
+      "role": "body"
+    },
+    {
+      "label": "Disabled",
+      "state": {
+        "disabled": true
+      },
+      "text": "Disabled",
+      "role": "disabled"
+    },
+    {
+      "label": "Selected",
+      "state": {
+        "selected": true
+      },
+      "text": ">Selected",
+      "role": "selection"
+    },
+    {
+      "label": "Invalid",
+      "state": {
+        "invalid": true
+      },
+      "text": "!Invalid",
+      "role": "error"
+    },
+    {
+      "label": "Count",
+      "count": 9007199254740991,
+      "limit": 9007199254740991,
+      "text": "Count [9007199254740991]",
+      "role": "body"
+    }
+  ],
+  "chips": [
+    {
+      "id": "filter",
+      "label": "한글 é",
+      "removable": true,
+      "state": {},
+      "request": "remove"
+    },
+    {
+      "id": "filter",
+      "label": "Read only",
+      "removable": true,
+      "state": {
+        "read_only": true
+      },
+      "request": ""
+    },
+    {
+      "id": "filter",
+      "label": "Busy",
+      "removable": true,
+      "state": {
+        "busy": true
+      },
+      "request": ""
+    },
+    {
+      "id": "filter",
+      "label": "Disabled",
+      "removable": true,
+      "state": {
+        "disabled": true
+      },
+      "request": ""
+    },
+    {
+      "id": "filter",
+      "label": "Static",
+      "removable": false,
+      "state": {},
+      "request": ""
+    }
+  ],
+  "shortcuts": [
+    {
+      "key": "x",
+      "text": "Remove",
+      "priority": 1,
+      "disabled": true
+    },
+    {
+      "key": "F1",
+      "text": "Help",
+      "priority": 10
+    }
+  ],
+  "duplicate_keys": [
+    [
+      "F1",
+      "f1"
+    ],
+    [
+      "K",
+      "k"
+    ],
+    [
+      "ß",
+      "ss"
+    ],
+    [
+      " F1　",
+      "f1"
+    ]
+  ]
+}
