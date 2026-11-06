@@ -161,6 +161,39 @@ public final class Tuivory {
           + (bold ? ";1" : "") + (dim ? ";2" : "") + (underline ? ";4" : "") + "m";
     }
   }
+  private static boolean plainTextRole(String role) {
+    return List.of("body", "hint", "disabled", "info", "success", "warning", "error")
+        .contains(role);
+  }
+  private static final int[][] ANSI_RGB = {{0, 0, 0}, {128, 0, 0}, {0, 128, 0}, {128, 128, 0},
+      {0, 0, 128}, {128, 0, 128}, {0, 128, 128}, {192, 192, 192}, {128, 128, 128}, {255, 0, 0},
+      {0, 255, 0}, {255, 255, 0}, {0, 0, 255}, {255, 0, 255}, {0, 255, 255}, {255, 255, 255}};
+  private static int[] colorRGB(int color) {
+    if (color < 0 || color > 0x1ffffff)
+      throw new IllegalArgumentException("invalid color");
+    if ((color & 0x1000000) != 0)
+      return new int[] {(color >> 16) & 255, (color >> 8) & 255, color & 255};
+    if (color > 255)
+      throw new IllegalArgumentException("invalid color");
+    if (color < 16)
+      return ANSI_RGB[color].clone();
+    if (color >= 232) {
+      int v = 8 + (color - 232) * 10;
+      return new int[] {v, v, v};
+    }
+    int n = color - 16;
+    int[] cube = {0, 95, 135, 175, 215, 255};
+    return new int[] {cube[n / 36], cube[(n / 6) % 6], cube[n % 6]};
+  }
+  private static double colorLuminance(int color) {
+    var rgb = colorRGB(color);
+    return .2126 * Data.LUMINANCE[rgb[0]] + .7152 * Data.LUMINANCE[rgb[1]]
+        + .0722 * Data.LUMINANCE[rgb[2]];
+  }
+  private static double colorContrast(int a, int b) {
+    double x = colorLuminance(a), y = colorLuminance(b);
+    return (Math.max(x, y) + .05) / (Math.min(x, y) + .05);
+  }
   public static final class Palette {
     private final int theme, profile;
     public Palette() {
@@ -182,6 +215,26 @@ public final class Tuivory {
       int[] t = Data.PALETTES[(theme * 4 + profile) * 16 + index];
       return new Style(t[0], t[1], t[2] != 0, role.equals("disabled"), focused);
     }
+    public Style textOnSurface(String role, String surface) {
+      return textOnSurface(role, surface, false);
+    }
+    public Style textOnSurface(String role, String surface, boolean focused) {
+      var text = style(role);
+      var base = style(surface);
+      int foreground = text.foreground;
+      double current = colorContrast(foreground, base.background);
+      if (current < (role.equals("disabled") ? 2 : 4.5)
+          && colorContrast(base.foreground, base.background) > current)
+        foreground = base.foreground;
+      boolean disabled = role.equals("disabled");
+      return new Style(foreground, base.background, disabled ? false : text.bold,
+          text.dim || disabled, focused && !disabled);
+    }
+    public Style controlOnSurface(State state, String surface, boolean focused) {
+      String role = state.role();
+      return plainTextRole(role) ? textOnSurface(role, surface, focused && state.focusable())
+                                 : style(role, focused && state.focusable());
+    }
   }
   public static final class Cell {
     public String text = " ";
@@ -194,6 +247,7 @@ public final class Tuivory {
   public static final class Canvas {
     public final int width, height;
     public final Palette palette;
+    public final String surfaceRole;
     public final Cell[][] data;
     public int cursorX = -1, cursorY = -1;
     private int cursorWidth = 1;
@@ -201,14 +255,19 @@ public final class Tuivory {
       this(width, height, new Palette());
     }
     public Canvas(int width, int height, Palette palette) {
+      this(width, height, palette, "surface");
+    }
+    public Canvas(int width, int height, Palette palette, String surface) {
       if (width < 0 || height < 0 || (long) width * height > 1_000_000)
         throw new IllegalArgumentException("invalid dimensions");
       this.width = width;
       this.height = height;
       this.palette = palette;
+      this.surfaceRole = surface;
+      palette.style(surface);
       data = new Cell[height][width];
       for (var row : data)
-        for (int x = 0; x < width; x++) row[x] = new Cell(palette.style("surface"));
+        for (int x = 0; x < width; x++) row[x] = new Cell(palette.style(surface));
     }
     private void erase(int x, int y) {
       var row = data[y];
@@ -221,13 +280,18 @@ public final class Tuivory {
       }
     }
     public void write(int x, int y, String text, String role, boolean focused, int extent) {
+      String actual = role.equals("surface") ? surfaceRole : role;
+      Style style = plainTextRole(role) ? palette.textOnSurface(role, surfaceRole, focused)
+                                        : palette.style(actual, focused);
+      writeStyle(x, y, text, style, extent);
+    }
+    public void writeStyle(int x, int y, String text, Style style) {
+      writeStyle(x, y, text, style, width - x);
+    }
+    public void writeStyle(int x, int y, String text, Style style, int extent) {
       if (y < 0 || y >= height || extent < 0)
         return;
       int limit = Math.min(width, x + extent);
-      Style style = palette.style(role, focused);
-      if (List.of("body", "hint", "info", "success", "warning", "error", "header").contains(role))
-        style = new Style(style.foreground, palette.style("surface").background, style.bold,
-            style.dim, style.underline);
       for (String g : graphemes(clean(text))) {
         int n = clusterWidth(g);
         if (n == 0)
@@ -268,13 +332,14 @@ public final class Tuivory {
           : focused      ? new String[] {"╔", "╗", "╚", "╝", "═", "║"}
                          : new String[] {"┌", "┐", "└", "┘", "─", "│"};
       String role = focused ? "focus.border" : "hint";
-      write(r.x, r.y, b[0] + b[4].repeat(r.width - 2) + b[1], role);
-      write(r.x, r.y + r.height - 1, b[2] + b[4].repeat(r.width - 2) + b[3], role);
+      var style = palette.textOnSurface(role, surfaceRole);
+      writeStyle(r.x, r.y, b[0] + b[4].repeat(r.width - 2) + b[1], style);
+      writeStyle(r.x, r.y + r.height - 1, b[2] + b[4].repeat(r.width - 2) + b[3], style);
       for (int y = r.y + 1; y < r.y + r.height - 1; y++) {
-        write(r.x, y, b[5], role);
-        write(r.x + r.width - 1, y, b[5], role);
+        writeStyle(r.x, y, b[5], style);
+        writeStyle(r.x + r.width - 1, y, b[5], style);
       }
-      write(r.x + 2, r.y, clip(title, r.width - 4, false), role);
+      writeStyle(r.x + 2, r.y, clip(title, r.width - 4, false), style);
       return new Rect(r.x + 1, r.y + 1, r.width - 2, r.height - 2);
     }
     public void setCursor(int x, int y, int glyphWidth) {
@@ -3337,13 +3402,13 @@ public final class Tuivory {
       int sx = Math.min(scrollX, Math.max(0, vw - bounds.width)),
           sy = Math.min(scrollY, Math.max(0, vh - bounds.height));
       var rects = computeContainer(new Rect(0, 0, vw, vh), items, options);
-      var virtual = new Canvas(vw, vh, canvas.palette);
+      var virtual = new Canvas(vw, vh, canvas.palette, canvas.surfaceRole);
       state.reconcile(items);
       for (var named : rects) {
         var r = named.rect;
         if (r.width == 0 || r.height == 0)
           continue;
-        var child = new Canvas(r.width, r.height, canvas.palette);
+        var child = new Canvas(r.width, r.height, canvas.palette, canvas.surfaceRole);
         child.blit(virtual, r, 0, 0);
         child.clearCursor();
         boolean focused = named.id.equals(state.focused);
@@ -3365,6 +3430,23 @@ public final class Tuivory {
       if (!bounds.contains(x, y) && state.captured.isEmpty())
         return "";
       return state.pointer(items, rects, x - bounds.x + sx, y - bounds.y + sy, press, release);
+    }
+  }
+
+  public static final class Surface {
+    public final String role;
+    public Surface() {
+      this("surface");
+    }
+    public Surface(String role) {
+      this.role = role;
+    }
+    public void draw(Canvas canvas, Rect bounds, java.util.function.Consumer<Canvas> painter) {
+      for (int v : new int[] {bounds.x, bounds.y, bounds.width, bounds.height})
+        containerNumber(v, 1000000);
+      var child = new Canvas(bounds.width, bounds.height, canvas.palette, role);
+      painter.accept(child);
+      canvas.blit(child, new Rect(0, 0, bounds.width, bounds.height), bounds.x, bounds.y);
     }
   }
 }

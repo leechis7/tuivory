@@ -62,10 +62,10 @@ class FeedbackRow:
 def _draw(canvas: Canvas, rect: Rect, rows: list[FeedbackRow]):
     canvas.fill(rect)
     for y, row in enumerate(rows[:max(0, rect.height)]):
-        canvas.write(rect.x, rect.y+y, row.text, row.role, width=rect.width, preserve_background=True)
+        canvas.write(rect.x, rect.y+y, row.text, row.role, width=rect.width, preserve_background=False)
         for span in row.spans:
             canvas.write(rect.x+span.start, rect.y+y, span.text, span.role,
-                         width=span.width, preserve_background=True)
+                         width=span.width, preserve_background=False)
 
 
 class NoticeQueue:

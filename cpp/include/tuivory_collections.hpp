@@ -168,7 +168,7 @@ public:
     for (std::size_t y = 0; y < rows.size(); y++) {
       c.fill({r.x, r.y + static_cast<int>(y), r.width, 1}, rows[y].role);
       c.write(r.x, r.y + static_cast<int>(y), rows[y].text, rows[y].role,
-              focus_view && rows[y].focused, r.width, true);
+              focus_view && rows[y].focused, r.width, false);
     }
   }
 };
@@ -272,13 +272,13 @@ public:
     if (!open) {
       if (!rows.empty()) {
         c.fill({r.x, r.y, r.width, 1}, "field");
-        c.write(r.x, r.y, rows[0].text, "field", false, r.width, true);
+        c.write(r.x, r.y, rows[0].text, "field", false, r.width, false);
       }
       return;
     }
     if (r.height > 0) {
       c.fill({r.x, r.y, r.width, 1}, "field");
-      c.write(r.x, r.y, "? ", "field", false, r.width, true);
+      c.write(r.x, r.y, "? ", "field", false, r.width, false);
       if (r.width > 2) {
         Text query(list.query);
         query.multiline = false;

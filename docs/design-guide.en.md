@@ -39,3 +39,5 @@ The editor buffer contains no synthetic caret character. Share grapheme viewport
 [Independent spacing/stack and badge/chip/hint API](language-layout.en.md)
 
 [Independent containers and cell-copy API](language-containers.en.md)
+
+[Independent Surface and background API](language-surfaces.en.md)

@@ -134,3 +134,5 @@ Build C/C++/Java first as shown above. Reference capture also needs a CJK-capabl
 [Independent spacing/stack and badge/chip/hint API](language-layout.en.md)
 
 [Independent containers and cell-copy API](language-containers.en.md)
+
+[Independent Surface and background API](language-surfaces.en.md)

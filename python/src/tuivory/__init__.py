@@ -41,3 +41,5 @@ from .layout import SpacingTokens, StackItem, StackSlot, StackResult, NamedRect,
 __all__ += ["SpacingTokens", "StackItem", "StackSlot", "StackResult", "NamedRect", "LayoutResult", "DrawerPlacement", "inset_rect", "stack_layout", "stack_rects", "drawer_layout", "Badge", "Chip", "Shortcut", "Help"]
 
 from .containers import Track, LayoutItem, ContainerOptions, ContainerState, Container, compute_container
+
+from .surfaces import Surface

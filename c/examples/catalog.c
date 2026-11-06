@@ -3,6 +3,7 @@
 #include "feedback_host.h"
 #include "layout_host.h"
 #include "menu_host.h"
+#include "surface_host.h"
 #include "tuivory.h"
 #include <poll.h>
 #include <signal.h>
@@ -78,7 +79,7 @@ int main(int argc, char **argv) {
   int en = 0, ascii = 0, snapshot = 0, workspace = 0, tab_focus = 0,
       text_demo = 0, form_demo = 0, list_demo = 0, picker_demo = 0,
       menu_demo = 0, context_demo = 0, feedback_demo = 0, layout_demo = 0,
-      container_demo = 0;
+      container_demo = 0, surface_demo = 0;
   TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
@@ -104,10 +105,11 @@ int main(int argc, char **argv) {
       feedback_demo = !strcmp(demo, "feedback");
       layout_demo = !strcmp(demo, "layout");
       container_demo = !strcmp(demo, "container");
+      surface_demo = !strcmp(demo, "surface");
       menu_demo = context_demo || !strcmp(demo, "menu");
       if (strcmp(demo, "tree") && !workspace && !text_demo && !form_demo &&
           !list_demo && !picker_demo && !menu_demo && !feedback_demo &&
-          !layout_demo && !container_demo) {
+          !layout_demo && !container_demo && !surface_demo) {
         fputs("Supported demos: tree, workspace, text, form, list, picker, "
               "menu, context-menu\n",
               stderr);
@@ -116,7 +118,7 @@ int main(int argc, char **argv) {
     } else {
       puts("--demo "
            "tree|workspace|text|form|list|picker|menu|context-menu|feedback|"
-           "layout|container "
+           "layout|container|surface "
            "--lang ko|en --theme "
            "dark|light|blackwhite "
            "--colors "
@@ -132,6 +134,9 @@ int main(int argc, char **argv) {
     menu_demo_free(&menu_host);
     return 1;
   }
+  SurfaceDemo surface_host;
+  if (!surface_demo_init(&surface_host, en))
+    return 1;
   ContainerDemo container_host;
   if (!container_demo_init(&container_host, en, ascii))
     return 1;
@@ -266,7 +271,8 @@ int main(int argc, char **argv) {
       return 1;
     }
     fputs("\033[?1049h", stdout);
-    if (menu_demo || feedback_demo || layout_demo || container_demo)
+    if (menu_demo || feedback_demo || layout_demo || container_demo ||
+        surface_demo)
       fputs("\033[?1000h\033[?1006h", stdout);
     signal(SIGTERM, stop_signal);
     signal(SIGINT, stop_signal);
@@ -289,7 +295,9 @@ int main(int argc, char **argv) {
     TuiRect inner = tui_canvas_panel(
         canvas, (TuiRect){0, 0, width, height > 0 ? height - 1 : 0},
         en ? "Tuivory C example" : "Tuivory C 예제", 1, ascii);
-    if (container_demo)
+    if (surface_demo)
+      surface_demo_draw(&surface_host, canvas, inner, ascii);
+    else if (container_demo)
       container_demo_draw(&container_host, canvas, inner, ascii);
     else if (layout_demo)
       layout_demo_draw(&layout_host, canvas, inner, ascii);
@@ -310,8 +318,11 @@ int main(int argc, char **argv) {
     else
       tui_tree_draw(tree, canvas, inner, 1, ascii);
     const char *hint =
-        container_demo ? (en ? "Ctrl+Q quit | m popup | h/l scroll | Tab focus"
-                             : "Ctrl+Q 종료 | m 팝업 | h/l 스크롤 | Tab 포커스")
+        surface_demo
+            ? (en ? "Ctrl+Q quit | s surface" : "Ctrl+Q 종료 | s 바탕 변경")
+        : container_demo
+            ? (en ? "Ctrl+Q quit | m popup | h/l scroll | Tab focus"
+                  : "Ctrl+Q 종료 | m 팝업 | h/l 스크롤 | Tab 포커스")
         : layout_demo
             ? (en ? "Ctrl+Q quit | x/Enter remove filter | d density | click x"
                   : "Ctrl+Q 종료 | x/Enter 필터 제거 | d 간격 | x 클릭")
@@ -385,7 +396,7 @@ int main(int argc, char **argv) {
                          : key == ' '                 ? "toggle"
                                                       : "";
     if (text_demo || form_demo || list_demo || picker_demo || menu_demo ||
-        feedback_demo || layout_demo || container_demo) {
+        feedback_demo || layout_demo || container_demo || surface_demo) {
       char input[8] = {0};
       const char *edit_action = "";
       if (key == 27) {
@@ -405,10 +416,13 @@ int main(int argc, char **argv) {
         }
         int button = 0, x = 0, y = 0;
         char ending = 0;
-        if ((menu_demo || feedback_demo || layout_demo || container_demo) &&
+        if ((menu_demo || feedback_demo || layout_demo || container_demo ||
+             surface_demo) &&
             sscanf(seq, "[<%d;%d;%d%c", &button, &x, &y, &ending) == 4) {
           if (ending == 'M' && x > 0 && y > 0) {
-            if (container_demo)
+            if (surface_demo)
+              surface_demo_pointer(&surface_host, x - 1, y - 1, button);
+            else if (container_demo)
               container_demo_pointer(&container_host, x - 1, y - 1, button);
             else if (layout_demo)
               layout_demo_pointer(&layout_host, x - 1, y - 1, button);
@@ -449,7 +463,11 @@ int main(int argc, char **argv) {
           }
         edit_action = "insert";
       }
-      if (container_demo)
+      if (surface_demo)
+        surface_demo_handle(
+            &surface_host,
+            !strcmp(edit_action, "newline") ? "activate" : edit_action, input);
+      else if (container_demo)
         container_demo_handle(&container_host,
                               key == 9                          ? "next"
                               : !strcmp(edit_action, "newline") ? "activate"
@@ -498,6 +516,7 @@ int main(int argc, char **argv) {
       tui_tree_handle(tree, action, inner.height);
   }
   restore();
+  surface_demo_free(&surface_host);
   container_demo_free(&container_host);
   feedback_demo_free(&feedback_host);
   menu_demo_free(&menu_host);

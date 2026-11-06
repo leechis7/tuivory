@@ -388,7 +388,7 @@ class List:
         canvas.fill(rect)
         for y,row in enumerate(self.layout(rect.width,rect.height,ascii)):
             canvas.fill(Rect(rect.x,rect.y+y,rect.width,1),row.role)
-            canvas.write(rect.x,rect.y+y,row.text,row.role,focused=focused and row.focused,width=rect.width,preserve_background=True)
+            canvas.write(rect.x,rect.y+y,row.text,row.role,focused=focused and row.focused,width=rect.width,preserve_background=False)
 
 
 @dataclass
@@ -444,11 +444,11 @@ class SearchPicker:
         if not self.open:
             if rows:
                 canvas.fill(Rect(rect.x,rect.y,rect.width,1),'field')
-                canvas.write(rect.x,rect.y,rows[0].text,'field',width=rect.width,preserve_background=True)
+                canvas.write(rect.x,rect.y,rows[0].text,'field',width=rect.width,preserve_background=False)
             return
         if rect.height>0:
             canvas.fill(Rect(rect.x,rect.y,rect.width,1),'field')
-            canvas.write(rect.x,rect.y,'? ','field',width=rect.width,preserve_background=True)
+            canvas.write(rect.x,rect.y,'? ','field',width=rect.width,preserve_background=False)
             if rect.width>2:
                 from .editing import Text
                 Text(self.list.query,multiline=False).draw(canvas,Rect(rect.x+2,rect.y,rect.width-2,1),focused=focused)

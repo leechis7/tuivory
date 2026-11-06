@@ -172,7 +172,7 @@ class Text:
             for i,g in row:
                 n=cells(g); local=x-self.scroll_x
                 if local>=0 and local+n<=rect.width:
-                    canvas.write(rect.x+local,rect.y+y,g,"selection" if lo<=i<hi else role,width=n,preserve_background=True)
+                    canvas.write(rect.x+local,rect.y+y,g,"selection" if lo<=i<hi else role,width=n,preserve_background=False)
                 x+=n
         if focused and not self.read_only and not self.disabled and cw<=rect.width:
             canvas.set_cursor(rect.x+cx-self.scroll_x,rect.y+cy-self.scroll_y,cw)
@@ -649,7 +649,7 @@ class Grid:
                 text = ("*" if state.edited else "") + text
                 text = clip(text, w)
                 canvas.write(x, y, text + " " * max(0, w - cells(text)), role,
-                             focused=focused and current_cell, width=w, preserve_background=True)
+                             focused=focused and current_cell, width=w, preserve_background=False)
                 if paint_cursor is not None:
                     canvas.set_cursor(*paint_cursor)
             x += column.width

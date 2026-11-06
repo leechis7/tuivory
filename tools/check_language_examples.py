@@ -46,7 +46,43 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             if process.poll()is not None:break
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
-        if demo=='container':
+        if demo=='surface':
+            from ansi_cells import read_cells,complete_frame
+            palettes=json.loads((ROOT/'design/tokens/candidate.json').read_text())['palettes'];palette=palettes[theme+'-'+colors]
+            def visible():return '\n'.join(''.join(row)for row in screen.rows[:24])
+            def wait_text(value):
+                deadline=time.monotonic()+5
+                while time.monotonic()<deadline:
+                    drain(.02)
+                    if value.replace(' ','')in visible().replace(' ',''):return
+                    if process.poll()is not None:break
+                raise AssertionError((language,demo,value,visible()))
+            def send(command,raw):
+                frames=captured.count(b'\x1b[0m');os.write(master,(command+'\n').encode()if language=='java'else raw)
+                deadline=time.monotonic()+5
+                while captured.count(b'\x1b[0m')<=frames and time.monotonic()<deadline:drain(.02)
+                assert captured.count(b'\x1b[0m')>frames,(language,'surface frame',visible())
+            def styles(role):
+                deadline=time.monotonic()+5
+                frame=complete_frame(captured)
+                while frame is None and time.monotonic()<deadline:
+                    drain(.02);frame=complete_frame(captured)
+                assert frame is not None,(language,'incomplete surface frame',bytes(captured[-400:]))
+                current=read_cells(frame.decode())
+                for yy in [1,2,3,4,7,9]:assert current[1,yy][2]==palette[role]['background'],(language,theme,colors,role,yy,current[1,yy])
+                assert current[1,4][4],(language,'disabled Dim absent')
+                assert current[1,5][2]==palette['selection']['background'],(language,'selection background lost')
+                assert current[1,6][2]==palette['edited']['background'],(language,'edited background lost')
+            wait_text('Surface: editor'if lang=='en'else'바탕: 편집');styles('editor')
+            for role,label in [('field','field'if lang=='en'else'입력'),('button.focus','focused button'if lang=='en'else'포커스 버튼'),('surface','panel'if lang=='en'else'패널'),('editor','editor'if lang=='en'else'편집')]:
+                send('s',b's');wait_text(('Surface: 'if lang=='en'else'바탕: ')+label);styles(role)
+            send('insert Z',b'Z');assert 'Z'not in ''.join(screen.rows[7]),(language,'read-only value changed')
+            if language!='java':
+                fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',18,40,0,0));send('s',b's');wait_text('Surface: field'if lang=='en'else'바탕: 입력');styles('field')
+                deadline=time.monotonic()+5
+                while screen.rows[0][39]!=('+'if ascii else'╗')and time.monotonic()<deadline:drain(.02)
+                assert screen.rows[0][39]==('+'if ascii else'╗'),(language,'surface narrow frame',visible())
+        elif demo=='container':
             def visible():return '\n'.join(''.join(row)for row in screen.rows[:24])
             def wait_text(value):
                 deadline=time.monotonic()+5
@@ -277,7 +313,7 @@ def main():
     p.add_argument('--python',default=sys.executable)
     p.add_argument('--language',choices=['python','javascript','c','cpp','java'])
     p.add_argument('--matrix',action='store_true')
-    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout','container'],default='tree')
+    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout','container','surface'],default='tree')
     args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     commands={'python':[args.python,'-m','tuivory'],'javascript':['node',ROOT/'javascript/examples/catalog.mjs'],'c':[ROOT/'bin/c'/f'tuivory-linux-{arch}'],'cpp':[ROOT/'bin/cpp'/f'tuivory-linux-{arch}'],'java':['java','-jar',ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}

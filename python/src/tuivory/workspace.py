@@ -354,8 +354,8 @@ class Menu:
         canvas.fill(rect,'surface')
         for y,row in enumerate(self.layout(rect.width,rect.height,ascii)):
             canvas.fill(Rect(rect.x,rect.y+y,rect.width,1),row.role)
-            if not row.spans:canvas.write(rect.x,rect.y+y,row.text,row.role,width=rect.width,preserve_background=True)
-            for span in row.spans:canvas.write(rect.x+span.start,rect.y+y,span.text,span.role,width=span.width,preserve_background=True)
+            if not row.spans:canvas.write(rect.x,rect.y+y,row.text,row.role,width=rect.width,preserve_background=False)
+            for span in row.spans:canvas.write(rect.x+span.start,rect.y+y,span.text,span.role,width=span.width,preserve_background=False)
 
     def draw_popup(self, canvas, rect, title='', *, padding=1, ascii=False):
         """Draw inside the host's rectangle; return the content hit-test rectangle."""
@@ -399,7 +399,7 @@ class Menu:
         canvas.fill(Rect(rect.x,rect.y,rect.width,1),'surface');layout=self.bar_layout(rect.width)
         for cell in layout.cells:
             canvas.fill(Rect(rect.x+cell.start,rect.y,cell.width,1),cell.role)
-            canvas.write(rect.x+cell.start,rect.y,cell.text,cell.role,width=cell.width,preserve_background=True)
+            canvas.write(rect.x+cell.start,rect.y,cell.text,cell.role,width=cell.width,preserve_background=False)
         if layout.previous:canvas.write(rect.x,rect.y,'<','hint',width=1)
         if layout.next:canvas.write(rect.x+rect.width-1,rect.y,'>','hint',width=1)
 

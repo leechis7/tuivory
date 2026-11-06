@@ -74,7 +74,7 @@ C State exposes `tui_container_state_new/free`, reconcile/move_focus/state_point
 
 Run integrated `--demo container`: m toggles a popup, h/l scroll, and Tab follows the host's chosen local focus movement. Java line input accepts m/l/h/next/click x y/cancel/quit followed by Enter. Java click simulates input; this fixed-size line example is not an actual resize test.
 
-Validation uses [shared layouts](../design/controls-cases.json), [cell-copy cases](../design/canvas-copy-cases.json) and the [evidence record](evidence/language-containers-results.json). Four raw examples exercise actual 40-column resizing; narrow Java geometry is checked through the API. General TTY adapters, custom Surface styles, dialogs, full Grid/document editing, shadows and drag/drop remain later milestones.
+Validation uses [shared layouts](../design/controls-cases.json), [cell-copy cases](../design/canvas-copy-cases.json) and the [evidence record](evidence/language-containers-results.json). Four raw examples exercise actual 40-column resizing; narrow Java geometry is checked through the API. [Actual Surface styles](language-surfaces.en.md) are now available. General TTY adapters, dialogs, full Grid/document editing, shadows and drag/drop remain later milestones.
 
 | Language | English screen |
 | --- | --- |

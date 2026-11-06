@@ -43,3 +43,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Independent spacing/stack and badge/chip/hint API](../docs/language-layout.en.md)
 
 [Independent containers and cell-copy API](../docs/language-containers.en.md)
+
+[Independent Surface and background API](../docs/language-surfaces.en.md)

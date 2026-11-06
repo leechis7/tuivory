@@ -39,3 +39,5 @@
 [독립 언어 간격·스택·배지·칩·단축키 안내 API](language-layout.md)
 
 [독립 언어 컨테이너·셀 복사 API](language-containers.md)
+
+[독립 언어 Surface·실제 바탕 API](language-surfaces.md)

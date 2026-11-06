@@ -243,13 +243,13 @@ class Container:
         sx = min(self.scroll_x, max(0, vw - bounds.width))
         sy = min(self.scroll_y, max(0, vh - bounds.height))
         rects = compute_container(Rect(0, 0, vw, vh), self._items, o)
-        virtual = Canvas(vw, vh, canvas.palette)
+        virtual = Canvas(vw, vh, canvas.palette, canvas.surface_role)
         self.state.reconcile(self._items)
         for named in rects:
             r = named.rect
             if not r.width or not r.height:
                 continue
-            child = Canvas(r.width, r.height, canvas.palette)
+            child = Canvas(r.width, r.height, canvas.palette, canvas.surface_role)
             child.blit(virtual, r, 0, 0)
             child.clear_cursor()
             focused = named.id == self.state.focused

@@ -129,6 +129,57 @@ export interface Style {
   dim: boolean;
   underline: boolean;
 }
+const plainRoles = [
+  "body",
+  "hint",
+  "disabled",
+  "info",
+  "success",
+  "warning",
+  "error",
+];
+const ansiRGB = [
+  [0, 0, 0],
+  [128, 0, 0],
+  [0, 128, 0],
+  [128, 128, 0],
+  [0, 0, 128],
+  [128, 0, 128],
+  [0, 128, 128],
+  [192, 192, 192],
+  [128, 128, 128],
+  [255, 0, 0],
+  [0, 255, 0],
+  [255, 255, 0],
+  [0, 0, 255],
+  [255, 0, 255],
+  [0, 255, 255],
+  [255, 255, 255],
+];
+function colorRGB(value: string): number[] {
+  if (/^#[0-9a-f]{6}$/i.test(value))
+    return [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16));
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 0 || n > 255)
+    throw new Error("invalid color");
+  if (n < 16) return [...ansiRGB[n]];
+  if (n >= 232) return Array(3).fill(8 + (n - 232) * 10);
+  const i = n - 16,
+    cube = [0, 95, 135, 175, 215, 255];
+  return [cube[Math.floor(i / 36)], cube[Math.floor(i / 6) % 6], cube[i % 6]];
+}
+function colorContrast(a: string, b: string): number {
+  const luma = (color: string) => {
+    const [r, g, b] = colorRGB(color).map((n) => {
+      const v = n / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const x = luma(a),
+    y = luma(b);
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
 export class Palette {
   readonly roles: Dict<
     string,
@@ -154,6 +205,33 @@ export class Palette {
       dim: role === "disabled",
       underline: focused,
     };
+  }
+  textOnSurface(role: string, surface = "surface", focused = false): Style {
+    const text = this.style(role),
+      base = this.style(surface),
+      current = colorContrast(text.foreground, base.background);
+    text.background = base.background;
+    if (
+      current < (role === "disabled" ? 2 : 4.5) &&
+      colorContrast(base.foreground, base.background) > current
+    )
+      text.foreground = base.foreground;
+    if (role === "disabled") {
+      text.bold = false;
+      text.dim = true;
+    }
+    text.underline = focused && role !== "disabled";
+    return text;
+  }
+  controlOnSurface(
+    state: ControlState,
+    surface = "surface",
+    focused = false,
+  ): Style {
+    const focus = focused && state.focusable;
+    return plainRoles.includes(state.role)
+      ? this.textOnSurface(state.role, surface, focus)
+      : this.style(state.role, focus);
   }
 }
 export interface Rect {
@@ -195,6 +273,7 @@ export class Canvas {
     readonly width: number,
     readonly height: number,
     readonly palette = new Palette(),
+    readonly surfaceRole = "surface",
   ) {
     if (
       !Number.isInteger(width) ||
@@ -204,10 +283,11 @@ export class Canvas {
       width * height > 1e6
     )
       throw new Error("invalid dimensions");
+    palette.style(surfaceRole);
     this.data = Array.from({ length: height }, () =>
       Array.from({ length: width }, () => ({
         text: " ",
-        style: palette.style("surface"),
+        style: palette.style(surfaceRole),
         owner: -1,
       })),
     );
@@ -230,22 +310,23 @@ export class Canvas {
     width = this.width - x,
     preserve = false,
   ): void {
+    const actual = role === "surface" ? this.surfaceRole : role;
+    const style =
+      !preserve && plainRoles.includes(role)
+        ? this.palette.textOnSurface(role, this.surfaceRole, focused)
+        : this.palette.style(actual, focused);
+    this.writeStyle(x, y, text, style, width);
+  }
+  writeStyle(
+    x: number,
+    y: number,
+    text: string,
+    style: Style,
+    width = this.width - x,
+  ): void {
     if (y < 0 || y >= this.height) return;
-    const limit = Math.min(this.width, x + Math.max(0, width)),
-      style = this.palette.style(role, focused);
-    if (
-      !preserve &&
-      [
-        "body",
-        "hint",
-        "info",
-        "success",
-        "warning",
-        "error",
-        "header",
-      ].includes(role)
-    )
-      style.background = this.palette.style("surface").background;
+    style = { ...style };
+    const limit = Math.min(this.width, x + Math.max(0, width));
     for (const g of graphemes(clean(text))) {
       const n = clusterWidth(g);
       if (n === 0) continue;
@@ -278,7 +359,7 @@ export class Canvas {
         role,
         false,
         r.width,
-        true,
+        false,
       );
   }
   panel(r: Rect, title = "", focused = false, ascii = false): Rect {
@@ -290,13 +371,19 @@ export class Canvas {
         ? ["╔", "╗", "╚", "╝", "═", "║"]
         : ["┌", "┐", "└", "┘", "─", "│"];
     const role = focused ? "focus.border" : "hint";
-    this.write(r.x, r.y, a + h.repeat(r.width - 2) + b, role);
-    this.write(r.x, r.y + r.height - 1, c + h.repeat(r.width - 2) + d, role);
+    const style = this.palette.textOnSurface(role, this.surfaceRole);
+    this.writeStyle(r.x, r.y, a + h.repeat(r.width - 2) + b, style);
+    this.writeStyle(
+      r.x,
+      r.y + r.height - 1,
+      c + h.repeat(r.width - 2) + d,
+      style,
+    );
     for (let y = r.y + 1; y < r.y + r.height - 1; y++) {
-      this.write(r.x, y, v, role);
-      this.write(r.x + r.width - 1, y, v, role);
+      this.writeStyle(r.x, y, v, style);
+      this.writeStyle(r.x + r.width - 1, y, v, style);
     }
-    this.write(r.x + 2, r.y, clip(title, r.width - 4), role);
+    this.writeStyle(r.x + 2, r.y, clip(title, r.width - 4), style);
     return rect(r.x + 1, r.y + 1, r.width - 2, r.height - 2);
   }
   setCursor(x: number, y: number, glyphWidth = 1): void {
@@ -932,7 +1019,7 @@ export class List {
         row.role,
         focused && !!row.focused,
         r.width,
-        true,
+        false,
       );
     });
   }
@@ -1019,13 +1106,13 @@ export class SearchPicker {
     if (!this.open) {
       if (rows.length) {
         c.fill(rect(r.x, r.y, r.width, 1), "field");
-        c.write(r.x, r.y, rows[0].text, "field", false, r.width, true);
+        c.write(r.x, r.y, rows[0].text, "field", false, r.width, false);
       }
       return;
     }
     if (r.height > 0) {
       c.fill(rect(r.x, r.y, r.width, 1), "field");
-      c.write(r.x, r.y, "? ", "field", false, r.width, true);
+      c.write(r.x, r.y, "? ", "field", false, r.width, false);
       if (r.width > 2)
         new Text(this.list.query, { multiline: false }).draw(
           c,
@@ -1299,7 +1386,7 @@ export class Text {
             lo <= g.index && g.index < hi ? "selection" : role,
             false,
             n,
-            true,
+            false,
           );
         x += n;
       }
@@ -2020,7 +2107,7 @@ export class Grid {
           role,
           focused && current,
           w,
-          true,
+          false,
         );
         if (paintCursor) canvas.setCursor(...paintCursor);
       });
@@ -2624,7 +2711,7 @@ export class Menu {
     this.layout(r.width, r.height, ascii).forEach((row, y) => {
       c.fill(rect(r.x, r.y + y, r.width, 1), row.role);
       if (!row.spans.length)
-        c.write(r.x, r.y + y, row.text, row.role, false, r.width, true);
+        c.write(r.x, r.y + y, row.text, row.role, false, r.width, false);
       for (const span of row.spans)
         c.write(
           r.x + span.start,
@@ -2633,7 +2720,7 @@ export class Menu {
           span.role,
           false,
           span.width,
-          true,
+          false,
         );
     });
   }
@@ -2728,7 +2815,7 @@ export class Menu {
         cell.role,
         false,
         cell.width,
-        true,
+        false,
       );
     }
     if (l.previous) c.write(r.x, r.y, "<", "hint", false, 1);
@@ -3063,9 +3150,9 @@ function feedbackRow(
 function feedbackDraw(c: Canvas, r: Rect, rows: FeedbackRow[]): void {
   c.fill(r);
   rows.slice(0, Math.max(0, r.height)).forEach((row, y) => {
-    c.write(r.x, r.y + y, row.text, row.role, false, r.width, true);
+    c.write(r.x, r.y + y, row.text, row.role, false, r.width, false);
     for (const s of row.spans)
-      c.write(r.x + s.start, r.y + y, s.text, s.role, false, s.width, true);
+      c.write(r.x + s.start, r.y + y, s.text, s.role, false, s.width, false);
   });
 }
 /** Copied notices, host clocks, explicit dismissal and action requests. */
@@ -4197,12 +4284,17 @@ export class Container {
     const sx = Math.min(this.scrollX, Math.max(0, vw - bounds.width)),
       sy = Math.min(this.scrollY, Math.max(0, vh - bounds.height)),
       rects = computeContainer(rect(0, 0, vw, vh), this.source, this.config),
-      virtual = new Canvas(vw, vh, canvas.palette);
+      virtual = new Canvas(vw, vh, canvas.palette, canvas.surfaceRole);
     this.state.reconcile(this.source);
     for (const named of rects) {
       const r = named.rect;
       if (!r.width || !r.height) continue;
-      const child = new Canvas(r.width, r.height, canvas.palette);
+      const child = new Canvas(
+        r.width,
+        r.height,
+        canvas.palette,
+        canvas.surfaceRole,
+      );
       child.blit(virtual, r, 0, 0);
       child.clearCursor();
       const focused = named.id === this.state.focused;
@@ -4240,6 +4332,28 @@ export class Container {
       y - this.bounds.y + this.scroll[1],
       press,
       release,
+    );
+  }
+}
+
+export class Surface {
+  constructor(readonly role = "surface") {}
+  draw(canvas: Canvas, bounds: Rect, painter: (child: Canvas) => void): void {
+    [bounds.x, bounds.y, bounds.width, bounds.height].forEach((v) =>
+      containerNumber(v),
+    );
+    const child = new Canvas(
+      bounds.width,
+      bounds.height,
+      canvas.palette,
+      this.role,
+    );
+    painter(child);
+    canvas.blit(
+      child,
+      rect(0, 0, bounds.width, bounds.height),
+      bounds.x,
+      bounds.y,
     );
   }
 }
