@@ -44,7 +44,7 @@ public final class Catalog {
     boolean en = false, ascii = false, snapshot = false, ansiSnapshot = false, workspace = false,
             tabFocus = false, textDemo = false, formDemo = false, listDemo = false,
             pickerDemo = false, menuDemo = false, contextDemo = false, feedbackDemo = false,
-            layoutDemo = false;
+            layoutDemo = false, containerDemo = false;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--lang" -> {
@@ -79,15 +79,16 @@ public final class Catalog {
           contextDemo = args[i].equals("context-menu");
           feedbackDemo = args[i].equals("feedback");
           layoutDemo = args[i].equals("layout");
+          containerDemo = args[i].equals("container");
           menuDemo = contextDemo || args[i].equals("menu");
           if (!args[i].equals("tree") && !workspace && !textDemo && !formDemo && !listDemo
-              && !pickerDemo && !menuDemo && !feedbackDemo && !layoutDemo)
+              && !pickerDemo && !menuDemo && !feedbackDemo && !layoutDemo && !containerDemo)
             throw new IllegalArgumentException("Supported demos: tree, workspace, text, form, "
                 + "list, picker, menu, context-menu, feedback");
         }
         case "--help" -> {
-          System.out.println(
-              "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout "
+          System.out.println("--demo "
+              + "tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container "
               + "--lang ko|en "
               + "--theme "
               + "dark|light|blackwhite --colors "
@@ -100,6 +101,7 @@ public final class Catalog {
     var menuHost = new MenuHost(en, contextDemo);
     var feedbackHost = new FeedbackHost(en);
     var layoutHost = new LayoutHost(en);
+    var containerHost = new ContainerHost(en, ascii);
     var tree = new Tree(List.of(new Node("root", en ? "Workspace" : "작업 공간"),
         new Node("src", en ? "Sources" : "소스", "root"),
         new Node("components", en ? "Components" : "컴포넌트", "src"),
@@ -167,7 +169,9 @@ public final class Catalog {
         var c = new Canvas(72, 18, new Palette(theme, colors));
         var area = c.panel(
             new Rect(0, 0, 72, 17), en ? "Tuivory Java example" : "Tuivory Java 예제", true, ascii);
-        if (layoutDemo)
+        if (containerDemo)
+          containerHost.draw(c, area, ascii);
+        else if (layoutDemo)
           layoutHost.draw(c, area, ascii);
         else if (feedbackDemo)
           feedbackHost.draw(c, area, ascii);
@@ -185,20 +189,22 @@ public final class Catalog {
           workspaceDraw(tree, tabs, split, c, area, tabFocus, en, ascii);
         else
           tree.draw(c, area, true, ascii);
-        String hint = layoutDemo ? (en ? "Type x / activate / d / click x y / quit, then Enter"
-                                       : "x / activate / d / click x y / quit 입력 후 Enter")
-            : feedbackDemo       ? (en ? "Type activate / delete / t / c / quit, then Enter"
-                                       : "activate / delete / t / c / quit 입력 후 Enter")
-            : menuDemo           ? (en ? "Type f10 / down / activate / cancel / quit, then Enter"
-                                       : "f10 / down / activate / cancel / quit 입력 후 Enter")
-            : pickerDemo         ? (en ? "Type insert text / activate / cancel / quit, then Enter"
-                                       : "insert 검색어 / activate / cancel / quit 입력 후 Enter")
-            : formDemo           ? (en ? "Type insert text / tab / activate / quit, then Enter"
-                                       : "insert 값 / tab / activate / quit 입력 후 Enter")
-            : textDemo           ? (en ? "Type insert text / home / backspace / quit, then Enter"
-                                       : "insert 값 / home / backspace / quit 입력 후 Enter")
-            : en                 ? "Type up/down/left/right/activate/quit, then Enter"
-                                 : "up/down/left/right/activate/quit 입력 후 Enter";
+        String hint = containerDemo ? (en ? "Type m / l / h / next / click x y / quit, then Enter"
+                                          : "m / l / h / next / click x y / quit 입력 후 Enter")
+            : layoutDemo            ? (en ? "Type x / activate / d / click x y / quit, then Enter"
+                                          : "x / activate / d / click x y / quit 입력 후 Enter")
+            : feedbackDemo          ? (en ? "Type activate / delete / t / c / quit, then Enter"
+                                          : "activate / delete / t / c / quit 입력 후 Enter")
+            : menuDemo              ? (en ? "Type f10 / down / activate / cancel / quit, then Enter"
+                                          : "f10 / down / activate / cancel / quit 입력 후 Enter")
+            : pickerDemo ? (en ? "Type insert text / activate / cancel / quit, then Enter"
+                               : "insert 검색어 / activate / cancel / quit 입력 후 Enter")
+            : formDemo   ? (en ? "Type insert text / tab / activate / quit, then Enter"
+                               : "insert 값 / tab / activate / quit 입력 후 Enter")
+            : textDemo   ? (en ? "Type insert text / home / backspace / quit, then Enter"
+                               : "insert 값 / home / backspace / quit 입력 후 Enter")
+            : en         ? "Type up/down/left/right/activate/quit, then Enter"
+                         : "up/down/left/right/activate/quit 입력 후 Enter";
         c.write(0, 17, hint, "hint");
         if (snapshot) {
           if (ansiSnapshot) {
@@ -214,12 +220,14 @@ public final class Catalog {
         if (line == null || line.equals("quit"))
           break;
         String action = line.strip();
-        if (textDemo || formDemo || listDemo || pickerDemo || menuDemo || feedbackDemo
-            || layoutDemo) {
+        if (textDemo || formDemo || listDemo || pickerDemo || menuDemo || feedbackDemo || layoutDemo
+            || containerDemo) {
           int space = action.indexOf(' ');
           String command = space < 0 ? action : action.substring(0, space);
           String addition = space < 0 ? "" : action.substring(space + 1);
-          if (layoutDemo)
+          if (containerDemo)
+            containerHost.handle(command, addition);
+          else if (layoutDemo)
             layoutHost.handle(command, addition);
           else if (feedbackDemo)
             feedbackHost.handle(command, addition);

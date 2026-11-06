@@ -39,6 +39,8 @@ assert ui.stack_layout([ui.StackItem("main",12,40,1),ui.StackItem("aside",10,24,
 assert ui.Badge(label="Items",count=123).line(40).text=="Items [99+]"
 chip=ui.Chip("tag","Recent",removable=True);assert chip.request_remove().kind=="remove" and chip.removable
 assert ui.Help([ui.Shortcut("F1","Help")]).layout(40,1)[0].text=="[F1] Help"
+src=ui.Canvas(4,1);src.write(0,0,"界a");src.set_cursor(0,0,2);dest=ui.Canvas(2,1);dest.blit(src,ui.Rect(1,0,2,1),0,0);assert dest.lines()==[" a"]and dest.cursor is None
+container=ui.Container([ui.LayoutItem("editor")]);container.draw(dest,ui.Rect(0,0,2,1),lambda id,child,focused: child.write(0,0,"OK"));assert dest.lines()==["OK"]
 from importlib.metadata import distribution
 assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").files)
 ''')
@@ -47,6 +49,7 @@ assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").f
  run([p,'-I','-m','tuivory','--snapshot','--demo','context-menu','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','feedback','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','layout','--lang','en'],b)
+ run([p,'-I','-m','tuivory','--snapshot','--demo','container','--lang','en'],b)
  print('Independent Python wheel: isolated external venv install/import/Tree/example passed')
 with tempfile.TemporaryDirectory(prefix='tuivory-javascript-')as directory:
  b=Path(directory);(b/'package.json').write_text('{"type":"module"}\n')
@@ -71,6 +74,8 @@ const notices=new ui.NoticeQueue(2);notices.push({id:"error",text:"Failure",seve
 const progress=new ui.Progress({id:"job",current:40,total:100,cancellable:true});if(progress.requestCancel().kind!=="cancel"||!progress.layout(40)[1].text.includes("40%")||new ui.DataState("ready","Ready").layout(10)[0].role!=="body")throw new Error("progress/states");
 if(ui.stackLayout([{id:"main",min:12,preferred:40,weight:1},{id:"aside",min:10,preferred:24,weight:0}],80,2).slots[0].size!==54)throw new Error("stack");
 const chip=new ui.Chip({id:"tag",label:"Recent",removable:true});if(chip.requestRemove().kind!=="remove"||!chip.removable||new ui.Badge({label:"Items",count:123}).line(40).text!=="Items [99+]"||new ui.Help([{key:"F1",text:"Help"}]).layout(40,1)[0].text!=="[F1] Help")throw new Error("supporting components");
+const src=new ui.Canvas(4,1);src.write(0,0,"界a");src.setCursor(0,0,2);const dst=new ui.Canvas(2,1);dst.blit(src,ui.rect(1,0,2,1),0,0);if(dst.lines()[0]!==" a"||dst.cursor)throw new Error("clipped copy");
+const container=new ui.Container([{id:"editor"}]);container.draw(dst,ui.rect(0,0,2,1),(id,child,focused)=>child.write(0,0,"OK"));if(dst.lines()[0]!=="OK")throw new Error("container painter");
 const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open");picker.handle("insert","RUST");if(picker.value||picker.handle("activate").id!=="rust"||picker.value!=="rust")throw new Error("picker");
 '''
  assert (b/'node_modules/tuivory/CASEFOLD-LICENSE').read_text().startswith('UNICODE LICENSE V3')
@@ -81,4 +86,5 @@ const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','context-menu','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','feedback','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','layout','--lang','en'],b)
+ run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','container','--lang','en'],b)
  print('Independent npm package: isolated external JS import/runtime, TS declarations and example passed')

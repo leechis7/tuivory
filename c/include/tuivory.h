@@ -45,12 +45,20 @@ int tui_cells(const char *text);
 TuiCanvas *tui_canvas_new(int width, int height, const char *theme,
                           const char *profile);
 void tui_canvas_free(TuiCanvas *canvas);
+TuiRect tui_canvas_bounds(const TuiCanvas *canvas);
 TuiResult tui_canvas_write(TuiCanvas *canvas, int x, int y, const char *text,
                            const char *role, int focused, int width);
 TuiResult tui_canvas_fill(TuiCanvas *canvas, TuiRect rect, const char *role);
 TuiRect tui_canvas_panel(TuiCanvas *canvas, TuiRect rect, const char *title,
                          int focused, int ascii);
 void tui_canvas_cursor(TuiCanvas *canvas, int x, int y, int glyph_width);
+/* Opaque cell copy with both-edge wide-glyph repair and cursor projection.
+ * Coordinates within +/-1e9, sizes 0..1e9. Self-copy supported; copied text
+ * owned. Clear a cursor intersecting rect, or unconditionally when rect is
+ * NULL. */
+void tui_canvas_clear_cursor(TuiCanvas *canvas, const TuiRect *rect);
+TuiResult tui_canvas_blit(TuiCanvas *canvas, const TuiCanvas *source,
+                          TuiRect region, int x, int y);
 /* Returned strings are caller-owned; release with tui_string_free. */
 char *tui_canvas_ansi(const TuiCanvas *canvas);
 char *tui_canvas_line(const TuiCanvas *canvas, int y);
@@ -511,6 +519,74 @@ void tui_help_free(TuiHelp *help);
 TuiResult tui_help_layout(const TuiHelp *help, int width, int height,
                           TuiFeedbackView **view);
 TuiResult tui_help_draw(const TuiHelp *help, TuiCanvas *canvas, TuiRect rect);
+/* Configured local layouts. Zero Track fields mean a default weighted track. */
+typedef struct {
+  int min, max, fixed, weight;
+} TuiTrack;
+typedef struct {
+  const char *id;
+  TuiTrack track;
+  int row, column, row_span, column_span;
+  int hidden, disabled;
+  const char *drawer;
+  int modal, centered;
+  TuiRect area;
+} TuiLayoutItem;
+typedef struct {
+  const char *kind;
+  int gap, padding;
+  const TuiTrack *rows;
+  size_t row_count;
+  const TuiTrack *columns;
+  size_t column_count;
+  int virtual_width, virtual_height;
+} TuiContainerOptions;
+/* NULL options or kind selects row. Results own IDs, freed with
+ * tui_layout_free. */
+TuiResult tui_compute_container(TuiRect bounds, const TuiLayoutItem *items,
+                                size_t count,
+                                const TuiContainerOptions *options,
+                                TuiLayoutResult **out);
+typedef struct TuiContainerState TuiContainerState;
+TuiContainerState *tui_container_state_new(void);
+void tui_container_state_free(TuiContainerState *state);
+const char *tui_container_focused(const TuiContainerState *state);
+const char *tui_container_captured(const TuiContainerState *state);
+TuiResult tui_container_reconcile(TuiContainerState *state,
+                                  const TuiLayoutItem *items, size_t count);
+TuiResult tui_container_move_focus(TuiContainerState *state,
+                                   const TuiLayoutItem *items, size_t count,
+                                   int previous);
+/* Hit IDs borrow layout. Pointer IDs belong to state, valid until its next
+ * operation. */
+const char *tui_container_hit(const TuiLayoutItem *items, size_t count,
+                              const TuiLayoutResult *layout, int x, int y);
+TuiResult tui_container_state_pointer(TuiContainerState *state,
+                                      const TuiLayoutItem *items, size_t count,
+                                      const TuiLayoutResult *layout, int x,
+                                      int y, int press, int release,
+                                      const char **id);
+typedef struct TuiContainer TuiContainer;
+typedef TuiResult (*TuiChildPainter)(void *context, const char *id,
+                                     TuiCanvas *child, int focused);
+/* Owns items, ID strings and options. Child canvas is callback-borrowed, local
+ * (0,0). */
+TuiContainer *tui_container_new(const TuiLayoutItem *items, size_t count,
+                                const TuiContainerOptions *options);
+void tui_container_free(TuiContainer *container);
+TuiResult tui_container_set_items(TuiContainer *container,
+                                  const TuiLayoutItem *items, size_t count,
+                                  const TuiContainerOptions *options);
+TuiContainerState *tui_container_state(TuiContainer *container);
+TuiResult tui_container_scroll(TuiContainer *container, int x, int y);
+TuiResult tui_container_draw(TuiContainer *container, TuiCanvas *canvas,
+                             TuiRect bounds, TuiChildPainter painter,
+                             void *context);
+/* Latest layout is borrowed until draw/update/free. Coordinates are
+ * virtual-local. */
+const TuiLayoutResult *tui_container_layout(const TuiContainer *container);
+TuiResult tui_container_pointer(TuiContainer *container, int x, int y,
+                                int press, int release, const char **id);
 #ifdef __cplusplus
 }
 #endif

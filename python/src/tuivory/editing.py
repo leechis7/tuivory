@@ -636,19 +636,22 @@ class Grid:
                 e = self.edit
                 editing = e and e["row_id"] == row.id and e["column_id"] == column.id
                 role = "disabled" if row.state.disabled or state.disabled else "error" if state.invalid else "edited" if state.edited else "selection" if current_cell else "body"
+                paint_cursor = None
                 if editing:
                     role = "hint" if e["pending"] else "error" if e["error"] else "field"
                     text, cursor_x, glyph_width = e["buffer"].window(max(0, w - int(state.edited)))
                     if e["null"]:
                         text = "NULL"
                     if focused and not e["null"] and not e["pending"] and w > int(state.edited):
-                        canvas.set_cursor(x + int(state.edited) + cursor_x, y, glyph_width)
+                        paint_cursor = (x + int(state.edited) + cursor_x, y, glyph_width)
                 else:
                     text = "NULL" if value is None else value
                 text = ("*" if state.edited else "") + text
                 text = clip(text, w)
                 canvas.write(x, y, text + " " * max(0, w - cells(text)), role,
                              focused=focused and current_cell, width=w, preserve_background=True)
+                if paint_cursor is not None:
+                    canvas.set_cursor(*paint_cursor)
             x += column.width
             if x < rect.x + rect.width:
                 for y in range(rect.y, rect.y + rect.height):

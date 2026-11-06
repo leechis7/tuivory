@@ -190,6 +190,7 @@ export function sgr(style: Style): string {
 export class Canvas {
   readonly data: Cell[][];
   cursor: [number, number] | null = null;
+  private cursorWidth = 1;
   constructor(
     readonly width: number,
     readonly height: number,
@@ -216,6 +217,7 @@ export class Canvas {
       start = row[x].owner >= 0 ? row[x].owner : x;
     let end = start + 1;
     while (end < this.width && row[end].owner === start) end++;
+    this.clearCursor(rect(start, y, end - start, 1));
     for (let i = start; i < end; i++)
       row[i] = { text: " ", style: row[i].style, owner: -1 };
   }
@@ -298,6 +300,7 @@ export class Canvas {
     return rect(r.x + 1, r.y + 1, r.width - 2, r.height - 2);
   }
   setCursor(x: number, y: number, glyphWidth = 1): void {
+    this.cursorWidth = Math.max(1, glyphWidth);
     this.cursor =
       x >= 0 &&
       x + Math.max(1, glyphWidth) <= this.width &&
@@ -305,6 +308,79 @@ export class Canvas {
       y < this.height
         ? [x, y]
         : null;
+  }
+  clearCursor(region?: Rect): void {
+    if (
+      !region ||
+      (this.cursor &&
+        region.width > 0 &&
+        region.y <= this.cursor[1] &&
+        this.cursor[1] < region.y + region.height &&
+        region.x < this.cursor[0] + this.cursorWidth &&
+        this.cursor[0] < region.x + region.width)
+    )
+      this.cursor = null;
+  }
+  blit(source: Canvas, region: Rect, x: number, y: number): void {
+    if (
+      [region.x, region.y, region.width, region.height, x, y].some(
+        (v) => !Number.isInteger(v) || Math.abs(v) > 1e9,
+      ) ||
+      region.width < 0 ||
+      region.height < 0
+    )
+      throw new Error("invalid blit bounds");
+    const left = Math.max(0, region.x, region.x - x),
+      top = Math.max(0, region.y, region.y - y),
+      right = Math.min(
+        source.width,
+        region.x + region.width,
+        region.x + this.width - x,
+      ),
+      bottom = Math.min(
+        source.height,
+        region.y + region.height,
+        region.y + this.height - y,
+      );
+    if (left >= right || top >= bottom) return;
+    const cursor = source.cursor ? [...source.cursor] : null,
+      cw = source.cursorWidth;
+    const rows: Cell[][] = [];
+    for (let sy = top; sy < bottom; sy++) {
+      const row: Cell[] = [];
+      for (let sx = left; sx < right; sx++) {
+        const cell = source.data[sy][sx],
+          start = cell.owner >= 0 ? cell.owner : sx;
+        let end = start + 1;
+        while (end < source.width && source.data[sy][end].owner === start)
+          end++;
+        row.push(
+          start < left || end > right
+            ? { text: " ", style: { ...cell.style }, owner: -1 }
+            : {
+                text: cell.text,
+                style: { ...cell.style },
+                owner: cell.owner < 0 ? -1 : x + start - region.x,
+              },
+        );
+      }
+      rows.push(row);
+    }
+    for (let sy = top; sy < bottom; sy++)
+      for (let sx = left; sx < right; sx++)
+        this.erase(x + sx - region.x, y + sy - region.y);
+    for (let sy = top; sy < bottom; sy++)
+      for (let sx = left; sx < right; sx++)
+        this.data[y + sy - region.y][x + sx - region.x] =
+          rows[sy - top][sx - left];
+    if (
+      cursor &&
+      left <= cursor[0] &&
+      cursor[0] + cw <= right &&
+      top <= cursor[1] &&
+      cursor[1] < bottom
+    )
+      this.setCursor(x + cursor[0] - region.x, y + cursor[1] - region.y, cw);
   }
   lines(): string[] {
     return this.data.map((row) => row.map((c) => c.text).join(""));
@@ -1927,13 +2003,14 @@ export class Grid {
                 : current
                   ? "selection"
                   : "body";
+        let paintCursor: [number, number, number] | null = null;
         let text = row.cells[column.id] ?? "NULL";
         if (editing) {
           role = e.pending ? "hint" : e.error ? "error" : "field";
           const p = e.buffer.window(w - Number(state.edited));
           text = e.null ? "NULL" : p.text;
           if (focused && !e.null && !e.pending && w > Number(state.edited))
-            canvas.setCursor(x + Number(state.edited) + p.x, y, p.glyphWidth);
+            paintCursor = [x + Number(state.edited) + p.x, y, p.glyphWidth];
         }
         text = clip((state.edited ? "*" : "") + text, w);
         canvas.write(
@@ -1945,6 +2022,7 @@ export class Grid {
           w,
           true,
         );
+        if (paintCursor) canvas.setCursor(...paintCursor);
       });
       x += column.width ?? 12;
       if (x < r.x + r.width)
@@ -3760,6 +3838,408 @@ export class Help {
       c,
       r,
       this.layout(Math.max(0, r.width), Math.max(0, r.height)),
+    );
+  }
+}
+
+export interface Track {
+  min?: number;
+  max?: number;
+  fixed?: number;
+  weight?: number;
+}
+export interface LayoutItem {
+  id: string;
+  track?: Track;
+  row?: number;
+  column?: number;
+  rowSpan?: number;
+  columnSpan?: number;
+  hidden?: boolean;
+  disabled?: boolean;
+  drawer?: string;
+  modal?: boolean;
+  centered?: boolean;
+  area?: Partial<Rect>;
+}
+export interface ContainerOptions {
+  kind?: string;
+  gap?: number;
+  padding?: number;
+  rows?: Track[];
+  columns?: Track[];
+  virtualWidth?: number;
+  virtualHeight?: number;
+}
+function containerNumber(v: number, max = 1e6): void {
+  if (!Number.isInteger(v) || v < 0 || v > max)
+    throw new Error("invalid container constraints");
+}
+function checkedTrack(t: Track): Required<Track> {
+  const v = {
+    min: t.min ?? 0,
+    max: t.max ?? 0,
+    fixed: t.fixed ?? 0,
+    weight: t.weight ?? 0,
+  };
+  Object.values(v).forEach((n) => containerNumber(n));
+  if (v.max && (v.max < v.min || v.fixed > v.max))
+    throw new Error("invalid track maximum");
+  return v;
+}
+function allocateTracks(
+  input: Track[],
+  total: number,
+  gap: number,
+): [number[], number] {
+  if (!input.length) return [[], 0];
+  const tracks = input.map((t) => {
+    const v = checkedTrack(t);
+    if (!Object.values(v).some(Boolean)) v.weight = 1;
+    return v;
+  });
+  gap = Math.min(gap, Math.floor(total / tracks.length));
+  let available = total - gap * (tracks.length - 1);
+  if (tracks.reduce((s, t) => s + Math.max(t.min, t.fixed), 0) > available) {
+    gap = 0;
+    available = total;
+  }
+  const sizes = tracks.map((t) => {
+    const size = Math.min(available, Math.max(t.min, t.fixed));
+    available -= size;
+    return size;
+  });
+  while (available) {
+    const weight = tracks.reduce(
+      (s, t, i) =>
+        s +
+        (!t.fixed && t.weight && (!t.max || sizes[i] < t.max) ? t.weight : 0),
+      0,
+    );
+    if (!weight) break;
+    const budget = available;
+    tracks.forEach((t, i) => {
+      if (t.fixed || !t.weight || (t.max && sizes[i] >= t.max)) return;
+      let add = Math.min(
+        available,
+        Math.max(1, Math.floor((budget * t.weight) / weight)),
+      );
+      if (t.max) add = Math.min(add, t.max - sizes[i]);
+      sizes[i] += add;
+      available -= add;
+    });
+  }
+  return [sizes, gap];
+}
+export function computeContainer(
+  bounds: Rect,
+  items: readonly LayoutItem[],
+  options: ContainerOptions = {},
+): NamedRect[] {
+  const kind = options.kind ?? "row",
+    gap = options.gap ?? 0,
+    padding = options.padding ?? 0;
+  [
+    bounds.x,
+    bounds.y,
+    bounds.width,
+    bounds.height,
+    options.virtualWidth ?? 0,
+    options.virtualHeight ?? 0,
+  ].forEach((v) => containerNumber(v));
+  [gap, padding].forEach((v) => containerNumber(v, 1024));
+  const rows = options.rows ?? [],
+    columns = options.columns ?? [];
+  if (
+    !["row", "column", "grid", "layers"].includes(kind) ||
+    Math.max(items.length, rows.length, columns.length) > 1024
+  )
+    throw new Error("invalid container kind/count");
+  unique([...items]);
+  [...rows, ...columns].forEach(checkedTrack);
+  for (const i of items) {
+    checkedTrack(i.track ?? {});
+    [
+      i.row ?? 0,
+      i.column ?? 0,
+      i.rowSpan ?? 0,
+      i.columnSpan ?? 0,
+      ...Object.values({ ...rect(), ...i.area }),
+    ].forEach((v) => containerNumber(v));
+    if (
+      i.drawer &&
+      (kind !== "layers" || i.centered || !["left", "right"].includes(i.drawer))
+    )
+      throw new Error("invalid drawer");
+  }
+  const inner = insetRect(bounds, padding),
+    visible = items.filter((i) => !i.hidden),
+    out: NamedRect[] = [];
+  if (kind === "row" || kind === "column") {
+    const horizontal = kind === "row",
+      total = horizontal ? inner.width : inner.height,
+      [sizes, actualGap] = allocateTracks(
+        visible.map((i) => i.track ?? {}),
+        total,
+        gap,
+      );
+    let at = 0;
+    visible.forEach((i, n) => {
+      at = Math.min(at, total);
+      out.push({
+        id: i.id,
+        rect: horizontal
+          ? rect(inner.x + at, inner.y, sizes[n], inner.height)
+          : rect(inner.x, inner.y + at, inner.width, sizes[n]),
+      });
+      at += sizes[n] + actualGap;
+    });
+  } else if (kind === "grid") {
+    const [widths, gx] = allocateTracks(columns, inner.width, gap),
+      [heights, gy] = allocateTracks(rows, inner.height, gap);
+    const sum = (a: number[]) => a.reduce((s, v) => s + v, 0);
+    for (const i of visible) {
+      const row = i.row ?? 0,
+        column = i.column ?? 0,
+        rs = Math.max(1, i.rowSpan ?? 0),
+        cs = Math.max(1, i.columnSpan ?? 0);
+      if (row + rs > heights.length || column + cs > widths.length)
+        throw new Error("invalid grid span");
+      const x = sum(widths.slice(0, column)) + gx * column,
+        y = sum(heights.slice(0, row)) + gy * row,
+        w = sum(widths.slice(column, column + cs)) + gx * (cs - 1),
+        h = sum(heights.slice(row, row + rs)) + gy * (rs - 1);
+      out.push({
+        id: i.id,
+        rect: rect(
+          inner.x + Math.min(x, inner.width),
+          inner.y + Math.min(y, inner.height),
+          Math.min(w, Math.max(0, inner.width - x)),
+          Math.min(h, Math.max(0, inner.height - y)),
+        ),
+      });
+    }
+  } else {
+    for (const i of visible) {
+      const a = { ...rect(), ...i.area },
+        ax = Math.min(a.x, inner.width),
+        ay = Math.min(a.y, inner.height);
+      let w = inner.width - ax,
+        h = inner.height - ay,
+        x = inner.x + ax,
+        y = inner.y + ay;
+      if (a.width) w = Math.min(w, a.width);
+      if (a.height) h = Math.min(h, a.height);
+      if (i.centered) {
+        x = inner.x + Math.floor((inner.width - w) / 2);
+        y = inner.y + Math.floor((inner.height - h) / 2);
+      }
+      if (i.drawer) {
+        w = Math.min(inner.width, a.width || inner.width);
+        x = inner.x + (i.drawer === "right" ? inner.width - w : 0);
+      }
+      out.push({ id: i.id, rect: rect(x, y, w, h) });
+    }
+  }
+  return out;
+}
+export class ContainerState {
+  focused = "";
+  captured = "";
+  private modal = "";
+  private restore = new Map<string, string>();
+  eligible(items: readonly LayoutItem[]): string[] {
+    let start = 0;
+    items.forEach((i, n) => {
+      if (i.modal && !i.hidden) start = n;
+    });
+    return items
+      .slice(start)
+      .filter((i) => !i.hidden && !i.disabled)
+      .map((i) => i.id);
+  }
+  reconcile(items: readonly LayoutItem[]): void {
+    const ids = this.eligible(items),
+      modal = [...items].reverse().find((i) => i.modal && !i.hidden)?.id ?? "";
+    if (modal !== this.modal) {
+      const oldVisible = items.some(
+        (i) => i.id === this.modal && i.modal && !i.hidden,
+      );
+      if (this.modal && !oldVisible) {
+        let previous = this.restore.get(this.modal) ?? "";
+        this.restore.delete(this.modal);
+        for (let n = this.restore.size + 1; n > 0; n--) {
+          if (ids.includes(previous)) {
+            this.focused = previous;
+            break;
+          }
+          const next = this.restore.get(previous);
+          if (next === undefined) break;
+          this.restore.delete(previous);
+          previous = next;
+        }
+      }
+      if (modal && !this.restore.has(modal))
+        this.restore.set(modal, this.focused);
+      this.modal = modal;
+    }
+    if (!ids.includes(this.focused)) this.focused = ids[0] ?? "";
+    if (!ids.includes(this.captured)) this.captured = "";
+  }
+  moveFocus(items: readonly LayoutItem[], previous = false): string {
+    this.reconcile(items);
+    const ids = this.eligible(items);
+    if (ids.length)
+      this.focused =
+        ids[
+          (ids.indexOf(this.focused) + (previous ? ids.length - 1 : 1)) %
+            ids.length
+        ];
+    return this.focused;
+  }
+  hit(
+    items: readonly LayoutItem[],
+    rects: readonly NamedRect[],
+    x: number,
+    y: number,
+  ): string {
+    const ids = this.eligible(items);
+    return (
+      [...rects]
+        .reverse()
+        .find(
+          (n) =>
+            ids.includes(n.id) &&
+            x >= n.rect.x &&
+            x < n.rect.x + n.rect.width &&
+            y >= n.rect.y &&
+            y < n.rect.y + n.rect.height,
+        )?.id ?? ""
+    );
+  }
+  pointer(
+    items: readonly LayoutItem[],
+    rects: readonly NamedRect[],
+    x: number,
+    y: number,
+    press = false,
+    release = false,
+  ): string {
+    this.reconcile(items);
+    const id = this.captured || this.hit(items, rects, x, y);
+    if (press && id) {
+      this.focused = id;
+      this.captured = id;
+    }
+    if (release) this.captured = "";
+    return id;
+  }
+}
+function copyLayoutItems(items: readonly LayoutItem[]): LayoutItem[] {
+  return items.map((i) => ({
+    ...i,
+    track: { ...(i.track ?? {}) },
+    area: { ...rect(), ...i.area },
+  }));
+}
+function copyContainerOptions(o: ContainerOptions): ContainerOptions {
+  return {
+    ...o,
+    rows: o.rows?.map((t) => ({ ...t })),
+    columns: o.columns?.map((t) => ({ ...t })),
+  };
+}
+export class Container {
+  readonly state = new ContainerState();
+  scrollX = 0;
+  scrollY = 0;
+  private source: LayoutItem[] = [];
+  private config: ContainerOptions = {};
+  private rects: NamedRect[] = [];
+  private bounds = rect();
+  private scroll: [number, number] = [0, 0];
+  constructor(items: LayoutItem[], options: ContainerOptions = {}) {
+    this.setItems(items, options);
+  }
+  get items(): LayoutItem[] {
+    return copyLayoutItems(this.source);
+  }
+  get options(): ContainerOptions {
+    return copyContainerOptions(this.config);
+  }
+  setItems(items: LayoutItem[], options = this.config): void {
+    computeContainer(rect(0, 0, 1, 1), items, options);
+    const source = copyLayoutItems(items),
+      config = copyContainerOptions(options);
+    this.source = source;
+    this.config = config;
+    this.rects = [];
+    this.bounds = rect();
+    this.state.reconcile(source);
+    this.state.captured = "";
+  }
+  draw(
+    canvas: Canvas,
+    bounds: Rect,
+    painter: (id: string, child: Canvas, focused: boolean) => void,
+  ): NamedRect[] {
+    [
+      bounds.x,
+      bounds.y,
+      bounds.width,
+      bounds.height,
+      this.scrollX,
+      this.scrollY,
+    ].forEach((v) => containerNumber(v));
+    const vw = Math.max(bounds.width, this.config.virtualWidth ?? 0),
+      vh = Math.max(bounds.height, this.config.virtualHeight ?? 0);
+    if (vw * vh > 1e6) throw new Error("container virtual area exceeds limit");
+    const sx = Math.min(this.scrollX, Math.max(0, vw - bounds.width)),
+      sy = Math.min(this.scrollY, Math.max(0, vh - bounds.height)),
+      rects = computeContainer(rect(0, 0, vw, vh), this.source, this.config),
+      virtual = new Canvas(vw, vh, canvas.palette);
+    this.state.reconcile(this.source);
+    for (const named of rects) {
+      const r = named.rect;
+      if (!r.width || !r.height) continue;
+      const child = new Canvas(r.width, r.height, canvas.palette);
+      child.blit(virtual, r, 0, 0);
+      child.clearCursor();
+      const focused = named.id === this.state.focused;
+      painter(named.id, child, focused);
+      if (!focused) child.clearCursor();
+      virtual.blit(child, rect(0, 0, r.width, r.height), r.x, r.y);
+    }
+    canvas.blit(
+      virtual,
+      rect(sx, sy, bounds.width, bounds.height),
+      bounds.x,
+      bounds.y,
+    );
+    this.scrollX = sx;
+    this.scrollY = sy;
+    this.scroll = [sx, sy];
+    this.bounds = { ...bounds };
+    this.rects = rects;
+    return rects.map((n) => ({ id: n.id, rect: { ...n.rect } }));
+  }
+  pointer(x: number, y: number, press = false, release = false): string {
+    if (!Number.isInteger(x) || !Number.isInteger(y)) return "";
+    if (
+      !this.state.captured &&
+      (x < this.bounds.x ||
+        y < this.bounds.y ||
+        x >= this.bounds.x + this.bounds.width ||
+        y >= this.bounds.y + this.bounds.height)
+    )
+      return "";
+    return this.state.pointer(
+      this.source,
+      this.rects,
+      x - this.bounds.x + this.scroll[0],
+      y - this.bounds.y + this.scroll[1],
+      press,
+      release,
     );
   }
 }

@@ -132,3 +132,5 @@ TVR-7 in 0.11.1: [real grid cursor and backend integration](grid-workspace.en.md
 [Independent notices/progress/data-state API](language-feedback.en.md)
 
 [Independent spacing/stack and badge/chip/hint API](language-layout.en.md)
+
+[Independent containers and cell-copy API](language-containers.en.md)

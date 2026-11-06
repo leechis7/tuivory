@@ -12,3 +12,7 @@ import "./collections.mjs";
 import "./menu.mjs";
 import './feedback.mjs';
 import './layout.mjs';
+
+import "./canvas-copy.mjs";
+
+import "./containers.mjs";

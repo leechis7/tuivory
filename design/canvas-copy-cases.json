@@ -1,0 +1,11 @@
+{
+  "text": "a界b한c",
+  "cases": [
+    {"region":[0,0,8,1],"at":[0,0],"width":8,"expected":"a界b한c ","cursor":[4,0]},
+    {"region":[2,0,4,1],"at":[1,0],"width":8,"expected":"  b한   ","cursor":[3,0]},
+    {"region":[0,0,5,1],"at":[0,0],"width":8,"expected":"a界b    ","cursor":null},
+    {"region":[0,0,8,1],"at":[-2,0],"width":5,"expected":" b한c","cursor":[2,0]},
+    {"region":[-2,0,8,1],"at":[0,0],"width":8,"expected":"  a界b한","cursor":[6,0]},
+    {"region":[0,0,8,1],"at":[0,0],"width":5,"expected":"a界b ","cursor":null}
+  ]
+}

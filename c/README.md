@@ -39,3 +39,5 @@ make build-c
 [독립 언어 알림·진행·데이터 상태 API](../docs/language-feedback.md)
 
 [독립 언어 간격·스택·배지·칩·단축키 안내 API](../docs/language-layout.md)
+
+[독립 언어 컨테이너·셀 복사 API](../docs/language-containers.md)
