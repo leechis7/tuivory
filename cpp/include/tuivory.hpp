@@ -164,8 +164,9 @@ inline Break property(unsigned cp) {
   PROPERTY(grapheme_regional_indicator, Regional)
   PROPERTY(grapheme_prepend, Prepend)
   PROPERTY(grapheme_spacingmark, Spacing)
-  PROPERTY(grapheme_l, L) PROPERTY(grapheme_v, V) PROPERTY(grapheme_t, T)
-      PROPERTY(grapheme_lv, LV) PROPERTY(grapheme_lvt, LVT)
+  PROPERTY(grapheme_l, L)
+  PROPERTY(grapheme_v, V) PROPERTY(grapheme_t, T) PROPERTY(grapheme_lv, LV)
+      PROPERTY(grapheme_lvt, LVT)
 #undef PROPERTY
           return Break::Other;
 }
@@ -687,3 +688,5 @@ public:
 #include "tuivory_workspace.hpp"
 
 #include "tuivory_text.hpp"
+
+#include "tuivory_forms.hpp"

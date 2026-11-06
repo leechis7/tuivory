@@ -81,7 +81,8 @@ int main(int argc, char **argv) {
     using namespace tuivory;
     std::string theme = "dark", colors = "256";
     bool en = false, ascii = false, snapshot = false, ansi_snapshot = false,
-         workspace = false, tab_focus = false, text_demo = false;
+         workspace = false, tab_focus = false, text_demo = false,
+         form_demo = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -101,10 +102,12 @@ int main(int argc, char **argv) {
         std::string demo = argv[++i];
         workspace = demo == "workspace";
         text_demo = demo == "text";
-        if (demo != "tree" && !workspace && !text_demo)
-          throw std::invalid_argument("Supported demos: tree, workspace, text");
+        form_demo = demo == "form";
+        if (demo != "tree" && !workspace && !text_demo && !form_demo)
+          throw std::invalid_argument(
+              "Supported demos: tree, workspace, text, form");
       } else {
-        std::cout << "--demo tree|workspace|text --lang ko|en --theme "
+        std::cout << "--demo tree|workspace|text|form --lang ko|en --theme "
                      "dark|light|blackwhite "
                      "--colors 8|16|256|truecolor --ascii --snapshot\n";
         return arg == "--help" ? 0 : 2;
@@ -125,6 +128,36 @@ int main(int argc, char **argv) {
     Text text(en ? (ascii ? "Grapheme text\nEdit with real cursor."
                           : "Unicode é 界\nEdit with real cursor.")
                  : "한글 é 界\n여러 줄을 편집합니다.");
+    Field name;
+    name.id = "name";
+    name.kind = "text";
+    name.label = en ? "Name" : "이름";
+    name.value = en ? "Input" : "한글 입력";
+    name.required = true;
+    Field password;
+    password.id = "password";
+    password.kind = "password";
+    password.label = en ? "Password" : "비밀번호";
+    password.value = "example";
+    Field off;
+    off.id = "off";
+    off.kind = "checkbox";
+    off.label = en ? "Disabled" : "비활성";
+    off.state.disabled = true;
+    Field mode;
+    mode.id = "mode";
+    mode.kind = "select";
+    mode.label = en ? "Mode" : "모드";
+    mode.choice = "a";
+    mode.options = {{"a", en ? "Default" : "기본", false},
+                    {"off", en ? "Unavailable" : "사용 불가", true},
+                    {"b", en ? "Alternative" : "다른 값", false}};
+    Field apply;
+    apply.id = "apply";
+    apply.kind = "button";
+    apply.label = en ? "Apply" : "적용";
+    apply.action = "submit";
+    Form form({name, password, off, mode, apply});
     std::optional<Session> session;
     if (!snapshot)
       session.emplace();
@@ -140,7 +173,9 @@ int main(int argc, char **argv) {
       auto area = canvas.panel({0, 0, width, std::max(0, height - 1)},
                                en ? "Tuivory C++ example" : "Tuivory C++ 예제",
                                true, ascii);
-      if (text_demo)
+      if (form_demo)
+        form.draw(canvas, area);
+      else if (text_demo)
         text.draw(canvas, area);
       else if (workspace)
         workspace_draw(tree, tabs, split, canvas, area, tab_focus, en, ascii);
@@ -174,7 +209,7 @@ int main(int argc, char **argv) {
                           : key == '\r' || key == '\n' ? "activate"
                           : key == ' '                 ? "toggle"
                                                        : "";
-      if (text_demo) {
+      if (text_demo || form_demo) {
         std::string input, edit_action;
         if (key == 27) {
           std::string seq;
@@ -215,7 +250,13 @@ int main(int argc, char **argv) {
           }
           edit_action = "insert";
         }
-        text.handle(edit_action, input);
+        if (form_demo)
+          form.handle(key == 9                   ? "next"
+                      : edit_action == "newline" ? "activate"
+                                                 : edit_action,
+                      input);
+        else
+          text.handle(edit_action, input);
       } else if (workspace && key == 9)
         tab_focus = !tab_focus;
       else if (workspace && (key == '<' || key == '>'))

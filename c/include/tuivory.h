@@ -148,6 +148,55 @@ TuiResult tui_text_draw(TuiText *text, TuiCanvas *canvas, TuiRect rect,
                         int focused);
 TuiTextEvent tui_text_click(TuiText *text, int x, int y, int width, int height,
                             int extend);
+/* Forms copy fields/options; raw password values are only exposed by value().
+ */
+typedef struct {
+  const char *id, *label;
+  int disabled;
+} TuiFormOption;
+typedef struct {
+  const char *id, *kind, *label, *value, *help, *error, *choice, *action,
+      *pending;
+  const TuiFormOption *options;
+  size_t option_count;
+  TuiState state;
+  int required, checked, open, height;
+} TuiField;
+typedef struct TuiForm TuiForm;
+typedef struct {
+  const char *kind, *id, *text;
+  const char *const *missing;
+  size_t missing_count;
+  TuiResult result;
+} TuiFormEvent;
+typedef struct {
+  const char *id, *text, *role, *option;
+  int input, focused, source_row;
+} TuiFormRow;
+TuiForm *tui_form_new(const TuiField *fields, size_t count);
+void tui_form_free(TuiForm *form);
+const TuiField *tui_form_field(const TuiForm *form, const char *id);
+const char *tui_form_value(const TuiForm *form, const char *id);
+const char *tui_form_focused(const TuiForm *form);
+int tui_form_focus(TuiForm *form, const char *id);
+int tui_form_at_tab_boundary(const TuiForm *form, int previous);
+TuiResult tui_form_set_state(TuiForm *form, const char *id, TuiState state);
+TuiResult tui_form_set_feedback(TuiForm *form, const char *id, const char *help,
+                                const char *error);
+TuiResult tui_form_select_text(TuiForm *form, const char *id, size_t anchor,
+                               size_t cursor);
+TuiFormEvent tui_form_handle(TuiForm *form, const char *action,
+                             const char *text);
+TuiFormEvent tui_form_click_field(TuiForm *form, const char *id,
+                                  const char *option);
+TuiFormEvent tui_form_click(TuiForm *form, int x, int y, int height);
+/* Layout rows and their strings are borrowed until the next layout or free. */
+TuiResult tui_form_layout(TuiForm *form, int width, int height,
+                          const TuiFormRow **rows, size_t *count);
+TuiResult tui_form_draw(TuiForm *form, TuiCanvas *canvas, TuiRect rect,
+                        int focused);
+/* A standalone control is the same form model with one field. */
+TuiForm *tui_control_new(TuiField field);
 #ifdef __cplusplus
 }
 #endif

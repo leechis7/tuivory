@@ -27,3 +27,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Workspace follow-up](../docs/language-workspace.en.md): select `--demo workspace` for validated tabs, panels, splits, breadcrumbs and status lines.
 
 [Independent text editing API](../docs/language-text.en.md)
+
+[Independent forms and controls API](../docs/language-forms.en.md)

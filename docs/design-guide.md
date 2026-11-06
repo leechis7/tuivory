@@ -25,3 +25,5 @@
 [독립 언어 workspace API·예제](language-workspace.md): 탭·패널·분할·경로·상태줄을 다섯 구현에서 검증했습니다. 나머지 카탈로그 이식은 진행 중입니다.
 
 [독립 언어 입력·편집 API](language-text.md)
+
+[독립 언어 폼·컨트롤 API](language-forms.md)

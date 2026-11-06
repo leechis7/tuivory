@@ -27,6 +27,7 @@ assert ui.status_line([ui.StatusItem("e","Failure","error",100),ui.StatusItem("h
 assert ui.Split(3,4,7).layout(5).compact
 e=ui.Text("a");e.handle("insert","́");assert e.cursor==1;e.handle("backspace");assert e.value=="";e.handle("undo");assert e.value=="á"
 f=ui.Form([ui.Field("p",kind="password",value="secret")]);assert f.fields[0].value=="******"
+s=ui.Form([ui.Field("s",kind="select",options=[ui.FormOption("a"),ui.FormOption("b")])]);s.handle("activate");s.handle("down");assert s.fields[0].choice=="";s.handle("activate");assert s.fields[0].choice=="b"
 ''')
  run([p,'-I',b/'consumer.py'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','tree','--lang','en'],b)
@@ -46,6 +47,7 @@ if(ui.pathRuns([{id:"r",label:"root"},{id:"f",label:"folder"},{id:"c",label:"현
 if(!new ui.Split(3,4,7).layout(5).compact)throw new Error("split");
 const e=new ui.Text("a");e.handle("insert","́");if(e.cursor!==1)throw new Error("grapheme cursor");e.handle("backspace");if(e.value!=="")throw new Error("grapheme erase");
 const f=new ui.Form([{id:"p",kind:"password",value:"secret"}]);if(f.fields[0].value!=="******")throw new Error("password");
+const s=new ui.Form([{id:"s",kind:"select",options:[{id:"a"},{id:"b"}]}]);s.handle("activate");s.handle("down");if(s.fields[0].choice)throw new Error("pending");s.handle("activate");if(s.fields[0].choice!=="b")throw new Error("choice");
 '''
  (b/'consumer.mjs').write_text(source);(b/'consumer.ts').write_text(source)
  run(['node','consumer.mjs'],b)

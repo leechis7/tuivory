@@ -2,6 +2,7 @@
 from __future__ import annotations
 import csv
 import io
+import regex
 from dataclasses import dataclass, field
 from copy import deepcopy
 from .drawing import Canvas, Rect, cells, clip, graphemes
@@ -188,6 +189,13 @@ class Text:
         return Event("select")
 
 @dataclass
+class FormOption:
+    id: str
+    label: str = ""
+    disabled: bool = False
+
+
+@dataclass
 class Field:
     id: str
     kind: str = "text"
@@ -197,109 +205,201 @@ class Field:
     error: str = ""
     required: bool = False
     checked: bool = False
-    options: list[tuple[str, str]] = field(default_factory=list)
+    options: list[FormOption | tuple[str,str]] = field(default_factory=list)
     state: ControlState = field(default_factory=ControlState)
+    choice: str = ""
+    action: str = ""
+    open: bool = False
+    pending: str = ""
+    height: int = 3
+
+
+@dataclass
+class FormRow:
+    id: str
+    text: str
+    role: str = "body"
+    option: str = ""
+    input: bool = False
+    focused: bool = False
+    source_row: int = 0
 
 
 class Form:
     def __init__(self, fields: list[Field]):
         unique(fields)
-        if any(f.kind not in ("text", "password", "textarea", "checkbox", "radio", "select", "button") for f in fields):
-            raise ValueError("unknown field kind")
         self.fields = deepcopy(fields)
-        self.inputs = {f.id: Text(f.value, secret=f.kind == "password", multiline=f.kind == "textarea") for f in self.fields if f.kind in ("text", "password", "textarea")}
+        self.inputs = {}
         for f in self.fields:
-            if f.kind == "password": f.value = self.inputs[f.id].display()
-        self.focused = ""
-        self.scroll = 0
+            if f.kind not in ("text","textarea","password","button","checkbox","radio","select") or f.open:
+                raise ValueError("unknown field kind or initially open select")
+            f.options=[o if isinstance(o,FormOption) else FormOption(*o) for o in f.options]
+            unique(f.options)
+            if f.choice and f.choice not in [o.id for o in f.options]: raise ValueError("unknown choice")
+            if f.kind in ("text","password","textarea"):
+                self.inputs[f.id]=Text(f.value,secret=f.kind=='password',multiline=f.kind=='textarea')
+                f.value=self.inputs[f.id].display()
+        self.focused="";self.scroll=0;self._hits=[];self._width=0
         self._eligible()
 
-    def _eligible(self) -> list[Field]:
-        items = [f for f in self.fields if f.state.focusable]
-        if self.focused not in [f.id for f in items]:
-            self.focused = items[0].id if items else ""
+    def _field(self,id):
+        return next((f for f in self.fields if f.id==id),None)
+
+    def _eligible(self):
+        items=[f for f in self.fields if f.state.focusable]
+        if self.focused not in [f.id for f in items]: self.focused=items[0].id if items else ''
         return items
 
-    def value(self, id: str) -> str:
-        f = next(f for f in self.fields if f.id == id)
+    def focus(self,id):
+        f=self._field(id)
+        if not f or not f.state.focusable:return False
+        for field in self.fields:field.open=False
+        self.focused=id;return True
+
+    def at_tab_boundary(self,previous=False):
+        ids=[f.id for f in self._eligible()]
+        return not ids or self.focused==ids[0 if previous else -1]
+
+    def set_state(self,id,state):
+        f=self._field(id)
+        if not f:return False
+        f.state=deepcopy(state)
+        if not state.editable:f.open=False
+        self._eligible();return True
+
+    def set_feedback(self,id,help='',error=''):
+        f=self._field(id)
+        if not f:return False
+        f.help,f.error=help,error;f.state.invalid=bool(error);return True
+
+    def value(self,id):
+        f=self._field(id)
+        if not f:raise ValueError('unknown field')
         return self.inputs[id].value if id in self.inputs else f.value
 
-    def handle(self, action: str, text: str = "") -> Event:
-        items = self._eligible()
-        if action == "cancel":
-            return Event("cancel")
-        if action == "submit":
-            missing = [f.id for f in self.fields if not f.state.disabled and f.required and not self.value(f.id)]
-            return Event("invalid" if missing else "submit", data=missing)
-        if not items:
+    def select_text(self,id,anchor,cursor):
+        if id not in self.inputs:return False
+        self.inputs[id].select(anchor,cursor);return True
+
+    def missing(self):
+        out=[]
+        for f in self.fields:
+            empty=bool(regex.fullmatch(r"\p{White_Space}*",self.value(f.id))) if f.id in self.inputs else not f.checked if f.kind=='checkbox' else not f.choice if f.kind in ('radio','select') else False
+            if not f.state.disabled and (f.error or f.state.invalid or f.required and empty):out.append(f.id)
+        return out
+
+    def handle(self,action,text=''):
+        items=self._eligible()
+        if action in ('next','previous'):
+            if items:
+                at=next(i for i,f in enumerate(items) if f.id==self.focused)
+                self.focus(items[(at+(1 if action=='next' else -1))%len(items)].id)
             return Event()
-        i = next(i for i, f in enumerate(items) if f.id == self.focused)
-        f = items[i]
-        if action in ("next", "previous"):
-            self.focused = items[(i + (1 if action == "next" else -1)) % len(items)].id
-            return Event("focus", self.focused)
-        if not f.state.activatable:
-            return Event()
-        if action == "activate" and f.kind == "button":
-            return Event("activate", f.id)
-        if not f.state.editable:
-            return Event()
+        if action=='submit':
+            missing=self.missing();return Event('invalid' if missing else 'submit',data=missing)
+        f=self._field(self.focused)
+        if not f:return Event()
+        if action=='cancel':
+            if f.open:f.open=False;return Event()
+            return Event('cancel',f.id)
+        if action=='insert' and text==' ' and f.id not in self.inputs:action='toggle'
         if f.id in self.inputs:
-            event = self.inputs[f.id].handle(action, text)
-            f.value = self.inputs[f.id].display()
-            # Passwords are available through explicit value(), never display/events.
-            return Event(event.kind, f.id, event.text)
-        if f.kind in ("checkbox", "radio") and action in ("activate", "toggle"):
-            f.checked = not f.checked if f.kind == "checkbox" else True
-            return Event("change", f.id, data=f.checked)
-        if f.kind == "select" and action in ("left", "right", "up", "down", "activate") and f.options:
-            ids = [id for id, _ in f.options]
-            at = ids.index(f.value) if f.value in ids else 0
-            f.value = ids[(at + (-1 if action in ("left", "up") else 1)) % len(ids)]
-            return Event("change", f.id, f.value)
+            t=self.inputs[f.id];t.disabled=f.state.disabled;t.read_only=not f.state.editable
+            if action=='activate' and f.kind!='textarea':return self.handle('submit') if f.state.activatable else Event()
+            e=t.handle('newline' if action=='activate' else action,text);f.value=t.display()
+            if e.kind in ('change','cut'):f.state.edited=True
+            return Event(e.kind,f.id,e.text)
+        if f.kind=='button' and action in ('left','right') and not f.state.disabled:
+            self.handle('previous' if action=='left' else 'next');return Event()
+        if not f.state.activatable:return Event()
+        if f.kind=='button' and action in ('activate','toggle'):
+            return self.handle('submit') if f.action=='submit' else Event('cancel' if f.action=='cancel' else 'activate',f.id)
+        if not f.state.editable:return Event()
+        changed=False
+        if f.kind=='checkbox' and action in ('activate','toggle'):f.checked=not f.checked;changed=True
+        elif f.kind in ('radio','select'):
+            if f.kind=='select' and action in ('activate','toggle'):
+                if f.open:f.choice=f.pending;f.open=False;changed=True
+                else:
+                    f.open=True;f.pending=f.choice or next((o.id for o in f.options if not o.disabled),'');return Event()
+            elif action in ('left','right','up','down','activate','toggle'):
+                if f.kind=='select' and not f.open:return Event()
+                ids=[o.id for o in f.options if not o.disabled]
+                if not ids:return Event()
+                current=f.pending if f.open else f.choice
+                at=ids.index(current) if current in ids else None
+                target=ids[((at or 0)-1)%len(ids)] if action in ('left','up') else ids[(at+1)%len(ids)] if at is not None else ids[0]
+                if f.kind=='select':f.pending=target
+                else:f.choice=target;changed=True
+        if changed:f.state.edited=True;return Event('change',f.id)
         return Event()
 
-    def click(self, x: int, y: int, height: int = 10) -> Event:
-        i = self.scroll + y
-        if not 0 <= y < height or not 0 <= i < len(self.fields):
-            return Event()
-        f = self.fields[i]
-        if f.state.disabled:
-            return Event()
-        self.focused = f.id
-        if f.kind in ("button", "checkbox", "radio", "select"):
-            return self.handle("activate")
-        return Event("focus", f.id)
+    def click_field(self,id,option=''):
+        f=self._field(id)
+        if not f or f.state.disabled or any(o.id==option and o.disabled for o in f.options):return Event()
+        if self.focused!=id:self.focus(id)
+        if f.kind=='button':return self.handle('activate')
+        if not f.state.editable:return Event()
+        if f.kind=='select' and not f.open:return self.handle('activate')
+        if option and f.kind in ('radio','select'):
+            if not any(o.id==option and not o.disabled for o in f.options):return Event()
+            f.choice=option;f.open=False;f.state.edited=True;return Event('change',f.id)
+        if f.kind in ('checkbox','select'):return self.handle('activate')
+        return Event()
 
-    def draw(self, canvas: Canvas, rect: Rect, *, focused: bool = True, ascii: bool = False) -> None:
-        canvas.fill(rect)
-        self._eligible()
-        index = next((i for i, f in enumerate(self.fields) if f.id == self.focused), 0)
-        self.scroll = max(0, min(self.scroll, index))
-        if index >= self.scroll + max(1, rect.height):
-            self.scroll = index - max(1, rect.height) + 1
-        for y, f in enumerate(self.fields[self.scroll:self.scroll + rect.height]):
-            current = focused and self.focused == f.id
-            prefix = f.label + ": " if f.label else ""
-            role = "disabled" if f.state.disabled else "error" if f.error else "body"
-            canvas.write(rect.x, rect.y + y, clip(prefix, rect.width), role, focused=current, width=rect.width)
-            start = min(cells(prefix), rect.width)
-            width = rect.width - start
+    def layout(self,width,height):
+        rows=[];anchor=0
+        for f in self.fields:
+            current=f.id==self.focused
+            if current:anchor=len(rows)
+            role='disabled' if f.state.disabled else 'error' if f.error or f.state.invalid else f.state.role
+            markers=f.state.markers.lstrip('-') if f.state.disabled else f.state.markers
+            rows.append(FormRow(f.id,('> ' if current else '  ')+f.label+(' *' if f.required else '')+(' '+markers if markers else ''),role,focused=current))
             if f.id in self.inputs:
-                value, x, n = self.inputs[f.id].window(width)
-                canvas.write(rect.x + start, rect.y + y, value.ljust(width - cells(value) + len(value)),
-                             "disabled" if f.state.disabled else "field", width=width, preserve_background=True)
-                if current and f.state.editable and width:
-                    canvas.set_cursor(rect.x + start + x, rect.y + y, n)
+                display=self.inputs[f.id].display().splitlines() if f.kind=='textarea' else [self.inputs[f.id].display()]
+                for i,text in enumerate((display or [''])[:max(1,f.height) if f.kind=='textarea' else 1]):rows.append(FormRow(f.id,'  '+text,'disabled' if f.state.disabled else 'field',input=True,source_row=i))
+            elif f.kind=='checkbox':rows.append(FormRow(f.id,'  [x]' if f.checked else '  [ ]',role))
+            elif f.kind=='button':rows.append(FormRow(f.id,'  [ '+f.label+(' ~' if f.state.busy else '')+' ]','disabled' if f.state.disabled else 'hint' if f.state.busy else 'button',focused=current))
             else:
-                value = ("[x] " if f.checked else "[ ] ") + f.label if f.kind in ("checkbox", "radio") else (
-                    f"[ {f.label} ]" if f.kind == "button" else dict(f.options).get(f.value, f.value))
-                canvas.write(rect.x + start, rect.y + y, clip(value, width, True), role, focused=current, width=width)
+                for o in f.options:
+                    if f.kind=='select' and not f.open and o.id!=f.choice:continue
+                    selected=o.id==(f.pending if f.open else f.choice)
+                    rows.append(FormRow(f.id,'  ('+('*' if selected else ' ')+') '+o.label,'disabled' if o.disabled or f.state.disabled else role,option=o.id))
+            if f.error:rows.append(FormRow(f.id,'! '+f.error,'error'))
+            elif f.help:rows.append(FormRow(f.id,'  '+f.help,'hint'))
+        height=max(0,height);width=max(0,width)
+        start=min(max(0,anchor-max(0,height-2)),max(0,len(rows)-height))
+        self.scroll=start
+        self._width=width
+        self._hits=rows[start:start+height]
+        for r in self._hits:r.text=clip(r.text,width)
+        return self._hits
+
+    def click(self,x,y,height=10):
+        if x<0:return Event()
+        if not self._hits:return Event()
+        if x>=self._width or not 0<=y<min(height,len(self._hits)):return Event()
+        row=self._hits[y]
+        if row.input and x>=2:
+            f=self._field(row.id)
+            if not f or f.state.disabled:return Event()
+            if self.focused!=f.id:self.focus(f.id)
+            indices=[i for i,r in enumerate(self._hits) if r.id==row.id and r.input]
+            return self.inputs[f.id].click(x-2,y-indices[0],max(0,self._width-2),len(indices))
+        return self.click_field(row.id,row.option)
+
+    def draw(self,canvas,rect,*,focused=True,ascii=False):
+        canvas.fill(rect);rows=self.layout(rect.width,rect.height)
+        for y,row in enumerate(rows):canvas.write(rect.x,rect.y+y,row.text,row.role,focused=focused and row.focused,width=rect.width)
+        for f in self.fields:
+            indices=[i for i,r in enumerate(rows) if r.id==f.id and r.input]
+            if not indices:continue
+            t=self.inputs[f.id];t.disabled=f.state.disabled;t.read_only=not f.state.editable
+            t.draw(canvas,Rect(rect.x+min(2,rect.width),rect.y+indices[0],max(0,rect.width-2),len(indices)),focused=focused and self.focused==f.id)
 
 
 class Control(Form):
-    def __init__(self, field: Field):
-        super().__init__([field])
+    def __init__(self, field: Field):super().__init__([field])
 
 
 @dataclass

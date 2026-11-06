@@ -9,14 +9,15 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
 const workspace = value("--demo", "tree") === "workspace";
 const textDemo = value("--demo", "tree") === "text";
-if (!workspace && !textDemo && value("--demo", "tree") !== "tree")
-  throw new Error("Supported demos: tree, workspace, text");
+const formDemo = value("--demo", "tree") === "form";
+if (!workspace && !textDemo && !formDemo && value("--demo", "tree") !== "tree")
+  throw new Error("Supported demos: tree, workspace, text, form");
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 const text = new ui.Text(
@@ -26,6 +27,43 @@ const text = new ui.Text(
       : "Unicode é 界\nEdit with real cursor."
     : "한글 é 界\n여러 줄을 편집합니다.",
 );
+const form = new ui.Form([
+  {
+    id: "name",
+    label: en ? "Name" : "이름",
+    value: en ? "Input" : "한글 입력",
+    required: true,
+  },
+  {
+    id: "password",
+    kind: "password",
+    label: en ? "Password" : "비밀번호",
+    value: "example",
+  },
+  {
+    id: "off",
+    kind: "checkbox",
+    label: en ? "Disabled" : "비활성",
+    state: { disabled: true },
+  },
+  {
+    id: "mode",
+    kind: "select",
+    label: en ? "Mode" : "모드",
+    choice: "a",
+    options: [
+      { id: "a", label: en ? "Default" : "기본" },
+      { id: "off", label: en ? "Unavailable" : "사용 불가", disabled: true },
+      { id: "b", label: en ? "Alternative" : "다른 값" },
+    ],
+  },
+  {
+    id: "apply",
+    kind: "button",
+    label: en ? "Apply" : "적용",
+    action: "submit",
+  },
+]);
 let theme = value("--theme", "dark"),
   colors = value("--colors", "256");
 const tree = new ui.Tree([
@@ -127,7 +165,8 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  if (textDemo) text.draw(c, area);
+  if (formDemo) form.draw(c, area);
+  else if (textDemo) text.draw(c, area);
   else if (workspace) workspaceDraw(c, area);
   else tree.draw(c, area, true, ascii);
   c.write(
@@ -198,7 +237,8 @@ try {
             y >= area.y &&
             y < area.y + area.height
           ) {
-            if (textDemo)
+            if (formDemo) form.click(x - area.x, y - area.y, area.height);
+            else if (textDemo)
               text.click(x - area.x, y - area.y, area.width, area.height);
             else if (workspace && y === area.y) {
               tabFocus = true;
@@ -236,7 +276,12 @@ try {
         };
         const key = Object.keys(keys).find((k) => pending.startsWith(k));
         if (key) {
-          if (textDemo)
+          if (formDemo)
+            form.handle(
+              keys[key] === "toggle" ? "insert" : keys[key],
+              keys[key] === "toggle" ? " " : "",
+            );
+          else if (textDemo)
             text.handle(
               keys[key] === "activate"
                 ? "newline"
@@ -252,6 +297,11 @@ try {
           else
             tree.handle(keys[key], workspace ? treeArea.height : area.height);
           pending = pending.slice(key.length);
+          continue;
+        }
+        if (formDemo && pending.startsWith("\t")) {
+          form.handle("next");
+          pending = pending.slice(1);
           continue;
         }
         if (workspace && pending.startsWith("\t")) {
@@ -294,9 +344,13 @@ try {
           !/[A-Za-z~]$/.test(pending)
         )
           break;
-        if (textDemo && pending.codePointAt(0) >= 32 && pending[0] !== "\x1b") {
+        if (
+          (textDemo || formDemo) &&
+          pending.codePointAt(0) >= 32 &&
+          pending[0] !== "\x1b"
+        ) {
           const cp = String.fromCodePoint(pending.codePointAt(0));
-          text.handle("insert", cp);
+          (formDemo ? form : text).handle("insert", cp);
           pending = pending.slice(cp.length);
         } else pending = pending.slice(1);
       }

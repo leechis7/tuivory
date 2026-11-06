@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Independent forms/controls with validation, pending select commit/cancel, password/state handling, bounded pointer routing, real input cursors, and bilingual examples.
+
 - TVR-15/16/30/31/32: Independent grapheme editing, literal UTF-8 ranges, password/read-only behavior, clipped real cursor drawing, and bilingual text examples.
 
 - TVR-15/16/30/31/32: independent workspace components in all five language families; shared tab/path/status cases, compact split, hit testing, bilingual unified examples and 240 PTY combinations.

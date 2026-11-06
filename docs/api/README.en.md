@@ -67,3 +67,5 @@ TVR-7 in 0.11.1: [real grid cursor and backend integration](../grid-workspace.en
 [Independent-language workspace APIs and examples](../language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.
 
 [Independent text editing API](../language-text.en.md)
+
+[Independent forms and controls API](../language-forms.en.md)

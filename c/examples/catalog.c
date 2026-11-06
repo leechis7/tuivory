@@ -72,7 +72,7 @@ static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split,
 int main(int argc, char **argv) {
   const char *theme = "dark", *profile = "256";
   int en = 0, ascii = 0, snapshot = 0, workspace = 0, tab_focus = 0,
-      text_demo = 0;
+      text_demo = 0, form_demo = 0;
   TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
@@ -91,12 +91,13 @@ int main(int argc, char **argv) {
       const char *demo = argv[++i];
       workspace = !strcmp(demo, "workspace");
       text_demo = !strcmp(demo, "text");
-      if (strcmp(demo, "tree") && !workspace && !text_demo) {
-        fputs("Supported demos: tree, workspace, text\n", stderr);
+      form_demo = !strcmp(demo, "form");
+      if (strcmp(demo, "tree") && !workspace && !text_demo && !form_demo) {
+        fputs("Supported demos: tree, workspace, text, form\n", stderr);
         return 2;
       }
     } else {
-      puts("--demo tree|workspace|text --lang ko|en --theme "
+      puts("--demo tree|workspace|text|form --lang ko|en --theme "
            "dark|light|blackwhite "
            "--colors "
            "8|16|256|truecolor --ascii --snapshot");
@@ -139,6 +140,39 @@ int main(int argc, char **argv) {
                                : "Unicode é 界\nEdit with real cursor.")
                       : "한글 é 界\n여러 줄을 편집합니다.");
   if (!text) {
+    tui_tabs_free(tabs);
+    tui_tree_free(tree);
+    return 1;
+  }
+  TuiFormOption choices[] = {{"a", en ? "Default" : "기본", 0},
+                             {"off", en ? "Unavailable" : "사용 불가", 1},
+                             {"b", en ? "Alternative" : "다른 값", 0}};
+  TuiField fields[] = {{.id = "name",
+                        .kind = "text",
+                        .label = en ? "Name" : "이름",
+                        .value = en ? "Input" : "한글 입력",
+                        .required = 1},
+                       {.id = "password",
+                        .kind = "password",
+                        .label = en ? "Password" : "비밀번호",
+                        .value = "example"},
+                       {.id = "off",
+                        .kind = "checkbox",
+                        .label = en ? "Disabled" : "비활성",
+                        .state = {.disabled = 1}},
+                       {.id = "mode",
+                        .kind = "select",
+                        .label = en ? "Mode" : "모드",
+                        .choice = "a",
+                        .options = choices,
+                        .option_count = 3},
+                       {.id = "apply",
+                        .kind = "button",
+                        .label = en ? "Apply" : "적용",
+                        .action = "submit"}};
+  TuiForm *form = tui_form_new(fields, 5);
+  if (!form) {
+    tui_text_free(text);
     tui_tabs_free(tabs);
     tui_tree_free(tree);
     return 1;
@@ -186,7 +220,9 @@ int main(int argc, char **argv) {
     TuiRect inner = tui_canvas_panel(
         canvas, (TuiRect){0, 0, width, height > 0 ? height - 1 : 0},
         en ? "Tuivory C example" : "Tuivory C 예제", 1, ascii);
-    if (text_demo)
+    if (form_demo)
+      tui_form_draw(form, canvas, inner, 1);
+    else if (text_demo)
       tui_text_draw(text, canvas, inner, 1);
     else if (workspace)
       workspace_draw(tree, tabs, split, canvas, inner, tab_focus, en, ascii);
@@ -249,7 +285,7 @@ int main(int argc, char **argv) {
                          : key == '\r' || key == '\n' ? "activate"
                          : key == ' '                 ? "toggle"
                                                       : "";
-    if (text_demo) {
+    if (text_demo || form_demo) {
       char input[8] = {0};
       const char *edit_action = "";
       if (key == 27) {
@@ -291,7 +327,14 @@ int main(int argc, char **argv) {
           }
         edit_action = "insert";
       }
-      tui_text_handle(text, edit_action, input);
+      if (form_demo)
+        tui_form_handle(form,
+                        key == 9                   ? "next"
+                        : (key == 13 || key == 10) ? "activate"
+                                                   : edit_action,
+                        input);
+      else
+        tui_text_handle(text, edit_action, input);
     } else if (workspace && key == 9)
       tab_focus = !tab_focus;
     else if (workspace && (key == '<' || key == '>'))
@@ -305,6 +348,7 @@ int main(int argc, char **argv) {
       tui_tree_handle(tree, action, inner.height);
   }
   restore();
+  tui_form_free(form);
   tui_text_free(text);
   tui_tabs_free(tabs);
   tui_tree_free(tree);

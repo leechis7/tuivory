@@ -41,3 +41,5 @@ The editor buffer contains no synthetic caret character. Share grapheme viewport
 [Independent-language workspace APIs and examples](../docs/language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.
 
 [Independent text editing API](../docs/language-text.en.md)
+
+[Independent forms and controls API](../docs/language-forms.en.md)

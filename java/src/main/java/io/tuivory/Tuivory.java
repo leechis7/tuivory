@@ -1008,4 +1008,414 @@ public final class Tuivory {
       return new Event("select", "");
     }
   }
+  public record FormOption(String id, String label, boolean disabled) {
+    public FormOption(String id, String label) {
+      this(id, label, false);
+    }
+  }
+  public static final class Field {
+    public String id, kind = "text", label = "", value = "", help = "", error = "", choice = "",
+                      action = "", pending = "";
+    public List<FormOption> options = new ArrayList<>();
+    public State state = new State();
+    public boolean required, checked, open;
+    public int height = 3;
+    public Field(String id) {
+      this.id = id;
+    }
+    public Field(String id, String kind) {
+      this.id = id;
+      this.kind = kind;
+    }
+  }
+  public record FormEvent(String kind, String id, String text, List<String> missing) {
+    public FormEvent() {
+      this("", "", "", List.of());
+    }
+    public FormEvent(String kind, String id) {
+      this(kind, id, "", List.of());
+    }
+  }
+  public record FormRow(String id, String text, String role, String option, boolean input,
+      boolean focused, int sourceRow) {}
+  private static State copyState(State s) {
+    var o = new State();
+    o.disabled = s.disabled;
+    o.readOnly = s.readOnly;
+    o.busy = s.busy;
+    o.selected = s.selected;
+    o.edited = s.edited;
+    o.invalid = s.invalid;
+    return o;
+  }
+  public static class Form {
+    private final List<Field> fields = new ArrayList<>();
+    private final Map<String, Text> inputs = new LinkedHashMap<>();
+    private List<FormRow> hits = List.of();
+    private int layoutWidth;
+    public String focused = "";
+    public int scroll;
+    public Form(List<Field> source) {
+      var ids = new HashSet<String>();
+      for (Field f : source) {
+        if (f.id.isEmpty() || !ids.add(f.id))
+          throw new IllegalArgumentException("invalid field ID");
+        if (f.open
+            || !List.of("text", "textarea", "password", "button", "checkbox", "radio", "select")
+                .contains(f.kind))
+          throw new IllegalArgumentException("invalid kind/open select");
+        var options = new HashSet<String>();
+        for (var o : f.options)
+          if (o.id().isEmpty() || !options.add(o.id()))
+            throw new IllegalArgumentException("invalid option ID");
+        if (!f.choice.isEmpty() && !options.contains(f.choice))
+          throw new IllegalArgumentException("unknown choice");
+        var owned = new Field(f.id, f.kind);
+        owned.label = f.label;
+        owned.value = f.value;
+        owned.help = f.help;
+        owned.error = f.error;
+        owned.choice = f.choice;
+        owned.action = f.action;
+        owned.pending = f.pending;
+        owned.options = new ArrayList<>(f.options);
+        owned.state = copyState(f.state);
+        owned.required = f.required;
+        owned.checked = f.checked;
+        owned.height = f.height;
+        fields.add(owned);
+        if (List.of("text", "textarea", "password").contains(f.kind)) {
+          var t = new Text(f.value);
+          t.secret = f.kind.equals("password");
+          t.multiline = f.kind.equals("textarea");
+          inputs.put(f.id, t);
+          owned.value = t.display();
+        }
+      }
+      eligible();
+    }
+    private Field field(String id) {
+      for (var f : fields)
+        if (f.id.equals(id))
+          return f;
+      return null;
+    }
+    private List<String> eligible() {
+      var ids = new ArrayList<String>();
+      for (var f : fields)
+        if (f.state.focusable())
+          ids.add(f.id);
+      if (!ids.contains(focused))
+        focused = ids.isEmpty() ? "" : ids.get(0);
+      return ids;
+    }
+    public List<Field> fields() {
+      return Collections.unmodifiableList(fields);
+    }
+    public String value(String id) {
+      var t = inputs.get(id);
+      if (t != null)
+        return t.value();
+      var f = field(id);
+      if (f == null)
+        throw new IllegalArgumentException("unknown field");
+      return f.value;
+    }
+    public boolean focus(String id) {
+      var f = field(id);
+      if (f == null || !f.state.focusable())
+        return false;
+      for (var v : fields) v.open = false;
+      focused = id;
+      return true;
+    }
+    public boolean atTabBoundary(boolean previous) {
+      var ids = eligible();
+      return ids.isEmpty() || focused.equals(ids.get(previous ? 0 : ids.size() - 1));
+    }
+    public boolean setState(String id, State state) {
+      var f = field(id);
+      if (f == null)
+        return false;
+      f.state = copyState(state);
+      if (!state.editable())
+        f.open = false;
+      eligible();
+      return true;
+    }
+    public boolean setFeedback(String id, String help, String error) {
+      var f = field(id);
+      if (f == null)
+        return false;
+      f.help = help;
+      f.error = error;
+      f.state.invalid = !error.isEmpty();
+      return true;
+    }
+    public boolean selectText(String id, int a, int c) {
+      var t = inputs.get(id);
+      if (t == null)
+        return false;
+      t.select(a, c);
+      return true;
+    }
+    public List<String> missing() {
+      var out = new ArrayList<String>();
+      for (var f : fields) {
+        boolean empty = false;
+        if (inputs.containsKey(f.id))
+          empty = value(f.id).codePoints().allMatch(cp
+              -> (cp >= 9 && cp <= 13) || cp == 32 || cp == 0x85 || cp == 0xa0 || cp == 0x1680
+                  || (cp >= 0x2000 && cp <= 0x200a) || cp == 0x2028 || cp == 0x2029 || cp == 0x202f
+                  || cp == 0x205f || cp == 0x3000);
+        else if (f.kind.equals("checkbox"))
+          empty = !f.checked;
+        else if (f.kind.equals("radio") || f.kind.equals("select"))
+          empty = f.choice.isEmpty();
+        if (!f.state.disabled && (f.state.invalid || !f.error.isEmpty() || f.required && empty))
+          out.add(f.id);
+      }
+      return out;
+    }
+    public FormEvent handle(String action) {
+      return handle(action, "");
+    }
+    public FormEvent handle(String action, String text) {
+      var ids = eligible();
+      if (action.equals("next") || action.equals("previous")) {
+        if (!ids.isEmpty()) {
+          int at = ids.indexOf(focused);
+          focus(ids.get((at + ids.size() + (action.equals("next") ? 1 : -1)) % ids.size()));
+        }
+        return new FormEvent();
+      }
+      if (action.equals("submit")) {
+        var missing = missing();
+        return new FormEvent(
+            missing.isEmpty() ? "submit" : "invalid", "", "", List.copyOf(missing));
+      }
+      var f = field(focused);
+      if (f == null)
+        return new FormEvent();
+      if (action.equals("cancel")) {
+        if (f.open) {
+          f.open = false;
+          return new FormEvent();
+        }
+        return new FormEvent("cancel", f.id);
+      }
+      if (action.equals("insert") && text.equals(" ") && !inputs.containsKey(f.id))
+        action = "toggle";
+      var input = inputs.get(f.id);
+      if (input != null) {
+        input.state = copyState(f.state);
+        if (action.equals("activate") && !f.kind.equals("textarea"))
+          return f.state.activatable() ? handle("submit") : new FormEvent();
+        var e = input.handle(action.equals("activate") ? "newline" : action, text);
+        f.value = input.display();
+        f.state = copyState(input.state);
+        return new FormEvent(e.kind(), f.id, e.text(), List.of());
+      }
+      if (f.kind.equals("button") && List.of("left", "right").contains(action)
+          && !f.state.disabled) {
+        handle(action.equals("left") ? "previous" : "next");
+        return new FormEvent();
+      }
+      if (!f.state.activatable())
+        return new FormEvent();
+      if (f.kind.equals("button") && List.of("activate", "toggle").contains(action))
+        return f.action.equals("submit")
+            ? handle("submit")
+            : new FormEvent(f.action.equals("cancel") ? "cancel" : "activate", f.id);
+      if (!f.state.editable())
+        return new FormEvent();
+      boolean changed = false;
+      if (f.kind.equals("checkbox") && List.of("activate", "toggle").contains(action)) {
+        f.checked = !f.checked;
+        changed = true;
+      } else if (f.kind.equals("radio") || f.kind.equals("select")) {
+        if (f.kind.equals("select") && List.of("activate", "toggle").contains(action)) {
+          if (f.open) {
+            f.choice = f.pending;
+            f.open = false;
+            changed = true;
+          } else {
+            f.open = true;
+            f.pending = f.choice;
+            if (f.pending.isEmpty())
+              for (var o : f.options)
+                if (!o.disabled()) {
+                  f.pending = o.id();
+                  break;
+                }
+            return new FormEvent();
+          }
+        } else if (List.of("left", "right", "up", "down", "activate", "toggle").contains(action)) {
+          if (f.kind.equals("select") && !f.open)
+            return new FormEvent();
+          var choices = new ArrayList<String>();
+          for (var o : f.options)
+            if (!o.disabled())
+              choices.add(o.id());
+          if (choices.isEmpty())
+            return new FormEvent();
+          int at = choices.indexOf(f.open ? f.pending : f.choice),
+              target = List.of("left", "up").contains(action)
+              ? (Math.max(0, at) + choices.size() - 1) % choices.size()
+              : at < 0 ? 0
+                       : (at + 1) % choices.size();
+          if (f.kind.equals("select"))
+            f.pending = choices.get(target);
+          else {
+            f.choice = choices.get(target);
+            changed = true;
+          }
+        }
+      }
+      if (changed) {
+        f.state.edited = true;
+        return new FormEvent("change", f.id);
+      }
+      return new FormEvent();
+    }
+    public FormEvent clickField(String id, String option) {
+      var f = field(id);
+      if (f == null || f.state.disabled)
+        return new FormEvent();
+      for (var o : f.options)
+        if (o.id().equals(option) && o.disabled())
+          return new FormEvent();
+      if (!focused.equals(id))
+        focus(id);
+      if (f.kind.equals("button"))
+        return handle("activate");
+      if (!f.state.editable())
+        return new FormEvent();
+      if (f.kind.equals("select") && !f.open)
+        return handle("activate");
+      if (!option.isEmpty() && List.of("radio", "select").contains(f.kind)) {
+        for (var o : f.options)
+          if (o.id().equals(option) && !o.disabled()) {
+            f.choice = option;
+            f.open = false;
+            f.state.edited = true;
+            return new FormEvent("change", f.id);
+          }
+        return new FormEvent();
+      }
+      return List.of("checkbox", "select").contains(f.kind) ? handle("activate") : new FormEvent();
+    }
+    public List<FormRow> layout(int width, int height) {
+      var rows = new ArrayList<FormRow>();
+      int anchor = 0;
+      for (var f : fields) {
+        boolean current = f.id.equals(focused);
+        if (current)
+          anchor = rows.size();
+        String role = f.state.disabled              ? "disabled"
+            : !f.error.isEmpty() || f.state.invalid ? "error"
+                                                    : f.state.role(),
+               markers = f.state.markers();
+        if (f.state.disabled)
+          markers = markers.replaceFirst("^-", "");
+        rows.add(new FormRow(f.id,
+            (current ? "> " : "  ") + f.label + (f.required ? " *" : "")
+                + (markers.isEmpty() ? "" : " " + markers),
+            role, "", false, current, 0));
+        if (inputs.containsKey(f.id)) {
+          String display = inputs.get(f.id).display();
+          String[] lines = f.kind.equals("textarea") ? display.split("\\r\\n|\\r|\\n", -1)
+                                                     : new String[] {display};
+          int count = f.kind.equals("textarea") ? Math.max(1, f.height) : 1;
+          for (int i = 0; i < Math.min(count, lines.length); i++)
+            rows.add(new FormRow(f.id, "  " + lines[i], f.state.disabled ? "disabled" : "field", "",
+                true, false, i));
+        } else if (f.kind.equals("checkbox"))
+          rows.add(new FormRow(f.id, f.checked ? "  [x]" : "  [ ]", role, "", false, false, 0));
+        else if (f.kind.equals("button"))
+          rows.add(new FormRow(f.id, "  [ " + f.label + (f.state.busy ? " ~" : "") + " ]",
+              f.state.disabled   ? "disabled"
+                  : f.state.busy ? "hint"
+                                 : "button",
+              "", false, current, 0));
+        else
+          for (var o : f.options) {
+            if (f.kind.equals("select") && !f.open && !o.id().equals(f.choice))
+              continue;
+            rows.add(new FormRow(f.id,
+                "  (" + (o.id().equals(f.open ? f.pending : f.choice) ? "*" : " ") + ") "
+                    + o.label(),
+                o.disabled() || f.state.disabled ? "disabled" : role, o.id(), false, false, 0));
+          }
+        if (!f.error.isEmpty())
+          rows.add(new FormRow(f.id, "! " + f.error, "error", "", false, false, 0));
+        else if (!f.help.isEmpty())
+          rows.add(new FormRow(f.id, "  " + f.help, "hint", "", false, false, 0));
+      }
+      width = Math.max(0, width);
+      height = Math.max(0, height);
+      scroll = Math.min(
+          Math.max(0, anchor - Math.max(0, height - 2)), Math.max(0, rows.size() - height));
+      var visible = new ArrayList<FormRow>();
+      for (var row : rows.subList(scroll, Math.min(rows.size(), scroll + height)))
+        visible.add(new FormRow(row.id(), clip(row.text(), width, false), row.role(), row.option(),
+            row.input(), row.focused(), row.sourceRow()));
+      layoutWidth = width;
+      hits = visible;
+      return List.copyOf(visible);
+    }
+    public FormEvent click(int x, int y, int height) {
+      if (x < 0 || x >= layoutWidth || y < 0 || y >= height || y >= hits.size())
+        return new FormEvent();
+      var row = hits.get(y);
+      if (row.input() && x >= 2) {
+        var f = field(row.id());
+        if (f == null || f.state.disabled)
+          return new FormEvent();
+        if (!focused.equals(f.id))
+          focus(f.id);
+        int first = -1, count = 0;
+        for (int i = 0; i < hits.size(); i++)
+          if (hits.get(i).id().equals(f.id) && hits.get(i).input()) {
+            if (first < 0)
+              first = i;
+            count++;
+          }
+        var e =
+            inputs.get(f.id).click(x - 2, y - first, Math.max(0, layoutWidth - 2), count, false);
+        return new FormEvent(e.kind(), f.id, e.text(), List.of());
+      }
+      return clickField(row.id(), row.option());
+    }
+    public void draw(Canvas c, Rect r, boolean focusedView) {
+      c.fill(r, "surface");
+      var rows = layout(r.width(), r.height());
+      for (int y = 0; y < rows.size(); y++) {
+        var row = rows.get(y);
+        c.write(r.x(), r.y() + y, row.text(), row.role(), focusedView && row.focused(), r.width());
+      }
+      for (var f : fields) {
+        int first = -1, count = 0;
+        for (int i = 0; i < rows.size(); i++)
+          if (rows.get(i).id().equals(f.id) && rows.get(i).input()) {
+            if (first < 0)
+              first = i;
+            count++;
+          }
+        if (first >= 0) {
+          var t = inputs.get(f.id);
+          t.state = copyState(f.state);
+          t.draw(c,
+              new Rect(
+                  r.x() + Math.min(2, r.width()), r.y() + first, Math.max(0, r.width() - 2), count),
+              focusedView && focused.equals(f.id));
+        }
+      }
+    }
+  }
+  public static final class Control extends Form {
+    public Control(Field field) {
+      super(List.of(field));
+    }
+  }
 }
