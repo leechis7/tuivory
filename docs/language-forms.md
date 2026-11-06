@@ -39,7 +39,7 @@ TVR-15·16·30·31·32의 미배포 단계입니다. 다섯 언어가 자체 `Fo
 
 언어별 통합 예제에서 `--demo form`을 선택합니다. 한영 UI, 세 테마, 8/16/256/True Color와 ASCII 옵션을 동일하게 제공합니다. Python/JS/C/C++는 Tab으로 필드를 옮기고 Enter와 방향키로 선택합니다. Ctrl+A와 문자 입력으로 값을 바꿀 수 있습니다. Java 줄 입력 예제는 `select_all`, `insert text`, `tab`, `activate`, `down`, `quit` 명령을 Enter로 실행합니다.
 
-[공유 사례](../design/forms-cases.json)는 검증·편집·읽기 전용·선택 목록 확정/취소·비밀번호·busy/비활성·Unicode 공백을 검사합니다. 외부 SDK/JAR/wheel/npm 소비자, C/C++ ASan/UBSan, 12팔레트의 좁은 영역, 실제 PTY 입력을 [검증 기록](evidence/language-forms-results.json)에 구분해 남깁니다. 물리 터미널 글꼴·깜빡임 검증과 제품 릴리스는 별도입니다.
+[공유 사례](../design/forms-cases.json)는 검증·편집·읽기 전용·선택 목록 확정/취소·비밀번호·busy/비활성·Unicode 공백을 검사합니다. 외부 SDK/JAR/wheel/npm 사용 앱, C/C++ ASan/UBSan, 12팔레트의 좁은 영역, 실제 PTY 입력을 [검증 기록](evidence/language-forms-results.json)에 구분해 남깁니다. 물리 터미널 글꼴·깜빡임 검증과 제품 릴리스는 별도입니다.
 
 ![Python 폼](images/language-python-form.png)
 

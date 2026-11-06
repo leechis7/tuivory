@@ -21,7 +21,8 @@
     "examples/catalog.mjs",
     "UNICODE-LICENSE",
     "NOTICE.md",
-    "NOTICE.en.md"
+    "NOTICE.en.md",
+    "CASEFOLD-LICENSE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

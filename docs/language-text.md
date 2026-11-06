@@ -34,7 +34,7 @@ C의 `tui_text_new`는 입력을 복사하고 `tui_text_free`가 전체 히스�
 
 언어별 통합 예제의 `--demo text`를 사용합니다. `--lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii`를 선택할 수 있습니다. Python/JS/C/C++는 문자·방향키·Home/End·Backspace·Enter, Ctrl+A 전체 선택, Ctrl+Z/Y Undo/Redo와 Ctrl+Q 종료를 제공합니다. Java는 현재 줄 입력 예제이므로 `home`, `insert text`, `backspace`, `undo`, `quit` 등을 Enter로 실행합니다. Java의 raw 터미널 연결은 후속 단계입니다.
 
-[공유 편집 사례](../design/controls-cases.json)는 결합 문자 삽입·전체 선택·비밀번호·읽기 전용·한 줄 붙여넣기를 검사합니다. UTF-8 범위의 원자적 실패, 좁은 영역, 외부 정적 SDK/JAR 소비자와 C/C++ ASan/UBSan도 검사합니다. 실제 PTY 입력과 테마·색상·문자 모드의 결과는 [검증 기록](evidence/language-text-results.json)에 별도로 기록합니다. 이미지가 물리 터미널의 글꼴·깜빡임 검증을 대신하지 않습니다.
+[공유 편집 사례](../design/controls-cases.json)는 결합 문자 삽입·전체 선택·비밀번호·읽기 전용·한 줄 붙여넣기를 검사합니다. UTF-8 범위의 원자적 실패, 좁은 영역, 외부 정적 SDK/JAR 사용 앱와 C/C++ ASan/UBSan도 검사합니다. 실제 PTY 입력과 테마·색상·문자 모드의 결과는 [검증 기록](evidence/language-text-results.json)에 별도로 기록합니다. 이미지가 물리 터미널의 글꼴·깜빡임 검증을 대신하지 않습니다.
 
 ![Python 입력](images/language-python-text.png)
 

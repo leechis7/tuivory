@@ -2,7 +2,8 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
-from .drawing import Canvas, Rect, cells, clip, graphemes
+from copy import deepcopy
+from .drawing import Canvas, Rect, cells, clip, graphemes, fold
 
 
 @dataclass(frozen=True)
@@ -317,74 +318,138 @@ class Item:
 
 
 class List:
-    def __init__(self, items: list[Item]):
-        unique(items)
-        self.items = list(items)
-        self.focused = self.selected = self.query = ""
-        self.scroll = 0
-        self._eligible()
+    def __init__(self,items):
+        self.items=[];self.focused=self.selected=self.query='';self.empty='(empty)';self.scroll=0;self._hits=[];self._width=0
+        self.set_items(items)
 
-    def visible(self) -> list[Item]:
-        return [i for i in self.items if not self.query or self.query.casefold() in (i.label + " " + i.secondary).casefold()]
+    def set_items(self,items):
+        unique(items);owned=deepcopy(items)
+        if self.selected not in [i.id for i in owned]:self.selected=''
+        self.items=owned;self._eligible()
 
-    def _eligible(self) -> list[Item]:
-        eligible = [i for i in self.visible() if not i.disabled and not i.separator]
-        if self.focused not in [i.id for i in eligible]:
-            self.focused = eligible[0].id if eligible else ""
-        return eligible
+    def visible(self):
+        q=fold(self.query)
+        return [i for i in self.items if not q or not i.separator and q in fold(i.label+' '+i.secondary)]
 
-    def handle(self, action: str, height: int = 10, text: str = "") -> Event:
-        if action == "query":
-            self.query = text
-            self._eligible()
-            return Event("query", text=text)
-        eligible = self._eligible()
-        if not eligible:
-            return Event()
-        i = next(i for i, t in enumerate(eligible) if t.id == self.focused)
-        if action == "activate":
-            self.selected = self.focused
-            return Event("activate", self.focused)
-        target = {"up": i - 1, "down": i + 1, "home": 0, "end": len(eligible) - 1,
-                  "page_up": i - max(1, height), "page_down": i + max(1, height)}.get(action, i)
-        target = max(0, min(len(eligible) - 1, target))
-        if i != target:
-            self.focused = eligible[target].id
-            return Event("focus", self.focused)
+    def _eligible(self):
+        items=[i for i in self.visible() if not i.disabled and not i.separator]
+        if self.focused not in [i.id for i in items]:self.focused=items[0].id if items else ''
+        return items
+
+    def focus(self,id):
+        if not any(i.id==id and not i.disabled and not i.separator for i in self.visible()):return False
+        self.focused=id;return True
+
+    def set_query(self,query):
+        self.query=''.join(c for c in query if ord(c)>=32 and not 127<=ord(c)<160);self._eligible();return Event('query',text=self.query)
+
+    def handle(self,action,height=10,text=''):
+        if action=='query':return self.set_query(text)
+        items=self._eligible()
+        if not items:return Event()
+        ids=[i.id for i in items];at=ids.index(self.focused)
+        if action in ('activate','select'):self.selected=self.focused;return Event(action,self.focused)
+        action={'up':'previous','down':'next','home':'first','end':'last'}.get(action,action)
+        if action=='previous':at=max(0,at-1)
+        elif action=='next':at=min(len(ids)-1,at+1)
+        elif action=='first':at=0
+        elif action=='last':at=len(ids)-1
+        elif action=='page_up':at=max(0,at-max(1,height-1))
+        elif action=='page_down':at=min(len(ids)-1,at+max(1,height-1))
+        else:return Event()
+        self.focused=ids[at];return Event('focus',self.focused)
+
+    def layout(self,width,height,ascii=False):
+        rows=[];anchor=0
+        for item in self.visible():
+            current=item.id==self.focused
+            if current:anchor=len(rows)
+            role='disabled' if item.disabled else 'selection' if item.id==self.selected else 'body'
+            if item.separator:rows.append(CollectionRow(item.id,'--- '+item.label+' ---','hint'));continue
+            icon=item.ascii_icon if ascii else item.icon
+            text=('> ' if current else '  ')+('* ' if item.id==self.selected else '')+(icon+' ' if icon else '')+item.label+(' ['+item.shortcut+']' if item.shortcut else '')
+            rows.append(CollectionRow(item.id,text,role,current))
+            if item.secondary:rows.append(CollectionRow(item.id,'    '+item.secondary,'disabled' if item.disabled else 'hint'))
+        if not rows:rows=[CollectionRow('',self.empty,'hint')]
+        height=max(0,height);width=max(0,width);self.scroll=min(max(0,anchor-max(0,height-2)),max(0,len(rows)-height));self._width=width
+        self._hits=rows[self.scroll:self.scroll+height]
+        for row in self._hits:row.text=clip(row.text,width)
+        return self._hits
+
+    def click_id(self,id):
+        if not self.focus(id):return Event()
+        return self.handle('activate')
+
+    def click(self,x,y,height=10):
+        if x<0 or x>=self._width or y<0 or y>=min(height,len(self._hits)):return Event()
+        return self.click_id(self._hits[y].id)
+
+    def draw(self,canvas,rect,*,focused=True,ascii=False):
+        canvas.fill(rect)
+        for y,row in enumerate(self.layout(rect.width,rect.height,ascii)):
+            canvas.fill(Rect(rect.x,rect.y+y,rect.width,1),row.role)
+            canvas.write(rect.x,rect.y+y,row.text,row.role,focused=focused and row.focused,width=rect.width,preserve_background=True)
+
+
+@dataclass
+class CollectionRow:
+    id: str
+    text: str
+    role: str = 'body'
+    focused: bool = False
+
+
+class SearchPicker:
+    def __init__(self,items):
+        self.list=List(items);self.open=False;self.value='';self._width=self._height=0
+
+    def handle(self,action,text='',height=10):
+        if action=='open':self.open=True;self.list.set_query('');self.list.focus(self.value);return Event('open')
+        if action=='cancel':self.open=False;return Event('cancel')
+        if action in ('insert','backspace'):
+            if not self.open:self.handle('open')
+            query=self.list.query+text if action=='insert' else ''.join(graphemes(self.list.query)[:-1])
+            return self.list.set_query(query)
+        if action=='activate':
+            if not self.open:return self.handle('open')
+            e=self.list.handle('activate',height)
+            if e.id:self.value=e.id;self.open=False;return Event('change',e.id)
+            return e
+        return self.list.handle(action,height) if self.open else Event()
+
+    def click_id(self,id):
+        if not self.list.focus(id):return Event()
+        return self.handle('activate')
+
+    def click(self,x,y,height=10):
+        if x<0 or x>=self._width or y<0 or y>=min(height,self._height):return Event()
+        if not self.open:return self.handle('open')
+        if y==0:return Event()
+        e=self.list.click(x,y-1,max(0,height-1))
+        if e.id:self.value=e.id;self.open=False;return Event('change',e.id)
         return Event()
 
-    def click(self, x: int, y: int, height: int = 10) -> Event:
-        rows = self.visible()
-        if not 0 <= y < height or self.scroll + y >= len(rows):
-            return Event()
-        item = rows[self.scroll + y]
-        if item.disabled or item.separator:
-            return Event()
-        self.focused = self.selected = item.id
-        return Event("activate", item.id)
+    def layout(self,width,height,ascii=False):
+        self._width=max(0,width);self._height=max(0,height)
+        if height<=0:return []
+        if not self.open:
+            label=next((i.label for i in self.list.items if i.id==self.value),self.list.empty)
+            return [CollectionRow(self.value,clip('v '+label,width),'field')]
+        from .editing import Text
+        query=Text(self.list.query,multiline=False).window(max(0,width-2))[0]
+        return [CollectionRow('',clip('? '+query,width),'field')]+self.list.layout(width,max(0,height-1),ascii)
 
-    def draw(self, canvas: Canvas, rect: Rect, *, focused: bool = True, ascii: bool = False) -> None:
-        canvas.fill(rect)
-        self._eligible()
-        rows = self.visible()
-        index = next((i for i, t in enumerate(rows) if t.id == self.focused), 0)
-        h = max(1, rect.height)
-        self.scroll = max(0, min(self.scroll, max(0, len(rows) - h)))
-        if index < self.scroll:
-            self.scroll = index
-        elif index >= self.scroll + h:
-            self.scroll = index - h + 1
-        for y, item in enumerate(rows[self.scroll:self.scroll + rect.height]):
-            current = item.id == self.focused
-            role = "disabled" if item.disabled else "selection" if current else "body"
-            if item.separator:
-                text = ("-" if ascii else "─") * rect.width
-            else:
-                icon = item.ascii_icon if ascii else item.icon
-                text = ("> " if current else "  ") + (icon + " " if icon else "") + item.label
-                if item.secondary:
-                    text += "  " + item.secondary
-                if item.shortcut:
-                    text += "  " + item.shortcut
-            canvas.write(rect.x, rect.y + y, clip(text, rect.width, True), role,
-                         focused=focused and current, width=rect.width)
+    def draw(self,canvas,rect,*,focused=True,ascii=False):
+        canvas.fill(rect);rows=self.layout(rect.width,rect.height,ascii)
+        if not self.open:
+            if rows:
+                canvas.fill(Rect(rect.x,rect.y,rect.width,1),'field')
+                canvas.write(rect.x,rect.y,rows[0].text,'field',width=rect.width,preserve_background=True)
+            return
+        if rect.height>0:
+            canvas.fill(Rect(rect.x,rect.y,rect.width,1),'field')
+            canvas.write(rect.x,rect.y,'? ','field',width=rect.width,preserve_background=True)
+            if rect.width>2:
+                from .editing import Text
+                Text(self.list.query,multiline=False).draw(canvas,Rect(rect.x+2,rect.y,rect.width-2,1),focused=focused)
+        if rect.height>1:self.list.draw(canvas,Rect(rect.x,rect.y+1,rect.width,rect.height-1),focused=focused,ascii=ascii)

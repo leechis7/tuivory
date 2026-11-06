@@ -1,3 +1,4 @@
+import foldData from "./casefold.json" with { type: "json" };
 type Dict<K extends PropertyKey, V> = { [P in K]: V };
 /** Independent TypeScript implementation. No native or other-language runtime. */
 import tokens from "./tokens.json" with { type: "json" };
@@ -703,24 +704,38 @@ export interface Item {
   separator?: boolean;
   parent?: string;
 }
+export interface CollectionRow {
+  id: string;
+  text: string;
+  role: string;
+  focused?: boolean;
+}
 export class List {
-  items: Item[];
+  items: Item[] = [];
   focused = "";
   selected = "";
   query = "";
+  empty = "(empty)";
   scroll = 0;
+  private hits: CollectionRow[] = [];
+  private width = 0;
   constructor(items: Item[]) {
+    this.setItems(items);
+  }
+  setItems(items: Item[]): void {
     unique(items);
-    this.items = clone(items);
+    const owned = clone(items);
+    if (!owned.some((i) => i.id === this.selected)) this.selected = "";
+    this.items = owned;
     this.eligible();
   }
   visible(): Item[] {
+    const q = fold(this.query);
     return this.items.filter(
       (i) =>
-        !this.query ||
-        `${i.label ?? ""} ${i.secondary ?? ""}`
-          .toLocaleLowerCase()
-          .includes(this.query.toLocaleLowerCase()),
+        !q ||
+        (!i.separator &&
+          fold((i.label ?? "") + " " + (i.secondary ?? "")).includes(q)),
     );
   }
   private eligible(): Item[] {
@@ -729,72 +744,226 @@ export class List {
       this.focused = items[0]?.id ?? "";
     return items;
   }
+  focus(id: string): boolean {
+    if (!this.visible().some((i) => i.id === id && !i.disabled && !i.separator))
+      return false;
+    this.focused = id;
+    return true;
+  }
+  setQuery(query: string): Event {
+    this.query = query.replace(/[\x00-\x1f\x7f-\x9f]/g, "");
+    this.eligible();
+    return event("query", "", this.query);
+  }
   handle(action: string, height = 10, text = ""): Event {
-    if (action === "query") {
-      this.query = text;
-      this.eligible();
-      return event("query", "", text);
-    }
-    const items = this.eligible();
-    if (!items.length) return event();
-    const i = items.findIndex((t) => t.id === this.focused);
-    if (action === "activate") {
+    if (action === "query") return this.setQuery(text);
+    const ids = this.eligible().map((i) => i.id);
+    if (!ids.length) return event();
+    let at = ids.indexOf(this.focused);
+    if (action === "activate" || action === "select") {
       this.selected = this.focused;
-      return event("activate", this.focused);
+      return event(action, this.focused);
     }
-    const moves: Dict<string, number> = {
-      up: i - 1,
-      down: i + 1,
-      home: 0,
-      end: items.length - 1,
-      page_up: i - Math.max(1, height),
-      page_down: i + Math.max(1, height),
-    };
-    const target = Math.max(0, Math.min(items.length - 1, moves[action] ?? i));
-    if (target !== i) {
-      this.focused = items[target].id;
-      return event("focus", this.focused);
+    action =
+      (
+        { up: "previous", down: "next", home: "first", end: "last" } as Dict<
+          string,
+          string
+        >
+      )[action] ?? action;
+    if (action === "previous") at = Math.max(0, at - 1);
+    else if (action === "next") at = Math.min(ids.length - 1, at + 1);
+    else if (action === "first") at = 0;
+    else if (action === "last") at = ids.length - 1;
+    else if (action === "page_up")
+      at = Math.max(0, at - Math.max(1, height - 1));
+    else if (action === "page_down")
+      at = Math.min(ids.length - 1, at + Math.max(1, height - 1));
+    else return event();
+    this.focused = ids[at];
+    return event("focus", this.focused);
+  }
+  layout(width: number, height: number, ascii = false): CollectionRow[] {
+    const rows: CollectionRow[] = [];
+    let anchor = 0;
+    for (const i of this.visible()) {
+      const current = i.id === this.focused,
+        role = i.disabled
+          ? "disabled"
+          : i.id === this.selected
+            ? "selection"
+            : "body";
+      if (current) anchor = rows.length;
+      if (i.separator) {
+        rows.push({
+          id: i.id,
+          text: "--- " + (i.label ?? "") + " ---",
+          role: "hint",
+        });
+        continue;
+      }
+      const icon = (ascii ? i.ascii_icon : i.icon) ?? "";
+      rows.push({
+        id: i.id,
+        text:
+          (current ? "> " : "  ") +
+          (i.id === this.selected ? "* " : "") +
+          (icon ? icon + " " : "") +
+          (i.label ?? "") +
+          (i.shortcut ? " [" + i.shortcut + "]" : ""),
+        role,
+        focused: current,
+      });
+      if (i.secondary)
+        rows.push({
+          id: i.id,
+          text: "    " + i.secondary,
+          role: i.disabled ? "disabled" : "hint",
+        });
     }
-    return event();
+    if (!rows.length) rows.push({ id: "", text: this.empty, role: "hint" });
+    width = Math.max(0, width);
+    height = Math.max(0, height);
+    this.scroll = Math.min(
+      Math.max(0, anchor - Math.max(0, height - 2)),
+      Math.max(0, rows.length - height),
+    );
+    this.width = width;
+    this.hits = rows
+      .slice(this.scroll, this.scroll + height)
+      .map((r) => ({ ...r, text: clip(r.text, width) }));
+    return this.hits;
+  }
+  clickId(id: string): Event {
+    return this.focus(id) ? this.handle("activate") : event();
   }
   click(x: number, y: number, height = 10): Event {
-    const item = this.visible()[this.scroll + y];
-    if (y < 0 || y >= height || !item || item.disabled || item.separator)
-      return event();
-    this.focused = this.selected = item.id;
-    return event("activate", item.id);
+    return x >= 0 &&
+      x < this.width &&
+      y >= 0 &&
+      y < Math.min(height, this.hits.length)
+      ? this.clickId(this.hits[y].id)
+      : event();
   }
   draw(c: Canvas, r: Rect, focused = true, ascii = false): void {
     c.fill(r);
-    this.eligible();
-    const rows = this.visible(),
-      i = Math.max(
-        0,
-        rows.findIndex((t) => t.id === this.focused),
-      ),
-      h = Math.max(1, r.height);
-    this.scroll = Math.max(0, Math.min(this.scroll, rows.length - h));
-    if (i < this.scroll) this.scroll = i;
-    if (i >= this.scroll + h) this.scroll = i - h + 1;
-    rows.slice(this.scroll, this.scroll + r.height).forEach((item, y) => {
-      const current = item.id === this.focused,
-        icon = ascii ? item.ascii_icon : item.icon;
-      const text = item.separator
-        ? (ascii ? "-" : "─").repeat(r.width)
-        : (current ? "> " : "  ") +
-          (icon ? icon + " " : "") +
-          (item.label ?? "") +
-          (item.secondary ? "  " + item.secondary : "") +
-          (item.shortcut ? "  " + item.shortcut : "");
+    this.layout(r.width, r.height, ascii).forEach((row, y) => {
+      c.fill(rect(r.x, r.y + y, r.width, 1), row.role);
       c.write(
         r.x,
         r.y + y,
-        clip(text, r.width, true),
-        item.disabled ? "disabled" : current ? "selection" : "body",
-        focused && current,
+        row.text,
+        row.role,
+        focused && !!row.focused,
         r.width,
+        true,
       );
     });
+  }
+}
+export class SearchPicker {
+  readonly list: List;
+  open = false;
+  value = "";
+  private width = 0;
+  private height = 0;
+  constructor(items: Item[]) {
+    this.list = new List(items);
+  }
+  handle(action: string, text = "", height = 10): Event {
+    if (action === "open") {
+      this.open = true;
+      this.list.setQuery("");
+      this.list.focus(this.value);
+      return event("open");
+    }
+    if (action === "cancel") {
+      this.open = false;
+      return event("cancel");
+    }
+    if (action === "insert" || action === "backspace") {
+      if (!this.open) this.handle("open");
+      const query =
+        action === "insert"
+          ? this.list.query + text
+          : graphemes(this.list.query).slice(0, -1).join("");
+      return this.list.setQuery(query);
+    }
+    if (action === "activate") {
+      if (!this.open) return this.handle("open");
+      const e = this.list.handle("activate", height);
+      if (e.id) {
+        this.value = e.id;
+        this.open = false;
+        return event("change", e.id);
+      }
+      return e;
+    }
+    return this.open ? this.list.handle(action, height) : event();
+  }
+  clickId(id: string): Event {
+    return this.list.focus(id) ? this.handle("activate") : event();
+  }
+  click(x: number, y: number, height = 10): Event {
+    if (x < 0 || x >= this.width || y < 0 || y >= Math.min(height, this.height))
+      return event();
+    if (!this.open) return this.handle("open");
+    if (y === 0) return event();
+    const e = this.list.click(x, y - 1, Math.max(0, height - 1));
+    if (e.id) {
+      this.value = e.id;
+      this.open = false;
+      return event("change", e.id);
+    }
+    return event();
+  }
+  layout(width: number, height: number, ascii = false): CollectionRow[] {
+    this.width = Math.max(0, width);
+    this.height = Math.max(0, height);
+    if (height <= 0) return [];
+    if (!this.open) {
+      const label =
+        this.list.items.find((i) => i.id === this.value)?.label ??
+        this.list.empty;
+      return [
+        { id: this.value, text: clip("v " + label, width), role: "field" },
+      ];
+    }
+    const shown = new Text(this.list.query, { multiline: false }).window(
+      Math.max(0, width - 2),
+    ).text;
+    return [
+      { id: "", text: clip("? " + shown, width), role: "field" },
+      ...this.list.layout(width, Math.max(0, height - 1), ascii),
+    ];
+  }
+  draw(c: Canvas, r: Rect, focused = true, ascii = false): void {
+    c.fill(r);
+    const rows = this.layout(r.width, r.height, ascii);
+    if (!this.open) {
+      if (rows.length) {
+        c.fill(rect(r.x, r.y, r.width, 1), "field");
+        c.write(r.x, r.y, rows[0].text, "field", false, r.width, true);
+      }
+      return;
+    }
+    if (r.height > 0) {
+      c.fill(rect(r.x, r.y, r.width, 1), "field");
+      c.write(r.x, r.y, "? ", "field", false, r.width, true);
+      if (r.width > 2)
+        new Text(this.list.query, { multiline: false }).draw(
+          c,
+          rect(r.x + 2, r.y, r.width - 2, 1),
+          focused,
+        );
+    }
+    if (r.height > 1)
+      this.list.draw(
+        c,
+        rect(r.x, r.y + 1, r.width, r.height - 1),
+        focused,
+        ascii,
+      );
   }
 }
 export class Text {
@@ -2393,4 +2562,9 @@ export class Drag {
     this.cancel();
     return e;
   }
+}
+
+export function fold(text: string): string {
+  const mapping = foldData.mappings as Dict<string, string>;
+  return [...text].map((c) => mapping[String(c.codePointAt(0))] ?? c).join("");
 }

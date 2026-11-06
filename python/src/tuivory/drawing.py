@@ -188,3 +188,10 @@ class Canvas:
             x, y = self.cursor
             out.append(f"\x1b[{origin_y + y + 1};{origin_x + x + 1}H\x1b[?25h")
         return "".join(out)
+
+
+_FOLD = {int(k): v for k,v in json.loads(files("tuivory").joinpath("casefold.json").read_text())["mappings"].items()}
+
+def fold(text: str) -> str:
+    """Unicode17 default full case folding; leaves source normalization unchanged."""
+    return "".join(_FOLD.get(ord(c),c) for c in text)

@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
     std::string theme = "dark", colors = "256";
     bool en = false, ascii = false, snapshot = false, ansi_snapshot = false,
          workspace = false, tab_focus = false, text_demo = false,
-         form_demo = false;
+         form_demo = false, list_demo = false, picker_demo = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -103,11 +103,15 @@ int main(int argc, char **argv) {
         workspace = demo == "workspace";
         text_demo = demo == "text";
         form_demo = demo == "form";
-        if (demo != "tree" && !workspace && !text_demo && !form_demo)
+        list_demo = demo == "list";
+        picker_demo = demo == "picker";
+        if (demo != "tree" && !workspace && !text_demo && !form_demo &&
+            !list_demo && !picker_demo)
           throw std::invalid_argument(
-              "Supported demos: tree, workspace, text, form");
+              "Supported demos: tree, workspace, text, form, list, picker");
       } else {
-        std::cout << "--demo tree|workspace|text|form --lang ko|en --theme "
+        std::cout << "--demo tree|workspace|text|form|list|picker --lang ko|en "
+                     "--theme "
                      "dark|light|blackwhite "
                      "--colors 8|16|256|truecolor --ascii --snapshot\n";
         return arg == "--help" ? 0 : 2;
@@ -158,6 +162,44 @@ int main(int argc, char **argv) {
     apply.label = en ? "Apply" : "적용";
     apply.action = "submit";
     Form form({name, password, off, mode, apply});
+    std::vector<Item> collection_items;
+    Item group;
+    group.id = "group";
+    group.label = en ? "Languages" : "지원 언어";
+    group.separator = true;
+    collection_items.push_back(group);
+    Item go;
+    go.id = "go";
+    go.label = "Go";
+    go.secondary = en ? "Static package" : "정적 패키지";
+    go.icon = "◆";
+    go.ascii_icon = "G";
+    go.shortcut = "G";
+    collection_items.push_back(go);
+    Item inactive;
+    inactive.id = "off";
+    inactive.label = en ? "Disabled" : "비활성";
+    inactive.disabled = true;
+    collection_items.push_back(inactive);
+    Item rs;
+    rs.id = "rust";
+    rs.label = "Rust";
+    rs.secondary = en ? "Independent implementation" : "독립 구현";
+    rs.icon = "◆";
+    rs.ascii_icon = "R";
+    rs.shortcut = "R";
+    collection_items.push_back(rs);
+    Item doc;
+    doc.id = "docs";
+    doc.label = en ? "Documentation" : "문서";
+    doc.secondary = en ? "Korean and English" : "한글·영어";
+    doc.icon = "◇";
+    doc.ascii_icon = "D";
+    collection_items.push_back(doc);
+    List list(collection_items);
+    SearchPicker picker(collection_items);
+    picker.handle("open");
+    list.empty = picker.list.empty = en ? "(empty)" : "항목 없음";
     std::optional<Session> session;
     if (!snapshot)
       session.emplace();
@@ -173,7 +215,11 @@ int main(int argc, char **argv) {
       auto area = canvas.panel({0, 0, width, std::max(0, height - 1)},
                                en ? "Tuivory C++ example" : "Tuivory C++ 예제",
                                true, ascii);
-      if (form_demo)
+      if (list_demo)
+        list.draw(canvas, area, true, ascii);
+      else if (picker_demo)
+        picker.draw(canvas, area, true, ascii);
+      else if (form_demo)
         form.draw(canvas, area);
       else if (text_demo)
         text.draw(canvas, area);
@@ -181,13 +227,20 @@ int main(int argc, char **argv) {
         workspace_draw(tree, tabs, split, canvas, area, tab_focus, en, ascii);
       else
         tree.draw(canvas, area, true, ascii);
-      canvas.write(0, height - 1,
-                   text_demo
-                       ? (en ? "Ctrl+Q quit | type, arrows | Ctrl+Z/Y history"
-                             : "Ctrl+Q 종료 | 문자·방향키 | Ctrl+Z/Y 기록")
-                   : en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
-                        : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택",
-                   "hint", false, width);
+      const auto hint =
+          picker_demo
+              ? (en ? "Ctrl+Q quit | type to filter | Enter select | Esc cancel"
+                    : "Ctrl+Q 종료 | 문자로 검색 | Enter 선택 | Esc 취소")
+          : form_demo ? (en ? "Ctrl+Q quit | Tab next | Enter activate | arrows"
+                            : "Ctrl+Q 종료 | Tab 이동 | Enter 실행 | 방향키")
+          : text_demo ? (en ? "Ctrl+Q quit | type, arrows | Ctrl+Z/Y history"
+                            : "Ctrl+Q 종료 | 문자·방향키 | Ctrl+Z/Y 기록")
+          : list_demo
+              ? (en ? "Ctrl+Q quit | arrows | Enter activate | Space select"
+                    : "Ctrl+Q 종료 | 방향키 | Enter 실행 | Space 선택")
+          : en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
+               : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택";
+      canvas.write(0, height - 1, hint, "hint", false, width);
       if (snapshot) {
         if (ansi_snapshot)
           std::cout << canvas.ansi();
@@ -209,7 +262,7 @@ int main(int argc, char **argv) {
                           : key == '\r' || key == '\n' ? "activate"
                           : key == ' '                 ? "toggle"
                                                        : "";
-      if (text_demo || form_demo) {
+      if (text_demo || form_demo || list_demo || picker_demo) {
         std::string input, edit_action;
         if (key == 27) {
           std::string seq;
@@ -228,6 +281,7 @@ int main(int argc, char **argv) {
                         : seq == "[H"  ? "home"
                         : seq == "[F"  ? "end"
                         : seq == "[3~" ? "delete"
+                        : seq.empty()  ? "cancel"
                                        : "";
         } else if (key == 127 || key == 8)
           edit_action = "backspace";
@@ -250,7 +304,15 @@ int main(int argc, char **argv) {
           }
           edit_action = "insert";
         }
-        if (form_demo)
+        if (list_demo)
+          list.handle(key == 27   ? edit_action
+                      : key == 32 ? "select"
+                                  : action,
+                      area.height);
+        else if (picker_demo)
+          picker.handle(key == 13 || key == 10 ? "activate" : edit_action,
+                        input, area.height);
+        else if (form_demo)
           form.handle(key == 9                   ? "next"
                       : edit_action == "newline" ? "activate"
                                                  : edit_action,

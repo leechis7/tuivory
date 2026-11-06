@@ -2,7 +2,7 @@
 import argparse
 import json
 from . import (Canvas, Palette, Rect, Tree, Node, Tabs, Tab, List, Item, Form, Field,
-               Grid, Column, Record, Text, ControlState, FormOption, Menu, Progress, DataState,
+               Grid, Column, Record, Text, ControlState, SearchPicker, FormOption, Menu, Progress, DataState,
                Notices, Notice, Terminal)
 
 
@@ -63,7 +63,7 @@ class WorkspaceDemo:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace'], default='tree')
+    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker'], default='tree')
     parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
     parser.add_argument('--theme', choices=['dark', 'light', 'blackwhite'], default='dark')
     parser.add_argument('--colors', choices=['8', '16', '256', 'truecolor'], default='256')
@@ -82,9 +82,14 @@ def main():
                  Node('leaf', word('다섯 단계', 'Fifth level'), parent='tree'),
                  Node('docs', word('문서', 'Documentation'), parent='root')])
     tree.expanded = {'root', 'src', 'nested', 'tree'}
+    collection_items=[Item('group',word('지원 언어','Languages'),separator=True),
+        Item('go','Go',word('정적 패키지','Static package'),shortcut='G',icon='◆',ascii_icon='G'),
+        Item('off',word('비활성','Disabled'),disabled=True),
+        Item('rust','Rust',word('독립 구현','Independent implementation'),shortcut='R',icon='◆',ascii_icon='R'),
+        Item('docs',word('문서','Documentation'),word('한글·영어','Korean and English'),icon='◇',ascii_icon='D')]
     models = dict(tree=tree,
                   tabs=Tabs([Tab('a', word('개요', 'Overview')), Tab('b', word('편집 중', 'Editing'), edited=True, closable=True), Tab('off', word('비활성', 'Disabled'), disabled=True)]),
-                  list=List([Item('a', word('실행 가능', 'Available')), Item('off', word('비활성', 'Disabled'), disabled=True)]),
+                  list=List(collection_items),picker=SearchPicker(collection_items),
                   form=Form([Field('name', label=word('이름', 'Name'), value=word('한글 입력', 'Input'),required=True),
                     Field('password',kind='password',label=word('비밀번호','Password'),value='example'),
                     Field('off',kind='checkbox',label=word('비활성','Disabled'),state=ControlState(disabled=True)),
@@ -94,6 +99,8 @@ def main():
                   text=Text(word('한글 é 界\n여러 줄을 편집합니다.', 'Grapheme text\nEdit with real cursor.' if args.ascii else 'Unicode é 界\nEdit with real cursor.')),
                   menu=Menu([Item('root', word('작업', 'Actions')), Item('run', word('실행', 'Run'), parent='root'), Item('off', word('비활성', 'Disabled'), disabled=True, parent='root')]),
                   feedback=Notices())
+    models['picker'].handle('open')
+    models['list'].empty=models['picker'].list.empty=word('항목 없음','(empty)')
     models['workspace'] = WorkspaceDemo(tree, not ko)
     models['grid'].edit_enabled = True
     models['menu'].open('root')
@@ -137,7 +144,11 @@ def main():
                     model.click(event.x - area.x, event.y - area.y, area.height)
             else:
                 action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
-                if isinstance(model, (Form, Text)):
+                if isinstance(model, SearchPicker):
+                    model.handle(action,event.text,area.height)
+                elif isinstance(model,List) and action=="insert" and event.text==" ":
+                    model.handle("select",area.height)
+                elif isinstance(model, (Form, Text)):
                     model.handle("newline" if isinstance(model,Text) and action=="activate" else action, event.text)
                 elif isinstance(model, Tabs):
                     model.handle({'left': 'previous', 'right': 'next'}.get(action, action))

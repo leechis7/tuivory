@@ -15,6 +15,7 @@
 namespace tuivory {
 namespace detail {
 #include "tuivory_data.h"
+#include "tuivory_fold.h"
 inline bool range(unsigned cp, const unsigned int (*table)[2],
                   std::size_t count) {
   std::size_t lo = 0, hi = count;
@@ -166,7 +167,9 @@ inline Break property(unsigned cp) {
   PROPERTY(grapheme_spacingmark, Spacing)
   PROPERTY(grapheme_l, L)
   PROPERTY(grapheme_v, V)
-  PROPERTY(grapheme_t, T) PROPERTY(grapheme_lv, LV) PROPERTY(grapheme_lvt, LVT)
+  PROPERTY(grapheme_t, T)
+  PROPERTY(grapheme_lv, LV)
+  PROPERTY(grapheme_lvt, LVT)
 #undef PROPERTY
       return Break::Other;
 }
@@ -692,3 +695,31 @@ public:
 #include "tuivory_forms.hpp"
 
 #include "tuivory_focus.hpp"
+
+namespace tuivory {
+inline std::string fold(const std::string &text) {
+  std::string out;
+  for (std::size_t p = 0; p < text.size();) {
+    auto start = p;
+    auto cp = detail::decode(text, p);
+    std::size_t left = 0, right = sizeof(detail::tui_fold_data) /
+                                  sizeof(detail::tui_fold_data[0]);
+    while (left < right) {
+      auto m = (left + right) / 2;
+      if (detail::tui_fold_data[m].cp < cp)
+        left = m + 1;
+      else
+        right = m;
+    }
+    if (left <
+            sizeof(detail::tui_fold_data) / sizeof(detail::tui_fold_data[0]) &&
+        detail::tui_fold_data[left].cp == cp)
+      out += detail::tui_fold_data[left].text;
+    else
+      out += text.substr(start, p - start);
+  }
+  return out;
+}
+} // namespace tuivory
+
+#include "tuivory_collections.hpp"
