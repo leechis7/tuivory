@@ -21,6 +21,7 @@
     "examples/catalog.mjs",
     "examples/menu-host.mjs",
     "examples/feedback-host.mjs",
+    "examples/layout-host.mjs",
     "UNICODE-LICENSE",
     "NOTICE.md",
     "NOTICE.en.md",

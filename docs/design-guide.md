@@ -35,3 +35,5 @@
 [독립 언어 메뉴·문맥 메뉴 API](language-menu.md)
 
 [독립 언어 알림·진행·데이터 상태 API](language-feedback.md)
+
+[독립 언어 간격·스택·배지·칩·단축키 안내 API](language-layout.md)

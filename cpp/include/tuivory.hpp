@@ -726,3 +726,4 @@ inline std::string fold(const std::string &text) {
 
 #include "tuivory_menu.hpp"
 #include "tuivory_feedback.hpp"
+#include "tuivory_layout.hpp"

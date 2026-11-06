@@ -436,6 +436,81 @@ const TuiFeedbackRow *tui_feedback_row(const TuiFeedbackView *view,
 TuiResult tui_feedback_draw(const TuiFeedbackView *view, TuiCanvas *canvas,
                             TuiRect rect);
 void tui_feedback_free(TuiFeedbackView *view);
+/* Cell geometry is pure and copies result IDs; extents <=1e9, 1024 items. */
+typedef struct {
+  int gap, padding, control_gap, compact_below;
+} TuiSpacingTokens;
+typedef struct {
+  const char *id;
+  int min, preferred, weight;
+} TuiStackItem;
+typedef struct {
+  const char *id;
+  int start, size;
+} TuiStackSlot;
+typedef struct TuiStackResult TuiStackResult;
+typedef struct {
+  const char *id;
+  TuiRect rect;
+} TuiNamedRect;
+typedef struct TuiLayoutResult TuiLayoutResult;
+typedef struct {
+  TuiRect rect;
+  int overlay;
+} TuiDrawerPlacement;
+TuiResult tui_spacing_tokens(const char *density, int columns,
+                             TuiSpacingTokens *out);
+TuiResult tui_rect_inset(TuiRect parent, int padding, TuiRect *out);
+TuiResult tui_stack_layout(const TuiStackItem *items, size_t count, int total,
+                           int gap, TuiStackResult **out);
+size_t tui_stack_slot_count(const TuiStackResult *result);
+const TuiStackSlot *tui_stack_slot_at(const TuiStackResult *result,
+                                      size_t index);
+size_t tui_stack_hidden_count(const TuiStackResult *result);
+const char *tui_stack_hidden_at(const TuiStackResult *result, size_t index);
+int tui_stack_gap(const TuiStackResult *result);
+void tui_stack_free(TuiStackResult *result);
+TuiResult tui_stack_rects(TuiRect parent, const TuiStackItem *items,
+                          size_t count, TuiSpacingTokens tokens, int vertical,
+                          TuiLayoutResult **out);
+size_t tui_layout_rect_count(const TuiLayoutResult *result);
+const TuiNamedRect *tui_layout_rect_at(const TuiLayoutResult *result,
+                                       size_t index);
+size_t tui_layout_hidden_count(const TuiLayoutResult *result);
+const char *tui_layout_hidden_at(const TuiLayoutResult *result, size_t index);
+void tui_layout_free(TuiLayoutResult *result);
+TuiResult tui_drawer_layout(TuiRect parent, int preferred, int min_content,
+                            TuiDrawerPlacement *out);
+/* Supporting lines use owned FeedbackView values; free with tui_feedback_free.
+ */
+typedef struct {
+  const char *id, *label;
+  int has_count;
+  unsigned long long count, limit;
+  TuiState state;
+} TuiBadge;
+typedef struct {
+  const char *id, *label;
+  TuiState state;
+  int removable;
+} TuiChip;
+TuiResult tui_badge_line(const TuiBadge *badge, int width,
+                         TuiFeedbackView **view);
+TuiResult tui_badge_draw(const TuiBadge *badge, TuiCanvas *canvas,
+                         TuiRect rect);
+TuiResult tui_chip_line(const TuiChip *chip, int width, TuiFeedbackView **view);
+TuiResult tui_chip_draw(const TuiChip *chip, TuiCanvas *canvas, TuiRect rect);
+TuiEvent tui_chip_request_remove(const TuiChip *chip);
+typedef struct {
+  const char *key, *text;
+  int priority, disabled;
+} TuiShortcut;
+typedef struct TuiHelp TuiHelp;
+TuiHelp *tui_help_new(const TuiShortcut *items, size_t count);
+void tui_help_free(TuiHelp *help);
+TuiResult tui_help_layout(const TuiHelp *help, int width, int height,
+                          TuiFeedbackView **view);
+TuiResult tui_help_draw(const TuiHelp *help, TuiCanvas *canvas, TuiRect rect);
 #ifdef __cplusplus
 }
 #endif

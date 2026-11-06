@@ -46,7 +46,42 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             if process.poll()is not None:break
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
-        if demo=='feedback':
+        if demo=='layout':
+            def visible():return '\n'.join(''.join(row)for row in screen.rows[:24])
+            def wait_text(value):
+                deadline=time.monotonic()+5
+                while time.monotonic()<deadline:
+                    drain(.02)
+                    if value.replace(' ','')in visible().replace(' ',''):return
+                    if process.poll()is not None:break
+                raise AssertionError((language,demo,value,visible()))
+            def send(command,raw):
+                frames=captured.count(b'\x1b[0m');os.write(master,(command+'\n').encode()if language=='java'else raw)
+                deadline=time.monotonic()+5
+                while captured.count(b'\x1b[0m')<=frames and time.monotonic()<deadline:drain(.02)
+                assert captured.count(b'\x1b[0m')>frames,(language,'layout frame acknowledgment',visible())
+            def click_x(row):
+                x=''.join(screen.rows[row]).rfind(' x')+1;assert x>20,(language,'chip close target',row,visible())
+                send('click '+str(x)+' '+str(row),('\x1b[<0;'+str(x+1)+';'+str(row+1)+'M').encode())
+            wait_text('Items [99+]'if lang=='en'else'항목 [99+]')
+            deadline=time.monotonic()+5
+            while not captured.count(b'\x1b[0m')and time.monotonic()<deadline:drain(.02)
+            label='Recent'if lang=='en'else'최근'
+            click_x(6);assert label in ''.join(screen.rows[2]).replace(' ',''),(language,'disabled chip removed active filter')
+            click_x(4);assert label in ''.join(screen.rows[2]).replace(' ',''),(language,'read-only chip removed active filter')
+            click_x(2);wait_text('Filter removed.'if lang=='en'else'필터를 제거했습니다.')
+            assert label not in visible().replace(' ',''),(language,'stale filter after host approval')
+            send('x',b'x');assert label not in visible().replace(' ',''),(language,'removed filter reappeared')
+            send('d',b'd');wait_text('Density: comfortable'if lang=='en'else'밀도: 여유')
+            if language!='java':
+                fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',18,40,0,0))
+                send('d',b'd');wait_text('Density: compact'if lang=='en'else'밀도: 촘촘')
+                deadline=time.monotonic()+5
+                while screen.rows[0][39]!=('+'if ascii else'╗')and time.monotonic()<deadline:drain(.02)
+                assert screen.rows[0][39]==('+'if ascii else'╗'),(language,'narrow frame',visible())
+                for y in range(1,16):assert screen.rows[y][0]==('|'if ascii else'║')and screen.rows[y][39]==('|'if ascii else'║'),(language,'narrow bounds',y,visible())
+                assert b'\x1b[?25h'not in captured,(language,'supporting component registered a cursor')
+        elif demo=='feedback':
             def visible():return '\n'.join(''.join(row)for row in screen.rows[:24])
             def wait_text(value):
                 deadline=time.monotonic()+5
@@ -204,13 +239,17 @@ def main():
     p.add_argument('--python',default=sys.executable)
     p.add_argument('--language',choices=['python','javascript','c','cpp','java'])
     p.add_argument('--matrix',action='store_true')
-    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback'],default='tree')
+    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout'],default='tree')
     args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     commands={'python':[args.python,'-m','tuivory'],'javascript':['node',ROOT/'javascript/examples/catalog.mjs'],'c':[ROOT/'bin/c'/f'tuivory-linux-{arch}'],'cpp':[ROOT/'bin/cpp'/f'tuivory-linux-{arch}'],'java':['java','-jar',ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}
     results=[]
     for language,cmd in commands.items():
         if args.language and args.language!=language:continue
+        help_env=dict(os.environ)
+        if language=='python':help_env['PYTHONPATH']=str(ROOT/'python/src')
+        help_text=subprocess.check_output([*map(str,cmd),'--help'],cwd=ROOT,env=help_env,text=True)
+        assert re.search(r'(?<![\w-])'+re.escape(args.demo)+r'(?![\w-])',help_text),(language,'demo missing from help',args.demo,help_text)
         for lang in ['ko','en']:
             for theme in ['dark','light','blackwhite']if args.matrix else['dark']:
                 for colors in ['8','16','256','truecolor']if args.matrix else['256']:

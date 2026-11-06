@@ -6,6 +6,7 @@ from check_languages import ROOT,run
 from check_language_collections import source
 from check_language_menu import source as menu_source
 from check_language_feedback import source as feedback_source
+from check_language_layout import source as layout_source
 
 def main():
  out=ROOT/'.cache/packages/languages'
@@ -27,11 +28,13 @@ def main():
    args+=['-o',base/'consumer'];run(args,base);run([base/'consumer'],base)
    src.write_text(menu_source(lang));run(args,base);run([base/'consumer'],base)
    src.write_text(feedback_source(lang));run(args,base);run([base/'consumer'],base)
+   src.write_text(layout_source(lang));run(args,base);run([base/'consumer'],base)
+   snapshot=subprocess.check_output([example,'--demo','layout','--lang','en','--snapshot'],cwd=base);assert b'Items'in snapshot
    snapshot=subprocess.check_output([example,'--demo','feedback','--lang','en','--snapshot'],cwd=base);assert b'40%'in snapshot
  jar_name=next(name for name in manifest['assets']if name.endswith('.jar'))
  with zipfile.ZipFile(out/jar_name)as jar:
   names=jar.namelist();assert not any(n.endswith(('.so','.dll','.dylib'))for n in names)
-  assert not any('ComponentsTest'in n or 'CollectionCases'in n or 'MenuCases'in n or 'FeedbackCases'in n for n in names)
+  assert not any('ComponentsTest'in n or 'CollectionCases'in n or 'MenuCases'in n or 'FeedbackCases'in n or 'LayoutCases'in n for n in names)
   assert jar.read('CASEFOLD-LICENSE')==(ROOT/'design/casefold.LICENSE').read_bytes()
   assert 'io/tuivory/FoldData.class'in names
  with tempfile.TemporaryDirectory(prefix='tuivory-jar-')as d:
@@ -43,6 +46,9 @@ def main():
   src=base/'FeedbackCases.java';src.write_text(feedback_source('java'))
   run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);run(['java','-cp',str(jar)+os.pathsep+str(base),'FeedbackCases'],base)
   snapshot=subprocess.check_output(['java','-jar',jar,'--demo','feedback','--lang','en','--snapshot'],cwd=base);assert b'40%'in snapshot
+  src=base/'LayoutCases.java';src.write_text(layout_source('java'))
+  run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);run(['java','-cp',str(jar)+os.pathsep+str(base),'LayoutCases'],base)
+  snapshot=subprocess.check_output(['java','-jar',jar,'--demo','layout','--lang','en','--snapshot'],cwd=base);assert b'Items'in snapshot
  wheel_name=next(name for name in manifest['assets']if name.endswith('.whl'))
  with zipfile.ZipFile(out/wheel_name)as wheel:
   assert any(n.endswith('/licenses/CASEFOLD-LICENSE')for n in wheel.namelist())

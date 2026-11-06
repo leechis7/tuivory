@@ -35,3 +35,5 @@ The editor buffer contains no synthetic caret character. Share grapheme viewport
 [Independent menu/context-menu API](language-menu.en.md)
 
 [Independent notices/progress/data-state API](language-feedback.en.md)
+
+[Independent spacing/stack and badge/chip/hint API](language-layout.en.md)

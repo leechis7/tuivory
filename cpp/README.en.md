@@ -37,3 +37,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Independent menu/context-menu API](../docs/language-menu.en.md)
 
 [Independent notices/progress/data-state API](../docs/language-feedback.en.md)
+
+[Independent spacing/stack and badge/chip/hint API](../docs/language-layout.en.md)

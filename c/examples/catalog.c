@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "feedback_host.h"
+#include "layout_host.h"
 #include "menu_host.h"
 #include "tuivory.h"
 #include <poll.h>
@@ -75,7 +76,7 @@ int main(int argc, char **argv) {
   const char *theme = "dark", *profile = "256";
   int en = 0, ascii = 0, snapshot = 0, workspace = 0, tab_focus = 0,
       text_demo = 0, form_demo = 0, list_demo = 0, picker_demo = 0,
-      menu_demo = 0, context_demo = 0, feedback_demo = 0;
+      menu_demo = 0, context_demo = 0, feedback_demo = 0, layout_demo = 0;
   TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
@@ -99,9 +100,11 @@ int main(int argc, char **argv) {
       picker_demo = !strcmp(demo, "picker");
       context_demo = !strcmp(demo, "context-menu");
       feedback_demo = !strcmp(demo, "feedback");
+      layout_demo = !strcmp(demo, "layout");
       menu_demo = context_demo || !strcmp(demo, "menu");
       if (strcmp(demo, "tree") && !workspace && !text_demo && !form_demo &&
-          !list_demo && !picker_demo && !menu_demo && !feedback_demo) {
+          !list_demo && !picker_demo && !menu_demo && !feedback_demo &&
+          !layout_demo) {
         fputs("Supported demos: tree, workspace, text, form, list, picker, "
               "menu, context-menu\n",
               stderr);
@@ -109,7 +112,8 @@ int main(int argc, char **argv) {
       }
     } else {
       puts("--demo "
-           "tree|workspace|text|form|list|picker|menu|context-menu|feedback "
+           "tree|workspace|text|form|list|picker|menu|context-menu|feedback|"
+           "layout "
            "--lang ko|en --theme "
            "dark|light|blackwhite "
            "--colors "
@@ -125,6 +129,8 @@ int main(int argc, char **argv) {
     menu_demo_free(&menu_host);
     return 1;
   }
+  LayoutDemo layout_host;
+  layout_demo_init(&layout_host, en);
   TuiNode nodes[] = {
       {.id = "root", .name = en ? "Workspace" : "작업 공간"},
       {.id = "src", .name = en ? "Sources" : "소스", .parent = "root"},
@@ -254,7 +260,7 @@ int main(int argc, char **argv) {
       return 1;
     }
     fputs("\033[?1049h", stdout);
-    if (menu_demo || feedback_demo)
+    if (menu_demo || feedback_demo || layout_demo)
       fputs("\033[?1000h\033[?1006h", stdout);
     signal(SIGTERM, stop_signal);
     signal(SIGINT, stop_signal);
@@ -277,7 +283,9 @@ int main(int argc, char **argv) {
     TuiRect inner = tui_canvas_panel(
         canvas, (TuiRect){0, 0, width, height > 0 ? height - 1 : 0},
         en ? "Tuivory C example" : "Tuivory C 예제", 1, ascii);
-    if (feedback_demo)
+    if (layout_demo)
+      layout_demo_draw(&layout_host, canvas, inner, ascii);
+    else if (feedback_demo)
       feedback_demo_draw(&feedback_host, canvas, inner, ascii);
     else if (menu_demo)
       menu_demo_draw(&menu_host, canvas, inner, ascii);
@@ -294,7 +302,10 @@ int main(int argc, char **argv) {
     else
       tui_tree_draw(tree, canvas, inner, 1, ascii);
     const char *hint =
-        feedback_demo
+        layout_demo
+            ? (en ? "Ctrl+Q quit | x/Enter remove filter | d density | click x"
+                  : "Ctrl+Q 종료 | x/Enter 필터 제거 | d 간격 | x 클릭")
+        : feedback_demo
             ? (en ? "Ctrl+Q quit | Enter retry | Del dismiss | t expire | c "
                     "cancel"
                   : "Ctrl+Q 종료 | Enter 재시도 | Del 닫기 | t 만료 | c 취소")
@@ -364,7 +375,7 @@ int main(int argc, char **argv) {
                          : key == ' '                 ? "toggle"
                                                       : "";
     if (text_demo || form_demo || list_demo || picker_demo || menu_demo ||
-        feedback_demo) {
+        feedback_demo || layout_demo) {
       char input[8] = {0};
       const char *edit_action = "";
       if (key == 27) {
@@ -384,10 +395,12 @@ int main(int argc, char **argv) {
         }
         int button = 0, x = 0, y = 0;
         char ending = 0;
-        if ((menu_demo || feedback_demo) &&
+        if ((menu_demo || feedback_demo || layout_demo) &&
             sscanf(seq, "[<%d;%d;%d%c", &button, &x, &y, &ending) == 4) {
           if (ending == 'M' && x > 0 && y > 0) {
-            if (feedback_demo)
+            if (layout_demo)
+              layout_demo_pointer(&layout_host, x - 1, y - 1, button);
+            else if (feedback_demo)
               feedback_demo_pointer(&feedback_host, x - 1, y - 1, button);
             else
               menu_demo_pointer(&menu_host, x - 1, y - 1, button);
@@ -424,7 +437,11 @@ int main(int argc, char **argv) {
           }
         edit_action = "insert";
       }
-      if (feedback_demo)
+      if (layout_demo)
+        layout_demo_handle(
+            &layout_host,
+            !strcmp(edit_action, "newline") ? "activate" : edit_action, input);
+      else if (feedback_demo)
         feedback_demo_handle(
             &feedback_host,
             !strcmp(edit_action, "newline") ? "activate" : edit_action, input);
