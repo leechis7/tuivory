@@ -69,3 +69,5 @@ TVR-7 0.11.1: [실제 그리드 커서·backend 연결](../grid-workspace.md). 0
 [독립 언어 입력·편집 API](../language-text.md)
 
 [독립 언어 폼·컨트롤 API](../language-forms.md)
+
+[독립 언어 포커스 범위 API](../language-focus.md)

@@ -31,3 +31,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Independent text editing API](../docs/language-text.en.md)
 
 [Independent forms and controls API](../docs/language-forms.en.md)
+
+[Independent focus scope API](../docs/language-focus.en.md)

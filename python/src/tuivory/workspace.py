@@ -1,6 +1,7 @@
 """Host-controlled focus, menus, geometry, feedback and drag requests."""
 from __future__ import annotations
 from dataclasses import dataclass, field
+from copy import deepcopy
 from .drawing import Canvas, Rect, cells, clip, clean, graphemes
 from .models import ControlState, Event, Item, List, unique
 
@@ -12,51 +13,86 @@ class FocusTarget:
     hidden: bool = False
 
 
+@dataclass(frozen=True)
+class InputRoute:
+    scope_id: str
+    blocked: bool
+
+
+@dataclass(frozen=True)
+class PopupCloseRequest:
+    id: str
+    reason: str = 'escape'
+
+
 class Focus:
-    def __init__(self, id: str, targets: list[FocusTarget]):
-        self.scopes: list[dict] = []
-        self.open(id, targets)
+    """Host-owned scope stack; empty popups still consume input."""
+    def __init__(self,id,targets):
+        if not id:raise ValueError('empty root scope')
+        unique(targets)
+        self.scopes=[dict(id=id,targets=deepcopy(targets),focused='',restore='',dismissible=False)]
+        self._reconcile(self.scopes[-1])
+
+    @staticmethod
+    def _ids(scope):return [t.id for t in scope['targets'] if not t.hidden and t.state.focusable]
+
+    def _reconcile(self,scope):
+        ids=self._ids(scope)
+        if scope['focused'] not in ids:scope['focused']=ids[0] if ids else ''
 
     @property
-    def focused(self) -> str:
-        return self.scopes[-1]["focused"]
+    def focused(self):return self.scopes[-1]['focused']
 
-    def _eligible(self) -> list[str]:
-        scope = self.scopes[-1]
-        ids = [t.id for t in scope["targets"] if not t.hidden and t.state.focusable]
-        if scope["focused"] not in ids:
-            scope["focused"] = ids[0] if ids else ""
-        return ids
+    @property
+    def scope_id(self):return self.scopes[-1]['id']
 
-    def open(self, id: str, targets: list[FocusTarget], *, focused: str = "", modal: bool = True) -> None:
+    @property
+    def depth(self):return len(self.scopes)-1
+
+    def open(self,id,targets,initial='',dismissible=True):
+        if not id or len(self.scopes)>=65 or any(s['id']==id for s in self.scopes):raise ValueError('invalid scope or depth')
         unique(targets)
-        if not id or any(s["id"] == id for s in self.scopes):
-            raise ValueError("duplicate/empty focus scope")
-        self.scopes.append(dict(id=id, targets=list(targets), focused=focused, modal=modal))
-        self._eligible()
+        scope=dict(id=id,targets=deepcopy(targets),focused='',restore=self.focused,dismissible=dismissible)
+        self._reconcile(scope)
+        if initial:
+            if initial not in self._ids(scope):raise ValueError('initial target not focusable')
+            scope['focused']=initial
+        self.scopes.append(scope)
 
-    def close(self, id: str) -> Event:
-        if len(self.scopes) <= 1 or self.scopes[-1]["id"] != id:
-            raise ValueError("only top popup can close")
-        self.scopes.pop()
-        self._eligible()
-        return Event("focus", self.focused)
+    def update(self,id,targets):
+        unique(targets)
+        scope=next((s for s in self.scopes if s['id']==id),None)
+        if scope is None:raise ValueError('unknown scope')
+        owned=deepcopy(targets)
+        scope['targets']=owned;self._reconcile(scope)
 
-    def focus(self, id: str) -> bool:
-        if id not in self._eligible():
-            return False
-        self.scopes[-1]["focused"] = id
-        return True
+    def close(self,id):
+        if self.depth==0 or self.scope_id!=id:raise ValueError('only top popup can close')
+        restore=self.scopes.pop()['restore'];top=self.scopes[-1]
+        if restore in self._ids(top):top['focused']=restore
+        else:self._reconcile(top)
+        return Event('focus',self.focused)
 
-    def move(self, previous: bool = False) -> str:
-        ids = self._eligible()
-        if ids:
-            self.scopes[-1]["focused"] = ids[(ids.index(self.focused) + (-1 if previous else 1)) % len(ids)]
+    def focus(self,id):
+        if id not in self._ids(self.scopes[-1]):return False
+        self.scopes[-1]['focused']=id;return True
+
+    def move(self,previous=False):
+        top=self.scopes[-1];ids=self._ids(top)
+        if not ids:top['focused']=''
+        else:
+            at=ids.index(top['focused']) if top['focused'] in ids else None
+            next=((at or 0)+len(ids)-1)%len(ids) if previous else (at+1)%len(ids) if at is not None else 0
+            top['focused']=ids[next]
         return self.focused
 
-    def blocked(self, scope: str) -> bool:
-        at = next((i for i, s in enumerate(self.scopes) if s["id"] == scope), -1)
-        return at < 0 or any(s["modal"] for s in self.scopes[at + 1:])
+    def request_close(self):
+        return PopupCloseRequest(self.scope_id) if self.depth and self.scopes[-1]['dismissible'] else None
+
+    def route(self,target=''):
+        return InputRoute(self.scope_id,bool(target and target!=self.scope_id))
+
+    def blocked(self,scope):return self.route(scope).blocked
 
 
 class Menu:

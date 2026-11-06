@@ -27,3 +27,5 @@ The editor buffer contains no synthetic caret character. Share grapheme viewport
 [Independent text editing API](language-text.en.md)
 
 [Independent forms and controls API](language-forms.en.md)
+
+[Independent focus scope API](language-focus.en.md)

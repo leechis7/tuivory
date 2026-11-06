@@ -122,3 +122,5 @@ Build C/C++/Java first as shown above. Reference capture also needs a CJK-capabl
 [Independent text editing API](language-text.en.md)
 
 [Independent forms and controls API](language-forms.en.md)
+
+[Independent focus scope API](language-focus.en.md)

@@ -1,0 +1,40 @@
+{
+  "checked_at_utc": "2026-11-06T17:59:40.448225+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source_base": "2377565d63b8d648e7a9ef17d9ba8e7230725422",
+  "source_uncommitted": true,
+  "sha256": {
+    "python/src/tuivory/workspace.py": "e8e7817a01b16897ae03d261fdaccd40752cecc8b900757cdf35f773cc7a30c1",
+    "javascript/src/index.ts": "2b10af6f35a4319b3ca2fd8d37ce59609c9a490d6ff5a89af8d4283d2621180f",
+    "c/src/tuivory.c": "06f28aabfff91100491677e3eaf40f09c96613f4cf12ead1c2e952720a9f7ce4",
+    "c/include/tuivory.h": "814d2ab5dfb0b8955cfeb9e3a277b7632ca591c22b2857977b874ecbfba32f74",
+    "cpp/include/tuivory_focus.hpp": "8db6efd0604d08fd1f509268922a6f531263cdd4aaa645e42a6f1c1e40c61e04",
+    "java/src/main/java/io/tuivory/Tuivory.java": "9d071ffc80f89fb43d9eff7e512ba33baa8490f461dd8cedae7c098898c3b802",
+    "tools/check_language_focus.py": "2e982f80cf76ccaa1f0e178af9ae8d06bcaa068bab723e642958a0f3c89a1003"
+  },
+  "scope": "pure host-owned focus scope milestone; menu/overlay host demos and full catalog continue",
+  "shared": "design/interaction-cases.json (24steps)",
+  "local_validation": {
+    "python_tests": 23,
+    "js": "7 registered groups plus shared Text/Form/Focus checks",
+    "native": "C/C++ ASan/UBSan and isolated static SDK consumers; Java17-compatible isolated JAR consumer passed",
+    "additional": "64 popup layers, overflow rejected atomically, owned target copies, locked requests, empty-scope keyboard/pointer route",
+    "external_runtime": "refreshed wheel/npm installed into isolated external Python/JS/TS consumers; routing, empty scopes, close request and restoration passed",
+    "pty": "no new pure-model UI capture; existing tree/workspace/text/form PTYs belong to earlier milestones"
+  },
+  "integration": {
+    "forms_pr": "https://github.com/leechis7/tuivory/pull/52",
+    "forms_ci": "https://github.com/leechis7/tuivory/actions/runs/42265219939",
+    "forms_ci_jobs": 10,
+    "focus_commit": "pending",
+    "focus_ci": "not yet run",
+    "product_release": "not performed; public0.11.1 unchanged"
+  },
+  "centos": "not run per user instruction"
+}

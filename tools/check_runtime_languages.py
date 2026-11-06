@@ -28,6 +28,7 @@ assert ui.Split(3,4,7).layout(5).compact
 e=ui.Text("a");e.handle("insert","́");assert e.cursor==1;e.handle("backspace");assert e.value=="";e.handle("undo");assert e.value=="á"
 f=ui.Form([ui.Field("p",kind="password",value="secret")]);assert f.fields[0].value=="******"
 s=ui.Form([ui.Field("s",kind="select",options=[ui.FormOption("a"),ui.FormOption("b")])]);s.handle("activate");s.handle("down");assert s.fields[0].choice=="";s.handle("activate");assert s.fields[0].choice=="b"
+focus=ui.Focus("root",[ui.FocusTarget("open")]);focus.open("popup",[]);assert focus.route("root").blocked and not focus.route().blocked;assert focus.request_close().id=="popup";focus.close("popup");assert focus.focused=="open"
 ''')
  run([p,'-I',b/'consumer.py'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','tree','--lang','en'],b)
@@ -48,6 +49,7 @@ if(!new ui.Split(3,4,7).layout(5).compact)throw new Error("split");
 const e=new ui.Text("a");e.handle("insert","́");if(e.cursor!==1)throw new Error("grapheme cursor");e.handle("backspace");if(e.value!=="")throw new Error("grapheme erase");
 const f=new ui.Form([{id:"p",kind:"password",value:"secret"}]);if(f.fields[0].value!=="******")throw new Error("password");
 const s=new ui.Form([{id:"s",kind:"select",options:[{id:"a"},{id:"b"}]}]);s.handle("activate");s.handle("down");if(s.fields[0].choice)throw new Error("pending");s.handle("activate");if(s.fields[0].choice!=="b")throw new Error("choice");
+const focus=new ui.Focus("root",[{id:"open"}]);focus.open("popup",[]);if(!focus.route("root").blocked||focus.route().blocked||focus.requestClose()?.id!=="popup")throw new Error("focus routing");focus.close("popup");if(focus.focused!=="open")throw new Error("focus restoration");
 '''
  (b/'consumer.mjs').write_text(source);(b/'consumer.ts').write_text(source)
  run(['node','consumer.mjs'],b)

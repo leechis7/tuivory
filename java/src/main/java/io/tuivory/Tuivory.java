@@ -1418,4 +1418,129 @@ public final class Tuivory {
       super(List.of(field));
     }
   }
+  public record FocusTarget(String id, State state, boolean hidden) {
+    public FocusTarget(String id) {
+      this(id, new State(), false);
+    }
+  }
+  public record InputRoute(String scopeId, boolean blocked) {}
+  public record PopupCloseRequest(String id, String reason) {}
+  public static final class Focus {
+    private static final class Scope {
+      String id, focused = "", restore = "";
+      List<FocusTarget> targets;
+      boolean dismissible;
+      Scope(String id, List<FocusTarget> targets, boolean dismissible) {
+        this.id = id;
+        this.targets = owned(targets);
+        this.dismissible = dismissible;
+        reconcile(this);
+      }
+    }
+    private final List<Scope> scopes = new ArrayList<>();
+    private static List<FocusTarget> owned(List<FocusTarget> targets) {
+      var ids = new HashSet<String>();
+      var out = new ArrayList<FocusTarget>();
+      for (var t : targets) {
+        if (t.id().isEmpty() || !ids.add(t.id()))
+          throw new IllegalArgumentException("invalid target ID");
+        out.add(new FocusTarget(t.id(), copyState(t.state()), t.hidden()));
+      }
+      return out;
+    }
+    private static List<String> ids(Scope s) {
+      var out = new ArrayList<String>();
+      for (var t : s.targets)
+        if (!t.hidden() && t.state().focusable())
+          out.add(t.id());
+      return out;
+    }
+    private static void reconcile(Scope s) {
+      var ids = ids(s);
+      if (!ids.contains(s.focused))
+        s.focused = ids.isEmpty() ? "" : ids.get(0);
+    }
+    public Focus(String id, List<FocusTarget> targets) {
+      if (id.isEmpty())
+        throw new IllegalArgumentException("empty root scope");
+      scopes.add(new Scope(id, targets, false));
+    }
+    private Scope top() {
+      return scopes.get(scopes.size() - 1);
+    }
+    public String focused() {
+      return top().focused;
+    }
+    public String scopeId() {
+      return top().id;
+    }
+    public int depth() {
+      return scopes.size() - 1;
+    }
+    public boolean focus(String id) {
+      if (!ids(top()).contains(id))
+        return false;
+      top().focused = id;
+      return true;
+    }
+    public String move(boolean previous) {
+      var s = top();
+      var ids = ids(s);
+      if (ids.isEmpty())
+        s.focused = "";
+      else {
+        int at = ids.indexOf(s.focused),
+            next = previous ? (Math.max(0, at) + ids.size() - 1) % ids.size()
+            : at < 0        ? 0
+                            : (at + 1) % ids.size();
+        s.focused = ids.get(next);
+      }
+      return s.focused;
+    }
+    public void open(String id, List<FocusTarget> targets, String initial, boolean dismissible) {
+      if (id.isEmpty() || scopes.size() >= 65 || scopes.stream().anyMatch(s -> s.id.equals(id)))
+        throw new IllegalArgumentException("invalid scope or depth");
+      var s = new Scope(id, targets, dismissible);
+      s.restore = focused();
+      if (!initial.isEmpty()) {
+        if (!ids(s).contains(initial))
+          throw new IllegalArgumentException("initial target not focusable");
+        s.focused = initial;
+      }
+      scopes.add(s);
+    }
+    public void open(String id, List<FocusTarget> targets) {
+      open(id, targets, "", true);
+    }
+    public void update(String id, List<FocusTarget> targets) {
+      var next = owned(targets);
+      for (var s : scopes)
+        if (s.id.equals(id)) {
+          s.targets = next;
+          reconcile(s);
+          return;
+        }
+      throw new IllegalArgumentException("unknown scope");
+    }
+    public Event close(String id) {
+      if (depth() == 0 || !scopeId().equals(id))
+        throw new IllegalArgumentException("only top popup can close");
+      String restore = top().restore;
+      scopes.remove(scopes.size() - 1);
+      if (!focus(restore))
+        reconcile(top());
+      return new Event("focus", focused());
+    }
+    public Optional<PopupCloseRequest> requestClose() {
+      return depth() > 0 && top().dismissible
+          ? Optional.of(new PopupCloseRequest(scopeId(), "escape"))
+          : Optional.empty();
+    }
+    public InputRoute route(String target) {
+      return new InputRoute(scopeId(), !target.isEmpty() && !target.equals(scopeId()));
+    }
+    public boolean blocked(String target) {
+      return route(target).blocked();
+    }
+  }
 }

@@ -21,3 +21,6 @@ from .workspace import Split, SplitLayout
 __all__ += ["Split", "SplitLayout"]
 
 __all__ += ["FormOption", "FormRow"]
+
+from .workspace import InputRoute, PopupCloseRequest
+__all__ += ["InputRoute", "PopupCloseRequest"]

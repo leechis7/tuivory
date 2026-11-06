@@ -165,10 +165,10 @@ inline Break property(unsigned cp) {
   PROPERTY(grapheme_prepend, Prepend)
   PROPERTY(grapheme_spacingmark, Spacing)
   PROPERTY(grapheme_l, L)
-  PROPERTY(grapheme_v, V) PROPERTY(grapheme_t, T) PROPERTY(grapheme_lv, LV)
-      PROPERTY(grapheme_lvt, LVT)
+  PROPERTY(grapheme_v, V)
+  PROPERTY(grapheme_t, T) PROPERTY(grapheme_lv, LV) PROPERTY(grapheme_lvt, LVT)
 #undef PROPERTY
-          return Break::Other;
+      return Break::Other;
 }
 inline bool pictographic(unsigned c) {
   return range(c, tui_extended_pictographic,
@@ -690,3 +690,5 @@ public:
 #include "tuivory_text.hpp"
 
 #include "tuivory_forms.hpp"
+
+#include "tuivory_focus.hpp"
