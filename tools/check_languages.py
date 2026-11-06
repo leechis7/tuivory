@@ -85,11 +85,11 @@ def check_native(language):
         print(f'{language}: isolated external static-link consumer and shared Tree cases passed')
     if language=='c':
         run(['cc','-std=c11','-Wall','-Wextra','-Werror','-fsanitize=address,undefined','-I',ROOT/'c/include',ROOT/'c/src/tuivory.c',ROOT/'c/tests/components.c','-o',CACHE/'c-sanitize'])
-        run([CACHE/'c-sanitize'],env=dict(os.environ,ASAN_OPTIONS='detect_leaks=0'))
-        print('C ASan/UBSan passed; leak detection disabled because ptrace host disallows LeakSanitizer')
+        run([CACHE/'c-sanitize'],env=dict(os.environ,ASAN_OPTIONS=os.environ.get('ASAN_OPTIONS','detect_leaks=0')))
+        print('C ASan/UBSan passed; ASAN_OPTIONS='+os.environ.get('ASAN_OPTIONS','detect_leaks=0'))
     else:
         run(['c++','-std=c++17','-Wall','-Wextra','-Werror','-Wno-missing-field-initializers','-fsanitize=address,undefined','-I',ROOT/'cpp/include',ROOT/'cpp/tests/components.cpp','-o',CACHE/'cpp-sanitize'])
-        run([CACHE/'cpp-sanitize'],env=dict(os.environ,ASAN_OPTIONS='detect_leaks=0'))
+        run([CACHE/'cpp-sanitize'],env=dict(os.environ,ASAN_OPTIONS=os.environ.get('ASAN_OPTIONS','detect_leaks=0')))
 
 
 def check_java():
