@@ -2364,4 +2364,365 @@ public final class Tuivory {
     y = Math.max(viewport.y(), Math.min((long) viewport.y() + vh - h, y));
     return new Rect((int) x, (int) y, (int) w, (int) h);
   }
+  public static final class NoticeAction {
+    public String id, label;
+    public boolean disabled;
+    public NoticeAction(String id) {
+      this(id, "");
+    }
+    public NoticeAction(String id, String label) {
+      this.id = id;
+      this.label = label;
+    }
+  }
+  public static final class Notice {
+    public String id, text, detail = "", severity = "info";
+    public int priority;
+    public long expiresAt;
+    public boolean persistent;
+    public List<NoticeAction> actions = new ArrayList<>();
+    public Notice(String id) {
+      this(id, "");
+    }
+    public Notice(String id, String text) {
+      this.id = id;
+      this.text = text;
+    }
+  }
+  public record NoticeEvent(String kind, String id, String action) {
+    public NoticeEvent() {
+      this("", "", "");
+    }
+  }
+  public record FeedbackSpan(
+      int start, int width, String text, String role, String action, boolean disabled) {}
+  public record
+      FeedbackRow(String id, String text, String role, boolean focused, List<FeedbackSpan> spans) {
+    public FeedbackRow {
+      spans = List.copyOf(spans);
+    }
+    public FeedbackRow(String id, String text, String role) {
+      this(id, text, role, false, List.of());
+    }
+  }
+  private static void feedbackNumber(long n) {
+    if (n < 0 || n > 9007199254740991L)
+      throw new IllegalArgumentException("expected a nonnegative safe integer");
+  }
+  private static int noticeSeverity(String s) {
+    if (s == null)
+      return -1;
+    return switch (s) {
+      case "info" -> 0;
+      case "success" -> 1;
+      case "warning" -> 2;
+      case "error" -> 3;
+      default -> -1;
+    };
+  }
+  private static void feedbackDraw(Canvas c, Rect r, List<FeedbackRow> rows) {
+    c.fill(r, "surface");
+    for (int y = 0; y < Math.max(0, r.height()) && y < rows.size(); y++) {
+      var row = rows.get(y);
+      c.write(r.x(), r.y() + y, row.text(), row.role(), false, r.width());
+      for (var s : row.spans())
+        c.write(r.x() + s.start(), r.y() + y, s.text(), s.role(), false, s.width());
+    }
+  }
+  /** Copied notices, host clocks and requests; no timers or business callbacks. */
+  public static final class NoticeQueue {
+    private final int capacity;
+    private final ArrayList<Notice> source = new ArrayList<>();
+    private List<FeedbackRow> hits = List.of();
+    private int width;
+    public String focused = "";
+    public NoticeQueue() {
+      this(10);
+    }
+    public NoticeQueue(int capacity) {
+      if (capacity < 1 || capacity > 65536)
+        throw new IllegalArgumentException("notice capacity must be 1..65536");
+      this.capacity = capacity;
+    }
+    public int capacity() {
+      return capacity;
+    }
+    private static Notice copy(Notice source) {
+      var n = new Notice(source.id, source.text);
+      n.detail = source.detail;
+      n.severity = source.severity;
+      n.priority = source.priority;
+      n.expiresAt = source.expiresAt;
+      n.persistent = source.persistent;
+      for (var a : source.actions) {
+        var owned = new NoticeAction(a.id, a.label);
+        owned.disabled = a.disabled;
+        n.actions.add(owned);
+      }
+      return n;
+    }
+    private static boolean pinned(Notice n) {
+      return n.persistent || "error".equals(n.severity) || !n.actions.isEmpty();
+    }
+    private static boolean expired(Notice n, long now) {
+      return !pinned(n) && n.expiresAt > 0 && n.expiresAt <= now;
+    }
+    public List<Notice> items() {
+      return source.stream().map(NoticeQueue::copy).toList();
+    }
+    public void push(Notice original) {
+      if (original.id == null || original.id.isEmpty() || noticeSeverity(original.severity) < 0)
+        throw new IllegalArgumentException("invalid notice ID or severity");
+      feedbackNumber(original.expiresAt);
+      var ids = new HashSet<String>();
+      if (original.actions.size() > 1024)
+        throw new IllegalArgumentException("too many notice actions");
+      for (var a : original.actions)
+        if (a.id == null || a.id.isEmpty() || !ids.add(a.id))
+          throw new IllegalArgumentException("invalid notice action");
+      var n = copy(original);
+      for (int i = 0; i < source.size(); i++)
+        if (source.get(i).id.equals(n.id)) {
+          source.set(i, n);
+          hits = List.of();
+          return;
+        }
+      if (source.size() >= capacity) {
+        int at = -1;
+        for (int i = 0; i < source.size(); i++) {
+          var old = source.get(i);
+          if (pinned(old))
+            continue;
+          if (at < 0 || noticeSeverity(old.severity) < noticeSeverity(source.get(at).severity)
+              || noticeSeverity(old.severity) == noticeSeverity(source.get(at).severity)
+                  && old.priority < source.get(at).priority)
+            at = i;
+        }
+        if (at < 0)
+          throw new IllegalArgumentException("notice queue full; important notices retained");
+        var old = source.get(at);
+        if (noticeSeverity(old.severity) > noticeSeverity(n.severity)
+            || noticeSeverity(old.severity) == noticeSeverity(n.severity)
+                && old.priority > n.priority)
+          throw new IllegalArgumentException("notice queue full");
+        if (focused.equals(old.id))
+          focused = "";
+        source.remove(at);
+      }
+      if (focused.isEmpty() || "error".equals(n.severity))
+        focused = n.id;
+      source.add(n);
+      hits = List.of();
+    }
+    public List<Notice> visible() {
+      return visible(0);
+    }
+    public List<Notice> visible(long now) {
+      feedbackNumber(now);
+      var out = new ArrayList<Notice>();
+      for (var n : source)
+        if (!expired(n, now))
+          out.add(copy(n));
+      out.sort((a, b) -> {
+        int rank = Integer.compare(noticeSeverity(b.severity), noticeSeverity(a.severity));
+        return rank != 0 ? rank : Integer.compare(b.priority, a.priority);
+      });
+      return List.copyOf(out);
+    }
+    public boolean dismiss(String id) {
+      for (int i = 0; i < source.size(); i++)
+        if (source.get(i).id.equals(id)) {
+          source.remove(i);
+          if (focused.equals(id))
+            focused = "";
+          hits = List.of();
+          return true;
+        }
+      return false;
+    }
+    public List<NoticeEvent> expire(long now) {
+      feedbackNumber(now);
+      var out = new ArrayList<NoticeEvent>();
+      for (var n : source)
+        if (expired(n, now))
+          out.add(new NoticeEvent("expired", n.id, ""));
+      for (var e : out) dismiss(e.id());
+      return List.copyOf(out);
+    }
+    private static int limit(int count, int height) {
+      height = Math.max(0, Math.min(4096, height));
+      return count > height && height > 0 ? Math.max(1, height - 1) : height;
+    }
+    public NoticeEvent requestAction(String id, String action, long now) {
+      for (var n : visible(now))
+        if (n.id.equals(id))
+          for (var a : n.actions)
+            if (a.id.equals(action) && !a.disabled)
+              return new NoticeEvent("action", id, action);
+      return new NoticeEvent();
+    }
+    public NoticeEvent handle(String action, long now, int height) {
+      if (action.equals("up"))
+        action = "previous";
+      if (action.equals("down"))
+        action = "next";
+      var all = visible(now);
+      var items = all.subList(0, Math.min(all.size(), limit(all.size(), height)));
+      if (items.isEmpty() || !List.of("next", "previous", "activate", "dismiss").contains(action))
+        return new NoticeEvent();
+      int at = 0;
+      for (int i = 0; i < items.size(); i++)
+        if (items.get(i).id.equals(focused))
+          at = i;
+      if (action.equals("next"))
+        at = Math.min(at + 1, items.size() - 1);
+      else if (action.equals("previous"))
+        at = Math.max(0, at - 1);
+      var n = items.get(at);
+      focused = n.id;
+      if (action.equals("dismiss"))
+        return new NoticeEvent("dismiss", n.id, "");
+      if (action.equals("activate"))
+        for (var a : n.actions)
+          if (!a.disabled)
+            return new NoticeEvent("action", n.id, a.id);
+      return new NoticeEvent();
+    }
+    public List<FeedbackRow> layout(int width, int height, long now) {
+      this.width = width = Math.max(0, Math.min(65535, width));
+      height = Math.max(0, Math.min(4096, height));
+      var items = visible(now);
+      int count = limit(items.size(), height);
+      var rows = new ArrayList<FeedbackRow>();
+      for (var n : items.subList(0, Math.min(items.size(), count))) {
+        String mark = switch (n.severity) {
+          case "error" -> "[!]";
+          case "warning" -> "[?]";
+          case "success" -> "[+]";
+          default -> "[i]";
+        };
+        String value = (focused.equals(n.id) ? "> " : "  ") + mark + " " + clean(n.text);
+        if (!n.detail.isEmpty())
+          value += " / " + clean(n.detail);
+        var parts = new ArrayList<FeedbackSpan>();
+        for (var a : n.actions) {
+          String part = " [" + clean(a.label) + "]";
+          parts.add(new FeedbackSpan(
+              cells(value), 0, part, a.disabled ? "disabled" : n.severity, a.id, a.disabled));
+          value += part;
+        }
+        int end = cells(value) > width ? Math.max(0, width - 1) : width;
+        var spans = new ArrayList<FeedbackSpan>();
+        for (var part : parts) {
+          String painted = clip(part.text(), Math.max(0, end - part.start()), false);
+          int size = cells(painted);
+          if (size > 0)
+            spans.add(new FeedbackSpan(
+                part.start(), size, painted, part.role(), part.action(), part.disabled()));
+        }
+        rows.add(new FeedbackRow(
+            n.id, clip(value, width, true), n.severity, focused.equals(n.id), spans));
+      }
+      if (items.size() > count && height > rows.size())
+        rows.add(new FeedbackRow("", clip("+" + (items.size() - count), width, true), "hint"));
+      hits = List.copyOf(rows);
+      return hits;
+    }
+    public NoticeEvent click(int x, int y, long now) {
+      feedbackNumber(now);
+      if (x < 0 || x >= width || y < 0 || y >= hits.size())
+        return new NoticeEvent();
+      var row = hits.get(y);
+      if (row.id().isEmpty() || visible(now).stream().noneMatch(n -> n.id.equals(row.id())))
+        return new NoticeEvent();
+      for (var s : row.spans())
+        if (x >= s.start() && x < s.start() + s.width()) {
+          if (s.disabled())
+            return new NoticeEvent();
+          focused = row.id();
+          return requestAction(row.id(), s.action(), now);
+        }
+      focused = row.id();
+      return new NoticeEvent("focus", row.id(), "");
+    }
+    public void draw(Canvas c, Rect r, long now) {
+      feedbackDraw(c, r, layout(r.width(), r.height(), now));
+    }
+  }
+  public static final class Progress {
+    public String id = "", label = "", status = "loading", message = "", cancelLabel = "";
+    public long current, total;
+    public boolean cancellable;
+    public Progress() {}
+    public Progress(String id) {
+      this.id = id;
+    }
+    public NoticeEvent requestCancel() {
+      return !id.isEmpty() && cancellable && (status.isEmpty() || status.equals("loading"))
+          ? new NoticeEvent("cancel", id, "")
+          : new NoticeEvent();
+    }
+    public List<FeedbackRow> layout(int width, long frame) {
+      feedbackNumber(current);
+      feedbackNumber(total);
+      feedbackNumber(frame);
+      width = Math.max(0, Math.min(65535, width));
+      String state = status.isEmpty() ? "loading" : status;
+      String role = switch (state) {
+        case "error" -> "error";
+        case "success" -> "success";
+        case "empty", "cancelled" -> "hint";
+        case "ready" -> "body";
+        case "loading" -> "info";
+        default -> "error";
+      };
+      String value = state;
+      if (state.equals("loading")) {
+        if (total == 0)
+          value = String.valueOf("|/-\\".charAt((int) (frame % 4)));
+        else {
+          double ratio = (double) Math.min(current, total) / total;
+          int size = Math.min(30, Math.max(0, width - 10)), done = (int) (ratio * size);
+          value = "["
+              + "#".repeat(done) + "-".repeat(size - done) + "] " + (int) (ratio * 100) + "%";
+        }
+      }
+      if (!message.isEmpty())
+        value += " " + message;
+      var rows = new ArrayList<FeedbackRow>();
+      rows.add(new FeedbackRow(id, clip(label, width, true), role));
+      rows.add(new FeedbackRow(id, clip(value, width, true), role));
+      if (!requestCancel().kind().isEmpty() && !cancelLabel.isEmpty())
+        rows.add(new FeedbackRow(id, clip(cancelLabel, width, true), "hint"));
+      return List.copyOf(rows);
+    }
+    public void draw(Canvas c, Rect r, long frame) {
+      feedbackDraw(c, r, layout(r.width(), frame));
+    }
+  }
+  public static final class DataState {
+    public String kind, text, detail;
+    public DataState() {
+      this("empty", "", "");
+    }
+    public DataState(String kind, String text, String detail) {
+      this.kind = kind;
+      this.text = text;
+      this.detail = detail;
+    }
+    public List<FeedbackRow> layout(int width) {
+      width = Math.max(0, Math.min(65535, width));
+      String role = switch (kind) {
+        case "ready" -> "body";
+        case "loading" -> "info";
+        case "empty" -> "hint";
+        default -> "error";
+      };
+      return List.of(new FeedbackRow("", clip(text, width, true), role),
+          new FeedbackRow("", clip(detail, width, true), "hint"));
+    }
+    public void draw(Canvas c, Rect r) {
+      feedbackDraw(c, r, layout(r.width()));
+    }
+  }
 }

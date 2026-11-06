@@ -593,67 +593,6 @@ def status_line(items: list[StatusItem], width: int) -> LineLayout:
     return out
 
 
-@dataclass
-class Notice:
-    id: str
-    text: str
-    severity: str = "info"
-    priority: int = 0
-    expires_at: int = 0
-    persistent: bool = False
-
-
-class Notices:
-    def __init__(self, capacity: int = 10):
-        if capacity < 1:
-            raise ValueError("positive capacity required")
-        self.capacity = capacity
-        self.items: list[Notice] = []
-
-    def push(self, notice: Notice) -> None:
-        if not notice.id or notice.severity not in ("info", "success", "warning", "error"):
-            raise ValueError("invalid notice")
-        self.items = [i for i in self.items if i.id != notice.id] + [notice]
-        self.items = sorted(self.items, key=lambda i: (i.priority, i.severity == "error"), reverse=True)[:self.capacity]
-
-    def visible(self, now: int) -> list[Notice]:
-        return [i for i in self.items if i.persistent or i.severity == "error" or not i.expires_at or i.expires_at > now]
-
-    def dismiss(self, id: str) -> Event:
-        self.items = [i for i in self.items if i.id != id]
-        return Event("dismiss", id)
-
-    def draw(self, canvas: Canvas, rect: Rect, *, now: int = 0, **_) -> None:
-        canvas.fill(rect)
-        for y, notice in enumerate(self.visible(now)[:rect.height]):
-            canvas.write(rect.x, rect.y + y, clip(notice.text, rect.width, True), notice.severity, width=rect.width)
-
-
-@dataclass
-class Progress:
-    value: int = 0
-    total: int = 0
-    label: str = ""
-    cancellable: bool = False
-
-    def cancel(self) -> Event:
-        return Event("cancel") if self.cancellable else Event()
-
-    def draw(self, canvas: Canvas, rect: Rect, *, frame: int = 0, **_) -> None:
-        fraction = max(0, min(1, self.value / self.total)) if self.total > 0 else 0
-        text = f"{self.label} {int(fraction * 100)}%" if self.total > 0 else f"{self.label} {'|/-'[frame % 3]}"
-        canvas.write(rect.x, rect.y, clip(text, rect.width, True), "info", width=rect.width)
-
-
-@dataclass
-class DataState:
-    status: str = "empty"
-    message: str = ""
-    def draw(self, canvas: Canvas, rect: Rect, **_) -> None:
-        role = "error" if self.status == "error" else "hint"
-        canvas.write(rect.x, rect.y, clip(self.message or self.status, rect.width, True), role, width=rect.width)
-
-
 def popup_placement(anchor: Rect, viewport: Rect, width: int, height: int, *, shadow: bool = False) -> tuple[Rect, Rect]:
     if min(width, height, viewport.width, viewport.height) < 0:
         raise ValueError("negative popup size")

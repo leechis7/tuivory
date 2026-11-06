@@ -10,3 +10,4 @@ import "./focus.mjs";
 import "./collections.mjs";
 
 import "./menu.mjs";
+import './feedback.mjs';

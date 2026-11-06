@@ -347,6 +347,95 @@ TuiMenuEvent tui_menu_bar_click(TuiMenu *menu, int x, int width);
 TuiResult tui_menu_draw_bar(TuiMenu *menu, TuiCanvas *canvas, TuiRect area);
 TuiRect tui_menu_placement(TuiRect anchor, TuiRect viewport, int width,
                            int height);
+/* Feedback uses host monotonic clocks/frames in 0..2^53-1; no timers or I/O.
+ * Queues copy source notices/actions. handle/click return requests only. */
+typedef struct {
+  const char *id, *label;
+  int disabled;
+} TuiNoticeAction;
+typedef struct {
+  const char *id, *text, *detail, *severity;
+  int priority;
+  unsigned long long expires_at;
+  int persistent;
+  const TuiNoticeAction *actions;
+  size_t action_count;
+} TuiNotice;
+typedef struct {
+  const char *kind, *id, *action;
+  TuiResult result;
+} TuiNoticeEvent;
+typedef struct {
+  int start, width;
+  const char *text, *role, *action;
+  int disabled;
+} TuiFeedbackSpan;
+typedef struct {
+  const char *id, *text, *role;
+  int focused;
+  const TuiFeedbackSpan *spans;
+  size_t span_count;
+} TuiFeedbackRow;
+typedef struct TuiFeedbackView TuiFeedbackView;
+typedef struct TuiNoticeQueue TuiNoticeQueue;
+typedef struct TuiNoticeEvents TuiNoticeEvents;
+TuiNoticeQueue *tui_notice_queue_new(size_t capacity);
+void tui_notice_queue_free(TuiNoticeQueue *queue);
+TuiResult tui_notice_queue_push(TuiNoticeQueue *queue, const TuiNotice *notice);
+const TuiNotice *tui_notice_queue_items(const TuiNoticeQueue *queue,
+                                        size_t *count);
+const char *tui_notice_queue_focused(const TuiNoticeQueue *queue);
+int tui_notice_queue_focus(TuiNoticeQueue *queue, const char *id,
+                           unsigned long long now);
+TuiResult tui_notice_queue_visible(TuiNoticeQueue *queue,
+                                   unsigned long long now,
+                                   const TuiNotice **items, size_t *count);
+int tui_notice_queue_dismiss(TuiNoticeQueue *queue, const char *id);
+TuiResult tui_notice_queue_expire(TuiNoticeQueue *queue, unsigned long long now,
+                                  TuiNoticeEvents **events);
+size_t tui_notice_events_count(const TuiNoticeEvents *events);
+TuiNoticeEvent tui_notice_events_at(const TuiNoticeEvents *events,
+                                    size_t index);
+void tui_notice_events_free(TuiNoticeEvents *events);
+TuiNoticeEvent tui_notice_queue_request_action(TuiNoticeQueue *queue,
+                                               const char *id,
+                                               const char *action,
+                                               unsigned long long now);
+TuiNoticeEvent tui_notice_queue_handle(TuiNoticeQueue *queue,
+                                       const char *action,
+                                       unsigned long long now, int height);
+/* Rows are borrowed until next layout/source change/destruction. */
+TuiResult tui_notice_queue_layout(TuiNoticeQueue *queue, int width, int height,
+                                  unsigned long long now,
+                                  const TuiFeedbackRow **rows, size_t *count);
+TuiNoticeEvent tui_notice_queue_click(TuiNoticeQueue *queue, int x, int y,
+                                      unsigned long long now);
+TuiResult tui_notice_queue_draw(TuiNoticeQueue *queue, TuiCanvas *canvas,
+                                TuiRect rect, unsigned long long now);
+typedef struct {
+  const char *id, *label, *status, *message, *cancel_label;
+  unsigned long long current, total;
+  int cancellable;
+} TuiProgress;
+typedef struct {
+  const char *kind, *text, *detail;
+} TuiDataState;
+TuiNoticeEvent tui_progress_request_cancel(const TuiProgress *progress);
+/* Progress/data layouts are owned; free with tui_feedback_free. */
+TuiResult tui_progress_layout(const TuiProgress *progress, int width,
+                              unsigned long long frame, TuiFeedbackView **view);
+TuiResult tui_progress_draw(const TuiProgress *progress, TuiCanvas *canvas,
+                            TuiRect rect, unsigned long long frame);
+TuiResult tui_data_state_layout(const TuiDataState *state, int width,
+                                TuiFeedbackView **view);
+TuiResult tui_data_state_draw(const TuiDataState *state, TuiCanvas *canvas,
+                              TuiRect rect);
+size_t tui_feedback_count(const TuiFeedbackView *view);
+const TuiFeedbackRow *tui_feedback_row(const TuiFeedbackView *view,
+                                       size_t index);
+TuiResult tui_feedback_draw(const TuiFeedbackView *view, TuiCanvas *canvas,
+                            TuiRect rect);
+void tui_feedback_free(TuiFeedbackView *view);
 #ifdef __cplusplus
 }
 #endif

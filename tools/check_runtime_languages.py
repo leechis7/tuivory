@@ -33,12 +33,15 @@ assert ui.fold("Straße Σςσ")=="strasse σσσ"
 l=ui.List([ui.Item("de","Straße")]);assert l.set_query("STRASSE").kind=="query" and l.focused=="de"
 picker=ui.SearchPicker([ui.Item("rust","Rust")]);picker.handle("open");picker.handle("insert","RUST");assert picker.value=="";assert picker.handle("activate").id=="rust" and picker.value=="rust"
 m=ui.Menu([ui.MenuItem("file","File"),ui.MenuItem("run","Run",parent="file")]);m.open("file","editor");assert m.draw_popup(c,ui.Rect(0,0,30,4),"Menu").width==26;assert m.handle("activate").return_id=="editor"
+q=ui.NoticeQueue(2);q.push(ui.Notice("error","Failure","error",actions=[ui.NoticeAction("off","Unavailable",True),ui.NoticeAction("retry","Retry")]));assert q.handle("activate").action=="retry" and q.handle("dismiss").kind=="dismiss" and len(q.items)==1;assert len(q.visible(100))==1
+p=ui.Progress("job",current=40,total=100,cancellable=True);assert p.request_cancel().kind=="cancel" and "40%"in p.layout(40)[1].text;assert ui.DataState("ready","Ready").layout(10)[0].role=="body"
 from importlib.metadata import distribution
 assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").files)
 ''')
  run([p,'-I',b/'consumer.py'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','tree','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','context-menu','--lang','en'],b)
+ run([p,'-I','-m','tuivory','--snapshot','--demo','feedback','--lang','en'],b)
  print('Independent Python wheel: isolated external venv install/import/Tree/example passed')
 with tempfile.TemporaryDirectory(prefix='tuivory-javascript-')as directory:
  b=Path(directory);(b/'package.json').write_text('{"type":"module"}\n')
@@ -59,6 +62,8 @@ const s=new ui.Form([{id:"s",kind:"select",options:[{id:"a"},{id:"b"}]}]);s.hand
 const focus=new ui.Focus("root",[{id:"open"}]);focus.open("popup",[]);if(!focus.route("root").blocked||focus.route().blocked||focus.requestClose()?.id!=="popup")throw new Error("focus routing");focus.close("popup");if(focus.focused!=="open")throw new Error("focus restoration");
 if(ui.fold("Straße Σςσ")!=="strasse σσσ")throw new Error("fold");const l=new ui.List([{id:"de",label:"Straße"}]);l.setQuery("STRASSE");if(l.focused!=="de")throw new Error("Unicode filter");
 const menu=new ui.Menu([{id:"file",label:"File"},{id:"run",parent:"file",label:"Run"}]);menu.open("file","editor");if(menu.drawPopup(c,ui.rect(0,0,30,4),"Menu").width!==26||menu.handle("activate").returnId!=="editor")throw new Error("menu");
+const notices=new ui.NoticeQueue(2);notices.push({id:"error",text:"Failure",severity:"error",actions:[{id:"off",disabled:true},{id:"retry",label:"Retry"}]});if(notices.handle("activate").action!=="retry"||notices.handle("dismiss").kind!=="dismiss"||notices.items.length!==1||notices.visible(100).length!==1)throw new Error("notice requests");
+const progress=new ui.Progress({id:"job",current:40,total:100,cancellable:true});if(progress.requestCancel().kind!=="cancel"||!progress.layout(40)[1].text.includes("40%")||new ui.DataState("ready","Ready").layout(10)[0].role!=="body")throw new Error("progress/states");
 const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open");picker.handle("insert","RUST");if(picker.value||picker.handle("activate").id!=="rust"||picker.value!=="rust")throw new Error("picker");
 '''
  assert (b/'node_modules/tuivory/CASEFOLD-LICENSE').read_text().startswith('UNICODE LICENSE V3')
@@ -67,4 +72,5 @@ const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open
  run(['node',args.typescript_compiler.resolve(),'--strict','--module','NodeNext','--target','ES2022','--noEmit','consumer.ts'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','context-menu','--lang','en'],b)
+ run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','feedback','--lang','en'],b)
  print('Independent npm package: isolated external JS import/runtime, TS declarations and example passed')

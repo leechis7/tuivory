@@ -35,3 +35,5 @@ java -jar .cache/packages/java/tuivory-0.11.1.jar --demo tree --lang ko
 [독립 언어 목록·검색 선택기 API](../docs/language-collections.md)
 
 [독립 언어 메뉴·문맥 메뉴 API](../docs/language-menu.md)
+
+[독립 언어 알림·진행·데이터 상태 API](../docs/language-feedback.md)

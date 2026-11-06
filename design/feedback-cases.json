@@ -1,0 +1,299 @@
+{
+  "notice_items": [
+    {
+      "id": "info",
+      "text": "Transient",
+      "severity": "info",
+      "expires_at": 5
+    },
+    {
+      "id": "warning",
+      "text": "Check",
+      "detail": "Additional detail",
+      "severity": "warning",
+      "priority": 1,
+      "expires_at": 20
+    },
+    {
+      "id": "error",
+      "text": "Failure",
+      "severity": "error",
+      "expires_at": 1,
+      "actions": [
+        {
+          "id": "off",
+          "label": "Unavailable 한글 é 👩‍💻",
+          "disabled": true
+        },
+        {
+          "id": "retry",
+          "label": "Retry"
+        }
+      ]
+    }
+  ],
+  "notice_steps": [
+    {
+      "operation": "visible",
+      "now": 0,
+      "ids": [
+        "error",
+        "warning",
+        "info"
+      ]
+    },
+    {
+      "operation": "visible",
+      "now": 100,
+      "ids": [
+        "error"
+      ]
+    },
+    {
+      "operation": "handle",
+      "action": "activate",
+      "now": 100,
+      "height": 2,
+      "event": {
+        "kind": "action",
+        "id": "error",
+        "action": "retry"
+      }
+    },
+    {
+      "operation": "handle",
+      "action": "dismiss",
+      "now": 100,
+      "height": 2,
+      "event": {
+        "kind": "dismiss",
+        "id": "error",
+        "action": ""
+      }
+    },
+    {
+      "operation": "visible",
+      "now": 100,
+      "ids": [
+        "error"
+      ]
+    },
+    {
+      "operation": "expire",
+      "now": 100,
+      "ids": [
+        "info",
+        "warning"
+      ]
+    },
+    {
+      "operation": "dismiss",
+      "id": "error",
+      "result": true
+    },
+    {
+      "operation": "dismiss",
+      "id": "error",
+      "result": false
+    },
+    {
+      "operation": "visible",
+      "now": 100,
+      "ids": []
+    }
+  ],
+  "evictions": [
+    {
+      "capacity": 1,
+      "initial": [
+        {
+          "id": "a",
+          "text": "a",
+          "priority": 5
+        }
+      ],
+      "incoming": {
+        "id": "b",
+        "text": "b",
+        "priority": 4
+      },
+      "accepted": false,
+      "ids": [
+        "a"
+      ]
+    },
+    {
+      "capacity": 1,
+      "initial": [
+        {
+          "id": "a",
+          "text": "a",
+          "priority": 5
+        }
+      ],
+      "incoming": {
+        "id": "b",
+        "text": "b",
+        "severity": "success"
+      },
+      "accepted": true,
+      "ids": [
+        "b"
+      ]
+    },
+    {
+      "capacity": 1,
+      "initial": [
+        {
+          "id": "a",
+          "text": "a",
+          "severity": "error"
+        }
+      ],
+      "incoming": {
+        "id": "b",
+        "text": "b",
+        "severity": "error"
+      },
+      "accepted": false,
+      "ids": [
+        "a"
+      ]
+    },
+    {
+      "capacity": 1,
+      "initial": [
+        {
+          "id": "a",
+          "text": "a",
+          "persistent": true
+        }
+      ],
+      "incoming": {
+        "id": "b",
+        "text": "b",
+        "severity": "error"
+      },
+      "accepted": false,
+      "ids": [
+        "a"
+      ]
+    },
+    {
+      "capacity": 1,
+      "initial": [
+        {
+          "id": "a",
+          "text": "a",
+          "actions": [
+            {
+              "id": "run",
+              "label": "Run"
+            }
+          ]
+        }
+      ],
+      "incoming": {
+        "id": "b",
+        "text": "b",
+        "severity": "error"
+      },
+      "accepted": false,
+      "ids": [
+        "a"
+      ]
+    },
+    {
+      "capacity": 1,
+      "initial": [
+        {
+          "id": "a",
+          "text": "a",
+          "persistent": true
+        }
+      ],
+      "incoming": {
+        "id": "a",
+        "text": "updated",
+        "severity": "warning"
+      },
+      "accepted": true,
+      "ids": [
+        "a"
+      ]
+    }
+  ],
+  "progress": [
+    {
+      "id": "p",
+      "status": "loading",
+      "current": 200,
+      "total": 100,
+      "cancellable": true,
+      "cancel": true,
+      "role": "info",
+      "contains": "100%"
+    },
+    {
+      "id": "p",
+      "status": "success",
+      "current": 100,
+      "total": 100,
+      "cancellable": true,
+      "cancel": false,
+      "role": "success",
+      "contains": "success"
+    },
+    {
+      "id": "p",
+      "status": "cancelled",
+      "cancellable": true,
+      "cancel": false,
+      "role": "hint",
+      "contains": "cancelled"
+    },
+    {
+      "id": "",
+      "status": "loading",
+      "cancellable": true,
+      "cancel": false,
+      "role": "info",
+      "contains": "|"
+    },
+    {
+      "id": "p",
+      "status": "ready",
+      "cancel": false,
+      "role": "body",
+      "contains": "ready"
+    },
+    {
+      "id": "p",
+      "status": "empty",
+      "cancel": false,
+      "role": "hint",
+      "contains": "empty"
+    },
+    {
+      "id": "p",
+      "status": "error",
+      "cancel": false,
+      "role": "error",
+      "contains": "error"
+    },
+    {
+      "id": "p",
+      "status": "invalid",
+      "cancel": false,
+      "role": "error",
+      "contains": "invalid"
+    }
+  ],
+  "data_states": {
+    "ready": "body",
+    "loading": "info",
+    "empty": "hint",
+    "error": "error",
+    "invalid": "error"
+  }
+}

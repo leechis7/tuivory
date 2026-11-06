@@ -4712,3 +4712,755 @@ TuiRect tui_menu_placement(TuiRect anchor, TuiRect viewport, int width,
     y = hi;
   return (TuiRect){(int)x, (int)y, (int)w, (int)h};
 }
+
+/* Independent feedback implementation; clocks and actions belong to hosts. */
+struct TuiFeedbackView {
+  TuiFeedbackRow *rows;
+  size_t count;
+};
+struct TuiNoticeEvents {
+  TuiNoticeEvent *events;
+  size_t count;
+};
+struct TuiNoticeQueue {
+  TuiNotice *items, *visible;
+  size_t count, capacity;
+  int focused, width;
+  TuiFeedbackView *hits;
+};
+static const char *feedback_string(const char *s) { return s ? s : ""; }
+static int feedback_number(unsigned long long value) {
+  return value <= 9007199254740991ULL;
+}
+static int notice_severity(const char *s) {
+  if (!s || !strcmp(s, "info"))
+    return 0;
+  return !strcmp(s, "success")   ? 1
+         : !strcmp(s, "warning") ? 2
+         : !strcmp(s, "error")   ? 3
+                                 : -1;
+}
+static TuiNoticeEvent notice_event(const char *kind, const char *id,
+                                   const char *action, TuiResult result) {
+  return (TuiNoticeEvent){feedback_string(kind), feedback_string(id),
+                          feedback_string(action), result};
+}
+static TuiFeedbackView *feedback_new(size_t count) {
+  TuiFeedbackView *v = calloc(1, sizeof *v);
+  if (!v)
+    return NULL;
+  if (count) {
+    v->rows = calloc(count, sizeof *v->rows);
+    if (!v->rows) {
+      free(v);
+      return NULL;
+    }
+  }
+  v->count = count;
+  return v;
+}
+void tui_feedback_free(TuiFeedbackView *v) {
+  if (!v)
+    return;
+  for (size_t i = 0; i < v->count; i++) {
+    TuiFeedbackRow *r = &v->rows[i];
+    free((void *)r->id);
+    free((void *)r->text);
+    free((void *)r->role);
+    for (size_t j = 0; j < r->span_count; j++) {
+      free((void *)r->spans[j].text);
+      free((void *)r->spans[j].role);
+      free((void *)r->spans[j].action);
+    }
+    free((void *)r->spans);
+  }
+  free(v->rows);
+  free(v);
+}
+size_t tui_feedback_count(const TuiFeedbackView *v) { return v ? v->count : 0; }
+const TuiFeedbackRow *tui_feedback_row(const TuiFeedbackView *v, size_t index) {
+  return v && index < v->count ? &v->rows[index] : NULL;
+}
+static TuiResult feedback_row_set(TuiFeedbackRow *row, const char *id,
+                                  const char *text, const char *role,
+                                  int width) {
+  row->id = copy(id);
+  row->text = tui_clip(feedback_string(text), width, 1);
+  row->role = copy(role);
+  return row->id && row->text && row->role ? TUI_OK : TUI_NOMEM;
+}
+static TuiResult feedback_paint(const TuiFeedbackRow *rows, size_t count,
+                                TuiCanvas *c, TuiRect r) {
+  if (!c)
+    return TUI_INVALID;
+  TuiResult result = tui_canvas_fill(c, r, "surface");
+  if (result != TUI_OK)
+    return result;
+  for (size_t y = 0; y < count && y < (size_t)max(0, r.height); y++) {
+    const TuiFeedbackRow *row = &rows[y];
+    result = tui_canvas_write(c, r.x, r.y + (int)y, row->text, row->role, 0,
+                              r.width);
+    if (result != TUI_OK)
+      return result;
+    for (size_t j = 0; j < row->span_count; j++) {
+      const TuiFeedbackSpan *s = &row->spans[j];
+      result = tui_canvas_write(c, r.x + s->start, r.y + (int)y, s->text,
+                                s->role, 0, s->width);
+      if (result != TUI_OK)
+        return result;
+    }
+  }
+  return TUI_OK;
+}
+TuiResult tui_feedback_draw(const TuiFeedbackView *v, TuiCanvas *c, TuiRect r) {
+  return v ? feedback_paint(v->rows, v->count, c, r) : TUI_INVALID;
+}
+static void notice_clear(TuiNotice *n) {
+  free((void *)n->id);
+  free((void *)n->text);
+  free((void *)n->detail);
+  free((void *)n->severity);
+  for (size_t i = 0; i < n->action_count; i++) {
+    free((void *)n->actions[i].id);
+    free((void *)n->actions[i].label);
+  }
+  free((void *)n->actions);
+  memset(n, 0, sizeof *n);
+}
+static TuiResult notice_copy(const TuiNotice *source, TuiNotice *out) {
+  memset(out, 0, sizeof *out);
+  if (!source || !source->id || !*source->id ||
+      notice_severity(source->severity) < 0 ||
+      !feedback_number(source->expires_at) || source->action_count > 1024 ||
+      (source->action_count && !source->actions))
+    return TUI_INVALID;
+  const char *texts[] = {source->id, source->text, source->detail,
+                         source->severity};
+  for (size_t i = 0; i < 4; i++)
+    if (tui_cells(feedback_string(texts[i])) < 0)
+      return TUI_INVALID;
+  for (size_t i = 0; i < source->action_count; i++) {
+    const TuiNoticeAction *a = &source->actions[i];
+    if (!a->id || !*a->id || tui_cells(a->id) < 0 ||
+        tui_cells(feedback_string(a->label)) < 0)
+      return TUI_INVALID;
+    for (size_t j = 0; j < i; j++)
+      if (!strcmp(a->id, source->actions[j].id))
+        return TUI_INVALID;
+  }
+  out->id = copy(source->id);
+  out->text = copy(source->text);
+  out->detail = copy(source->detail);
+  out->severity = copy(source->severity ? source->severity : "info");
+  out->priority = source->priority;
+  out->expires_at = source->expires_at;
+  out->persistent = source->persistent;
+  if (!out->id || !out->text || !out->detail || !out->severity)
+    goto nomem;
+  if (source->action_count) {
+    TuiNoticeAction *actions = calloc(source->action_count, sizeof *actions);
+    if (!actions)
+      goto nomem;
+    out->actions = actions;
+    out->action_count = source->action_count;
+    for (size_t i = 0; i < source->action_count; i++) {
+      actions[i].id = copy(source->actions[i].id);
+      actions[i].label = copy(source->actions[i].label);
+      actions[i].disabled = source->actions[i].disabled;
+      if (!actions[i].id || !actions[i].label)
+        goto nomem;
+    }
+  }
+  return TUI_OK;
+nomem:
+  notice_clear(out);
+  return TUI_NOMEM;
+}
+static int notice_pinned(const TuiNotice *n) {
+  return n->persistent || !strcmp(n->severity, "error") || n->action_count > 0;
+}
+static int notice_expired(const TuiNotice *n, unsigned long long now) {
+  return !notice_pinned(n) && n->expires_at > 0 && n->expires_at <= now;
+}
+static void notice_invalidate(TuiNoticeQueue *q) {
+  free(q->visible);
+  q->visible = NULL;
+  tui_feedback_free(q->hits);
+  q->hits = NULL;
+}
+TuiNoticeQueue *tui_notice_queue_new(size_t capacity) {
+  if (!capacity || capacity > 65536)
+    return NULL;
+  TuiNoticeQueue *q = calloc(1, sizeof *q);
+  if (q) {
+    q->capacity = capacity;
+    q->focused = -1;
+  }
+  return q;
+}
+void tui_notice_queue_free(TuiNoticeQueue *q) {
+  if (q) {
+    for (size_t i = 0; i < q->count; i++)
+      notice_clear(&q->items[i]);
+    free(q->items);
+    notice_invalidate(q);
+    free(q);
+  }
+}
+const TuiNotice *tui_notice_queue_items(const TuiNoticeQueue *q,
+                                        size_t *count) {
+  if (count)
+    *count = q ? q->count : 0;
+  return q ? q->items : NULL;
+}
+const char *tui_notice_queue_focused(const TuiNoticeQueue *q) {
+  return q && q->focused >= 0 && (size_t)q->focused < q->count
+             ? q->items[q->focused].id
+             : "";
+}
+TuiResult tui_notice_queue_push(TuiNoticeQueue *q, const TuiNotice *source) {
+  if (!q)
+    return TUI_INVALID;
+  TuiNotice n;
+  TuiResult result = notice_copy(source, &n);
+  if (result != TUI_OK)
+    return result;
+  for (size_t i = 0; i < q->count; i++)
+    if (!strcmp(q->items[i].id, n.id)) {
+      notice_clear(&q->items[i]);
+      q->items[i] = n;
+      notice_invalidate(q);
+      return TUI_OK;
+    }
+  int evict = -1;
+  if (q->count >= q->capacity) {
+    for (size_t i = 0; i < q->count; i++) {
+      const TuiNotice *old = &q->items[i];
+      if (notice_pinned(old))
+        continue;
+      if (evict < 0 ||
+          notice_severity(old->severity) <
+              notice_severity(q->items[evict].severity) ||
+          (notice_severity(old->severity) ==
+               notice_severity(q->items[evict].severity) &&
+           old->priority < q->items[evict].priority))
+        evict = (int)i;
+    }
+    if (evict < 0) {
+      notice_clear(&n);
+      return TUI_INVALID;
+    }
+    const TuiNotice *old = &q->items[evict];
+    if (notice_severity(old->severity) > notice_severity(n.severity) ||
+        (notice_severity(old->severity) == notice_severity(n.severity) &&
+         old->priority > n.priority)) {
+      notice_clear(&n);
+      return TUI_INVALID;
+    }
+  } else {
+    TuiNotice *items = realloc(q->items, (q->count + 1) * sizeof *items);
+    if (!items) {
+      notice_clear(&n);
+      return TUI_NOMEM;
+    }
+    q->items = items;
+  }
+  if (evict >= 0) {
+    notice_clear(&q->items[evict]);
+    memmove(&q->items[evict], &q->items[evict + 1],
+            (q->count - (size_t)evict - 1) * sizeof *q->items);
+    q->count--;
+    if (q->focused == evict)
+      q->focused = -1;
+    else if (q->focused > evict)
+      q->focused--;
+  }
+  if (q->focused < 0 || !strcmp(n.severity, "error"))
+    q->focused = (int)q->count;
+  q->items[q->count++] = n;
+  notice_invalidate(q);
+  return TUI_OK;
+}
+static int notice_before(const TuiNotice *a, const TuiNotice *b) {
+  int ra = notice_severity(a->severity), rb = notice_severity(b->severity);
+  return ra > rb || (ra == rb && a->priority >= b->priority);
+}
+TuiResult tui_notice_queue_visible(TuiNoticeQueue *q, unsigned long long now,
+                                   const TuiNotice **items, size_t *count) {
+  if (!q || !items || !count || !feedback_number(now))
+    return TUI_INVALID;
+  *items = NULL;
+  *count = 0;
+  size_t n = 0;
+  for (size_t i = 0; i < q->count; i++)
+    if (!notice_expired(&q->items[i], now))
+      n++;
+  TuiNotice *out = n ? malloc(n * sizeof *out) : NULL,
+            *temp = n ? malloc(n * sizeof *temp) : NULL;
+  if (n && (!out || !temp)) {
+    free(out);
+    free(temp);
+    return TUI_NOMEM;
+  }
+  size_t at = 0;
+  for (size_t i = 0; i < q->count; i++)
+    if (!notice_expired(&q->items[i], now))
+      out[at++] = q->items[i];
+  for (size_t width = 1; width < n; width *= 2) {
+    for (size_t start = 0; start < n; start += width * 2) {
+      size_t mid = start + width < n ? start + width : n,
+             end = start + width * 2 < n ? start + width * 2 : n, left = start,
+             right = mid;
+      for (size_t j = start; j < end; j++)
+        temp[j] = right >= end ||
+                          (left < mid && notice_before(&out[left], &out[right]))
+                      ? out[left++]
+                      : out[right++];
+    }
+    TuiNotice *swap = out;
+    out = temp;
+    temp = swap;
+  }
+  free(temp);
+  free(q->visible);
+  q->visible = out;
+  *items = out;
+  *count = n;
+  return TUI_OK;
+}
+int tui_notice_queue_focus(TuiNoticeQueue *q, const char *id,
+                           unsigned long long now) {
+  if (!q || !id || !feedback_number(now))
+    return 0;
+  for (size_t i = 0; i < q->count; i++)
+    if (!strcmp(q->items[i].id, id) && !notice_expired(&q->items[i], now)) {
+      q->focused = (int)i;
+      return 1;
+    }
+  return 0;
+}
+int tui_notice_queue_dismiss(TuiNoticeQueue *q, const char *id) {
+  if (!q || !id)
+    return 0;
+  for (size_t i = 0; i < q->count; i++)
+    if (!strcmp(q->items[i].id, id)) {
+      notice_clear(&q->items[i]);
+      memmove(&q->items[i], &q->items[i + 1],
+              (q->count - i - 1) * sizeof *q->items);
+      q->count--;
+      if (q->focused == (int)i)
+        q->focused = -1;
+      else if (q->focused > (int)i)
+        q->focused--;
+      notice_invalidate(q);
+      return 1;
+    }
+  return 0;
+}
+size_t tui_notice_events_count(const TuiNoticeEvents *e) {
+  return e ? e->count : 0;
+}
+TuiNoticeEvent tui_notice_events_at(const TuiNoticeEvents *e, size_t index) {
+  return e && index < e->count ? e->events[index]
+                               : notice_event("", "", "", TUI_INVALID);
+}
+void tui_notice_events_free(TuiNoticeEvents *e) {
+  if (e) {
+    for (size_t i = 0; i < e->count; i++)
+      free((void *)e->events[i].id);
+    free(e->events);
+    free(e);
+  }
+}
+TuiResult tui_notice_queue_expire(TuiNoticeQueue *q, unsigned long long now,
+                                  TuiNoticeEvents **events) {
+  if (!q || !events || !feedback_number(now))
+    return TUI_INVALID;
+  *events = NULL;
+  TuiNoticeEvents *batch = calloc(1, sizeof *batch);
+  if (!batch)
+    return TUI_NOMEM;
+  size_t count = 0;
+  for (size_t i = 0; i < q->count; i++)
+    if (notice_expired(&q->items[i], now))
+      count++;
+  if (count) {
+    batch->events = calloc(count, sizeof *batch->events);
+    if (!batch->events) {
+      free(batch);
+      return TUI_NOMEM;
+    }
+  }
+  for (size_t i = 0; i < q->count; i++)
+    if (notice_expired(&q->items[i], now)) {
+      char *id = copy(q->items[i].id);
+      if (!id) {
+        tui_notice_events_free(batch);
+        return TUI_NOMEM;
+      }
+      batch->events[batch->count++] = notice_event("expired", id, "", TUI_OK);
+    }
+  for (size_t i = 0; i < batch->count; i++)
+    tui_notice_queue_dismiss(q, batch->events[i].id);
+  *events = batch;
+  return TUI_OK;
+}
+static size_t notice_limit(size_t count, int height) {
+  height = max(0, min(4096, height));
+  return count > (size_t)height && height > 0 ? (size_t)max(1, height - 1)
+                                              : (size_t)height;
+}
+TuiNoticeEvent tui_notice_queue_request_action(TuiNoticeQueue *q,
+                                               const char *id,
+                                               const char *action,
+                                               unsigned long long now) {
+  if (!q || !id || !action || !feedback_number(now))
+    return notice_event("", "", "", TUI_INVALID);
+  for (size_t i = 0; i < q->count; i++) {
+    const TuiNotice *n = &q->items[i];
+    if (strcmp(n->id, id) || notice_expired(n, now))
+      continue;
+    for (size_t j = 0; j < n->action_count; j++)
+      if (!strcmp(n->actions[j].id, action) && !n->actions[j].disabled)
+        return notice_event("action", n->id, n->actions[j].id, TUI_OK);
+  }
+  return notice_event("", "", "", TUI_OK);
+}
+TuiNoticeEvent tui_notice_queue_handle(TuiNoticeQueue *q, const char *action,
+                                       unsigned long long now, int height) {
+  if (!q || !action)
+    return notice_event("", "", "", TUI_INVALID);
+  if (!strcmp(action, "down"))
+    action = "next";
+  if (!strcmp(action, "up"))
+    action = "previous";
+  const TuiNotice *items;
+  size_t count;
+  TuiResult result = tui_notice_queue_visible(q, now, &items, &count);
+  if (result != TUI_OK)
+    return notice_event("", "", "", result);
+  size_t limit = notice_limit(count, height);
+  if (count > limit)
+    count = limit;
+  if (!count || (strcmp(action, "next") && strcmp(action, "previous") &&
+                 strcmp(action, "activate") && strcmp(action, "dismiss")))
+    return notice_event("", "", "", TUI_OK);
+  size_t at = 0;
+  for (size_t i = 0; i < count; i++)
+    if (!strcmp(items[i].id, tui_notice_queue_focused(q)))
+      at = i;
+  if (!strcmp(action, "next") && at + 1 < count)
+    at++;
+  else if (!strcmp(action, "previous") && at)
+    at--;
+  const TuiNotice *n = &items[at];
+  tui_notice_queue_focus(q, n->id, now);
+  if (!strcmp(action, "dismiss"))
+    return notice_event("dismiss", n->id, "", TUI_OK);
+  if (!strcmp(action, "activate"))
+    for (size_t i = 0; i < n->action_count; i++)
+      if (!n->actions[i].disabled)
+        return notice_event("action", n->id, n->actions[i].id, TUI_OK);
+  return notice_event("", "", "", TUI_OK);
+}
+TuiResult tui_notice_queue_layout(TuiNoticeQueue *q, int width, int height,
+                                  unsigned long long now,
+                                  const TuiFeedbackRow **rows, size_t *count) {
+  if (!q || !rows || !count)
+    return TUI_INVALID;
+  *rows = NULL;
+  *count = 0;
+  width = max(0, min(65535, width));
+  height = max(0, min(4096, height));
+  const TuiNotice *items;
+  size_t visible;
+  TuiResult result = tui_notice_queue_visible(q, now, &items, &visible);
+  if (result != TUI_OK)
+    return result;
+  size_t limit = notice_limit(visible, height),
+         shown = visible < limit ? visible : limit;
+  TuiFeedbackView *v =
+      feedback_new(shown + (visible > limit && (size_t)height > shown));
+  if (!v)
+    return TUI_NOMEM;
+  for (size_t y = 0; y < shown; y++) {
+    const TuiNotice *n = &items[y];
+    TuiFeedbackRow *row = &v->rows[y];
+    Buffer value = {0};
+    char *clean = NULL;
+    const char *mark = !strcmp(n->severity, "error")     ? "[!]"
+                       : !strcmp(n->severity, "warning") ? "[?]"
+                       : !strcmp(n->severity, "success") ? "[+]"
+                                                         : "[i]";
+    append(&value, !strcmp(tui_notice_queue_focused(q), n->id) ? "> " : "  ");
+    append(&value, mark);
+    append(&value, " ");
+    clean = clean_copy(n->text);
+    if (!clean) {
+      free(value.s);
+      result = TUI_NOMEM;
+      goto failed;
+    }
+    append(&value, clean);
+    free(clean);
+    if (*n->detail) {
+      append(&value, " / ");
+      clean = clean_copy(n->detail);
+      if (!clean) {
+        free(value.s);
+        result = TUI_NOMEM;
+        goto failed;
+      }
+      append(&value, clean);
+      free(clean);
+    }
+    TuiFeedbackSpan *spans =
+        n->action_count ? calloc(n->action_count, sizeof *spans) : NULL;
+    if (n->action_count && !spans) {
+      free(value.s);
+      result = TUI_NOMEM;
+      goto failed;
+    }
+    row->spans = spans;
+    row->span_count = n->action_count;
+    for (size_t i = 0; i < n->action_count; i++) {
+      TuiFeedbackSpan *s = &spans[i];
+      const TuiNoticeAction *a = &n->actions[i];
+      Buffer part = {0};
+      s->start = tui_cells(feedback_string(value.s));
+      s->disabled = a->disabled;
+      s->role = copy(a->disabled ? "disabled" : n->severity);
+      s->action = copy(a->id);
+      append(&part, " [");
+      clean = clean_copy(a->label);
+      if (!clean) {
+        free(value.s);
+        free(part.s);
+        result = TUI_NOMEM;
+        goto failed;
+      }
+      append(&part, clean);
+      free(clean);
+      append(&part, "]");
+      if (part.failed || !s->role || !s->action) {
+        free(value.s);
+        free(part.s);
+        result = TUI_NOMEM;
+        goto failed;
+      }
+      s->text = part.s;
+      append(&value, part.s);
+    }
+    if (value.failed) {
+      free(value.s);
+      result = TUI_NOMEM;
+      goto failed;
+    }
+    result = feedback_row_set(row, n->id, value.s, n->severity, width);
+    row->focused = !strcmp(tui_notice_queue_focused(q), n->id);
+    int end = tui_cells(value.s) > width ? max(0, width - 1) : width;
+    free(value.s);
+    if (result != TUI_OK)
+      goto failed;
+    for (size_t i = 0; i < row->span_count; i++) {
+      TuiFeedbackSpan *s = &spans[i];
+      char *painted = tui_clip(s->text, max(0, end - s->start), 0);
+      if (!painted) {
+        result = TUI_NOMEM;
+        goto failed;
+      }
+      free((void *)s->text);
+      s->text = painted;
+      s->width = tui_cells(painted);
+    }
+    /* Drop invisible action ranges so pointer targets describe painted cells.
+     */
+    size_t used = 0;
+    for (size_t i = 0; i < row->span_count; i++) {
+      if (spans[i].width) {
+        if (used != i)
+          spans[used] = spans[i];
+        used++;
+      } else {
+        free((void *)spans[i].text);
+        free((void *)spans[i].role);
+        free((void *)spans[i].action);
+      }
+    }
+    row->span_count = used;
+  }
+  if (v->count > shown) {
+    char number[32];
+    snprintf(number, sizeof number, "+%zu", visible - limit);
+    result = feedback_row_set(&v->rows[shown], "", number, "hint", width);
+    if (result != TUI_OK)
+      goto failed;
+  }
+  tui_feedback_free(q->hits);
+  q->hits = v;
+  q->width = width;
+  *rows = v->rows;
+  *count = v->count;
+  return TUI_OK;
+failed:
+  tui_feedback_free(v);
+  return result;
+}
+TuiNoticeEvent tui_notice_queue_click(TuiNoticeQueue *q, int x, int y,
+                                      unsigned long long now) {
+  if (!q || !feedback_number(now))
+    return notice_event("", "", "", TUI_INVALID);
+  if (x < 0 || x >= q->width || y < 0 || !q->hits ||
+      (size_t)y >= q->hits->count)
+    return notice_event("", "", "", TUI_OK);
+  const TuiFeedbackRow *row = &q->hits->rows[y];
+  int index = -1;
+  for (size_t i = 0; i < q->count; i++)
+    if (!strcmp(q->items[i].id, row->id) && !notice_expired(&q->items[i], now))
+      index = (int)i;
+  if (!*row->id || index < 0)
+    return notice_event("", "", "", TUI_OK);
+  for (size_t i = 0; i < row->span_count; i++) {
+    const TuiFeedbackSpan *s = &row->spans[i];
+    if (x >= s->start && x < s->start + s->width) {
+      if (s->disabled)
+        return notice_event("", "", "", TUI_OK);
+      q->focused = index;
+      return tui_notice_queue_request_action(q, row->id, s->action, now);
+    }
+  }
+  q->focused = index;
+  return notice_event("focus", q->items[index].id, "", TUI_OK);
+}
+TuiResult tui_notice_queue_draw(TuiNoticeQueue *q, TuiCanvas *c, TuiRect r,
+                                unsigned long long now) {
+  if (!c)
+    return TUI_INVALID;
+  const TuiFeedbackRow *rows;
+  size_t count;
+  TuiResult result =
+      tui_notice_queue_layout(q, r.width, r.height, now, &rows, &count);
+  return result == TUI_OK ? feedback_paint(rows, count, c, r) : result;
+}
+TuiNoticeEvent tui_progress_request_cancel(const TuiProgress *p) {
+  if (!p)
+    return notice_event("", "", "", TUI_INVALID);
+  if (p->id && *p->id && p->cancellable &&
+      (!p->status || !*p->status || !strcmp(p->status, "loading")))
+    return notice_event("cancel", p->id, "", TUI_OK);
+  return notice_event("", "", "", TUI_OK);
+}
+TuiResult tui_progress_layout(const TuiProgress *p, int width,
+                              unsigned long long frame,
+                              TuiFeedbackView **view) {
+  if (!p || !view || !feedback_number(p->current) ||
+      !feedback_number(p->total) || !feedback_number(frame))
+    return TUI_INVALID;
+  const char *texts[] = {p->id, p->label, p->status, p->message,
+                         p->cancel_label};
+  for (size_t i = 0; i < 5; i++)
+    if (tui_cells(feedback_string(texts[i])) < 0)
+      return TUI_INVALID;
+  *view = NULL;
+  width = max(0, min(65535, width));
+  const char *status = p->status && *p->status ? p->status : "loading";
+  const char *role =
+      !strcmp(status, "error")                                     ? "error"
+      : !strcmp(status, "success")                                 ? "success"
+      : (!strcmp(status, "empty") || !strcmp(status, "cancelled")) ? "hint"
+      : !strcmp(status, "ready")                                   ? "body"
+      : !strcmp(status, "loading")                                 ? "info"
+                                                                   : "error";
+  int cancel = *tui_progress_request_cancel(p).kind && p->cancel_label &&
+               *p->cancel_label;
+  TuiFeedbackView *v = feedback_new(cancel ? 3 : 2);
+  if (!v)
+    return TUI_NOMEM;
+  Buffer value = {0};
+  char numeric[80];
+  if (!strcmp(status, "loading")) {
+    if (!p->total) {
+      char spinner[2] = {"|/-\\"[frame % 4], 0};
+      append(&value, spinner);
+    } else {
+      double ratio =
+          (double)(p->current < p->total ? p->current : p->total) / p->total;
+      int size = min(30, max(0, width - 10)), done = (int)(ratio * size);
+      char bar[32];
+      for (int i = 0; i < size; i++)
+        bar[i] = i < done ? '#' : '-';
+      bar[size] = 0;
+      snprintf(numeric, sizeof numeric, "[%s] %d%%", bar, (int)(ratio * 100));
+      append(&value, numeric);
+    }
+  } else
+    append(&value, status);
+  if (p->message && *p->message) {
+    append(&value, " ");
+    append(&value, p->message);
+  }
+  TuiResult result = value.failed ? TUI_NOMEM
+                                  : feedback_row_set(&v->rows[0], p->id,
+                                                     p->label, role, width);
+  if (result == TUI_OK)
+    result = feedback_row_set(&v->rows[1], p->id, value.s, role, width);
+  if (result == TUI_OK && cancel)
+    result =
+        feedback_row_set(&v->rows[2], p->id, p->cancel_label, "hint", width);
+  free(value.s);
+  if (result != TUI_OK) {
+    tui_feedback_free(v);
+    return result;
+  }
+  *view = v;
+  return TUI_OK;
+}
+TuiResult tui_progress_draw(const TuiProgress *p, TuiCanvas *c, TuiRect r,
+                            unsigned long long frame) {
+  if (!c)
+    return TUI_INVALID;
+  TuiFeedbackView *v = NULL;
+  TuiResult result = tui_progress_layout(p, r.width, frame, &v);
+  if (result == TUI_OK)
+    result = tui_feedback_draw(v, c, r);
+  tui_feedback_free(v);
+  return result;
+}
+TuiResult tui_data_state_layout(const TuiDataState *s, int width,
+                                TuiFeedbackView **view) {
+  if (!s || !view)
+    return TUI_INVALID;
+  const char *texts[] = {s->kind, s->text, s->detail};
+  for (size_t i = 0; i < 3; i++)
+    if (tui_cells(feedback_string(texts[i])) < 0)
+      return TUI_INVALID;
+  *view = NULL;
+  width = max(0, min(65535, width));
+  const char *kind = s->kind ? s->kind : "empty";
+  const char *role = !strcmp(kind, "ready")     ? "body"
+                     : !strcmp(kind, "loading") ? "info"
+                     : !strcmp(kind, "empty")   ? "hint"
+                                                : "error";
+  TuiFeedbackView *v = feedback_new(2);
+  if (!v)
+    return TUI_NOMEM;
+  TuiResult result = feedback_row_set(&v->rows[0], "", s->text, role, width);
+  if (result == TUI_OK)
+    result = feedback_row_set(&v->rows[1], "", s->detail, "hint", width);
+  if (result != TUI_OK) {
+    tui_feedback_free(v);
+    return result;
+  }
+  *view = v;
+  return TUI_OK;
+}
+TuiResult tui_data_state_draw(const TuiDataState *s, TuiCanvas *c, TuiRect r) {
+  if (!c)
+    return TUI_INVALID;
+  TuiFeedbackView *v = NULL;
+  TuiResult result = tui_data_state_layout(s, r.width, &v);
+  if (result == TUI_OK)
+    result = tui_feedback_draw(v, c, r);
+  tui_feedback_free(v);
+  return result;
+}

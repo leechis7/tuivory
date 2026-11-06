@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Add independent notice queues, progress and data states with important-notice retention, atomic overflow rejection, expiry, host-handled retry/dismiss/cancel requests and disabled-action blocking. Include bilingual integrated examples, APIs, captures and actual-output checks.
+
 - TVR-15/16/30/31/32: Add independent hierarchical menus, bars, context popups and placement, disabled blocking, mnemonics, return targets and background input blocking. Provide bilingual examples in five languages, narrow-area and actual-output wide-edge checks, and API documentation.
 
 - TVR-15/16/30/31/32: Independent lists/search pickers with stable-ID selection, shared Unicode17 full case folding, disabled/secondary/icon rows, pending commit/cancel, real query cursors and bilingual examples. C output groups repeated SGR sequences while preserving rendered cells/styles/cursor; PTY CI is split by language.

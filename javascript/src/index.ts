@@ -2924,98 +2924,415 @@ export function statusLine(source: StatusItem[], width: number): LineLayout {
     out.add(marker, "hint");
   return out;
 }
+export interface NoticeAction {
+  id: string;
+  label?: string;
+  disabled?: boolean;
+}
 export interface Notice {
   id: string;
-  text: string;
-  severity?: "info" | "success" | "warning" | "error";
+  text?: string;
+  detail?: string;
+  severity?: string;
   priority?: number;
   expiresAt?: number;
   persistent?: boolean;
+  actions?: NoticeAction[];
 }
-export class Notices {
-  items: Notice[] = [];
-  constructor(readonly capacity = 10) {
-    if (capacity < 1) throw new Error("positive capacity required");
+export interface NoticeEvent {
+  kind: string;
+  id: string;
+  action: string;
+}
+export interface FeedbackSpan {
+  start: number;
+  width: number;
+  text: string;
+  role: string;
+  action: string;
+  disabled: boolean;
+}
+export interface FeedbackRow {
+  id: string;
+  text: string;
+  role: string;
+  focused: boolean;
+  spans: FeedbackSpan[];
+}
+const noticeSeverity: Dict<string, number> = {
+  info: 0,
+  success: 1,
+  warning: 2,
+  error: 3,
+};
+function feedbackNumber(n: number): number {
+  if (!Number.isSafeInteger(n) || n < 0)
+    throw new Error("expected a nonnegative safe integer");
+  return n;
+}
+function feedbackEvent(kind = "", id = "", action = ""): NoticeEvent {
+  return { kind, id, action };
+}
+function feedbackRow(
+  id = "",
+  text = "",
+  role = "body",
+  focused = false,
+  spans: FeedbackSpan[] = [],
+): FeedbackRow {
+  return { id, text, role, focused, spans };
+}
+function feedbackDraw(c: Canvas, r: Rect, rows: FeedbackRow[]): void {
+  c.fill(r);
+  rows.slice(0, Math.max(0, r.height)).forEach((row, y) => {
+    c.write(r.x, r.y + y, row.text, row.role, false, r.width, true);
+    for (const s of row.spans)
+      c.write(r.x + s.start, r.y + y, s.text, s.role, false, s.width, true);
+  });
+}
+/** Copied notices, host clocks, explicit dismissal and action requests. */
+export class NoticeQueue {
+  private source: Notice[] = [];
+  private hits: FeedbackRow[] = [];
+  private width = 0;
+  focused = "";
+  private readonly fixedCapacity: number;
+  get capacity(): number {
+    return this.fixedCapacity;
   }
-  push(n: Notice): void {
-    if (
-      !n.id ||
-      !["info", "success", "warning", "error"].includes(n.severity ?? "info")
-    )
-      throw new Error("invalid notice");
-    this.items = [...this.items.filter((i) => i.id !== n.id), clone(n)]
-      .sort(
-        (a, b) =>
-          (b.priority ?? 0) - (a.priority ?? 0) ||
-          Number(b.severity === "error") - Number(a.severity === "error"),
-      )
-      .slice(0, this.capacity);
+  constructor(capacity = 10) {
+    if (!Number.isInteger(capacity) || capacity < 1 || capacity > 65536)
+      throw new Error("notice capacity must be 1..65536");
+    this.fixedCapacity = capacity;
   }
-  visible(now: number): Notice[] {
-    return this.items.filter(
-      (i) =>
-        i.persistent ||
-        i.severity === "error" ||
-        !i.expiresAt ||
-        i.expiresAt > now,
+  get items(): Notice[] {
+    return clone(this.source);
+  }
+  private static pinned(n: Notice): boolean {
+    return Boolean(n.persistent || n.severity === "error" || n.actions?.length);
+  }
+  private static expired(n: Notice, now: number): boolean {
+    return (
+      !NoticeQueue.pinned(n) &&
+      (n.expiresAt ?? 0) > 0 &&
+      (n.expiresAt ?? 0) <= now
     );
   }
-  dismiss(id: string): Event {
-    this.items = this.items.filter((i) => i.id !== id);
-    return event("dismiss", id);
+  push(source: Notice): void {
+    const n: Notice = {
+        ...source,
+        actions: source.actions?.map((a) => ({ ...a })),
+      },
+      severity = n.severity ?? "info";
+    if (!n.id || !Object.hasOwn(noticeSeverity, severity))
+      throw new Error("invalid notice ID or severity");
+    n.severity = severity;
+    n.priority ??= 0;
+    n.expiresAt ??= 0;
+    n.actions ??= [];
+    n.text ??= "";
+    n.detail ??= "";
+    if (
+      !Number.isInteger(n.priority) ||
+      n.priority < -(2 ** 31) ||
+      n.priority >= 2 ** 31
+    )
+      throw new Error("priority must be a signed 32-bit integer");
+    feedbackNumber(n.expiresAt);
+    const ids = n.actions.map((a) => a.id);
+    if (
+      ids.length > 1024 ||
+      ids.some((id) => !id) ||
+      new Set(ids).size !== ids.length
+    )
+      throw new Error("invalid notice actions");
+    const index = this.source.findIndex((old) => old.id === n.id);
+    if (index >= 0) {
+      this.source[index] = n;
+      this.hits = [];
+      return;
+    }
+    if (this.source.length >= this.capacity) {
+      const candidates = this.source
+        .map((item, index) => ({ item, index }))
+        .filter((v) => !NoticeQueue.pinned(v.item));
+      candidates.sort(
+        (a, b) =>
+          noticeSeverity[a.item.severity ?? "info"] -
+            noticeSeverity[b.item.severity ?? "info"] ||
+          (a.item.priority ?? 0) - (b.item.priority ?? 0),
+      );
+      const candidate = candidates[0];
+      if (!candidate)
+        throw new Error("notice queue full; important notices retained");
+      const old = candidate.item;
+      if (
+        noticeSeverity[old.severity ?? "info"] > noticeSeverity[severity] ||
+        (noticeSeverity[old.severity ?? "info"] === noticeSeverity[severity] &&
+          (old.priority ?? 0) > n.priority)
+      )
+        throw new Error("notice queue full");
+      if (this.focused === old.id) this.focused = "";
+      this.source.splice(candidate.index, 1);
+    }
+    if (!this.focused || severity === "error") this.focused = n.id;
+    this.source.push(n);
+    this.hits = [];
   }
-  draw(c: Canvas, r: Rect, now = 0): void {
-    c.fill(r);
-    this.visible(now)
-      .slice(0, r.height)
-      .forEach((n, y) =>
-        c.write(
-          r.x,
-          r.y + y,
-          clip(n.text, r.width, true),
-          n.severity ?? "info",
-          false,
-          r.width,
+  visible(now = 0): Notice[] {
+    feedbackNumber(now);
+    return clone(this.source.filter((n) => !NoticeQueue.expired(n, now))).sort(
+      (a, b) =>
+        noticeSeverity[b.severity ?? "info"] -
+          noticeSeverity[a.severity ?? "info"] ||
+        (b.priority ?? 0) - (a.priority ?? 0),
+    );
+  }
+  dismiss(id: string): boolean {
+    const index = this.source.findIndex((n) => n.id === id);
+    if (index < 0) return false;
+    this.source.splice(index, 1);
+    if (this.focused === id) this.focused = "";
+    this.hits = [];
+    return true;
+  }
+  expire(now: number): NoticeEvent[] {
+    feedbackNumber(now);
+    const events = this.source
+      .filter((n) => NoticeQueue.expired(n, now))
+      .map((n) => feedbackEvent("expired", n.id));
+    for (const e of events) this.dismiss(e.id);
+    return events;
+  }
+  private static limit(count: number, height: number): number {
+    height = Math.max(0, Math.min(4096, height));
+    return count > height && height > 0 ? Math.max(1, height - 1) : height;
+  }
+  requestAction(id: string, action: string, now = 0): NoticeEvent {
+    for (const n of this.visible(now))
+      if (n.id === id && n.actions?.some((a) => a.id === action && !a.disabled))
+        return feedbackEvent("action", id, action);
+    return feedbackEvent();
+  }
+  handle(action: string, now = 0, height = 10): NoticeEvent {
+    action =
+      ({ down: "next", up: "previous" } as Dict<string, string>)[action] ??
+      action;
+    const source = this.visible(now),
+      items = source.slice(0, NoticeQueue.limit(source.length, height));
+    if (
+      !items.length ||
+      !["next", "previous", "activate", "dismiss"].includes(action)
+    )
+      return feedbackEvent();
+    let at = Math.max(
+      0,
+      items.findIndex((n) => n.id === this.focused),
+    );
+    if (action === "next") at = Math.min(at + 1, items.length - 1);
+    else if (action === "previous") at = Math.max(0, at - 1);
+    const n = items[at];
+    this.focused = n.id;
+    if (action === "dismiss") return feedbackEvent("dismiss", n.id);
+    if (action === "activate") {
+      const a = n.actions?.find((a) => !a.disabled);
+      if (a) return feedbackEvent("action", n.id, a.id);
+    }
+    return feedbackEvent();
+  }
+  layout(width: number, height: number, now = 0): FeedbackRow[] {
+    this.width = width = Math.max(0, Math.min(65535, width));
+    height = Math.max(0, Math.min(4096, height));
+    const items = this.visible(now),
+      limit = NoticeQueue.limit(items.length, height),
+      rows: FeedbackRow[] = [];
+    for (const n of items.slice(0, limit)) {
+      const role = n.severity ?? "info",
+        mark = (
+          {
+            error: "[!]",
+            warning: "[?]",
+            success: "[+]",
+            info: "[i]",
+          } as Dict<string, string>
+        )[role];
+      let value =
+        (this.focused === n.id ? "> " : "  ") +
+        mark +
+        " " +
+        clean(n.text ?? "");
+      if (n.detail) value += " / " + clean(n.detail);
+      const parts: { start: number; part: string; action: NoticeAction }[] = [];
+      for (const a of n.actions ?? []) {
+        const part = " [" + clean(a.label ?? "") + "]";
+        parts.push({ start: cells(value), part, action: a });
+        value += part;
+      }
+      const end = cells(value) > width ? Math.max(0, width - 1) : width,
+        spans: FeedbackSpan[] = [];
+      for (const { start, part, action: a } of parts) {
+        const text = clip(part, Math.max(0, end - start)),
+          size = cells(text);
+        if (size)
+          spans.push({
+            start,
+            width: size,
+            text,
+            role: a.disabled ? "disabled" : role,
+            action: a.id,
+            disabled: Boolean(a.disabled),
+          });
+      }
+      rows.push(
+        feedbackRow(
+          n.id,
+          clip(value, width, true),
+          role,
+          n.id === this.focused,
+          spans,
         ),
       );
+    }
+    if (items.length > limit && height > rows.length)
+      rows.push(
+        feedbackRow(
+          "",
+          clip("+" + (items.length - limit), width, true),
+          "hint",
+        ),
+      );
+    this.hits = rows;
+    return clone(rows);
+  }
+  click(x: number, y: number, now = 0): NoticeEvent {
+    feedbackNumber(now);
+    if (
+      !Number.isInteger(x) ||
+      x < 0 ||
+      x >= this.width ||
+      y < 0 ||
+      y >= this.hits.length ||
+      !Number.isInteger(y)
+    )
+      return feedbackEvent();
+    const row = this.hits[y];
+    if (!row.id || !this.visible(now).some((n) => n.id === row.id))
+      return feedbackEvent();
+    for (const s of row.spans)
+      if (x >= s.start && x < s.start + s.width) {
+        if (s.disabled) return feedbackEvent();
+        this.focused = row.id;
+        return this.requestAction(row.id, s.action, now);
+      }
+    this.focused = row.id;
+    return feedbackEvent("focus", row.id);
+  }
+  draw(c: Canvas, r: Rect, now = 0): void {
+    feedbackDraw(c, r, this.layout(r.width, r.height, now));
   }
 }
+export interface ProgressOptions {
+  id?: string;
+  label?: string;
+  status?: string;
+  message?: string;
+  cancelLabel?: string;
+  current?: number;
+  total?: number;
+  cancellable?: boolean;
+}
 export class Progress {
-  constructor(
-    public value = 0,
-    public total = 0,
-    public label = "",
-    public cancellable = false,
-  ) {}
-  cancel(): Event {
-    return this.cancellable ? event("cancel") : event();
+  id = "";
+  label = "";
+  status = "loading";
+  message = "";
+  cancelLabel = "";
+  current = 0;
+  total = 0;
+  cancellable = false;
+  constructor(options: ProgressOptions = {}) {
+    Object.assign(this, options);
+  }
+  requestCancel(): NoticeEvent {
+    return this.id && this.cancellable && ["", "loading"].includes(this.status)
+      ? feedbackEvent("cancel", this.id)
+      : feedbackEvent();
+  }
+  layout(width: number, frame = 0): FeedbackRow[] {
+    feedbackNumber(this.current);
+    feedbackNumber(this.total);
+    feedbackNumber(frame);
+    width = Math.max(0, Math.min(65535, width));
+    const status = this.status || "loading",
+      role =
+        (
+          {
+            error: "error",
+            success: "success",
+            empty: "hint",
+            cancelled: "hint",
+            ready: "body",
+            loading: "info",
+          } as Dict<string, string>
+        )[status] ?? "error";
+    let value = status;
+    if (status === "loading") {
+      if (this.total === 0) value = "|/-\\"[frame % 4];
+      else {
+        const ratio = Math.min(this.current, this.total) / this.total,
+          size = Math.min(30, Math.max(0, width - 10)),
+          done = Math.floor(ratio * size);
+        value =
+          "[" +
+          "#".repeat(done) +
+          "-".repeat(size - done) +
+          "] " +
+          Math.floor(ratio * 100) +
+          "%";
+      }
+    }
+    if (this.message) value += " " + this.message;
+    const rows = [
+      feedbackRow(this.id, clip(this.label, width, true), role),
+      feedbackRow(this.id, clip(value, width, true), role),
+    ];
+    if (this.requestCancel().kind && this.cancelLabel)
+      rows.push(
+        feedbackRow(this.id, clip(this.cancelLabel, width, true), "hint"),
+      );
+    return rows;
   }
   draw(c: Canvas, r: Rect, frame = 0): void {
-    const fraction =
-        this.total > 0 ? Math.max(0, Math.min(1, this.value / this.total)) : 0,
-      text =
-        this.total > 0
-          ? `${this.label} ${Math.floor(fraction * 100)}%`
-          : `${this.label} ${"|/-"[frame % 3]}`;
-    c.write(r.x, r.y, clip(text, r.width, true), "info", false, r.width);
+    feedbackDraw(c, r, this.layout(r.width, frame));
   }
 }
 export class DataState {
   constructor(
-    public status = "empty",
-    public message = "",
+    public kind = "empty",
+    public text = "",
+    public detail = "",
   ) {}
+  layout(width: number): FeedbackRow[] {
+    width = Math.max(0, Math.min(65535, width));
+    return [
+      feedbackRow(
+        "",
+        clip(this.text, width, true),
+        (
+          { ready: "body", loading: "info", empty: "hint" } as Dict<
+            string,
+            string
+          >
+        )[this.kind] ?? "error",
+      ),
+      feedbackRow("", clip(this.detail, width, true), "hint"),
+    ];
+  }
   draw(c: Canvas, r: Rect): void {
-    c.write(
-      r.x,
-      r.y,
-      clip(this.message || this.status, r.width, true),
-      this.status === "error" ? "error" : "hint",
-      false,
-      r.width,
-    );
+    feedbackDraw(c, r, this.layout(r.width));
   }
 }
+
 export function popupPlacement(
   anchor: Rect,
   viewport: Rect,

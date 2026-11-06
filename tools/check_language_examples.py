@@ -46,7 +46,41 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             if process.poll()is not None:break
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
-        if demo in ('menu','context-menu'):
+        if demo=='feedback':
+            def visible():return '\n'.join(''.join(row)for row in screen.rows[:24])
+            def wait_text(value):
+                deadline=time.monotonic()+5
+                while time.monotonic()<deadline:
+                    drain(.02)
+                    if value.replace(' ','')in visible().replace(' ',''):return
+                    if process.poll()is not None:break
+                raise AssertionError((language,demo,value,visible()))
+            def send(command,raw):
+                frames=captured.count(b'\x1b[0m')
+                os.write(master,(command+'\n').encode()if language=='java'else raw)
+                deadline=time.monotonic()+5
+                while captured.count(b'\x1b[0m')<=frames and time.monotonic()<deadline:
+                    drain(.02)
+                assert captured.count(b'\x1b[0m')>frames,(language,'feedback frame acknowledgment',visible())
+            def click(x,y):send('click '+str(x)+' '+str(y),('\x1b[<0;'+str(x+1)+';'+str(y+1)+'M').encode())
+            wait_text('Demo operation failed'if lang=='en'else'예제 작업 실패');wait_text('40%')
+            send('down',b'\x1b[B');send('down',b'\x1b[B')
+            assert screen.rows[4][2]=='>',(language,'notice navigation')
+            word='Unavailable'if lang=='en'else'사용 불가'
+            pattern=r'\[\s*'+r'\s*'.join(re.escape(ch)for ch in word if ch!=' ')+r'\s*\]'
+            off=re.search(pattern,''.join(screen.rows[2]));assert off,(language,'missing disabled action')
+            click(off.start(),2)
+            assert screen.rows[4][2]=='>',(language,'disabled action changed parent focus')
+            word='Retry'if lang=='en'else'재시도'
+            pattern=r'\[\s*'+r'\s*'.join(re.escape(ch)for ch in word)+r'\s*\]'
+            retry=re.search(pattern,''.join(screen.rows[2]));assert retry,(language,'missing retry action')
+            click(retry.start(),2);wait_text('Retry accepted'if lang=='en'else'재시도 요청 처리')
+            send('delete',b'\x1b[3~');wait_text('Notice dismissed.'if lang=='en'else'알림을 닫았습니다.')
+            send('t',b't');wait_text('Expired notices: 1'if lang=='en'else'만료한 알림: 1')
+            click(3,9);wait_text('Export cancelled'if lang=='en'else'내보내기 취소됨')
+            assert '40%'not in visible(),(language,'stale progress after cancellation')
+            if language!='java':assert b'\x1b[?25h'not in captured,(language,'feedback unexpectedly registered a cursor')
+        elif demo in ('menu','context-menu'):
             def visible():return '\n'.join(''.join(row) for row in screen.rows[:17])
             def wait_text(value):
                 deadline=time.monotonic()+5
@@ -170,7 +204,7 @@ def main():
     p.add_argument('--python',default=sys.executable)
     p.add_argument('--language',choices=['python','javascript','c','cpp','java'])
     p.add_argument('--matrix',action='store_true')
-    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu'],default='tree')
+    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback'],default='tree')
     args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     commands={'python':[args.python,'-m','tuivory'],'javascript':['node',ROOT/'javascript/examples/catalog.mjs'],'c':[ROOT/'bin/c'/f'tuivory-linux-{arch}'],'cpp':[ROOT/'bin/cpp'/f'tuivory-linux-{arch}'],'java':['java','-jar',ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}

@@ -3,7 +3,7 @@ import argparse
 import json
 from . import (Canvas, Palette, Rect, Tree, Node, Tabs, Tab, List, Item, Form, Field,
                Grid, Column, Record, Text, ControlState, SearchPicker, FormOption, Menu, Progress, DataState,
-               Notices, Notice, Terminal)
+               NoticeQueue, Notice, Terminal)
 
 
 class WorkspaceDemo:
@@ -98,7 +98,7 @@ def main():
                   grid=Grid([Column('name', word('이름', 'Name'), 24, True), Column('state', word('상태', 'State'), 16)], [Record('a', {'name': word('실제 커서', 'Real cursor'), 'state': 'OK'}), Record('b', {'name': 'CJK 한글 👩‍💻', 'state': 'NULL'})]),
                   text=Text(word('한글 é 界\n여러 줄을 편집합니다.', 'Grapheme text\nEdit with real cursor.' if args.ascii else 'Unicode é 界\nEdit with real cursor.')),
                   menu=Menu([Item('root', word('작업', 'Actions')), Item('run', word('실행', 'Run'), parent='root'), Item('off', word('비활성', 'Disabled'), disabled=True, parent='root')]),
-                  feedback=Notices())
+                  feedback=NoticeQueue())
     models['picker'].handle('open')
     models['list'].empty=models['picker'].list.empty=word('항목 없음','(empty)')
     models['workspace'] = WorkspaceDemo(tree, not ko)
@@ -106,7 +106,8 @@ def main():
     from ._menu_example import MenuDemo
     models['menu'] = MenuDemo(not ko)
     models['context-menu'] = MenuDemo(not ko, True)
-    models['feedback'].push(Notice('ok', word('준비 완료', 'Ready'), 'success'))
+    from ._feedback_example import FeedbackDemo
+    models['feedback'] = FeedbackDemo(not ko)
     model = models[args.demo]
     themes, profiles = ['dark', 'light', 'blackwhite'], ['8', '16', '256', 'truecolor']
     theme, colors = args.theme, args.colors
@@ -115,7 +116,8 @@ def main():
         area = c.panel(Rect(0, 0, width, max(0, height - 1)), word('Tuivory Python 예제', 'Tuivory Python example'), True, args.ascii)
         model.draw(c, area, ascii=args.ascii)
         if height:
-            c.write(0, height - 1, word('Ctrl+Q 종료 · F1 테마 · F2 색상', 'Ctrl+Q quit · F1 theme · F2 colors').replace('·', '|' if args.ascii else '·'), 'hint', width=width)
+            hint = word('Ctrl+Q 종료 | Enter 재시도 | Del 닫기 | t 만료 | c 취소', 'Ctrl+Q quit | Enter retry | Del dismiss | t expire | c cancel') if isinstance(model, FeedbackDemo) else word('Ctrl+Q 종료 · F1 테마 · F2 색상', 'Ctrl+Q quit · F1 theme · F2 colors')
+            c.write(0, height - 1, hint.replace('·', '|' if args.ascii else '·'), 'hint', width=width)
         return c, area
     if args.snapshot or args.snapshot_ansi:
         c, _ = draw(args.width, args.height)
@@ -137,7 +139,7 @@ def main():
                 theme = themes[(themes.index(theme) + 1) % len(themes)]
             elif event.key == 'f2':
                 colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
-            elif event.key == 'mouse' and isinstance(model, MenuDemo):
+            elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo)):
                 model.pointer(event.x, event.y, event.button)
             elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
                 if isinstance(model, (Grid, Text)):
@@ -148,7 +150,7 @@ def main():
                     model.click(event.x - area.x, event.y - area.y, area.height)
             else:
                 action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
-                if isinstance(model, MenuDemo):
+                if isinstance(model, (MenuDemo,FeedbackDemo)):
                     model.handle(action, area.height, event.text)
                 elif isinstance(model, SearchPicker):
                     model.handle(action,event.text,area.height)
