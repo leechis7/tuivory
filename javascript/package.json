@@ -19,6 +19,7 @@
     "README.en.md",
     "LICENSE",
     "examples/catalog.mjs",
+    "examples/menu-host.mjs",
     "UNICODE-LICENSE",
     "NOTICE.md",
     "NOTICE.en.md",

@@ -8,3 +8,5 @@ import "./forms.mjs";
 import "./focus.mjs";
 
 import "./collections.mjs";
+
+import "./menu.mjs";

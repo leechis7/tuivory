@@ -95,75 +95,321 @@ class Focus:
     def blocked(self,scope):return self.route(scope).blocked
 
 
+@dataclass
+class MenuItem(Item):
+    mnemonic: str = ''
+
+
+@dataclass(frozen=True)
+class MenuEvent:
+    kind: str = ''
+    id: str = ''
+    return_id: str = ''
+
+    @property
+    def data(self):return {'return_id':self.return_id}
+
+    @property
+    def text(self):return ''
+
+
+@dataclass
+class MenuSpan:
+    start: int
+    width: int
+    text: str
+    role: str
+
+
+@dataclass
+class MenuRow:
+    id: str
+    text: str
+    role: str
+    spans: list[MenuSpan] = field(default_factory=list)
+    focused: bool = False
+
+
+@dataclass
+class MenuBarCell:
+    id: str
+    text: str
+    role: str
+    start: int
+    width: int
+    focused: bool
+
+
+@dataclass
+class MenuBarLayout:
+    cells: list[MenuBarCell] = field(default_factory=list)
+    previous: bool = False
+    next: bool = False
+
+
 class Menu:
-    def __init__(self, items: list[Item]):
+    def __init__(self,items):
+        self._items=[];self._by_id={};self._children={};self._path=[];self._focus={};self._top={}
+        self.opened=False;self.context=False;self.return_id='';self.bar='';self.bar_first=0
+        self.back_label='Back';self.empty_label='(empty)';self._hits=[];self._width=0
+        self.set_items(items)
+
+    @property
+    def items(self):return deepcopy(self._items)
+
+    @staticmethod
+    def _validate(items):
         unique(items)
-        self.items = list(items)
-        by_id = {i.id: i for i in items}
-        for item in items:
-            seen = {item.id}
-            parent = item.parent
+        if len(items)>10000:raise ValueError('too many menu items')
+        by_id={i.id:i for i in items};children={};keys=set()
+        for i in items:
+            if i.id.startswith('@'):raise ValueError('reserved menu ID')
+            if i.mnemonic:
+                key=i.mnemonic.lower()
+                if len(key)!=1 or not key.isascii() or not key.isalnum() or i.separator or (i.parent,key) in keys:raise ValueError('invalid/duplicate mnemonic')
+                keys.add((i.parent,key))
+            children.setdefault(i.parent,[]).append(i.id)
+        for i in items:
+            if i.separator and children.get(i.id):raise ValueError('separator cannot have children')
+            parent=i.parent;seen={i.id};depth=1
             while parent:
-                if parent not in by_id or parent in seen:
-                    raise ValueError("invalid menu parent/cycle")
-                seen.add(parent)
-                parent = by_id[parent].parent
-        self.path: list[str] = []
-        self.opened = False
-        self.return_id = ""
-        self.level = List([])
+                if parent not in by_id or parent in seen or by_id[parent].separator:raise ValueError('invalid parent/cycle')
+                depth+=1
+                if depth>32:raise ValueError('menu depth exceeds32')
+                seen.add(parent);parent=by_id[parent].parent
+        return by_id,children
 
-    def _level(self) -> None:
-        parent = self.path[-1] if self.path else ""
-        old = self.level.focused
-        self.level = List([i for i in self.items if i.parent == parent])
-        if any(i.id == old and not i.disabled and not i.separator for i in self.level.items):
-            self.level.focused = old
+    def set_items(self,items):
+        owned=[deepcopy(i) if isinstance(i,MenuItem) else MenuItem(**vars(i)) for i in items]
+        by_id,children=self._validate(owned)
+        self._items,self._by_id,self._children=owned,by_id,children
+        self._focus={p:id for p,id in self._focus.items() if not p or p in by_id}
+        self._top={p:top for p,top in self._top.items() if not p or p in by_id}
+        self._hits=[]
+        if not self._usable(self.bar,''):self.bar=self._first('')
+        for n,id in enumerate(self._path):
+            if not self._usable(id,self._path[n-1] if n else '') or not self._children.get(id):return self.close()
+        if self.opened:self._reconcile()
+        return MenuEvent()
 
-    def open(self, id: str = "", return_id: str = "") -> Event:
-        item = next((i for i in self.items if i.id == id), None)
-        if id and (item is None or item.disabled or item.separator):
-            return Event()
-        self.path = [id] if id else []
-        self.return_id, self.opened = return_id, True
-        self._level()
-        return Event("open", id)
+    @property
+    def path(self):return list(self._path)
 
-    def handle(self, action: str, height: int = 10, text: str = "") -> Event:
+    def _parent(self):return self._path[-1] if self._path else ''
+
+    def _usable(self,id,parent):
+        i=self._by_id.get(id)
+        return bool(i is not None and i.parent==parent and not i.disabled and not i.separator)
+
+    def _first(self,parent):return next((id for id in self._children.get(parent,[]) if self._usable(id,parent)),'')
+
+    def _back_allowed(self):return len(self._path)>1 or self.context and bool(self._path)
+
+    def _reconcile(self):
+        p=self._parent();id=self._focus.get(p,'')
+        if id=='@back' and self._back_allowed():return
+        if not self._usable(id,p):self._focus[p]=self._first(p) or ('@back' if self._back_allowed() else '')
+
+    @property
+    def focused(self):return self._focus.get(self._parent(),'')
+
+    @property
+    def bar_focused(self):return self.bar
+
+    def title(self):return ' / '.join(clean(self._by_id[id].label) for id in self._path)
+
+    def _event(self,kind='',id=''):return MenuEvent(kind,id,self.return_id)
+
+    def _finish(self,kind,id=''):
+        self.opened=False;self._path=[];self._hits=[];return self._event(kind,id)
+
+    def open(self,id='',return_id=''):
+        path=[];at=id
+        while at:
+            item=self._by_id.get(at)
+            if item is None or item.disabled or item.separator:return MenuEvent()
+            path.insert(0,at);at=item.parent
+        self.return_id=return_id;self._path=path;self._hits=[]
+        for n,child in enumerate(path):self._focus[path[n-1] if n else '']=child
+        self.context=not id;self.opened=True
+        if path:self.bar=path[0]
+        if id and not self._children.get(id):return self._finish('activate',id)
+        self._reconcile();return self._event('open',id)
+
+    def close(self):return self._finish('close') if self.opened else MenuEvent()
+
+    def back(self):
+        if not self.opened:return MenuEvent()
+        if not self._back_allowed():return self.close()
+        self._path.pop();self._reconcile();return self._event('back',self._parent())
+
+    def focus(self,id):
+        if not self.opened:return False
+        if id=='@back' and self._back_allowed() or self._usable(id,self._parent()):self._focus[self._parent()]=id;return True
+        return False
+
+    def _enter(self,id):
+        self._path.append(id);self._reconcile();return self._event('open',id)
+
+    def _switch_root(self,next):
+        ids=[id for id in self._children.get('',[]) if self._usable(id,'')]
+        if not ids:return MenuEvent()
+        at=ids.index(self.bar) if self.bar in ids else 0;step=1 if next else len(ids)-1
+        for _ in ids:
+            at=(at+step)%len(ids)
+            if ids[at]!=self.bar and self._children.get(ids[at]):return self.open(ids[at],self.return_id)
+        return MenuEvent()
+
+    def handle(self,action,value='',height=10):
+        if not self.opened:return MenuEvent()
+        self._reconcile();p=self._parent();id=self.focused
+        if action in ('cancel','back'):return self.back()
+        if action=='close':return self.close()
+        if action=='left':return self.back() if self._back_allowed() else MenuEvent() if self.context else self._switch_root(False)
+        if action=='right':
+            if self._usable(id,p) and self._children.get(id):return self._enter(id)
+            return self._switch_root(True) if not self._back_allowed() and not self.context else MenuEvent()
+        if action=='activate':
+            if id=='@back':return self.back()
+            if not self._usable(id,p):return MenuEvent()
+            return self._enter(id) if self._children.get(id) else self._finish('activate',id)
+        if action=='mnemonic':
+            if len(value)!=1 or not value.isascii() or not value.isalnum():return MenuEvent()
+            for candidate in self._children.get(p,[]):
+                item=self._by_id[candidate]
+                if self._usable(candidate,p) and item.mnemonic and item.mnemonic.lower()==value.lower():self._focus[p]=candidate;return self.handle('activate','',height)
+            return MenuEvent()
+        ids=(['@back'] if self._back_allowed() else [])+[id for id in self._children.get(p,[]) if self._usable(id,p)]
+        if not ids:return MenuEvent()
+        at=ids.index(id) if id in ids else 0
+        if action in ('previous','up'):at=(at+len(ids)-1)%len(ids)
+        elif action in ('next','down'):at=(at+1)%len(ids)
+        elif action in ('first','home'):at=0
+        elif action in ('last','end'):at=len(ids)-1
+        elif action=='page_up':at=max(0,at-max(1,height-1))
+        elif action=='page_down':at=min(len(ids)-1,at+max(1,height-1))
+        else:return MenuEvent()
+        self._focus[p]=ids[at];return self._event('focus',ids[at])
+
+    def handle_bar(self,action,value=''):
+        ids=[id for id in self._children.get('',[]) if self._usable(id,'')]
+        if not ids:return MenuEvent()
+        at=ids.index(self.bar) if self.bar in ids else 0
+        if action in ('previous','left'):at=(at+len(ids)-1)%len(ids)
+        elif action in ('next','right'):at=(at+1)%len(ids)
+        elif action in ('first','home'):at=0
+        elif action in ('last','end'):at=len(ids)-1
+        elif action in ('activate','down'):return MenuEvent('open_request',ids[at])
+        elif action=='mnemonic':
+            if len(value)!=1 or not value.isascii() or not value.isalnum():return MenuEvent()
+            for id in ids:
+                item=self._by_id[id]
+                if item.mnemonic and item.mnemonic.lower()==value.lower():self.bar=id;return MenuEvent('open_request',id)
+            return MenuEvent()
+        else:return MenuEvent()
+        self.bar=ids[at];return MenuEvent('focus',self.bar)
+
+    def click_id(self,id):return self.handle('activate') if self.focus(id) else MenuEvent()
+
+    def click(self,x,y=None,height=10):
+        if isinstance(x,str):return self.click_id(x)
+        if not self.opened or x<0 or x>=self._width or y is None or y<0 or y>=min(height,len(self._hits)):return MenuEvent()
+        return self.click_id(self._hits[y].id)
+
+    @staticmethod
+    def _label(i):return i.label+(' ('+i.mnemonic.upper()+')' if i.mnemonic else '')
+
+    def _rows(self):
+        return ([MenuItem('@back',self.back_label),MenuItem('',separator=True)] if self._back_allowed() else [])+[self._by_id[id] for id in self._children.get(self._parent(),[])]
+
+    def content_size(self):
+        rows=self._rows();width=12
+        for i in rows:width=max(width,cells(self._label(i))+cells(i.secondary)+cells(i.shortcut)+cells(i.icon)+8)
+        return min(width,4096),max(1,len(rows))
+
+    def layout(self,width,height,ascii=False):
+        self._hits=[];self._width=max(0,min(width,65535));height=max(0,min(height,4096));width=self._width
+        if not self.opened or not width or not height:return []
+        self._reconcile();rows=self._rows()
+        if not rows:self._hits=[MenuRow('',clip(self.empty_label,width,True),'hint')];return self._hits
+        at=next((n for n,i in enumerate(rows) if i.id==self.focused),0);p=self._parent();top=min(self._top.get(p,0),at)
+        if at>=top+height:top=at-height+1
+        top=min(top,max(0,len(rows)-height));self._top[p]=top
+        for i in rows[top:top+height]:
+            if i.separator:self._hits.append(MenuRow('',('-' if ascii else '─')*width,'hint'));continue
+            current=i.id==self.focused;role='disabled' if i.disabled else 'selection' if current else 'surface'
+            icon=(i.ascii_icon or ('*' if i.icon else '')) if ascii else i.icon
+            prefix=('> ' if current else '  ')+(icon+' ' if icon else '')
+            text=prefix+('< '+i.label if i.id=='@back' else self._label(i))+('  '+i.secondary if i.secondary else '')
+            suffix=(' >' if ascii else ' ›') if self._children.get(i.id) else ''
+            shortcut=clean(i.shortcut);reserve=min(width//3,cells(shortcut));tail=(' '+clip(shortcut,reserve)+suffix) if reserve else suffix;tw=min(width,cells(tail))
+            left=clip(text,width-tw,True);spans=[MenuSpan(0,width,left,role)]
+            if tw:spans.append(MenuSpan(width-tw,tw,clip(tail,tw),'hint' if role=='surface' else role))
+            combined=left+' '*max(0,width-tw-cells(left))+clip(tail,tw)
+            self._hits.append(MenuRow(i.id,combined,role,spans,current))
+        return self._hits
+
+    def draw(self,canvas,rect,*,ascii=False):
+        if not self.opened:return
+        canvas.fill(rect,'surface')
+        for y,row in enumerate(self.layout(rect.width,rect.height,ascii)):
+            canvas.fill(Rect(rect.x,rect.y+y,rect.width,1),row.role)
+            if not row.spans:canvas.write(rect.x,rect.y+y,row.text,row.role,width=rect.width,preserve_background=True)
+            for span in row.spans:canvas.write(rect.x+span.start,rect.y+y,span.text,span.role,width=span.width,preserve_background=True)
+
+    def draw_popup(self, canvas, rect, title='', *, padding=1, ascii=False):
+        """Draw inside the host's rectangle; return the content hit-test rectangle."""
         if not self.opened:
-            return Event()
-        if action in ("cancel", "close"):
-            self.opened = False
-            return Event("close", self.return_id)
-        if action in ("back", "left"):
-            if self.path:
-                self.path.pop()
-                self._level()
-                return Event("back", self.path[-1] if self.path else "")
-            return self.handle("close")
-        if action in ("activate", "right"):
-            item = next((i for i in self.level.items if i.id == self.level.focused), None)
-            if item is None or item.disabled or item.separator:
-                return Event()
-            if any(i.parent == item.id for i in self.items):
-                self.path.append(item.id)
-                self._level()
-                return Event("open", item.id)
-            if action == "activate":
-                self.opened = False
-                return Event("activate", item.id, data={"return_id": self.return_id})
-            return Event()
-        return self.level.handle(action, height, text)
+            return Rect(rect.x, rect.y, 0, 0)
+        inner = canvas.panel(rect, title, False, ascii)
+        padding = max(0, min(4096, int(padding)))
+        px, py = min(padding, inner.width // 2), min(padding, inner.height // 2)
+        content = Rect(inner.x + px, inner.y + py,
+                       max(0, inner.width - 2 * px), max(0, inner.height - 2 * py))
+        self.draw(canvas, content, ascii=ascii)
+        return content
 
-    def click(self, x: int, y: int, height: int = 10) -> Event:
-        if not self.opened:
-            return Event()
-        event = self.level.click(x, y, height)
-        return self.handle("activate", height) if event.kind else Event()
+    def bar_layout(self,width):
+        width=max(0,min(width,65535));out=MenuBarLayout()
+        if width<3:return out
+        ids=[id for id in self._children.get('',[]) if not self._by_id[id].separator]
+        if not ids:return out
+        target=ids.index(self.bar) if self.bar in ids else 0;self.bar_first=min(self.bar_first,target)
+        size=lambda n:min(24,cells(self._label(self._by_id[ids[n]]))+2)
+        while self.bar_first<target and sum(size(n)for n in range(self.bar_first,target+1))>width-2:self.bar_first+=1
+        while self.bar_first>0 and sum(size(n)for n in range(self.bar_first-1,target+1))<=width-2:self.bar_first-=1
+        x=1;last=self.bar_first
+        for n,id in enumerate(ids[self.bar_first:],self.bar_first):
+            if x>=width-1:break
+            i=self._by_id[id];w=min(size(n),width-1-x);current=id==self.bar;role='disabled' if i.disabled else 'selection' if current else 'header'
+            out.cells.append(MenuBarCell(id,clip(' '+self._label(i)+' ',w,True),role,x,w,current));x+=w;last=n+1
+        out.previous=self.bar_first>0;out.next=last<len(ids);return out
 
-    def draw(self, canvas: Canvas, rect: Rect, *, focused: bool = True, ascii: bool = False) -> None:
-        if self.opened:
-            self.level.draw(canvas, rect, focused=False, ascii=ascii)
+    def bar_click(self,x,width):
+        if x<0 or x>=width:return MenuEvent()
+        layout=self.bar_layout(width)
+        if x==0 and layout.previous:return self.handle_bar('previous')
+        if x+1==width and layout.next:return self.handle_bar('next')
+        for cell in layout.cells:
+            if cell.start<=x<cell.start+cell.width and self._usable(cell.id,''):self.bar=cell.id;return MenuEvent('open_request',cell.id)
+        return MenuEvent()
+
+    def draw_bar(self,canvas,rect):
+        if rect.height<=0:return
+        canvas.fill(Rect(rect.x,rect.y,rect.width,1),'surface');layout=self.bar_layout(rect.width)
+        for cell in layout.cells:
+            canvas.fill(Rect(rect.x+cell.start,rect.y,cell.width,1),cell.role)
+            canvas.write(rect.x+cell.start,rect.y,cell.text,cell.role,width=cell.width,preserve_background=True)
+        if layout.previous:canvas.write(rect.x,rect.y,'<','hint',width=1)
+        if layout.next:canvas.write(rect.x+rect.width-1,rect.y,'>','hint',width=1)
+
+
+def menu_placement(anchor,viewport,width,height):
+    w=min(max(0,width),max(0,viewport.width));h=min(max(0,height),max(0,viewport.height))
+    x=max(viewport.x,min(viewport.x+max(0,viewport.width)-w,anchor.x));y=anchor.y+max(0,anchor.height)
+    if y+h>viewport.y+viewport.height:y=anchor.y-h
+    y=max(viewport.y,min(viewport.y+max(0,viewport.height)-h,y))
+    return Rect(x,y,w,h)
 
 
 @dataclass(frozen=True)

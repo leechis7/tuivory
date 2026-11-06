@@ -1,5 +1,7 @@
+#include "menu_host.hpp"
 #include "tuivory.hpp"
 #include <csignal>
+#include <cstdio>
 #include <iostream>
 #include <poll.h>
 #include <sys/ioctl.h>
@@ -13,7 +15,7 @@ class Session {
   bool active = false;
 
 public:
-  Session() {
+  explicit Session(bool mouse = false) {
     if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO) ||
         tcgetattr(STDIN_FILENO, &saved))
       throw std::runtime_error(
@@ -27,12 +29,15 @@ public:
       throw std::runtime_error("raw terminal failed");
     active = true;
     std::cout << "\033[?1049h";
+    if (mouse)
+      std::cout << "\033[?1000h\033[?1006h";
     std::signal(SIGTERM, stop);
     std::signal(SIGINT, stop);
   }
   ~Session() {
     if (active) {
-      std::cout << "\033[0m\033[?25h\033[?1049l" << std::flush;
+      std::cout << "\033[0m\033[?1000l\033[?1006l\033[?25h\033[?1049l"
+                << std::flush;
       tcsetattr(STDIN_FILENO, TCSADRAIN, &saved);
     }
   }
@@ -82,7 +87,8 @@ int main(int argc, char **argv) {
     std::string theme = "dark", colors = "256";
     bool en = false, ascii = false, snapshot = false, ansi_snapshot = false,
          workspace = false, tab_focus = false, text_demo = false,
-         form_demo = false, list_demo = false, picker_demo = false;
+         form_demo = false, list_demo = false, picker_demo = false,
+         menu_demo = false, context_demo = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -105,18 +111,23 @@ int main(int argc, char **argv) {
         form_demo = demo == "form";
         list_demo = demo == "list";
         picker_demo = demo == "picker";
+        context_demo = demo == "context-menu";
+        menu_demo = context_demo || demo == "menu";
         if (demo != "tree" && !workspace && !text_demo && !form_demo &&
-            !list_demo && !picker_demo)
-          throw std::invalid_argument(
-              "Supported demos: tree, workspace, text, form, list, picker");
+            !list_demo && !picker_demo && !menu_demo)
+          throw std::invalid_argument("Supported demos: tree, workspace, text, "
+                                      "form, list, picker, menu, context-menu");
       } else {
-        std::cout << "--demo tree|workspace|text|form|list|picker --lang ko|en "
-                     "--theme "
-                     "dark|light|blackwhite "
-                     "--colors 8|16|256|truecolor --ascii --snapshot\n";
+        std::cout
+            << "--demo tree|workspace|text|form|list|picker|menu|context-menu "
+               "--lang ko|en "
+               "--theme "
+               "dark|light|blackwhite "
+               "--colors 8|16|256|truecolor --ascii --snapshot\n";
         return arg == "--help" ? 0 : 2;
       }
     }
+    MenuDemo menu_host(en, context_demo);
     Tree tree({{"root", en ? "Workspace" : "작업 공간"},
                {"src", en ? "Sources" : "소스", "root"},
                {"components", en ? "Components" : "컴포넌트", "src"},
@@ -202,7 +213,7 @@ int main(int argc, char **argv) {
     list.empty = picker.list.empty = en ? "(empty)" : "항목 없음";
     std::optional<Session> session;
     if (!snapshot)
-      session.emplace();
+      session.emplace(menu_demo);
     while (!stopped) {
       int width = 72, height = 18;
       winsize size{};
@@ -215,7 +226,9 @@ int main(int argc, char **argv) {
       auto area = canvas.panel({0, 0, width, std::max(0, height - 1)},
                                en ? "Tuivory C++ example" : "Tuivory C++ 예제",
                                true, ascii);
-      if (list_demo)
+      if (menu_demo)
+        menu_host.draw(canvas, area, ascii);
+      else if (list_demo)
         list.draw(canvas, area, true, ascii);
       else if (picker_demo)
         picker.draw(canvas, area, true, ascii);
@@ -228,7 +241,9 @@ int main(int argc, char **argv) {
       else
         tree.draw(canvas, area, true, ascii);
       const auto hint =
-          picker_demo
+          menu_demo ? (en ? "Ctrl+Q quit | F10 menu | arrows | Enter | Esc"
+                          : "Ctrl+Q 종료 | F10 메뉴 | 방향키 | Enter | Esc")
+          : picker_demo
               ? (en ? "Ctrl+Q quit | type to filter | Enter select | Esc cancel"
                     : "Ctrl+Q 종료 | 문자로 검색 | Enter 선택 | Esc 취소")
           : form_demo ? (en ? "Ctrl+Q quit | Tab next | Enter activate | arrows"
@@ -262,7 +277,7 @@ int main(int argc, char **argv) {
                           : key == '\r' || key == '\n' ? "activate"
                           : key == ' '                 ? "toggle"
                                                        : "";
-      if (text_demo || form_demo || list_demo || picker_demo) {
+      if (text_demo || form_demo || list_demo || picker_demo || menu_demo) {
         std::string input, edit_action;
         if (key == 27) {
           std::string seq;
@@ -271,18 +286,33 @@ int main(int argc, char **argv) {
           while (seq.size() < 23 && poll(&fd, 1, 30) > 0 &&
                  read(STDIN_FILENO, &next, 1) == 1) {
             seq += next;
-            if (seq.size() > 1 && ((next >= 'A' && next <= 'Z') || next == '~'))
+            if (next == 17 || next == 3) {
+              stopped = 1;
+              break;
+            }
+            if (seq.size() > 1 &&
+                ((next >= 'A' && next <= 'Z') || next == 'm' || next == '~'))
               break;
           }
-          edit_action = seq == "[A"    ? "up"
-                        : seq == "[B"  ? "down"
-                        : seq == "[C"  ? "right"
-                        : seq == "[D"  ? "left"
-                        : seq == "[H"  ? "home"
-                        : seq == "[F"  ? "end"
-                        : seq == "[3~" ? "delete"
-                        : seq.empty()  ? "cancel"
-                                       : "";
+          int button = 0, x = 0, y = 0;
+          char ending = 0;
+          if (menu_demo && std::sscanf(seq.c_str(), "[<%d;%d;%d%c", &button, &x,
+                                       &y, &ending) == 4) {
+            if (ending == 'M' && x > 0 && y > 0)
+              menu_host.pointer(x - 1, y - 1, button);
+            continue;
+          }
+          edit_action = seq == "[21~"     ? "f10"
+                        : seq == "[21;2~" ? "shift_f10"
+                        : seq == "[A"     ? "up"
+                        : seq == "[B"     ? "down"
+                        : seq == "[C"     ? "right"
+                        : seq == "[D"     ? "left"
+                        : seq == "[H"     ? "home"
+                        : seq == "[F"     ? "end"
+                        : seq == "[3~"    ? "delete"
+                        : seq.empty()     ? "cancel"
+                                          : "";
         } else if (key == 127 || key == 8)
           edit_action = "backspace";
         else if (key == 13 || key == 10)
@@ -304,7 +334,10 @@ int main(int argc, char **argv) {
           }
           edit_action = "insert";
         }
-        if (list_demo)
+        if (menu_demo)
+          menu_host.handle(edit_action == "newline" ? "activate" : edit_action,
+                           input);
+        else if (list_demo)
           list.handle(key == 27   ? edit_action
                       : key == 32 ? "select"
                                   : action,

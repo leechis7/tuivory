@@ -1,0 +1,122 @@
+package io.tuivory.examples;
+import static io.tuivory.Tuivory.*;
+
+import java.util.ArrayList;
+import java.util.List;
+/** Example host owns screen composition, global shortcuts, callbacks and scopes. */
+final class MenuHost {
+  private final boolean en, context;
+  private final Menu menu;
+  private final Focus focus = new Focus("root", List.of(new FocusTarget("editor")));
+  private final Text editor;
+  private Rect area = new Rect(0, 0, 0, 0), bar = area, content = area, editorArea = area,
+               anchor = null;
+  private String status;
+  MenuHost(boolean en, boolean context) {
+    this.en = en;
+    this.context = context;
+    var items = new ArrayList<MenuItem>();
+    add(items, "file", en ? "File" : "파일", "", "f", "", false, false);
+    add(items, "new", en ? "New document" : "새 문서", "file", "n", "Ctrl+N", false, false);
+    add(items, "line", "", "file", "", "", false, true);
+    add(items, "off", en ? "Unavailable" : "사용 불가", "file", "", "", true, false);
+    add(items, "recent", en ? "Recent documents" : "최근 문서", "file", "r", "", false, false);
+    add(items, "a", en ? "Example A" : "예제 A", "recent", "a", "", false, false);
+    add(items, "more", en ? "More" : "더 보기", "recent", "m", "", false, false);
+    add(items, "b", en ? "Example B" : "예제 B", "more", "b", "", false, false);
+    add(items, "edit", en ? "Edit" : "편집", "", "e", "", false, false);
+    add(items, "copy", en ? "Copy" : "복사", "edit", "c", "Ctrl+C", false, false);
+    menu = new Menu(items);
+    menu.backLabel = en ? "Back" : "뒤로";
+    menu.emptyLabel = en ? "(empty)" : "항목 없음";
+    editor = new Text(
+        en ? "Close the menu to edit this text." : "메뉴를 닫으면 여기를 편집할 수 있습니다.");
+    status =
+        en ? "Clicks outside the popup are blocked." : "팝업 밖의 클릭은 배경에 전달되지 않습니다.";
+    open(context ? "" : "file");
+  }
+  private static void add(List<MenuItem> items, String id, String label, String parent,
+      String mnemonic, String shortcut, boolean disabled, boolean separator) {
+    var i = new MenuItem(id, label);
+    i.parent = parent;
+    i.mnemonic = mnemonic;
+    i.shortcut = shortcut;
+    i.disabled = disabled;
+    i.separator = separator;
+    items.add(i);
+  }
+  private void sync(MenuEvent e) {
+    if (!menu.opened() && focus.depth() > 0)
+      focus.close("popup");
+    if (e != null && e.kind().equals("activate"))
+      for (var i : menu.items())
+        if (i.id.equals(e.id()))
+          status = (en ? "Selected: " : "선택: ") + i.label;
+  }
+  private void open(String id) {
+    menu.open(id, "editor");
+    if (menu.opened() && focus.depth() == 0)
+      focus.open("popup", List.of(new FocusTarget("menu")));
+    sync(null);
+  }
+  void draw(Canvas c, Rect area, boolean ascii) {
+    this.area = area;
+    bar = new Rect(area.x(), area.y(), area.width(), context ? 0 : 1);
+    editorArea = new Rect(area.x(), area.y() + bar.height(), area.width(),
+        Math.min(2, Math.max(0, area.height() - bar.height())));
+    editor.draw(c, editorArea, !menu.opened());
+    String underlay = (ascii ? "." : en ? "界" : "가").repeat(area.width());
+    for (int y = editorArea.y() + editorArea.height();
+        y < area.y() + Math.max(0, area.height() - 2); y++)
+      c.write(area.x(), y, underlay, "hint", false, area.width());
+    if (bar.height() > 0)
+      menu.drawBar(c, bar);
+    c.write(
+        area.x(), area.y() + Math.max(0, area.height() - 2), status, "hint", false, area.width());
+    c.write(area.x(), area.y() + Math.max(0, area.height() - 1),
+        en ? "f10 menu | context x y | cancel" : "f10 메뉴 | context x y | cancel", "hint", false,
+        area.width());
+    Rect at = anchor != null
+        ? anchor
+        : new Rect(area.x() + (context ? area.width() / 2 : 1), area.y() + (context ? 5 : 0), 1, 1);
+    if (context || anchor != null)
+      c.write(at.x(), at.y(), "+", "warning", false, 1);
+    if (menu.opened()) {
+      int[] size = menu.contentSize();
+      var popup = menuPlacement(at, area, Math.min(48, ((size[0] + 5) / 2) * 2), size[1] + 4);
+      String title = menu.title();
+      content = menu.drawPopup(
+          c, popup, title.isEmpty() ? (en ? "Context menu" : "문맥 메뉴") : title, 1, ascii);
+    } else
+      content = new Rect(0, 0, 0, 0);
+  }
+  void handle(String action, String text) {
+    if (action.equals("f10")) {
+      if (menu.opened())
+        sync(menu.close());
+      else {
+        anchor = null;
+        open(context ? "" : "file");
+      }
+    } else if (action.equals("context")) {
+      String[] xy = text.split(" +");
+      if (xy.length == 2)
+        try {
+          int x = Integer.parseInt(xy[0]), y = Integer.parseInt(xy[1]);
+          if (contains(area, x, y)) {
+            anchor = new Rect(x, y, 1, 1);
+            open("");
+          }
+        } catch (NumberFormatException ignored) { /* Invalid host command leaves state unchanged. */
+        }
+    } else if (menu.opened()) {
+      if (action.equals("cancel") && focus.requestClose() == null)
+        return;
+      sync(menu.handle(action.equals("insert") ? "mnemonic" : action, text, content.height()));
+    } else if (!focus.route("root").blocked())
+      editor.handle(action.equals("activate") ? "newline" : action, text);
+  }
+  private static boolean contains(Rect r, int x, int y) {
+    return x >= r.x() && x < r.x() + r.width() && y >= r.y() && y < r.y() + r.height();
+  }
+}

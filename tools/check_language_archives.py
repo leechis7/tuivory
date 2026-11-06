@@ -4,6 +4,7 @@ from pathlib import Path
 import hashlib,json,os,subprocess,tarfile,tempfile,zipfile
 from check_languages import ROOT,run
 from check_language_collections import source
+from check_language_menu import source as menu_source
 
 def main():
  out=ROOT/'.cache/packages/languages'
@@ -18,19 +19,24 @@ def main():
    base=Path(d)
    with tarfile.open(out/names[0])as tar:tar.extractall(base,filter='data')
    sdk=next(base.iterdir());assert (sdk/'CASEFOLD-LICENSE').read_bytes()==(ROOT/'design/casefold.LICENSE').read_bytes()
+   example=next((sdk/'bin'/lang).iterdir());snapshot=subprocess.check_output([example,'--demo','context-menu','--lang','en','--snapshot'],cwd=base);assert b'Context menu'in snapshot
    src=base/('consumer.c'if lang=='c'else'consumer.cpp');src.write_text(source(lang))
    args=['cc'if lang=='c'else'c++','-std=c11'if lang=='c'else'-std=c++17','-static','-Wall','-Wextra','-Werror','-I',sdk/'include',src]
    if lang=='c':args+=[sdk/'lib/libtuivory.a']
    args+=['-o',base/'consumer'];run(args,base);run([base/'consumer'],base)
+   src.write_text(menu_source(lang));run(args,base);run([base/'consumer'],base)
  jar_name=next(name for name in manifest['assets']if name.endswith('.jar'))
  with zipfile.ZipFile(out/jar_name)as jar:
   names=jar.namelist();assert not any(n.endswith(('.so','.dll','.dylib'))for n in names)
-  assert not any('ComponentsTest'in n or 'CollectionCases'in n for n in names)
+  assert not any('ComponentsTest'in n or 'CollectionCases'in n or 'MenuCases'in n for n in names)
   assert jar.read('CASEFOLD-LICENSE')==(ROOT/'design/casefold.LICENSE').read_bytes()
   assert 'io/tuivory/FoldData.class'in names
  with tempfile.TemporaryDirectory(prefix='tuivory-jar-')as d:
   base=Path(d);src=base/'CollectionCases.java';src.write_text(source('java'));jar=out/jar_name
   run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);run(['java','-cp',str(jar)+os.pathsep+str(base),'CollectionCases'],base)
+  src=base/'MenuCases.java';src.write_text(menu_source('java'))
+  run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);run(['java','-cp',str(jar)+os.pathsep+str(base),'MenuCases'],base)
+  snapshot=subprocess.check_output(['java','-jar',jar,'--demo','context-menu','--lang','en','--snapshot'],cwd=base);assert b'Context menu'in snapshot
  wheel_name=next(name for name in manifest['assets']if name.endswith('.whl'))
  with zipfile.ZipFile(out/wheel_name)as wheel:
   assert any(n.endswith('/licenses/CASEFOLD-LICENSE')for n in wheel.namelist())

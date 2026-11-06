@@ -831,7 +831,7 @@ export class List {
     this.width = width;
     this.hits = rows
       .slice(this.scroll, this.scroll + height)
-      .map((r) => ({ ...r, text: clip(r.text, width) }));
+      .map((r) => ({ ...r, text: clip(r.text, width, true) }));
     return this.hits;
   }
   clickId(id: string): Event {
@@ -2083,85 +2083,601 @@ export class Focus {
     return this.route(scope).blocked;
   }
 }
+export interface MenuItem extends Item {
+  mnemonic?: string;
+}
+export interface MenuEvent {
+  kind: string;
+  id: string;
+  returnId: string;
+  data: { return_id: string };
+  text: string;
+}
+export interface MenuSpan {
+  start: number;
+  width: number;
+  text: string;
+  role: string;
+}
+export interface MenuRow {
+  id: string;
+  text: string;
+  role: string;
+  spans: MenuSpan[];
+  focused: boolean;
+}
+export interface MenuBarCell {
+  id: string;
+  text: string;
+  role: string;
+  start: number;
+  width: number;
+  focused: boolean;
+}
+export interface MenuBarLayout {
+  cells: MenuBarCell[];
+  previous: boolean;
+  next: boolean;
+}
 export class Menu {
-  readonly items: Item[];
-  path: string[] = [];
+  private items_: MenuItem[] = [];
+  private index = new Map<string, MenuItem>();
+  private children = new Map<string, string[]>();
+  private path_: string[] = [];
+  private focusMap = new Map<string, string>();
+  private tops = new Map<string, number>();
   opened = false;
+  private context = false;
   returnId = "";
-  level = new List([]);
-  constructor(items: Item[]) {
+  private bar = "";
+  private barFirst = 0;
+  backLabel = "Back";
+  emptyLabel = "(empty)";
+  private hits: MenuRow[] = [];
+  private width = 0;
+  constructor(items: MenuItem[]) {
+    this.setItems(items);
+  }
+  get items(): readonly MenuItem[] {
+    return clone(this.items_);
+  }
+  get path(): string[] {
+    return [...this.path_];
+  }
+  get focused(): string {
+    return this.focusMap.get(this.parent()) ?? "";
+  }
+  get barFocused(): string {
+    return this.bar;
+  }
+  private static validate(items: MenuItem[]): {
+    index: Map<string, MenuItem>;
+    children: Map<string, string[]>;
+  } {
     unique(items);
-    this.items = clone(items);
-    const byId = new Map(items.map((i) => [i.id, i]));
-    for (const item of items) {
-      const seen = new Set([item.id]);
-      let parent = item.parent;
+    if (items.length > 10000) throw new Error("too many menu items");
+    const index = new Map(items.map((i) => [i.id, i])),
+      children = new Map<string, string[]>(),
+      keys = new Map<string, Set<string>>();
+    for (const i of items) {
+      if (i.id.startsWith("@")) throw new Error("reserved menu ID");
+      const parent = i.parent ?? "",
+        mnemonic = i.mnemonic ?? "";
+      if (mnemonic) {
+        const key = mnemonic.toLowerCase(),
+          seen = keys.get(parent) ?? new Set<string>();
+        if (!/^[a-z0-9]$/.test(key) || i.separator || seen.has(key))
+          throw new Error("invalid/duplicate mnemonic");
+        seen.add(key);
+        keys.set(parent, seen);
+      }
+      children.set(parent, [...(children.get(parent) ?? []), i.id]);
+    }
+    for (const i of items) {
+      if (i.separator && (children.get(i.id)?.length ?? 0) > 0)
+        throw new Error("separator children");
+      let parent = i.parent ?? "";
+      const seen = new Set([i.id]);
+      let depth = 1;
       while (parent) {
-        if (!byId.has(parent) || seen.has(parent))
-          throw new Error("invalid menu hierarchy");
+        const p = index.get(parent);
+        if (!p || seen.has(parent) || p.separator)
+          throw new Error("invalid parent/cycle");
+        if (++depth > 32) throw new Error("menu depth exceeds32");
         seen.add(parent);
-        parent = byId.get(parent)!.parent;
+        parent = p.parent ?? "";
       }
     }
+    return { index, children };
   }
-  private update(): void {
-    const old = this.level.focused;
-    this.level = new List(
-      this.items.filter((i) => (i.parent ?? "") === (this.path.at(-1) ?? "")),
+  setItems(items: MenuItem[]): MenuEvent {
+    const owned = clone(items),
+      data = Menu.validate(owned);
+    this.items_ = owned;
+    this.index = data.index;
+    this.children = data.children;
+    this.focusMap = new Map(
+      [...this.focusMap].filter(([p]) => !p || this.index.has(p)),
     );
-    if (
-      this.level.items.some((i) => i.id === old && !i.disabled && !i.separator)
-    )
-      this.level.focused = old;
+    this.tops = new Map(
+      [...this.tops].filter(([p]) => !p || this.index.has(p)),
+    );
+    this.hits = [];
+    if (!this.usable(this.bar, "")) this.bar = this.first("");
+    for (let n = 0; n < this.path_.length; n++) {
+      const id = this.path_[n];
+      if (
+        !this.usable(id, n ? this.path_[n - 1] : "") ||
+        !this.childIds(id).length
+      )
+        return this.close();
+    }
+    if (this.opened) this.reconcile();
+    return this.none();
   }
-  open(id = "", returnId = ""): Event {
-    const item = this.items.find((i) => i.id === id);
-    if (id && (!item || item.disabled || item.separator)) return event();
-    this.path = id ? [id] : [];
+  private none(): MenuEvent {
+    return {
+      kind: "",
+      id: "",
+      returnId: "",
+      data: { return_id: "" },
+      text: "",
+    };
+  }
+  private event(kind: string, id = ""): MenuEvent {
+    return {
+      kind,
+      id,
+      returnId: this.returnId,
+      data: { return_id: this.returnId },
+      text: "",
+    };
+  }
+  private childIds(parent: string): string[] {
+    return this.children.get(parent) ?? [];
+  }
+  private parent(): string {
+    return this.path_.at(-1) ?? "";
+  }
+  private usable(id: string, parent: string): boolean {
+    const i = this.index.get(id);
+    return !!i && (i.parent ?? "") === parent && !i.disabled && !i.separator;
+  }
+  private first(parent: string): string {
+    return this.childIds(parent).find((id) => this.usable(id, parent)) ?? "";
+  }
+  private backAllowed(): boolean {
+    return this.path_.length > 1 || (this.context && this.path_.length > 0);
+  }
+  private reconcile(): void {
+    const p = this.parent(),
+      id = this.focusMap.get(p) ?? "";
+    if (id === "@back" && this.backAllowed()) return;
+    if (!this.usable(id, p))
+      this.focusMap.set(
+        p,
+        this.first(p) || (this.backAllowed() ? "@back" : ""),
+      );
+  }
+  title(): string {
+    return this.path_
+      .map((id) => clean(this.index.get(id)!.label ?? ""))
+      .join(" / ");
+  }
+  open(id = "", returnId = ""): MenuEvent {
+    const path: string[] = [];
+    let at = id;
+    while (at) {
+      const i = this.index.get(at);
+      if (!i || i.disabled || i.separator) return this.none();
+      path.unshift(at);
+      at = i.parent ?? "";
+    }
     this.returnId = returnId;
+    this.path_ = path;
+    this.hits = [];
+    path.forEach((child, n) => this.focusMap.set(n ? path[n - 1] : "", child));
+    this.context = !id;
     this.opened = true;
-    this.update();
-    return event("open", id);
+    if (path.length) this.bar = path[0];
+    if (id && !this.childIds(id).length) return this.finish("activate", id);
+    this.reconcile();
+    return this.event("open", id);
   }
-  handle(action: string, height = 10, text = ""): Event {
-    if (!this.opened) return event();
-    if (action === "cancel" || action === "close") {
-      this.opened = false;
-      return event("close", this.returnId);
-    }
-    if (action === "left" || action === "back") {
-      if (this.path.length) {
-        this.path.pop();
-        this.update();
-        return event("back", this.path.at(-1) ?? "");
-      }
-      return this.handle("close");
-    }
-    if (action === "activate" || action === "right") {
-      const item = this.level.items.find((i) => i.id === this.level.focused);
-      if (!item || item.disabled || item.separator) return event();
-      if (this.items.some((i) => i.parent === item.id)) {
-        this.path.push(item.id);
-        this.update();
-        return event("open", item.id);
-      }
-      if (action === "activate") {
-        this.opened = false;
-        return event("activate", item.id, "", { return_id: this.returnId });
-      }
-      return event();
-    }
-    return this.level.handle(action, height, text);
+  private finish(kind: string, id = ""): MenuEvent {
+    this.opened = false;
+    this.path_ = [];
+    this.hits = [];
+    return this.event(kind, id);
   }
-  click(x: number, y: number, height = 10): Event {
-    if (!this.opened) return event();
-    const e = this.level.click(x, y, height);
-    return e.kind ? this.handle("activate", height) : event();
+  close(): MenuEvent {
+    return this.opened ? this.finish("close") : this.none();
   }
-  draw(c: Canvas, r: Rect, focused = true, ascii = false): void {
-    if (this.opened) this.level.draw(c, r, false, ascii);
+  back(): MenuEvent {
+    if (!this.opened) return this.none();
+    if (!this.backAllowed()) return this.close();
+    this.path_.pop();
+    this.reconcile();
+    return this.event("back", this.parent());
+  }
+  focus(id: string): boolean {
+    if (!this.opened) return false;
+    if (
+      (id === "@back" && this.backAllowed()) ||
+      this.usable(id, this.parent())
+    ) {
+      this.focusMap.set(this.parent(), id);
+      return true;
+    }
+    return false;
+  }
+  private enter(id: string): MenuEvent {
+    this.path_.push(id);
+    this.reconcile();
+    return this.event("open", id);
+  }
+  private switchRoot(next: boolean): MenuEvent {
+    const ids = this.childIds("").filter((id) => this.usable(id, ""));
+    if (!ids.length) return this.none();
+    let at = Math.max(0, ids.indexOf(this.bar));
+    const step = next ? 1 : ids.length - 1;
+    for (let n = 0; n < ids.length; n++) {
+      at = (at + step) % ids.length;
+      if (ids[at] !== this.bar && this.childIds(ids[at]).length)
+        return this.open(ids[at], this.returnId);
+    }
+    return this.none();
+  }
+  handle(action: string, value = "", height = 10): MenuEvent {
+    if (!this.opened) return this.none();
+    this.reconcile();
+    const p = this.parent(),
+      id = this.focused;
+    if (action === "cancel" || action === "back") return this.back();
+    if (action === "close") return this.close();
+    if (action === "left")
+      return this.backAllowed()
+        ? this.back()
+        : this.context
+          ? this.none()
+          : this.switchRoot(false);
+    if (action === "right") {
+      if (this.usable(id, p) && this.childIds(id).length) return this.enter(id);
+      return !this.backAllowed() && !this.context
+        ? this.switchRoot(true)
+        : this.none();
+    }
+    if (action === "activate") {
+      if (id === "@back") return this.back();
+      if (!this.usable(id, p)) return this.none();
+      return this.childIds(id).length
+        ? this.enter(id)
+        : this.finish("activate", id);
+    }
+    if (action === "mnemonic") {
+      if (!/^[a-z0-9]$/i.test(value)) return this.none();
+      for (const candidate of this.childIds(p)) {
+        const i = this.index.get(candidate)!;
+        if (
+          this.usable(candidate, p) &&
+          i.mnemonic &&
+          i.mnemonic.toLowerCase() === value.toLowerCase()
+        ) {
+          this.focusMap.set(p, candidate);
+          return this.handle("activate", "", height);
+        }
+      }
+      return this.none();
+    }
+    const ids = [
+      ...(this.backAllowed() ? ["@back"] : []),
+      ...this.childIds(p).filter((id) => this.usable(id, p)),
+    ];
+    if (!ids.length) return this.none();
+    let at = Math.max(0, ids.indexOf(id));
+    if (action === "previous" || action === "up")
+      at = (at + ids.length - 1) % ids.length;
+    else if (action === "next" || action === "down") at = (at + 1) % ids.length;
+    else if (action === "first" || action === "home") at = 0;
+    else if (action === "last" || action === "end") at = ids.length - 1;
+    else if (action === "page_up")
+      at = Math.max(0, at - Math.max(1, height - 1));
+    else if (action === "page_down")
+      at = Math.min(ids.length - 1, at + Math.max(1, height - 1));
+    else return this.none();
+    this.focusMap.set(p, ids[at]);
+    return this.event("focus", ids[at]);
+  }
+  handleBar(action: string, value = ""): MenuEvent {
+    const ids = this.childIds("").filter((id) => this.usable(id, ""));
+    if (!ids.length) return this.none();
+    let at = Math.max(0, ids.indexOf(this.bar));
+    const event = (kind: string, id: string): MenuEvent => ({
+      kind,
+      id,
+      returnId: "",
+      data: { return_id: "" },
+      text: "",
+    });
+    if (action === "previous" || action === "left")
+      at = (at + ids.length - 1) % ids.length;
+    else if (action === "next" || action === "right")
+      at = (at + 1) % ids.length;
+    else if (action === "first" || action === "home") at = 0;
+    else if (action === "last" || action === "end") at = ids.length - 1;
+    else if (action === "activate" || action === "down")
+      return event("open_request", ids[at]);
+    else if (action === "mnemonic") {
+      if (!/^[a-z0-9]$/i.test(value)) return this.none();
+      for (const id of ids) {
+        const i = this.index.get(id)!;
+        if (i.mnemonic && i.mnemonic.toLowerCase() === value.toLowerCase()) {
+          this.bar = id;
+          return event("open_request", id);
+        }
+      }
+      return this.none();
+    } else return this.none();
+    this.bar = ids[at];
+    return event("focus", this.bar);
+  }
+  clickId(id: string): MenuEvent {
+    return this.focus(id) ? this.handle("activate") : this.none();
+  }
+  click(x: number, y: number, height = 10): MenuEvent {
+    if (
+      !this.opened ||
+      x < 0 ||
+      x >= this.width ||
+      y < 0 ||
+      y >= Math.min(height, this.hits.length)
+    )
+      return this.none();
+    return this.clickId(this.hits[y].id);
+  }
+  private static label(i: MenuItem): string {
+    return (
+      (i.label ?? "") +
+      (i.mnemonic ? " (" + i.mnemonic.toUpperCase() + ")" : "")
+    );
+  }
+  private rows(): MenuItem[] {
+    return [
+      ...(this.backAllowed()
+        ? [
+            { id: "@back", label: this.backLabel },
+            { id: "", separator: true },
+          ]
+        : []),
+      ...this.childIds(this.parent()).map((id) => this.index.get(id)!),
+    ];
+  }
+  contentSize(): [number, number] {
+    const rows = this.rows();
+    let width = 12;
+    for (const i of rows)
+      width = Math.max(
+        width,
+        cells(Menu.label(i)) +
+          cells(i.secondary ?? "") +
+          cells(i.shortcut ?? "") +
+          cells(i.icon ?? "") +
+          8,
+      );
+    return [Math.min(width, 4096), Math.max(1, rows.length)];
+  }
+  layout(width: number, height: number, ascii = false): MenuRow[] {
+    this.hits = [];
+    this.width = width = Math.max(0, Math.min(65535, width));
+    height = Math.max(0, Math.min(4096, height));
+    if (!this.opened || !width || !height) return [];
+    this.reconcile();
+    const rows = this.rows();
+    if (!rows.length) {
+      this.hits = [
+        {
+          id: "",
+          text: clip(this.emptyLabel, width, true),
+          role: "hint",
+          spans: [],
+          focused: false,
+        },
+      ];
+      return this.hits;
+    }
+    const at = Math.max(
+        0,
+        rows.findIndex((i) => i.id === this.focused),
+      ),
+      p = this.parent();
+    let top = Math.min(this.tops.get(p) ?? 0, at);
+    if (at >= top + height) top = at - height + 1;
+    top = Math.min(top, Math.max(0, rows.length - height));
+    this.tops.set(p, top);
+    for (const i of rows.slice(top, top + height)) {
+      if (i.separator) {
+        this.hits.push({
+          id: "",
+          text: (ascii ? "-" : "─").repeat(width),
+          role: "hint",
+          spans: [],
+          focused: false,
+        });
+        continue;
+      }
+      const current = i.id === this.focused,
+        role = i.disabled ? "disabled" : current ? "selection" : "surface",
+        icon = (ascii ? i.ascii_icon || (i.icon ? "*" : "") : i.icon) ?? "",
+        prefix = (current ? "> " : "  ") + (icon ? icon + " " : ""),
+        text =
+          prefix +
+          (i.id === "@back" ? "< " + (i.label ?? "") : Menu.label(i)) +
+          (i.secondary ? "  " + i.secondary : ""),
+        suffix = this.childIds(i.id).length ? (ascii ? " >" : " ›") : "",
+        shortcut = clean(i.shortcut ?? ""),
+        reserve = Math.min(Math.floor(width / 3), cells(shortcut)),
+        tail = reserve ? " " + clip(shortcut, reserve) + suffix : suffix,
+        tw = Math.min(width, cells(tail)),
+        left = clip(text, width - tw, true),
+        spans: MenuSpan[] = [{ start: 0, width, text: left, role }];
+      if (tw)
+        spans.push({
+          start: width - tw,
+          width: tw,
+          text: clip(tail, tw),
+          role: role === "surface" ? "hint" : role,
+        });
+      this.hits.push({
+        id: i.id,
+        text:
+          left +
+          " ".repeat(Math.max(0, width - tw - cells(left))) +
+          clip(tail, tw),
+        role,
+        spans,
+        focused: current,
+      });
+    }
+    return this.hits;
+  }
+  draw(c: Canvas, r: Rect, ascii = false): void {
+    if (!this.opened) return;
+    c.fill(r, "surface");
+    this.layout(r.width, r.height, ascii).forEach((row, y) => {
+      c.fill(rect(r.x, r.y + y, r.width, 1), row.role);
+      if (!row.spans.length)
+        c.write(r.x, r.y + y, row.text, row.role, false, r.width, true);
+      for (const span of row.spans)
+        c.write(
+          r.x + span.start,
+          r.y + y,
+          span.text,
+          span.role,
+          false,
+          span.width,
+          true,
+        );
+    });
+  }
+  /** Paint a host-positioned popup and return its content hit-test rectangle. */
+  drawPopup(c: Canvas, r: Rect, title = "", padding = 1, ascii = false): Rect {
+    if (!this.opened) return rect(r.x, r.y, 0, 0);
+    const inner = c.panel(r, title, false, ascii);
+    padding = Math.max(
+      0,
+      Math.min(4096, Number.isFinite(padding) ? Math.trunc(padding) : 0),
+    );
+    const px = Math.min(padding, Math.floor(inner.width / 2)),
+      py = Math.min(padding, Math.floor(inner.height / 2));
+    const content = rect(
+      inner.x + px,
+      inner.y + py,
+      Math.max(0, inner.width - 2 * px),
+      Math.max(0, inner.height - 2 * py),
+    );
+    this.draw(c, content, ascii);
+    return content;
+  }
+  barLayout(width: number): MenuBarLayout {
+    const out: MenuBarLayout = { cells: [], previous: false, next: false };
+    width = Math.max(0, Math.min(65535, width));
+    if (width < 3) return out;
+    const ids = this.childIds("").filter(
+      (id) => !this.index.get(id)!.separator,
+    );
+    if (!ids.length) return out;
+    const target = Math.max(0, ids.indexOf(this.bar));
+    this.barFirst = Math.min(this.barFirst, target);
+    const size = (n: number) =>
+        Math.min(24, cells(Menu.label(this.index.get(ids[n])!)) + 2),
+      sum = (a: number, b: number) =>
+        ids.slice(a, b + 1).reduce((n, _, offset) => n + size(a + offset), 0);
+    while (this.barFirst < target && sum(this.barFirst, target) > width - 2)
+      this.barFirst++;
+    while (this.barFirst > 0 && sum(this.barFirst - 1, target) <= width - 2)
+      this.barFirst--;
+    let x = 1,
+      last = this.barFirst;
+    for (let n = this.barFirst; n < ids.length; n++) {
+      if (x >= width - 1) break;
+      const i = this.index.get(ids[n])!,
+        w = Math.min(size(n), width - 1 - x),
+        current = i.id === this.bar,
+        role = i.disabled ? "disabled" : current ? "selection" : "header";
+      out.cells.push({
+        id: i.id,
+        text: clip(" " + Menu.label(i) + " ", w, true),
+        role,
+        start: x,
+        width: w,
+        focused: current,
+      });
+      x += w;
+      last = n + 1;
+    }
+    out.previous = this.barFirst > 0;
+    out.next = last < ids.length;
+    return out;
+  }
+  barClick(x: number, width: number): MenuEvent {
+    if (x < 0 || x >= width) return this.none();
+    const l = this.barLayout(width);
+    if (x === 0 && l.previous) return this.handleBar("previous");
+    if (x + 1 === width && l.next) return this.handleBar("next");
+    for (const c of l.cells)
+      if (x >= c.start && x < c.start + c.width && this.usable(c.id, "")) {
+        this.bar = c.id;
+        return {
+          kind: "open_request",
+          id: c.id,
+          returnId: "",
+          data: { return_id: "" },
+          text: "",
+        };
+      }
+    return this.none();
+  }
+  drawBar(c: Canvas, r: Rect): void {
+    if (r.height <= 0) return;
+    c.fill(rect(r.x, r.y, r.width, 1), "surface");
+    const l = this.barLayout(r.width);
+    for (const cell of l.cells) {
+      c.fill(rect(r.x + cell.start, r.y, cell.width, 1), cell.role);
+      c.write(
+        r.x + cell.start,
+        r.y,
+        cell.text,
+        cell.role,
+        false,
+        cell.width,
+        true,
+      );
+    }
+    if (l.previous) c.write(r.x, r.y, "<", "hint", false, 1);
+    if (l.next) c.write(r.x + r.width - 1, r.y, ">", "hint", false, 1);
   }
 }
+export function menuPlacement(
+  anchor: Rect,
+  viewport: Rect,
+  width: number,
+  height: number,
+): Rect {
+  const w = Math.min(Math.max(0, width), Math.max(0, viewport.width)),
+    h = Math.min(Math.max(0, height), Math.max(0, viewport.height)),
+    x = Math.max(
+      viewport.x,
+      Math.min(viewport.x + Math.max(0, viewport.width) - w, anchor.x),
+    );
+  let y = anchor.y + Math.max(0, anchor.height);
+  if (y + h > viewport.y + viewport.height) y = anchor.y - h;
+  y = Math.max(
+    viewport.y,
+    Math.min(viewport.y + Math.max(0, viewport.height) - h, y),
+  );
+  return rect(x, y, w, h);
+}
+
 export interface SplitLayout {
   first: number;
   divider: number;

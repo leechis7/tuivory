@@ -299,6 +299,9 @@ jobs:
           python tools/check_language_collections.py --language c
           python tools/check_language_collections.py --language cpp
           python tools/check_language_collections.py --language java
+          python tools/check_language_menu.py --language c
+          python tools/check_language_menu.py --language cpp
+          python tools/check_language_menu.py --language java
       - name: Build and install runtime packages outside the repository
         run: |
           mkdir -p .cache/packages/javascript
@@ -344,6 +347,6 @@ jobs:
       - name: Validate all locale/theme/profile/glyph combinations
         shell: bash
         run: |
-          for demo in tree workspace text form list picker; do
+          for demo in tree workspace text form list picker menu context-menu; do
             python tools/check_language_examples.py --language "${{ matrix.language }}" --demo "$demo" --matrix
           done

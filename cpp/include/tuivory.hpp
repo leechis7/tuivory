@@ -723,3 +723,5 @@ inline std::string fold(const std::string &text) {
 } // namespace tuivory
 
 #include "tuivory_collections.hpp"
+
+#include "tuivory_menu.hpp"

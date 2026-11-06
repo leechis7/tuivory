@@ -3434,7 +3434,7 @@ TuiResult tui_list_layout(TuiList *l, int width, int height, int ascii,
                          max(0, (int)l->row_count - height));
   l->visible_count = (size_t)min(height, (int)(l->row_count - l->start));
   for (size_t j = l->start; j < l->start + l->visible_count; j++) {
-    char *clipped = tui_clip(l->rows[j].text, width, 0);
+    char *clipped = tui_clip(l->rows[j].text, width, 1);
     if (!clipped)
       goto nomem;
     free((void *)l->rows[j].text);
@@ -3705,4 +3705,1010 @@ TuiResult tui_picker_draw(TuiSearchPicker *p, TuiCanvas *c, TuiRect r,
                              (TuiRect){r.x, r.y + 1, r.width, r.height - 1},
                              focused, ascii)
              : TUI_OK;
+}
+
+#define MENU_NONE (-1)
+#define MENU_BACK (-2)
+#define MENU_SEPARATOR (-3)
+struct TuiMenu {
+  TuiList *storage;
+  TuiMenuItem *items;
+  int *parents, *focus, *tops;
+  size_t count;
+  int path[32], depth, opened, context, bar, bar_first, width;
+  const char *caller, *back_label, *empty_label;
+  TuiMenuRow *rows;
+  size_t row_count;
+  TuiMenuBarCell *bar_cells;
+  size_t bar_count;
+};
+static int menu_lower(int c) {
+  return c >= 'A' && c <= 'Z' ? c + 'a' - 'A' : c;
+}
+static int menu_mnemonic(const char *s) {
+  return s && s[0] && !s[1] &&
+         ((s[0] >= 'A' && s[0] <= 'Z') || (s[0] >= 'a' && s[0] <= 'z') ||
+          (s[0] >= '0' && s[0] <= '9'));
+}
+static int menu_index(const TuiMenu *m, const char *id) {
+  if (!id)
+    return MENU_NONE;
+  if (!strcmp(id, "@back"))
+    return MENU_BACK;
+  for (size_t i = 0; i < m->count; i++)
+    if (!strcmp(m->items[i].id, id))
+      return (int)i;
+  return MENU_NONE;
+}
+static const char *menu_id(const TuiMenu *m, int i) {
+  return i == MENU_BACK                   ? "@back"
+         : i >= 0 && (size_t)i < m->count ? m->items[i].id
+                                          : "";
+}
+static int menu_parent(const TuiMenu *m) {
+  return m->depth ? m->path[m->depth - 1] : MENU_NONE;
+}
+static int menu_back_allowed(const TuiMenu *m) {
+  return m->depth > 1 || (m->context && m->depth > 0);
+}
+static int menu_usable(const TuiMenu *m, int i, int parent) {
+  return i >= 0 && (size_t)i < m->count && m->parents[i] == parent &&
+         !m->items[i].disabled && !m->items[i].separator;
+}
+static int menu_children(const TuiMenu *m, int parent) {
+  int count = 0;
+  for (size_t i = 0; i < m->count; i++)
+    if (m->parents[i] == parent)
+      count++;
+  return count;
+}
+static int menu_first(const TuiMenu *m, int parent) {
+  for (size_t i = 0; i < m->count; i++)
+    if (menu_usable(m, (int)i, parent))
+      return (int)i;
+  return MENU_NONE;
+}
+static void menu_reconcile(TuiMenu *m) {
+  int p = menu_parent(m), id = m->focus[p + 1];
+  if (id == MENU_BACK && menu_back_allowed(m))
+    return;
+  if (!menu_usable(m, id, p)) {
+    id = menu_first(m, p);
+    m->focus[p + 1] = id == MENU_NONE && menu_back_allowed(m) ? MENU_BACK : id;
+  }
+}
+static TuiMenuEvent menu_event(const TuiMenu *m, const char *kind, int id,
+                               int caller, TuiResult result) {
+  TuiMenuEvent e = {kind, m ? menu_id(m, id) : "", caller && m ? m->caller : "",
+                    result};
+  return e;
+}
+static void menu_rows_clear(TuiMenu *m) {
+  for (size_t i = 0; i < m->row_count; i++) {
+    free((void *)m->rows[i].text);
+    for (size_t j = 0; j < m->rows[i].span_count; j++)
+      free((void *)m->rows[i].spans[j].text);
+  }
+  free(m->rows);
+  m->rows = NULL;
+  m->row_count = 0;
+}
+static void menu_bar_clear(TuiMenu *m) {
+  for (size_t i = 0; i < m->bar_count; i++)
+    free((void *)m->bar_cells[i].text);
+  free(m->bar_cells);
+  m->bar_cells = NULL;
+  m->bar_count = 0;
+}
+static void menu_clear(TuiMenu *m) {
+  menu_rows_clear(m);
+  menu_bar_clear(m);
+  if (m->items)
+    for (size_t i = 0; i < m->count; i++)
+      free((void *)m->items[i].mnemonic);
+  free(m->items);
+  free(m->parents);
+  free(m->focus);
+  free(m->tops);
+  tui_list_free(m->storage);
+  free((void *)m->caller);
+  free((void *)m->back_label);
+  free((void *)m->empty_label);
+}
+void tui_menu_free(TuiMenu *m) {
+  if (m) {
+    menu_clear(m);
+    free(m);
+  }
+}
+TuiMenu *tui_menu_new(const TuiMenuItem *items, size_t count) {
+  TuiMenu *m;
+  TuiItem *plain;
+  if ((count && !items) || count > 10000)
+    return NULL;
+  m = calloc(1, sizeof(*m));
+  plain = calloc(count ? count : 1, sizeof(*plain));
+  if (!m || !plain) {
+    free(m);
+    free(plain);
+    return NULL;
+  }
+  m->bar = MENU_NONE;
+  m->caller = copy("");
+  m->back_label = copy("Back");
+  m->empty_label = copy("(empty)");
+  if (!m->caller || !m->back_label || !m->empty_label)
+    goto bad;
+  for (size_t i = 0; i < count; i++) {
+    if (!items[i].id || !*items[i].id || items[i].id[0] == '@')
+      goto bad;
+    plain[i] =
+        (TuiItem){items[i].id,       items[i].label,    items[i].secondary,
+                  items[i].shortcut, items[i].icon,     items[i].ascii_icon,
+                  items[i].parent,   items[i].disabled, items[i].separator};
+    const char *key = nn(items[i].mnemonic);
+    if (*key) {
+      if (!menu_mnemonic(key) || items[i].separator)
+        goto bad;
+      for (size_t j = 0; j < i; j++)
+        if (!strcmp(nn(items[i].parent), nn(items[j].parent)) &&
+            *nn(items[j].mnemonic) &&
+            menu_lower(key[0]) == menu_lower(items[j].mnemonic[0]))
+          goto bad;
+    }
+  }
+  m->storage = tui_list_new(plain, count);
+  if (!m->storage)
+    goto bad;
+  m->items = calloc(count ? count : 1, sizeof(*m->items));
+  m->parents = malloc((count ? count : 1) * sizeof(*m->parents));
+  m->focus = malloc((count + 1) * sizeof(*m->focus));
+  m->tops = calloc(count + 1, sizeof(*m->tops));
+  if (!m->items || !m->parents || !m->focus || !m->tops)
+    goto bad;
+  m->count = count;
+  for (size_t i = 0; i <= count; i++)
+    m->focus[i] = MENU_NONE;
+  for (size_t i = 0; i < count; i++) {
+    const TuiItem *s = &m->storage->items[i];
+    m->items[i] = (TuiMenuItem){
+        s->id, s->parent, s->label,      s->secondary, s->shortcut,
+        NULL,  s->icon,   s->ascii_icon, s->disabled,  s->separator};
+    m->items[i].mnemonic = copy(nn(items[i].mnemonic));
+    if (!m->items[i].mnemonic)
+      goto bad;
+  }
+  for (size_t i = 0; i < count; i++) {
+    m->parents[i] =
+        *m->items[i].parent ? menu_index(m, m->items[i].parent) : MENU_NONE;
+    if (*m->items[i].parent && m->parents[i] < 0)
+      goto bad;
+    if (m->parents[i] >= 0 && m->items[m->parents[i]].separator)
+      goto bad;
+  }
+  for (size_t i = 0; i < count; i++) {
+    int at = (int)i, depth = 0;
+    while (at >= 0) {
+      if (++depth > 32)
+        goto bad;
+      at = m->parents[at];
+    }
+    if (m->items[i].separator && menu_children(m, (int)i))
+      goto bad;
+  }
+  m->bar = menu_first(m, MENU_NONE);
+  free(plain);
+  return m;
+bad:
+  free(plain);
+  tui_menu_free(m);
+  return NULL;
+}
+const TuiMenuItem *tui_menu_items(const TuiMenu *m, size_t *count) {
+  if (count)
+    *count = m ? m->count : 0;
+  return m ? m->items : NULL;
+}
+int tui_menu_opened(const TuiMenu *m) { return m ? m->opened : 0; }
+const char *tui_menu_focused(const TuiMenu *m) {
+  return m ? menu_id(m, m->focus[menu_parent(m) + 1]) : "";
+}
+const char *tui_menu_return_id(const TuiMenu *m) { return m ? m->caller : ""; }
+const char *tui_menu_bar_focused(const TuiMenu *m) {
+  return m ? menu_id(m, m->bar) : "";
+}
+size_t tui_menu_path(const TuiMenu *m, const char **ids, size_t capacity) {
+  if (!m)
+    return 0;
+  for (size_t i = 0; i < (size_t)m->depth && i < capacity; i++)
+    if (ids)
+      ids[i] = menu_id(m, m->path[i]);
+  return (size_t)m->depth;
+}
+char *tui_menu_title(const TuiMenu *m) {
+  Buffer b = {0};
+  if (!m)
+    return NULL;
+  append(&b, "");
+  for (int i = 0; i < m->depth; i++) {
+    char *label = clean_copy(m->items[m->path[i]].label);
+    if (!label) {
+      free(b.s);
+      return NULL;
+    }
+    if (i)
+      append(&b, " / ");
+    append(&b, label);
+    free(label);
+  }
+  if (b.failed) {
+    free(b.s);
+    return NULL;
+  }
+  return b.s;
+}
+TuiResult tui_menu_labels(TuiMenu *m, const char *back, const char *empty) {
+  char *b, *e;
+  if (!m || tui_cells(nn(back)) < 0 || tui_cells(nn(empty)) < 0)
+    return TUI_INVALID;
+  b = copy(nn(back));
+  e = copy(nn(empty));
+  if (!b || !e) {
+    free(b);
+    free(e);
+    return TUI_NOMEM;
+  }
+  free((void *)m->back_label);
+  free((void *)m->empty_label);
+  m->back_label = b;
+  m->empty_label = e;
+  return TUI_OK;
+}
+TuiMenuEvent tui_menu_set_items(TuiMenu *m, const TuiMenuItem *items,
+                                size_t count) {
+  TuiMenu *next;
+  TuiMenu old;
+  int invalid = 0;
+  if (!m)
+    return menu_event(NULL, "", MENU_NONE, 0, TUI_INVALID);
+  next = tui_menu_new(items, count);
+  if (!next)
+    return menu_event(m, "", MENU_NONE, 0, TUI_INVALID);
+  for (int p = MENU_NONE; p < (int)m->count; p++) {
+    int np = p < 0 ? MENU_NONE : menu_index(next, m->items[p].id);
+    if (p >= 0 && np < 0)
+      continue;
+    int oldfocus = m->focus[p + 1];
+    next->focus[np + 1] =
+        oldfocus >= 0 ? menu_index(next, m->items[oldfocus].id) : oldfocus;
+    next->tops[np + 1] = m->tops[p + 1];
+  }
+  next->opened = m->opened;
+  next->context = m->context;
+  next->bar_first = m->bar_first;
+  next->bar = menu_index(next, menu_id(m, m->bar));
+  if (!menu_usable(next, next->bar, MENU_NONE))
+    next->bar = menu_first(next, MENU_NONE);
+  for (int n = 0; n < m->depth; n++) {
+    int id = menu_index(next, menu_id(m, m->path[n]));
+    if (!menu_usable(next, id, n ? next->path[n - 1] : MENU_NONE) ||
+        !menu_children(next, id)) {
+      invalid = 1;
+      break;
+    }
+    next->path[next->depth++] = id;
+  }
+  free((void *)next->caller);
+  free((void *)next->back_label);
+  free((void *)next->empty_label);
+  next->caller = m->caller;
+  next->back_label = m->back_label;
+  next->empty_label = m->empty_label;
+  m->caller = m->back_label = m->empty_label = NULL;
+  old = *m;
+  *m = *next;
+  free(next);
+  menu_clear(&old);
+  if (invalid && m->opened) {
+    m->opened = 0;
+    m->depth = 0;
+    return menu_event(m, "close", MENU_NONE, 1, TUI_OK);
+  }
+  if (m->opened)
+    menu_reconcile(m);
+  return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+}
+static TuiMenuEvent menu_finish(TuiMenu *m, const char *kind, int id) {
+  m->opened = 0;
+  m->depth = 0;
+  menu_rows_clear(m);
+  return menu_event(m, kind, id, 1, TUI_OK);
+}
+TuiMenuEvent tui_menu_open(TuiMenu *m, const char *id, const char *caller) {
+  int path[32], depth = 0, at;
+  char *owned;
+  if (!m || !id || tui_cells(nn(caller)) < 0)
+    return menu_event(m, "", MENU_NONE, 0, TUI_INVALID);
+  at = *id ? menu_index(m, id) : MENU_NONE;
+  if (*id && at < 0)
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  while (at >= 0) {
+    if (m->items[at].disabled || m->items[at].separator)
+      return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+    if (depth >= 32)
+      return menu_event(m, "", MENU_NONE, 0, TUI_INVALID);
+    path[depth++] = at;
+    at = m->parents[at];
+  }
+  owned = copy(nn(caller));
+  if (!owned)
+    return menu_event(m, "", MENU_NONE, 0, TUI_NOMEM);
+  free((void *)m->caller);
+  m->caller = owned;
+  m->depth = depth;
+  for (int n = 0; n < depth; n++)
+    m->path[n] = path[depth - 1 - n];
+  for (int n = 0; n < depth; n++)
+    m->focus[(n ? m->path[n - 1] : MENU_NONE) + 1] = m->path[n];
+  menu_rows_clear(m);
+  m->context = !*id;
+  m->opened = 1;
+  if (depth)
+    m->bar = m->path[0];
+  at = *id ? menu_index(m, id) : MENU_NONE;
+  if (at >= 0 && !menu_children(m, at))
+    return menu_finish(m, "activate", at);
+  menu_reconcile(m);
+  return menu_event(m, "open", at, 1, TUI_OK);
+}
+TuiMenuEvent tui_menu_close(TuiMenu *m) {
+  return m && m->opened ? menu_finish(m, "close", MENU_NONE)
+                        : menu_event(m, "", MENU_NONE, 0, TUI_OK);
+}
+TuiMenuEvent tui_menu_back(TuiMenu *m) {
+  if (!m || !m->opened)
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  if (!menu_back_allowed(m))
+    return tui_menu_close(m);
+  m->depth--;
+  menu_reconcile(m);
+  return menu_event(m, "back", menu_parent(m), 1, TUI_OK);
+}
+int tui_menu_focus(TuiMenu *m, const char *id) {
+  int n;
+  if (!m || !m->opened || !id)
+    return 0;
+  n = menu_index(m, id);
+  if ((n == MENU_BACK && menu_back_allowed(m)) ||
+      menu_usable(m, n, menu_parent(m))) {
+    m->focus[menu_parent(m) + 1] = n;
+    return 1;
+  }
+  return 0;
+}
+static TuiMenuEvent menu_enter(TuiMenu *m, int id) {
+  if (m->depth >= 32)
+    return menu_event(m, "", MENU_NONE, 0, TUI_INVALID);
+  m->path[m->depth++] = id;
+  menu_reconcile(m);
+  return menu_event(m, "open", id, 1, TUI_OK);
+}
+static TuiMenuEvent menu_switch_root(TuiMenu *m, int next) {
+  int *ids = malloc((m->count ? m->count : 1) * sizeof(*ids));
+  size_t count = 0, at = 0, step;
+  if (!ids)
+    return menu_event(m, "", MENU_NONE, 0, TUI_NOMEM);
+  for (size_t i = 0; i < m->count; i++)
+    if (menu_usable(m, (int)i, MENU_NONE)) {
+      if ((int)i == m->bar)
+        at = count;
+      ids[count++] = (int)i;
+    }
+  if (!count) {
+    free(ids);
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  }
+  step = next ? 1 : count - 1;
+  for (size_t n = 0; n < count; n++) {
+    at = (at + step) % count;
+    if (ids[at] != m->bar && menu_children(m, ids[at])) {
+      int id = ids[at];
+      free(ids);
+      return tui_menu_open(m, menu_id(m, id), m->caller);
+    }
+  }
+  free(ids);
+  return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+}
+TuiMenuEvent tui_menu_handle(TuiMenu *m, const char *action, const char *value,
+                             int height) {
+  int p, id, *ids;
+  size_t count = 0, at = 0, step = (size_t)(height > 1 ? height - 1 : 1);
+  if (!m || !action)
+    return menu_event(m, "", MENU_NONE, 0, TUI_INVALID);
+  if (!m->opened)
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  menu_reconcile(m);
+  p = menu_parent(m);
+  id = m->focus[p + 1];
+  value = nn(value);
+  if (!strcmp(action, "cancel") || !strcmp(action, "back"))
+    return tui_menu_back(m);
+  if (!strcmp(action, "close"))
+    return tui_menu_close(m);
+  if (!strcmp(action, "left"))
+    return menu_back_allowed(m) ? tui_menu_back(m)
+           : m->context         ? menu_event(m, "", MENU_NONE, 0, TUI_OK)
+                                : menu_switch_root(m, 0);
+  if (!strcmp(action, "right")) {
+    if (menu_usable(m, id, p) && menu_children(m, id))
+      return menu_enter(m, id);
+    return !menu_back_allowed(m) && !m->context
+               ? menu_switch_root(m, 1)
+               : menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  }
+  if (!strcmp(action, "activate")) {
+    if (id == MENU_BACK)
+      return tui_menu_back(m);
+    if (!menu_usable(m, id, p))
+      return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+    return menu_children(m, id) ? menu_enter(m, id)
+                                : menu_finish(m, "activate", id);
+  }
+  if (!strcmp(action, "mnemonic")) {
+    if (!menu_mnemonic(value))
+      return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+    for (size_t i = 0; i < m->count; i++)
+      if (menu_usable(m, (int)i, p) && *m->items[i].mnemonic &&
+          menu_lower(m->items[i].mnemonic[0]) == menu_lower(value[0])) {
+        m->focus[p + 1] = (int)i;
+        return tui_menu_handle(m, "activate", "", height);
+      }
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  }
+  ids = malloc((m->count + 1) * sizeof(*ids));
+  if (!ids)
+    return menu_event(m, "", MENU_NONE, 0, TUI_NOMEM);
+  if (menu_back_allowed(m))
+    ids[count++] = MENU_BACK;
+  for (size_t i = 0; i < m->count; i++)
+    if (menu_usable(m, (int)i, p))
+      ids[count++] = (int)i;
+  if (!count) {
+    free(ids);
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  }
+  for (size_t i = 0; i < count; i++)
+    if (ids[i] == id)
+      at = i;
+  if (!strcmp(action, "previous") || !strcmp(action, "up"))
+    at = (at + count - 1) % count;
+  else if (!strcmp(action, "next") || !strcmp(action, "down"))
+    at = (at + 1) % count;
+  else if (!strcmp(action, "first") || !strcmp(action, "home"))
+    at = 0;
+  else if (!strcmp(action, "last") || !strcmp(action, "end"))
+    at = count - 1;
+  else if (!strcmp(action, "page_up"))
+    at = at > step ? at - step : 0;
+  else if (!strcmp(action, "page_down"))
+    at = at + step < count ? at + step : count - 1;
+  else {
+    free(ids);
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  }
+  m->focus[p + 1] = ids[at];
+  id = ids[at];
+  free(ids);
+  return menu_event(m, "focus", id, 1, TUI_OK);
+}
+TuiMenuEvent tui_menu_handle_bar(TuiMenu *m, const char *action,
+                                 const char *value) {
+  int *ids, id;
+  size_t count = 0, at = 0;
+  if (!m || !action)
+    return menu_event(m, "", MENU_NONE, 0, TUI_INVALID);
+  ids = malloc((m->count ? m->count : 1) * sizeof(*ids));
+  if (!ids)
+    return menu_event(m, "", MENU_NONE, 0, TUI_NOMEM);
+  for (size_t i = 0; i < m->count; i++)
+    if (menu_usable(m, (int)i, MENU_NONE)) {
+      if ((int)i == m->bar)
+        at = count;
+      ids[count++] = (int)i;
+    }
+  if (!count) {
+    free(ids);
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  }
+  if (!strcmp(action, "previous") || !strcmp(action, "left"))
+    at = (at + count - 1) % count;
+  else if (!strcmp(action, "next") || !strcmp(action, "right"))
+    at = (at + 1) % count;
+  else if (!strcmp(action, "first") || !strcmp(action, "home"))
+    at = 0;
+  else if (!strcmp(action, "last") || !strcmp(action, "end"))
+    at = count - 1;
+  else if (!strcmp(action, "activate") || !strcmp(action, "down")) {
+    id = ids[at];
+    free(ids);
+    return menu_event(m, "open_request", id, 0, TUI_OK);
+  } else if (!strcmp(action, "mnemonic")) {
+    if (menu_mnemonic(nn(value)))
+      for (size_t i = 0; i < count; i++)
+        if (*m->items[ids[i]].mnemonic &&
+            menu_lower(m->items[ids[i]].mnemonic[0]) == menu_lower(value[0])) {
+          m->bar = id = ids[i];
+          free(ids);
+          return menu_event(m, "open_request", id, 0, TUI_OK);
+        }
+    free(ids);
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  } else {
+    free(ids);
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  }
+  m->bar = id = ids[at];
+  free(ids);
+  return menu_event(m, "focus", id, 0, TUI_OK);
+}
+TuiMenuEvent tui_menu_click_id(TuiMenu *m, const char *id) {
+  return tui_menu_focus(m, id) ? tui_menu_handle(m, "activate", "", 1)
+                               : menu_event(m, "", MENU_NONE, 0, TUI_OK);
+}
+TuiMenuEvent tui_menu_click(TuiMenu *m, int x, int y, int height) {
+  if (!m || !m->opened || x < 0 || x >= m->width || y < 0 || y >= height ||
+      (size_t)y >= m->row_count)
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  return tui_menu_click_id(m, m->rows[y].id);
+}
+static char *menu_label(const TuiMenuItem *i) {
+  Buffer b = {0};
+  append(&b, nn(i->label));
+  if (*nn(i->mnemonic)) {
+    char key[2] = {(char)(i->mnemonic[0] >= 'a' && i->mnemonic[0] <= 'z'
+                              ? i->mnemonic[0] - ('a' - 'A')
+                              : i->mnemonic[0]),
+                   0};
+    append(&b, " (");
+    append(&b, key);
+    append(&b, ")");
+  }
+  if (b.failed) {
+    free(b.s);
+    return NULL;
+  }
+  return b.s;
+}
+static TuiResult menu_row_ids(const TuiMenu *m, int **out, size_t *count) {
+  int *ids = malloc((m->count + 2) * sizeof(*ids));
+  size_t n = 0;
+  if (!ids)
+    return TUI_NOMEM;
+  if (menu_back_allowed(m)) {
+    ids[n++] = MENU_BACK;
+    ids[n++] = MENU_SEPARATOR;
+  }
+  for (size_t i = 0; i < m->count; i++)
+    if (m->parents[i] == menu_parent(m))
+      ids[n++] = (int)i;
+  *out = ids;
+  *count = n;
+  return TUI_OK;
+}
+TuiResult tui_menu_content_size(const TuiMenu *m, int *width, int *height) {
+  int *ids, w = 12;
+  size_t n;
+  TuiResult result;
+  if (!m || !width || !height)
+    return TUI_INVALID;
+  result = menu_row_ids(m, &ids, &n);
+  if (result != TUI_OK)
+    return result;
+  for (size_t j = 0; j < n; j++) {
+    int id = ids[j];
+    TuiMenuItem back = {.id = "@back", .label = m->back_label};
+    const TuiMenuItem *i = id >= 0 ? &m->items[id] : &back;
+    char *label = menu_label(i);
+    if (!label) {
+      free(ids);
+      return TUI_NOMEM;
+    }
+    w = max(w, tui_cells(label) + tui_cells(nn(i->secondary)) +
+                   tui_cells(nn(i->shortcut)) + tui_cells(nn(i->icon)) + 8);
+    free(label);
+  }
+  free(ids);
+  *width = min(w, 4096);
+  *height = max(1, (int)n);
+  return TUI_OK;
+}
+static TuiResult menu_add_row(TuiMenu *m, TuiMenuRow row) {
+  TuiMenuRow *next = realloc(m->rows, (m->row_count + 1) * sizeof(*next));
+  if (!next) {
+    free((void *)row.text);
+    for (size_t i = 0; i < row.span_count; i++)
+      free((void *)row.spans[i].text);
+    return TUI_NOMEM;
+  }
+  m->rows = next;
+  m->rows[m->row_count++] = row;
+  return TUI_OK;
+}
+TuiResult tui_menu_layout(TuiMenu *m, int width, int height, int ascii,
+                          const TuiMenuRow **rows, size_t *count) {
+  int *ids = NULL, at = 0, p, top;
+  size_t n = 0;
+  TuiResult result;
+  if (!m || !rows || !count)
+    return TUI_INVALID;
+  menu_rows_clear(m);
+  m->width = width = max(0, min(65535, width));
+  height = max(0, min(4096, height));
+  *rows = NULL;
+  *count = 0;
+  if (!m->opened || !width || !height)
+    return TUI_OK;
+  menu_reconcile(m);
+  result = menu_row_ids(m, &ids, &n);
+  if (result != TUI_OK)
+    return result;
+  if (!n) {
+    char *text = tui_clip(m->empty_label, width, 1);
+    free(ids);
+    if (!text)
+      return TUI_NOMEM;
+    result =
+        menu_add_row(m, (TuiMenuRow){.id = "", .text = text, .role = "hint"});
+    if (result != TUI_OK)
+      return result;
+    *rows = m->rows;
+    *count = m->row_count;
+    return TUI_OK;
+  }
+  p = menu_parent(m);
+  for (size_t i = 0; i < n; i++)
+    if (ids[i] == m->focus[p + 1])
+      at = (int)i;
+  top = min(m->tops[p + 1], at);
+  if (at >= top + height)
+    top = at - height + 1;
+  top = min(top, max(0, (int)n - height));
+  m->tops[p + 1] = top;
+  for (int j = top; j < min(top + height, (int)n); j++) {
+    int id = ids[j];
+    TuiMenuItem back = {.id = "@back", .label = m->back_label};
+    const TuiMenuItem *i = id >= 0 ? &m->items[id] : &back;
+    TuiMenuRow row = {0};
+    Buffer text = {0}, tail = {0}, combined = {0};
+    char *label = NULL, *shortcut = NULL, *left = NULL, *right = NULL;
+    int separator = id == MENU_SEPARATOR || (id >= 0 && i->separator),
+        current = id == m->focus[p + 1], reserve, tw;
+    const char *role, *icon, *suffix;
+    if (separator) {
+      for (int x = 0; x < width; x++)
+        append(&text, ascii ? "-" : "─");
+      if (text.failed) {
+        free(text.s);
+        result = TUI_NOMEM;
+        goto failed;
+      }
+      result = menu_add_row(
+          m, (TuiMenuRow){.id = "", .text = text.s, .role = "hint"});
+      if (result != TUI_OK)
+        goto failed;
+      continue;
+    }
+    role = i->disabled ? "disabled" : current ? "selection" : "surface";
+    icon = ascii ? (*nn(i->ascii_icon) ? i->ascii_icon
+                    : *nn(i->icon)     ? "*"
+                                       : "")
+                 : nn(i->icon);
+    append(&text, current ? "> " : "  ");
+    if (*icon) {
+      append(&text, icon);
+      append(&text, " ");
+    }
+    if (id == MENU_BACK) {
+      append(&text, "< ");
+      append(&text, i->label);
+    } else {
+      label = menu_label(i);
+      if (!label)
+        goto row_nomem;
+      append(&text, label);
+    }
+    if (*nn(i->secondary)) {
+      append(&text, "  ");
+      append(&text, i->secondary);
+    }
+    suffix = id >= 0 && menu_children(m, id) ? (ascii ? " >" : " ›") : "";
+    shortcut = clean_copy(nn(i->shortcut));
+    if (!shortcut)
+      goto row_nomem;
+    reserve = min(width / 3, tui_cells(shortcut));
+    if (reserve) {
+      char *clipped = tui_clip(shortcut, reserve, 0);
+      if (!clipped)
+        goto row_nomem;
+      append(&tail, " ");
+      append(&tail, clipped);
+      free(clipped);
+    }
+    append(&tail, suffix);
+    if (text.failed || tail.failed)
+      goto row_nomem;
+    tw = min(width, tui_cells(tail.s));
+    left = tui_clip(text.s, width - tw, 1);
+    right = tui_clip(tail.s, tw, 0);
+    if (!left || !right)
+      goto row_nomem;
+    append(&combined, left);
+    for (int spaces = width - tw - tui_cells(left); spaces > 0; spaces--)
+      append(&combined, " ");
+    append(&combined, right);
+    if (combined.failed)
+      goto row_nomem;
+    row.id = menu_id(m, id);
+    row.text = combined.s;
+    combined.s = NULL;
+    row.role = role;
+    row.focused = current;
+    row.spans[0] = (TuiMenuSpan){0, width, left, role};
+    left = NULL;
+    row.span_count = 1;
+    if (tw) {
+      row.spans[1] = (TuiMenuSpan){width - tw, tw, right,
+                                   !strcmp(role, "surface") ? "hint" : role};
+      right = NULL;
+      row.span_count = 2;
+    }
+    result = menu_add_row(m, row);
+    free(label);
+    free(shortcut);
+    free(left);
+    free(right);
+    free(text.s);
+    free(tail.s);
+    if (result != TUI_OK)
+      goto failed;
+    continue;
+  row_nomem:
+    free(label);
+    free(shortcut);
+    free(left);
+    free(right);
+    free(text.s);
+    free(tail.s);
+    free(combined.s);
+    result = TUI_NOMEM;
+    goto failed;
+  }
+  free(ids);
+  *rows = m->rows;
+  *count = m->row_count;
+  return TUI_OK;
+failed:
+  free(ids);
+  menu_rows_clear(m);
+  return result;
+}
+TuiResult tui_menu_draw(TuiMenu *m, TuiCanvas *c, TuiRect r, int ascii) {
+  const TuiMenuRow *rows;
+  size_t count;
+  TuiResult result;
+  if (!m || !c)
+    return TUI_INVALID;
+  if (!m->opened)
+    return TUI_OK;
+  result = tui_menu_layout(m, r.width, r.height, ascii, &rows, &count);
+  if (result != TUI_OK)
+    return result;
+  tui_canvas_fill(c, r, "surface");
+  for (size_t y = 0; y < count; y++) {
+    const TuiMenuRow *row = &rows[y];
+    tui_canvas_fill(c, (TuiRect){r.x, r.y + (int)y, r.width, 1}, row->role);
+    if (!row->span_count) {
+      result = tui_canvas_write(c, r.x, r.y + (int)y, row->text, row->role, 0,
+                                r.width);
+      if (result != TUI_OK)
+        return result;
+    }
+    for (size_t j = 0; j < row->span_count; j++) {
+      const TuiMenuSpan *s = &row->spans[j];
+      result = tui_canvas_write(c, r.x + s->start, r.y + (int)y, s->text,
+                                s->role, 0, s->width);
+      if (result != TUI_OK)
+        return result;
+    }
+  }
+  return TUI_OK;
+}
+TuiResult tui_menu_draw_popup(TuiMenu *m, TuiCanvas *c, TuiRect r,
+                              const char *title, int padding, int ascii,
+                              TuiRect *content) {
+  if (!m || !c || !content || !title)
+    return TUI_INVALID;
+  *content = (TuiRect){r.x, r.y, 0, 0};
+  if (!m->opened)
+    return TUI_OK;
+  TuiRect inner = tui_canvas_panel(c, r, title, 0, ascii);
+  if (padding < 0)
+    padding = 0;
+  if (padding > 4096)
+    padding = 4096;
+  int px = padding < inner.width / 2 ? padding : inner.width / 2;
+  int py = padding < inner.height / 2 ? padding : inner.height / 2;
+  *content = (TuiRect){inner.x + px, inner.y + py, inner.width - 2 * px,
+                       inner.height - 2 * py};
+  return tui_menu_draw(m, c, *content, ascii);
+}
+TuiResult tui_menu_bar_layout(TuiMenu *m, int width, TuiMenuBarLayout *out) {
+  int *ids = NULL, *sizes = NULL;
+  size_t n = 0;
+  int target = 0, last, x = 1, total;
+  TuiResult result = TUI_OK;
+  if (!m || !out)
+    return TUI_INVALID;
+  menu_bar_clear(m);
+  *out = (TuiMenuBarLayout){0};
+  width = max(0, min(65535, width));
+  if (width < 3)
+    return TUI_OK;
+  ids = malloc((m->count ? m->count : 1) * sizeof(*ids));
+  sizes = malloc((m->count ? m->count : 1) * sizeof(*sizes));
+  if (!ids || !sizes)
+    goto nomem;
+  for (size_t i = 0; i < m->count; i++)
+    if (m->parents[i] == MENU_NONE && !m->items[i].separator) {
+      char *label = menu_label(&m->items[i]);
+      if (!label)
+        goto nomem;
+      ids[n] = (int)i;
+      sizes[n] = min(24, tui_cells(label) + 2);
+      free(label);
+      if ((int)i == m->bar)
+        target = (int)n;
+      n++;
+    }
+  if (!n) {
+    free(ids);
+    free(sizes);
+    return TUI_OK;
+  }
+  m->bar_first = min(m->bar_first, target);
+  while (m->bar_first < target) {
+    total = 0;
+    for (int j = m->bar_first; j <= target; j++)
+      total += sizes[j];
+    if (total <= width - 2)
+      break;
+    m->bar_first++;
+  }
+  while (m->bar_first > 0) {
+    total = 0;
+    for (int j = m->bar_first - 1; j <= target; j++)
+      total += sizes[j];
+    if (total > width - 2)
+      break;
+    m->bar_first--;
+  }
+  last = m->bar_first;
+  for (int j = m->bar_first; j < (int)n && x < width - 1; j++) {
+    const TuiMenuItem *i = &m->items[ids[j]];
+    int w = min(sizes[j], width - 1 - x), current = ids[j] == m->bar;
+    const char *role = i->disabled ? "disabled"
+                       : current   ? "selection"
+                                   : "header";
+    Buffer text = {0};
+    char *label = menu_label(i), *clipped;
+    TuiMenuBarCell *next;
+    if (!label)
+      goto nomem;
+    append(&text, " ");
+    append(&text, label);
+    append(&text, " ");
+    free(label);
+    if (text.failed) {
+      free(text.s);
+      goto nomem;
+    }
+    clipped = tui_clip(text.s, w, 1);
+    free(text.s);
+    if (!clipped)
+      goto nomem;
+    next = realloc(m->bar_cells, (m->bar_count + 1) * sizeof(*next));
+    if (!next) {
+      free(clipped);
+      goto nomem;
+    }
+    m->bar_cells = next;
+    m->bar_cells[m->bar_count++] =
+        (TuiMenuBarCell){i->id, clipped, role, x, w, current};
+    x += w;
+    last = j + 1;
+  }
+  out->cells = m->bar_cells;
+  out->count = m->bar_count;
+  out->previous = m->bar_first > 0;
+  out->next = last < (int)n;
+  free(ids);
+  free(sizes);
+  return result;
+nomem:
+  free(ids);
+  free(sizes);
+  menu_bar_clear(m);
+  return TUI_NOMEM;
+}
+TuiMenuEvent tui_menu_bar_click(TuiMenu *m, int x, int width) {
+  TuiMenuBarLayout l;
+  TuiResult result;
+  if (!m || x < 0 || x >= width)
+    return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+  result = tui_menu_bar_layout(m, width, &l);
+  if (result != TUI_OK)
+    return menu_event(m, "", MENU_NONE, 0, result);
+  if (x == 0 && l.previous)
+    return tui_menu_handle_bar(m, "previous", "");
+  if (x + 1 == width && l.next)
+    return tui_menu_handle_bar(m, "next", "");
+  for (size_t i = 0; i < l.count; i++)
+    if (x >= l.cells[i].start && x < l.cells[i].start + l.cells[i].width) {
+      int id = menu_index(m, l.cells[i].id);
+      if (menu_usable(m, id, MENU_NONE)) {
+        m->bar = id;
+        return menu_event(m, "open_request", id, 0, TUI_OK);
+      }
+    }
+  return menu_event(m, "", MENU_NONE, 0, TUI_OK);
+}
+TuiResult tui_menu_draw_bar(TuiMenu *m, TuiCanvas *c, TuiRect r) {
+  TuiMenuBarLayout l;
+  TuiResult result;
+  if (!m || !c)
+    return TUI_INVALID;
+  if (r.height <= 0)
+    return TUI_OK;
+  result = tui_menu_bar_layout(m, r.width, &l);
+  if (result != TUI_OK)
+    return result;
+  tui_canvas_fill(c, (TuiRect){r.x, r.y, r.width, 1}, "surface");
+  for (size_t i = 0; i < l.count; i++) {
+    const TuiMenuBarCell *cell = &l.cells[i];
+    tui_canvas_fill(c, (TuiRect){r.x + cell->start, r.y, cell->width, 1},
+                    cell->role);
+    result = tui_canvas_write(c, r.x + cell->start, r.y, cell->text, cell->role,
+                              0, cell->width);
+    if (result != TUI_OK)
+      return result;
+  }
+  if (l.previous)
+    tui_canvas_write(c, r.x, r.y, "<", "hint", 0, 1);
+  if (l.next)
+    tui_canvas_write(c, r.x + r.width - 1, r.y, ">", "hint", 0, 1);
+  return TUI_OK;
+}
+TuiRect tui_menu_placement(TuiRect anchor, TuiRect viewport, int width,
+                           int height) {
+  long long vw = max(0, viewport.width), vh = max(0, viewport.height),
+            w = max(0, width), h = max(0, height), x = anchor.x,
+            y = (long long)anchor.y + max(0, anchor.height), hi;
+  if (w > vw)
+    w = vw;
+  if (h > vh)
+    h = vh;
+  hi = (long long)viewport.x + vw - w;
+  if (x < viewport.x)
+    x = viewport.x;
+  if (x > hi)
+    x = hi;
+  if (y + h > (long long)viewport.y + vh)
+    y = (long long)anchor.y - h;
+  hi = (long long)viewport.y + vh - h;
+  if (y < viewport.y)
+    y = viewport.y;
+  if (y > hi)
+    y = hi;
+  return (TuiRect){(int)x, (int)y, (int)w, (int)h};
 }

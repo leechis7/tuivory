@@ -373,7 +373,7 @@ class List:
         if not rows:rows=[CollectionRow('',self.empty,'hint')]
         height=max(0,height);width=max(0,width);self.scroll=min(max(0,anchor-max(0,height-2)),max(0,len(rows)-height));self._width=width
         self._hits=rows[self.scroll:self.scroll+height]
-        for row in self._hits:row.text=clip(row.text,width)
+        for row in self._hits:row.text=clip(row.text,width,True)
         return self._hits
 
     def click_id(self,id):
