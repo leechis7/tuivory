@@ -2750,3 +2750,200 @@ TuiResult tui_form_draw(TuiForm *f, TuiCanvas *c, TuiRect r, int focused) {
     }
   return TUI_OK;
 }
+
+typedef struct {
+  char *id, *restore;
+  TuiFocusTarget *targets;
+  size_t count, focused;
+  int dismissible;
+} FocusScope;
+struct TuiFocus {
+  FocusScope *scopes[65];
+  size_t count;
+};
+static void scope_free(FocusScope *s) {
+  if (!s)
+    return;
+  for (size_t i = 0; i < s->count; i++)
+    free((void *)s->targets[i].id);
+  free(s->targets);
+  free(s->id);
+  free(s->restore);
+  free(s);
+}
+static int scope_focus(FocusScope *s, const char *id) {
+  for (size_t i = 0; i < s->count; i++)
+    if (!s->targets[i].hidden && tui_state_focusable(s->targets[i].state) &&
+        !strcmp(s->targets[i].id, id)) {
+      s->focused = i;
+      return 1;
+    }
+  return 0;
+}
+static const char *scope_focused(const FocusScope *s) {
+  return s->focused < s->count ? s->targets[s->focused].id : "";
+}
+static FocusScope *scope_new(const char *id, const TuiFocusTarget *targets,
+                             size_t count, const char *initial, int dismissible,
+                             const char *restore, TuiResult *result) {
+  FocusScope *s;
+  *result = TUI_INVALID;
+  if (!id || !*id || tui_cells(id) < 0 || count > 4096 || (count && !targets))
+    return NULL;
+  for (size_t i = 0; i < count; i++) {
+    if (!targets[i].id || !*targets[i].id || tui_cells(targets[i].id) < 0)
+      return NULL;
+    for (size_t j = 0; j < i; j++)
+      if (!strcmp(targets[j].id, targets[i].id))
+        return NULL;
+  }
+  *result = TUI_NOMEM;
+  s = calloc(1, sizeof(*s));
+  if (!s)
+    return NULL;
+  s->id = copy(id);
+  s->restore = copy(nn(restore));
+  s->targets = calloc(count ? count : 1, sizeof(*s->targets));
+  if (!s->id || !s->restore || !s->targets) {
+    scope_free(s);
+    return NULL;
+  }
+  s->count = count;
+  s->focused = count;
+  s->dismissible = !!dismissible;
+  for (size_t i = 0; i < count; i++) {
+    s->targets[i] = targets[i];
+    s->targets[i].id = copy(targets[i].id);
+    if (!s->targets[i].id) {
+      scope_free(s);
+      return NULL;
+    }
+    if (s->focused == count && !targets[i].hidden &&
+        tui_state_focusable(targets[i].state))
+      s->focused = i;
+  }
+  if (initial && *initial && !scope_focus(s, initial)) {
+    scope_free(s);
+    *result = TUI_INVALID;
+    return NULL;
+  }
+  *result = TUI_OK;
+  return s;
+}
+TuiFocus *tui_focus_new(const char *root, const TuiFocusTarget *targets,
+                        size_t count) {
+  TuiResult result;
+  FocusScope *s = scope_new(root, targets, count, "", 0, "", &result);
+  TuiFocus *f;
+  if (!s)
+    return NULL;
+  f = calloc(1, sizeof(*f));
+  if (!f) {
+    scope_free(s);
+    return NULL;
+  }
+  f->scopes[f->count++] = s;
+  return f;
+}
+void tui_focus_free(TuiFocus *f) {
+  if (!f)
+    return;
+  for (size_t i = 0; i < f->count; i++)
+    scope_free(f->scopes[i]);
+  free(f);
+}
+const char *tui_focus_focused(const TuiFocus *f) {
+  return f && f->count ? scope_focused(f->scopes[f->count - 1]) : "";
+}
+const char *tui_focus_scope(const TuiFocus *f) {
+  return f && f->count ? f->scopes[f->count - 1]->id : "";
+}
+size_t tui_focus_depth(const TuiFocus *f) {
+  return f && f->count ? f->count - 1 : 0;
+}
+int tui_focus_focus(TuiFocus *f, const char *id) {
+  return f && f->count && id ? scope_focus(f->scopes[f->count - 1], id) : 0;
+}
+const char *tui_focus_move(TuiFocus *f, int previous) {
+  FocusScope *s;
+  size_t at, eligible_count = 0;
+  if (!f || !f->count)
+    return "";
+  s = f->scopes[f->count - 1];
+  for (size_t i = 0; i < s->count; i++)
+    if (!s->targets[i].hidden && tui_state_focusable(s->targets[i].state))
+      eligible_count++;
+  if (!eligible_count) {
+    s->focused = s->count;
+    return "";
+  }
+  at = s->focused < s->count ? s->focused : previous ? 0 : s->count - 1;
+  for (size_t step = 0; step < s->count; step++) {
+    at = previous ? (at + s->count - 1) % s->count : (at + 1) % s->count;
+    if (!s->targets[at].hidden && tui_state_focusable(s->targets[at].state)) {
+      s->focused = at;
+      break;
+    }
+  }
+  return scope_focused(s);
+}
+TuiResult tui_focus_open(TuiFocus *f, const char *id,
+                         const TuiFocusTarget *targets, size_t count,
+                         const char *initial, int dismissible) {
+  TuiResult result;
+  FocusScope *s;
+  if (!f || !id || !*id || f->count >= 65)
+    return TUI_INVALID;
+  for (size_t i = 0; i < f->count; i++)
+    if (!strcmp(f->scopes[i]->id, id))
+      return TUI_INVALID;
+  s = scope_new(id, targets, count, nn(initial), dismissible,
+                tui_focus_focused(f), &result);
+  if (!s)
+    return result;
+  f->scopes[f->count++] = s;
+  return TUI_OK;
+}
+TuiResult tui_focus_update(TuiFocus *f, const char *id,
+                           const TuiFocusTarget *targets, size_t count) {
+  TuiResult result;
+  FocusScope *next, *old;
+  if (!f || !id)
+    return TUI_INVALID;
+  for (size_t i = 0; i < f->count; i++)
+    if (!strcmp(f->scopes[i]->id, id)) {
+      old = f->scopes[i];
+      next = scope_new(id, targets, count, "", old->dismissible, old->restore,
+                       &result);
+      if (!next)
+        return result;
+      scope_focus(next, scope_focused(old));
+      f->scopes[i] = next;
+      scope_free(old);
+      return TUI_OK;
+    }
+  return TUI_INVALID;
+}
+TuiResult tui_focus_close(TuiFocus *f, const char *id) {
+  FocusScope *old;
+  if (!f || f->count <= 1 || !id || strcmp(tui_focus_scope(f), id))
+    return TUI_INVALID;
+  old = f->scopes[--f->count];
+  scope_focus(f->scopes[f->count - 1], old->restore);
+  scope_free(old);
+  return TUI_OK;
+}
+TuiPopupCloseRequest tui_focus_request_close(const TuiFocus *f) {
+  TuiPopupCloseRequest request = {"", ""};
+  if (f && f->count > 1 && f->scopes[f->count - 1]->dismissible) {
+    request.id = tui_focus_scope(f);
+    request.reason = "escape";
+  }
+  return request;
+}
+TuiInputRoute tui_focus_route(const TuiFocus *f, const char *target) {
+  TuiInputRoute route = {tui_focus_scope(f),
+                         target && *target &&
+                             strcmp(target, tui_focus_scope(f))};
+  return route;
+}

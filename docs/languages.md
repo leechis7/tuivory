@@ -122,3 +122,5 @@ C/C++/Java는 위의 명령으로 먼저 빌드합니다. 참조 화면 캡처�
 [독립 언어 입력·편집 API](language-text.md)
 
 [독립 언어 폼·컨트롤 API](language-forms.md)
+
+[독립 언어 포커스 범위 API](language-focus.md)

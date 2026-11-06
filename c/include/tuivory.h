@@ -197,6 +197,36 @@ TuiResult tui_form_draw(TuiForm *form, TuiCanvas *canvas, TuiRect rect,
                         int focused);
 /* A standalone control is the same form model with one field. */
 TuiForm *tui_control_new(TuiField field);
+/* Host-owned focus scopes. All opened scopes route input exclusively to top. */
+typedef struct {
+  const char *id;
+  TuiState state;
+  int hidden;
+} TuiFocusTarget;
+typedef struct TuiFocus TuiFocus;
+typedef struct {
+  const char *scope_id;
+  int blocked;
+} TuiInputRoute;
+typedef struct {
+  const char *id, *reason;
+} TuiPopupCloseRequest;
+TuiFocus *tui_focus_new(const char *root, const TuiFocusTarget *targets,
+                        size_t count);
+void tui_focus_free(TuiFocus *focus);
+const char *tui_focus_focused(const TuiFocus *focus);
+const char *tui_focus_scope(const TuiFocus *focus);
+size_t tui_focus_depth(const TuiFocus *focus);
+int tui_focus_focus(TuiFocus *focus, const char *id);
+const char *tui_focus_move(TuiFocus *focus, int previous);
+TuiResult tui_focus_open(TuiFocus *focus, const char *id,
+                         const TuiFocusTarget *targets, size_t count,
+                         const char *initial, int dismissible);
+TuiResult tui_focus_update(TuiFocus *focus, const char *id,
+                           const TuiFocusTarget *targets, size_t count);
+TuiResult tui_focus_close(TuiFocus *focus, const char *id);
+TuiPopupCloseRequest tui_focus_request_close(const TuiFocus *focus);
+TuiInputRoute tui_focus_route(const TuiFocus *focus, const char *target_scope);
 #ifdef __cplusplus
 }
 #endif

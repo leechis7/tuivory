@@ -1790,59 +1790,128 @@ export interface FocusTarget {
   state?: Partial<ControlState>;
   hidden?: boolean;
 }
+export interface InputRoute {
+  scopeId: string;
+  blocked: boolean;
+}
+export interface PopupCloseRequest {
+  id: string;
+  reason: "escape";
+}
 export class Focus {
   private scopes: {
     id: string;
     targets: FocusTarget[];
     focused: string;
-    modal: boolean;
-  }[] = [];
+    restore: string;
+    dismissible: boolean;
+  }[];
   constructor(id: string, targets: FocusTarget[]) {
-    this.open(id, targets);
+    if (!id) throw new Error("empty root scope");
+    unique(targets);
+    const root = {
+      id,
+      targets: clone(targets),
+      focused: "",
+      restore: "",
+      dismissible: false,
+    };
+    this.reconcile(root);
+    this.scopes = [root];
+  }
+  private ids(scope: { targets: FocusTarget[] }): string[] {
+    return scope.targets
+      .filter((t) => !t.hidden && !t.state?.disabled)
+      .map((t) => t.id);
+  }
+  private reconcile(scope: { targets: FocusTarget[]; focused: string }): void {
+    const ids = this.ids(scope);
+    if (!ids.includes(scope.focused)) scope.focused = ids[0] ?? "";
   }
   get focused(): string {
     return this.scopes.at(-1)!.focused;
   }
-  private eligible(): string[] {
-    const s = this.scopes.at(-1)!,
-      ids = s.targets
-        .filter((t) => !t.hidden && !t.state?.disabled)
-        .map((t) => t.id);
-    if (!ids.includes(s.focused)) s.focused = ids[0] ?? "";
-    return ids;
+  get scopeId(): string {
+    return this.scopes.at(-1)!.id;
   }
-  open(id: string, targets: FocusTarget[], focused = "", modal = true): void {
+  get depth(): number {
+    return this.scopes.length - 1;
+  }
+  open(
+    id: string,
+    targets: FocusTarget[],
+    initial = "",
+    dismissible = true,
+  ): void {
+    if (!id || this.scopes.length >= 65 || this.scopes.some((s) => s.id === id))
+      throw new Error("invalid scope or depth");
     unique(targets);
-    if (!id || this.scopes.some((s) => s.id === id))
-      throw new Error("duplicate/empty scope");
-    this.scopes.push({ id, targets: clone(targets), focused, modal });
-    this.eligible();
+    const scope = {
+      id,
+      targets: clone(targets),
+      focused: "",
+      restore: this.focused,
+      dismissible,
+    };
+    this.reconcile(scope);
+    if (initial) {
+      if (!this.ids(scope).includes(initial))
+        throw new Error("initial target not focusable");
+      scope.focused = initial;
+    }
+    this.scopes.push(scope);
+  }
+  update(id: string, targets: FocusTarget[]): void {
+    unique(targets);
+    const scope = this.scopes.find((s) => s.id === id);
+    if (!scope) throw new Error("unknown scope");
+    const owned = clone(targets);
+    scope.targets = owned;
+    this.reconcile(scope);
   }
   close(id: string): Event {
-    if (this.scopes.length <= 1 || this.scopes.at(-1)!.id !== id)
+    if (!this.depth || this.scopeId !== id)
       throw new Error("only top popup can close");
-    this.scopes.pop();
-    this.eligible();
+    const restore = this.scopes.pop()!.restore,
+      top = this.scopes.at(-1)!;
+    if (this.ids(top).includes(restore)) top.focused = restore;
+    else this.reconcile(top);
     return event("focus", this.focused);
   }
   focus(id: string): boolean {
-    if (!this.eligible().includes(id)) return false;
-    this.scopes.at(-1)!.focused = id;
+    const top = this.scopes.at(-1)!;
+    if (!this.ids(top).includes(id)) return false;
+    top.focused = id;
     return true;
   }
   move(previous = false): string {
-    const ids = this.eligible();
-    if (ids.length)
-      this.scopes.at(-1)!.focused =
-        ids[
-          (ids.indexOf(this.focused) + (previous ? -1 : 1) + ids.length) %
-            ids.length
-        ];
+    const top = this.scopes.at(-1)!,
+      ids = this.ids(top);
+    if (!ids.length) top.focused = "";
+    else {
+      const at = ids.indexOf(top.focused),
+        next = previous
+          ? (Math.max(0, at) + ids.length - 1) % ids.length
+          : at < 0
+            ? 0
+            : (at + 1) % ids.length;
+      top.focused = ids[next];
+    }
     return this.focused;
   }
+  requestClose(): PopupCloseRequest | undefined {
+    return this.depth && this.scopes.at(-1)!.dismissible
+      ? { id: this.scopeId, reason: "escape" }
+      : undefined;
+  }
+  route(target = ""): InputRoute {
+    return {
+      scopeId: this.scopeId,
+      blocked: !!target && target !== this.scopeId,
+    };
+  }
   blocked(scope: string): boolean {
-    const i = this.scopes.findIndex((s) => s.id === scope);
-    return i < 0 || this.scopes.slice(i + 1).some((s) => s.modal);
+    return this.route(scope).blocked;
   }
 }
 export class Menu {
