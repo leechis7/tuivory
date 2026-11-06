@@ -284,6 +284,9 @@ jobs:
           python -m unittest discover -s python/tests -v
           npm --prefix javascript test
           make test-c test-cpp test-java
+          python tools/check_language_workspace.py --language c
+          python tools/check_language_workspace.py --language cpp
+          python tools/check_language_workspace.py --language java
       - name: Build and install runtime packages outside the repository
         run: |
           mkdir -p .cache/packages/javascript
@@ -292,4 +295,6 @@ jobs:
           npm pack ./javascript --pack-destination .cache/packages/javascript
           python tools/check_runtime_languages.py
       - name: Run bilingual independent examples on the native runner
-        run: python tools/check_language_examples.py --matrix
+        run: |
+          python tools/check_language_examples.py --matrix
+          python tools/check_language_examples.py --demo workspace --matrix

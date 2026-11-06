@@ -116,3 +116,5 @@ python tools/capture_language_trees.py
 ```
 
 Build C/C++/Java first as shown above. Reference capture also needs a CJK-capable D2Coding font and Cairo; these are tooling dependencies. Local results used Python 3.14.4, Node 26.13.0, TypeScript 7.0.2 and JDK 27. Java was compiled with `--release 17`; a JVM 17 runtime was not executed locally. Six unreleased local preview archives and checksums are assembled by `python tools/package_languages.py` under `.cache/packages/languages/`. No registry publish command is run.
+
+[Independent-language workspace APIs and examples](language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.

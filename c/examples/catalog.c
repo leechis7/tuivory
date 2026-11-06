@@ -23,9 +23,55 @@ static void restore(void) {
     active = 0;
   }
 }
+static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split,
+                           TuiCanvas *canvas, TuiRect area, int tab_focus,
+                           int en, int ascii) {
+  TuiPathItem path[] = {{"root", en ? "Workspace" : "작업 공간"},
+                        {"current", en ? "Components" : "컴포넌트"}};
+  TuiStatusItem state[] = {
+      {"ready", en ? "Ready" : "준비", "success", 10},
+      {"keys", en ? "Tab focus | < > resize" : "Tab 포커스 | < > 크기", "hint",
+       1}};
+  tui_tabs_draw(tabs, canvas, (TuiRect){area.x, area.y, area.width, 1},
+                tab_focus);
+  TuiLine *line = tui_breadcrumbs(path, 2, area.width);
+  if (line) {
+    tui_line_draw(line, canvas, (TuiRect){area.x, area.y + 1, area.width, 1});
+    tui_line_free(line);
+  }
+  int body = area.height > 3 ? area.height - 3 : 0;
+  TuiSplitLayout layout = tui_split_layout(split, area.width);
+  TuiRect right = {area.x, area.y + 2, area.width, body};
+  if (!layout.compact) {
+    TuiRect left = tui_canvas_panel(
+        canvas, (TuiRect){area.x, area.y + 2, layout.first, body},
+        en ? "Explorer" : "탐색", !tab_focus, ascii);
+    tui_tree_draw(tree, canvas, left, !tab_focus, ascii);
+    for (int y = 0; y < body; y++)
+      tui_canvas_write(canvas, area.x + layout.first, area.y + 2 + y,
+                       ascii ? "|" : "│", "focus.border", 0, 1);
+    right.x += layout.first + 1;
+    right.width = layout.second;
+  }
+  right = tui_canvas_panel(canvas, right, en ? "Content" : "내용", 0, ascii);
+  tui_canvas_write(canvas, right.x, right.y, en ? "Selected tab" : "선택한 탭",
+                   "hint", 0, right.width);
+  tui_canvas_write(canvas, right.x, right.y + 1,
+                   (!strcmp(tui_tabs_active(tabs), "draft")
+                        ? (en ? "Draft" : "초안")
+                        : (en ? "Overview" : "개요")),
+                   "body", 0, right.width);
+  line = tui_status_line(state, 2, area.width);
+  if (line) {
+    tui_line_draw(line, canvas,
+                  (TuiRect){area.x, area.y + area.height - 1, area.width, 1});
+    tui_line_free(line);
+  }
+}
 int main(int argc, char **argv) {
   const char *theme = "dark", *profile = "256";
-  int en = 0, ascii = 0, snapshot = 0;
+  int en = 0, ascii = 0, snapshot = 0, workspace = 0, tab_focus = 0;
+  TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
       en = !strcmp(argv[++i], "en");
@@ -40,12 +86,15 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[i], "--snapshot-ansi"))
       snapshot = 2;
     else if (!strcmp(argv[i], "--demo") && i + 1 < argc) {
-      if (strcmp(argv[++i], "tree")) {
-        fputs("Only --demo tree is supported\n", stderr);
+      const char *demo = argv[++i];
+      workspace = !strcmp(demo, "workspace");
+      if (strcmp(demo, "tree") && !workspace) {
+        fputs("Supported demos: tree, workspace\n", stderr);
         return 2;
       }
     } else {
-      puts("--demo tree --lang ko|en --theme dark|light|blackwhite --colors "
+      puts("--demo tree|workspace --lang ko|en --theme dark|light|blackwhite "
+           "--colors "
            "8|16|256|truecolor --ascii --snapshot");
       return !strcmp(argv[i], "--help") ? 0 : 2;
     }
@@ -72,9 +121,19 @@ int main(int argc, char **argv) {
   tui_tree_handle(tree, "down", 12);
   tui_tree_handle(tree, "right", 12);
   tui_tree_handle(tree, "home", 12);
+  TuiTab tab_items[] = {{"overview", en ? "Overview" : "개요", 0, 0, 0},
+                        {"draft", en ? "Draft document" : "초안 문서", 1, 1, 0},
+                        {"disabled", en ? "Disabled" : "비활성", 0, 0, 1}};
+  TuiTabs *tabs = tui_tabs_new(tab_items, 3);
+  if (!tabs) {
+    tui_tabs_free(tabs);
+    tui_tree_free(tree);
+    return 1;
+  }
   if (!snapshot) {
     if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO) ||
         tcgetattr(STDIN_FILENO, &saved)) {
+      tui_tabs_free(tabs);
       tui_tree_free(tree);
       fputs("Interactive demo requires a POSIX TTY; use --snapshot\n", stderr);
       return 1;
@@ -88,6 +147,7 @@ int main(int argc, char **argv) {
     active = 1;
     if (tcsetattr(STDIN_FILENO, TCSADRAIN, &raw)) {
       restore();
+      tui_tabs_free(tabs);
       tui_tree_free(tree);
       return 1;
     }
@@ -106,13 +166,17 @@ int main(int argc, char **argv) {
     TuiCanvas *canvas = tui_canvas_new(width, height, theme, profile);
     if (!canvas) {
       restore();
+      tui_tabs_free(tabs);
       tui_tree_free(tree);
       return 1;
     }
     TuiRect inner = tui_canvas_panel(
         canvas, (TuiRect){0, 0, width, height > 0 ? height - 1 : 0},
         en ? "Tuivory C example" : "Tuivory C 예제", 1, ascii);
-    tui_tree_draw(tree, canvas, inner, 1, ascii);
+    if (workspace)
+      workspace_draw(tree, tabs, split, canvas, inner, tab_focus, en, ascii);
+    else
+      tui_tree_draw(tree, canvas, inner, 1, ascii);
     tui_canvas_write(canvas, 0, height - 1,
                      en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
                         : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택",
@@ -122,6 +186,7 @@ int main(int argc, char **argv) {
         char *ansi_output = tui_canvas_ansi(canvas);
         if (!ansi_output) {
           tui_canvas_free(canvas);
+          tui_tabs_free(tabs);
           tui_tree_free(tree);
           return 1;
         }
@@ -132,6 +197,7 @@ int main(int argc, char **argv) {
           char *line = tui_canvas_line(canvas, y);
           if (!line) {
             tui_canvas_free(canvas);
+            tui_tabs_free(tabs);
             tui_tree_free(tree);
             return 1;
           }
@@ -145,6 +211,7 @@ int main(int argc, char **argv) {
     if (!output) {
       tui_canvas_free(canvas);
       restore();
+      tui_tabs_free(tabs);
       tui_tree_free(tree);
       return 1;
     }
@@ -164,9 +231,20 @@ int main(int argc, char **argv) {
                          : key == '\r' || key == '\n' ? "activate"
                          : key == ' '                 ? "toggle"
                                                       : "";
-    tui_tree_handle(tree, action, inner.height);
+    if (workspace && key == 9)
+      tab_focus = !tab_focus;
+    else if (workspace && (key == '<' || key == '>'))
+      tui_split_resize(&split, inner.width,
+                       split.preferred + (key == '<' ? -1 : 1));
+    else if (workspace && tab_focus)
+      tui_tabs_handle(tabs, !strcmp(action, "left")    ? "previous"
+                            : !strcmp(action, "right") ? "next"
+                                                       : action);
+    else
+      tui_tree_handle(tree, action, inner.height);
   }
   restore();
+  tui_tabs_free(tabs);
   tui_tree_free(tree);
   return 0;
 }

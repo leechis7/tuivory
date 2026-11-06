@@ -490,4 +490,276 @@ public final class Tuivory {
       }
     }
   }
+  public static final class Tab {
+    public final String id;
+    public String title;
+    public boolean edited, closable, disabled;
+    public Tab(String id, String title) {
+      this.id = id;
+      this.title = title;
+    }
+    private Tab copy() {
+      var t = new Tab(id, title);
+      t.edited = edited;
+      t.closable = closable;
+      t.disabled = disabled;
+      return t;
+    }
+  }
+  public record TabCell(String id, String text, int start, int width, boolean active,
+      boolean focused, boolean disabled) {}
+  public static final class Tabs {
+    private final List<Tab> items;
+    public String active = "", focused = "";
+    public int first;
+    public Tabs(List<Tab> input) {
+      var ids = new HashSet<String>();
+      items = input.stream().map(Tab::copy).toList();
+      for (var t : items)
+        if (t.id.isEmpty() || !ids.add(t.id))
+          throw new IllegalArgumentException("empty/duplicate tab ID");
+      reconcile();
+    }
+    private List<Tab> reconcile() {
+      var enabled = items.stream().filter(t -> !t.disabled).toList();
+      if (enabled.stream().noneMatch(t -> t.id.equals(active)))
+        active = enabled.isEmpty() ? "" : enabled.get(0).id;
+      if (enabled.stream().noneMatch(t -> t.id.equals(focused)))
+        focused = active;
+      return enabled;
+    }
+    public Event handle(String action) {
+      var enabled = reconcile();
+      if (enabled.isEmpty())
+        return new Event();
+      int i = 0;
+      while (!enabled.get(i).id.equals(focused)) i++;
+      if (action.equals("activate")) {
+        active = focused;
+        return new Event("activate", active);
+      }
+      if (action.equals("close"))
+        return enabled.get(i).closable ? new Event("close", focused) : new Event();
+      int target = switch (action) {
+        case "previous" -> Math.max(0, i - 1);
+        case "next" -> Math.min(enabled.size() - 1, i + 1);
+        case "first" -> 0;
+        case "last" -> enabled.size() - 1;
+        default -> i;
+      };
+      if (target != i) {
+        focused = enabled.get(target).id;
+        return new Event("focus", focused);
+      }
+      return new Event();
+    }
+    private static int itemWidth(Tab t) {
+      return Math.max(6, Math.min(24, cells(t.title) + 5));
+    }
+    private int sum(int start, int target) {
+      int w = 0;
+      for (int i = start; i <= target; i++) w += itemWidth(items.get(i));
+      return w;
+    }
+    public List<TabCell> layout(int width) {
+      reconcile();
+      var out = new ArrayList<TabCell>();
+      if (width <= 2 || items.isEmpty())
+        return out;
+      int target = 0;
+      for (int i = 0; i < items.size(); i++)
+        if (items.get(i).id.equals(focused))
+          target = i;
+      first = Math.max(0, Math.min(first, target));
+      while (first < target && sum(first, target) > width - 2) first++;
+      while (first > 0 && sum(first - 1, target) <= width - 2) first--;
+      int x = 1;
+      for (int i = first; i < items.size() && x < width - 1; i++) {
+        var t = items.get(i);
+        int w = Math.min(itemWidth(t), width - 1 - x);
+        if (w < 4 && !out.isEmpty())
+          break;
+        boolean a = t.id.equals(active), f = t.id.equals(focused);
+        String suffix = (t.edited ? " *" : "") + (t.closable ? " x" : "");
+        String text = clip((f ? ">" : " ") + (a ? "[" : " ")
+                + clip(t.title, Math.max(0, w - 3 - suffix.length()), true) + suffix
+                + (a ? "]" : " "),
+            w, true);
+        out.add(new TabCell(t.id, text, x, w, a, f, t.disabled));
+        x += w;
+      }
+      return out;
+    }
+    public Event click(int x, int width) {
+      var views = layout(width);
+      if (x == 0 && first > 0)
+        return handle("previous");
+      if (width > 0 && x == width - 1 && first + views.size() < items.size())
+        return handle("next");
+      for (var v : views)
+        if (x >= v.start && x < v.start + v.width && !v.disabled) {
+          focused = v.id;
+          if ((v.text.endsWith("x]") || v.text.endsWith("x "))
+              && items.stream().anyMatch(t -> t.id.equals(v.id) && t.closable)
+              && x == v.start + cells(v.text) - 2)
+            return new Event("close", v.id);
+          active = v.id;
+          return new Event("activate", v.id);
+        }
+      return new Event();
+    }
+    public void draw(Canvas c, Rect r, boolean hasFocus, boolean ascii) {
+      c.fill(r, "surface");
+      var views = layout(r.width);
+      if (first > 0)
+        c.write(r.x, r.y, "<", "hint");
+      if (first + views.size() < items.size() && r.width > 0)
+        c.write(r.x + r.width - 1, r.y, ">", "hint");
+      for (var v : views) {
+        c.write(r.x + v.start, r.y, " ".repeat(v.width),
+            v.disabled     ? "disabled"
+                : v.active ? "selection"
+                           : "body",
+            hasFocus && v.focused, v.width);
+        c.write(r.x + v.start, r.y, v.text,
+            v.disabled     ? "disabled"
+                : v.active ? "selection"
+                           : "body",
+            hasFocus && v.focused, v.width);
+      }
+    }
+  }
+  public record SplitLayout(int first, int divider, int second, boolean compact) {}
+  public static final class Split {
+    public int preferred, firstMin, secondMin;
+    public Split(int firstMin, int secondMin, int preferred) {
+      this.firstMin = Math.max(1, firstMin);
+      this.secondMin = Math.max(1, secondMin);
+      this.preferred = Math.max(0, preferred);
+    }
+    public SplitLayout layout(int total) {
+      if (total < 0)
+        throw new IllegalArgumentException("negative size");
+      if ((long) total < (long) firstMin + secondMin + 1)
+        return new SplitLayout(0, 0, total, true);
+      int first = Math.max(
+          firstMin, Math.min(total - 1 - secondMin, preferred == 0 ? (total - 1) / 2 : preferred));
+      return new SplitLayout(first, 1, total - first - 1, false);
+    }
+    public boolean resize(int total, int position) {
+      var old = layout(total);
+      if (old.compact)
+        return false;
+      preferred = Math.max(firstMin, Math.min(total - 1 - secondMin, position));
+      return preferred != old.first;
+    }
+  }
+  public record LineRun(String text, String role, String id, int start, int width) {}
+  public static final class LineLayout {
+    public final List<LineRun> runs = new ArrayList<>();
+    public int omitted;
+    private int width;
+    void add(String text, String role, String id) {
+      text = clean(text);
+      int w = cells(text);
+      runs.add(new LineRun(text, role, id, width, w));
+      width += w;
+    }
+    public String text() {
+      var result = new StringBuilder();
+      for (var r : runs) result.append(r.text);
+      return result.toString();
+    }
+    public String hit(int x) {
+      for (var r : runs)
+        if (x >= r.start && x < r.start + r.width)
+          return r.id;
+      return "";
+    }
+    public void draw(Canvas c, Rect area) {
+      c.fill(area, "surface");
+      for (var r : runs)
+        c.write(area.x + r.start, area.y, r.text, r.role, false, Math.max(0, area.width - r.start));
+    }
+  }
+  public record PathItem(String id, String label) {}
+  private static String tailCells(String text, int width) {
+    if (cells(text) <= width)
+      return clean(text);
+    if (width <= 0)
+      return "";
+    var gs = graphemes(clean(text));
+    int start = gs.size(), used = 0;
+    while (start > 0 && used + cells(gs.get(start - 1)) <= width - 1)
+      used += cells(gs.get(--start));
+    return "~" + String.join("", gs.subList(start, gs.size()));
+  }
+  public static LineLayout breadcrumbs(List<PathItem> items, int width) {
+    var out = new LineLayout();
+    if (items.isEmpty() || width <= 0)
+      return out;
+    long full = 3L * (items.size() - 1);
+    for (var p : items) full += cells(p.label);
+    if (full <= width) {
+      for (int i = 0; i < items.size(); i++) {
+        if (i > 0)
+          out.add(" / ", "hint", "");
+        var p = items.get(i);
+        out.add(p.label, i + 1 == items.size() ? "body" : "hint", p.id);
+      }
+      return out;
+    }
+    var last = items.get(items.size() - 1);
+    String prefix = "";
+    if (items.size() > 2 && cells(items.get(0).label) + 9 + cells(last.label) <= width) {
+      out.add(items.get(0).label, "hint", items.get(0).id);
+      prefix = " / ... / ";
+    } else if (items.size() > 1 && width >= 7)
+      prefix = "... / ";
+    out.add(prefix, "hint", "");
+    out.add(tailCells(last.label, width - out.width), "body", last.id);
+    return out;
+  }
+  public record StatusItem(String id, String text, String role, int priority) {}
+  public static LineLayout statusLine(List<StatusItem> source, int width) {
+    var items = new ArrayList<>(source);
+    items.sort(Comparator.comparingInt(StatusItem::priority).reversed());
+    var out = new LineLayout();
+    out.omitted = items.size();
+    if (width <= 0)
+      return out;
+    int included = 0;
+    for (int i = 0; i < items.size(); i++) {
+      var item = items.get(i);
+      int reserve = i + 1 < items.size() ? (" +" + (items.size() - i - 1)).length() : 0;
+      String sep = included > 0 ? " | " : "", prefix = switch (item.role) {
+        case "warning", "error" -> "! ";
+        case "edited" -> "* ";
+        case "success" -> "+ ";
+        case "info" -> "i ";
+        default -> "";
+      };
+      String text = prefix + clean(item.text);
+      int needed = cells(sep) + cells(text);
+      if (needed + reserve > width - out.width) {
+        if (included > 0)
+          break;
+        int available = width - reserve > 0 ? width - reserve : width;
+        text = available == 1 && !prefix.isEmpty() ? prefix.substring(0, 1)
+                                                   : clip(text, available, true);
+        sep = "";
+      }
+      if (!sep.isEmpty())
+        out.add(sep, "hint", "");
+      out.add(text, item.role.isEmpty() ? "body" : item.role, item.id);
+      included++;
+      if (needed + reserve > width)
+        break;
+    }
+    out.omitted = items.size() - included;
+    String marker = " +" + out.omitted;
+    if (out.omitted > 0 && out.width + marker.length() <= width)
+      out.add(marker, "hint", "");
+    return out;
+  }
 }

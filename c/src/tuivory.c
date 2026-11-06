@@ -90,12 +90,14 @@ static enum Gcb property(unsigned c) {
   PROP(grapheme_control, G_CONTROL)
   PROP(grapheme_extend, G_EXTEND)
   PROP(grapheme_zwj, G_ZWJ)
-  PROP(grapheme_regional_indicator, G_RI) PROP(grapheme_prepend, G_PREPEND)
-      PROP(grapheme_spacingmark, G_SPACING) PROP(grapheme_l, G_L)
-          PROP(grapheme_v, G_V) PROP(grapheme_t, G_T) PROP(grapheme_lv, G_LV)
-              PROP(grapheme_lvt, G_LVT)
+  PROP(grapheme_regional_indicator, G_RI)
+  PROP(grapheme_prepend, G_PREPEND)
+  PROP(grapheme_spacingmark, G_SPACING)
+  PROP(grapheme_l, G_L)
+  PROP(grapheme_v, G_V) PROP(grapheme_t, G_T) PROP(grapheme_lv, G_LV)
+      PROP(grapheme_lvt, G_LVT)
 #undef PROP
-                  return G_OTHER;
+          return G_OTHER;
 }
 static int pictographic(unsigned c) {
   return range(c, tui_extended_pictographic,
@@ -922,4 +924,624 @@ TuiResult tui_tree_draw(TuiTree *t, TuiCanvas *c, TuiRect r, int focused,
       y++;
     }
   return TUI_OK;
+}
+static char *clean_copy(const char *s) {
+  size_t n, pos = 0, dest = 0;
+  char *out;
+  if (!s || tui_cells(s) < 0)
+    return NULL;
+  n = strlen(s);
+  out = malloc(n + 1);
+  if (!out)
+    return NULL;
+  while (pos < n) {
+    size_t start = pos;
+    unsigned cp;
+    if (!decode((const unsigned char *)s, n, &pos, &cp)) {
+      free(out);
+      return NULL;
+    }
+    if (cp < 32 || (cp >= 127 && cp < 160))
+      out[dest++] = ' ';
+    else {
+      memcpy(out + dest, s + start, pos - start);
+      dest += pos - start;
+    }
+  }
+  out[dest] = 0;
+  return out;
+}
+char *tui_clip(const char *text, int width, int ellipsis) {
+  Buffer b = {0};
+  size_t pos = 0, end, n;
+  int used = 0, w, total;
+  if (!text || width < 0 || (total = tui_cells(text)) < 0)
+    return NULL;
+  append(&b, "");
+  n = strlen(text);
+  while (pos < n) {
+    char *part;
+    if (!cluster(text, n, pos, &end, &w)) {
+      free(b.s);
+      return NULL;
+    }
+    if (used + w > width - (ellipsis && total > width && width > 0))
+      break;
+    part = malloc(end - pos + 1);
+    if (!part) {
+      free(b.s);
+      return NULL;
+    }
+    memcpy(part, text + pos, end - pos);
+    part[end - pos] = 0;
+    {
+      char *safe = clean_copy(part);
+      free(part);
+      if (!safe) {
+        free(b.s);
+        return NULL;
+      }
+      append(&b, safe);
+      free(safe);
+    }
+    used += w;
+    pos = end;
+  }
+  if (ellipsis && total > width && width > 0)
+    append(&b, "~");
+  if (b.failed) {
+    free(b.s);
+    return NULL;
+  }
+  return b.s;
+}
+struct TuiTabs {
+  TuiTab *items;
+  size_t count, view_count;
+  int active, focused, first;
+  TuiTabCell *views;
+};
+static void tabs_clear_views(TuiTabs *t) {
+  size_t i;
+  for (i = 0; i < t->view_count; i++)
+    free((void *)t->views[i].text);
+  t->view_count = 0;
+}
+void tui_tabs_free(TuiTabs *t) {
+  size_t i;
+  if (!t)
+    return;
+  tabs_clear_views(t);
+  for (i = 0; i < t->count; i++) {
+    free((void *)t->items[i].id);
+    free((void *)t->items[i].title);
+  }
+  free(t->items);
+  free(t->views);
+  free(t);
+}
+static void tabs_reconcile(TuiTabs *t) {
+  int first = -1;
+  size_t i;
+  for (i = 0; i < t->count; i++)
+    if (!t->items[i].disabled) {
+      first = (int)i;
+      break;
+    }
+  if (t->active < 0 || (size_t)t->active >= t->count ||
+      t->items[t->active].disabled)
+    t->active = first;
+  if (t->focused < 0 || (size_t)t->focused >= t->count ||
+      t->items[t->focused].disabled)
+    t->focused = t->active;
+}
+TuiTabs *tui_tabs_new(const TuiTab *items, size_t count) {
+  TuiTabs *t;
+  size_t i, j;
+  if ((count && !items) || count > 1000000)
+    return NULL;
+  t = calloc(1, sizeof(*t));
+  if (!t)
+    return NULL;
+  t->active = t->focused = -1;
+  t->items = calloc(count + 1, sizeof(TuiTab));
+  t->views = calloc(count + 1, sizeof(TuiTabCell));
+  if (!t->items || !t->views) {
+    tui_tabs_free(t);
+    return NULL;
+  }
+  t->count = count;
+  for (i = 0; i < count; i++) {
+    if (!items[i].id || !*items[i].id ||
+        tui_cells(items[i].title ? items[i].title : "") < 0) {
+      tui_tabs_free(t);
+      return NULL;
+    }
+    for (j = 0; j < i; j++)
+      if (!strcmp(items[i].id, t->items[j].id)) {
+        tui_tabs_free(t);
+        return NULL;
+      }
+    t->items[i] = items[i];
+    t->items[i].id = copy(items[i].id);
+    t->items[i].title = copy(items[i].title);
+    if (!t->items[i].id || !t->items[i].title) {
+      tui_tabs_free(t);
+      return NULL;
+    }
+  }
+  tabs_reconcile(t);
+  return t;
+}
+const char *tui_tabs_active(const TuiTabs *t) {
+  return t && t->active >= 0 ? t->items[t->active].id : "";
+}
+const char *tui_tabs_focused(const TuiTabs *t) {
+  return t && t->focused >= 0 ? t->items[t->focused].id : "";
+}
+int tui_tabs_first(const TuiTabs *t) { return t ? t->first : 0; }
+TuiEvent tui_tabs_handle(TuiTabs *t, const char *action) {
+  TuiEvent none = {"", ""};
+  int i, target;
+  if (!t || !action)
+    return none;
+  tabs_reconcile(t);
+  if (t->focused < 0)
+    return none;
+  i = target = t->focused;
+  if (!strcmp(action, "activate")) {
+    t->active = i;
+    return (TuiEvent){"activate", t->items[i].id};
+  }
+  if (!strcmp(action, "close"))
+    return t->items[i].closable ? (TuiEvent){"close", t->items[i].id} : none;
+  if (!strcmp(action, "first")) {
+    for (target = 0; target < (int)t->count && t->items[target].disabled;
+         target++) {
+    };
+  } else if (!strcmp(action, "last")) {
+    for (target = (int)t->count - 1; target >= 0 && t->items[target].disabled;
+         target--) {
+    };
+  } else if (!strcmp(action, "previous")) {
+    target = i - 1;
+    while (target >= 0 && t->items[target].disabled)
+      target--;
+    if (target < 0)
+      target = i;
+  } else if (!strcmp(action, "next")) {
+    target = i + 1;
+    while (target < (int)t->count && t->items[target].disabled)
+      target++;
+    if (target == (int)t->count)
+      target = i;
+  }
+  if (target != i) {
+    t->focused = target;
+    return (TuiEvent){"focus", t->items[target].id};
+  }
+  return none;
+}
+static int tab_width(const TuiTab *item) {
+  return min(24, max(6, tui_cells(item->title) + 5));
+}
+static int tab_sum(const TuiTabs *t, int start, int target) {
+  int width = 0, i;
+  for (i = start; i <= target; i++)
+    width += tab_width(&t->items[i]);
+  return width;
+}
+TuiResult tui_tabs_layout(TuiTabs *t, int width, TuiTabCell *out,
+                          size_t capacity, size_t *count) {
+  int target, x;
+  size_t i;
+  if (!t || !count || width < 0 || (!out && capacity))
+    return TUI_INVALID;
+  *count = 0;
+  tabs_clear_views(t);
+  tabs_reconcile(t);
+  if (width <= 2 || !t->count)
+    return TUI_OK;
+  target = max(0, t->focused);
+  t->first = min(max(0, t->first), target);
+  while (t->first < target && tab_sum(t, t->first, target) > width - 2)
+    t->first++;
+  while (t->first > 0 && tab_sum(t, t->first - 1, target) <= width - 2)
+    t->first--;
+  x = 1;
+  for (i = (size_t)t->first; i < t->count && x < width - 1; i++) {
+    const TuiTab *item = &t->items[i];
+    int w = min(tab_width(item), width - 1 - x), active = (int)i == t->active,
+        focused = (int)i == t->focused;
+    Buffer b = {0};
+    char *label, *text;
+    int suffix = (item->edited ? 2 : 0) + (item->closable ? 2 : 0);
+    if (w < 4 && t->view_count)
+      break;
+    label = tui_clip(item->title, max(0, w - 3 - suffix), 1);
+    if (!label)
+      return TUI_NOMEM;
+    append(&b, focused ? ">" : " ");
+    append(&b, active ? "[" : " ");
+    append(&b, label);
+    free(label);
+    if (item->edited)
+      append(&b, " *");
+    if (item->closable)
+      append(&b, " x");
+    append(&b, active ? "]" : " ");
+    if (b.failed) {
+      free(b.s);
+      return TUI_NOMEM;
+    }
+    text = tui_clip(b.s, w, 1);
+    free(b.s);
+    if (!text)
+      return TUI_NOMEM;
+    t->views[t->view_count++] =
+        (TuiTabCell){item->id, text, x, w, active, focused, item->disabled};
+    x += w;
+  }
+  for (i = 0; out && i < capacity && i < t->view_count; i++)
+    out[i] = t->views[i];
+  *count = t->view_count;
+  return TUI_OK;
+}
+TuiEvent tui_tabs_click(TuiTabs *t, int x, int width) {
+  TuiEvent none = {"", ""};
+  size_t count, i;
+  if (!t || x < 0 || x >= width ||
+      tui_tabs_layout(t, width, NULL, 0, &count) != TUI_OK)
+    return none;
+  if (x == 0 && t->first > 0)
+    return tui_tabs_handle(t, "previous");
+  if (x == width - 1 && (size_t)t->first + count < t->count)
+    return tui_tabs_handle(t, "next");
+  for (i = 0; i < count; i++) {
+    TuiTabCell *v = &t->views[i];
+    if (x >= v->start && x < v->start + v->width && !v->disabled) {
+      size_t n = strlen(v->text);
+      int close = n >= 2 && (!strcmp(v->text + n - 2, "x]") ||
+                             !strcmp(v->text + n - 2, "x "));
+      size_t j;
+      for (j = 0; j < t->count; j++)
+        if (!strcmp(t->items[j].id, v->id))
+          break;
+      t->focused = (int)j;
+      if (close && t->items[j].closable &&
+          x == v->start + tui_cells(v->text) - 2)
+        return (TuiEvent){"close", v->id};
+      t->active = t->focused;
+      return (TuiEvent){"activate", v->id};
+    }
+  }
+  return none;
+}
+TuiResult tui_tabs_draw(TuiTabs *t, TuiCanvas *c, TuiRect r, int focused) {
+  size_t n, i;
+  TuiResult result;
+  if (!t || !c)
+    return TUI_INVALID;
+  result = tui_canvas_fill(c, r, "surface");
+  if (result != TUI_OK)
+    return result;
+  result = tui_tabs_layout(t, r.width, NULL, 0, &n);
+  if (result != TUI_OK)
+    return result;
+  if (t->first > 0)
+    tui_canvas_write(c, r.x, r.y, "<", "hint", 0, 1);
+  if ((size_t)t->first + n < t->count && r.width > 0)
+    tui_canvas_write(c, r.x + r.width - 1, r.y, ">", "hint", 0, 1);
+  for (i = 0; i < n; i++) {
+    const TuiTabCell *v = &t->views[i];
+    char spaces[25];
+    memset(spaces, ' ', v->width);
+    spaces[v->width] = 0;
+    result = tui_canvas_write(c, r.x + v->start, r.y, spaces,
+                              v->disabled ? "disabled"
+                              : v->active ? "selection"
+                                          : "body",
+                              focused && v->focused, v->width);
+    if (result != TUI_OK)
+      return result;
+    result = tui_canvas_write(c, r.x + v->start, r.y, v->text,
+                              v->disabled ? "disabled"
+                              : v->active ? "selection"
+                                          : "body",
+                              focused && v->focused, v->width);
+    if (result != TUI_OK)
+      return result;
+  }
+  return TUI_OK;
+}
+TuiSplitLayout tui_split_layout(TuiSplit s, int total) {
+  int a = max(1, s.first_min), b = max(1, s.second_min), first;
+  if (total < 0)
+    return (TuiSplitLayout){0, 0, 0, 1};
+  if ((long long)total < (long long)a + b + 1)
+    return (TuiSplitLayout){0, 0, total, 1};
+  first = min(total - 1 - b,
+              max(a, s.preferred > 0 ? s.preferred : (total - 1) / 2));
+  return (TuiSplitLayout){first, 1, total - first - 1, 0};
+}
+int tui_split_resize(TuiSplit *s, int total, int position) {
+  TuiSplitLayout old;
+  if (!s)
+    return 0;
+  old = tui_split_layout(*s, total);
+  if (old.compact)
+    return 0;
+  s->preferred = min(total - 1 - max(1, s->second_min),
+                     max(max(1, s->first_min), position));
+  return s->preferred != old.first;
+}
+struct TuiLine {
+  TuiLineRun *runs;
+  size_t count, capacity, omitted;
+  int width;
+};
+static int line_add(TuiLine *line, const char *text, const char *role,
+                    const char *id) {
+  TuiLineRun run;
+  TuiLineRun *next;
+  size_t cap;
+  if (line->count == line->capacity) {
+    cap = line->capacity ? line->capacity * 2 : 8;
+    next = realloc(line->runs, cap * sizeof(*next));
+    if (!next)
+      return 0;
+    line->runs = next;
+    line->capacity = cap;
+  }
+  run = (TuiLineRun){clean_copy(text), copy(role && *role ? role : "body"),
+                     copy(id), line->width, tui_cells(text)};
+  if (!run.text || !run.role || !run.id || run.width < 0) {
+    free((void *)run.text);
+    free((void *)run.role);
+    free((void *)run.id);
+    return 0;
+  }
+  line->runs[line->count++] = run;
+  line->width += run.width;
+  return 1;
+}
+void tui_line_free(TuiLine *line) {
+  size_t i;
+  if (!line)
+    return;
+  for (i = 0; i < line->count; i++) {
+    free((void *)line->runs[i].text);
+    free((void *)line->runs[i].role);
+    free((void *)line->runs[i].id);
+  }
+  free(line->runs);
+  free(line);
+}
+size_t tui_line_count(const TuiLine *line) { return line ? line->count : 0; }
+size_t tui_line_omitted(const TuiLine *line) {
+  return line ? line->omitted : 0;
+}
+TuiLineRun tui_line_run(const TuiLine *line, size_t index) {
+  return line && index < line->count ? line->runs[index]
+                                     : (TuiLineRun){"", "body", "", 0, 0};
+}
+const char *tui_line_hit(const TuiLine *line, int x) {
+  size_t i;
+  if (line)
+    for (i = 0; i < line->count; i++)
+      if (x >= line->runs[i].start &&
+          x < line->runs[i].start + line->runs[i].width)
+        return line->runs[i].id;
+  return "";
+}
+char *tui_line_text(const TuiLine *line) {
+  Buffer b = {0};
+  size_t i;
+  if (!line)
+    return NULL;
+  append(&b, "");
+  for (i = 0; i < line->count; i++)
+    append(&b, line->runs[i].text);
+  if (b.failed) {
+    free(b.s);
+    return NULL;
+  }
+  return b.s;
+}
+TuiResult tui_line_draw(const TuiLine *line, TuiCanvas *c, TuiRect r) {
+  size_t i;
+  TuiResult result;
+  if (!line || !c)
+    return TUI_INVALID;
+  result = tui_canvas_fill(c, r, "surface");
+  if (result != TUI_OK)
+    return result;
+  for (i = 0; i < line->count; i++) {
+    const TuiLineRun *v = &line->runs[i];
+    result = tui_canvas_write(c, r.x + v->start, r.y, v->text, v->role, 0,
+                              max(0, r.width - v->start));
+    if (result != TUI_OK)
+      return result;
+  }
+  return TUI_OK;
+}
+static char *tail_text(const char *text, int width) {
+  int total = tui_cells(text), removed = 0, w;
+  size_t pos = 0, end, n;
+  if (total < 0 || width < 0)
+    return NULL;
+  if (total <= width)
+    return copy(text);
+  if (width == 0)
+    return copy("");
+  n = strlen(text);
+  while (pos < n && total - removed > width - 1) {
+    if (!cluster(text, n, pos, &end, &w))
+      return NULL;
+    removed += w;
+    pos = end;
+  }
+  {
+    Buffer b = {0};
+    append(&b, "~");
+    append(&b, text + pos);
+    if (b.failed) {
+      free(b.s);
+      return NULL;
+    }
+    return b.s;
+  }
+}
+TuiLine *tui_breadcrumbs(const TuiPathItem *items, size_t count, int width) {
+  TuiLine *line;
+  size_t i;
+  long long full;
+  char *tail;
+  const char *prefix = "";
+  if ((count && !items) || count > 1000000 || width < 0)
+    return NULL;
+  line = calloc(1, sizeof(*line));
+  if (!line)
+    return NULL;
+  if (!count || !width)
+    return line;
+  full = 3LL * (long long)(count - 1);
+  for (i = 0; i < count; i++) {
+    int n = tui_cells(items[i].label);
+    if (n < 0)
+      goto fail;
+    full += n;
+  }
+  if (full <= width) {
+    for (i = 0; i < count; i++) {
+      if (i && !line_add(line, " / ", "hint", ""))
+        goto fail;
+      if (!line_add(line, items[i].label, i + 1 == count ? "body" : "hint",
+                    items[i].id))
+        goto fail;
+    }
+    return line;
+  }
+  if (count > 2 &&
+      tui_cells(items[0].label) + 9 + tui_cells(items[count - 1].label) <=
+          width) {
+    if (!line_add(line, items[0].label, "hint", items[0].id))
+      goto fail;
+    prefix = " / ... / ";
+  } else if (count > 1 && width >= 7)
+    prefix = "... / ";
+  if (!line_add(line, prefix, "hint", ""))
+    goto fail;
+  tail = tail_text(items[count - 1].label, width - line->width);
+  if (!tail)
+    goto fail;
+  {
+    int ok = line_add(line, tail, "body", items[count - 1].id);
+    free(tail);
+    if (!ok)
+      goto fail;
+  }
+  return line;
+fail:
+  tui_line_free(line);
+  return NULL;
+}
+TuiLine *tui_status_line(const TuiStatusItem *items, size_t count, int width) {
+  TuiLine *line;
+  size_t *order, i, j, included = 0;
+  if ((count && !items) || count > 1000000 || width < 0)
+    return NULL;
+  line = calloc(1, sizeof(*line));
+  if (!line)
+    return NULL;
+  line->omitted = count;
+  if (!width || !count)
+    return line;
+  order = malloc(count * sizeof(size_t));
+  if (!order) {
+    tui_line_free(line);
+    return NULL;
+  }
+  for (i = 0; i < count; i++) {
+    if (!items[i].text || !items[i].role || tui_cells(items[i].text) < 0)
+      goto fail;
+    order[i] = i;
+    for (j = i;
+         j > 0 && items[order[j]].priority > items[order[j - 1]].priority;
+         j--) {
+      size_t tmp = order[j];
+      order[j] = order[j - 1];
+      order[j - 1] = tmp;
+    }
+  }
+  for (i = 0; i < count; i++) {
+    const TuiStatusItem *item = &items[order[i]];
+    char marker[32], *text, *clipped;
+    int reserve = 0, needed;
+    const char *sep = included ? " | " : "",
+               *prefix = !strcmp(item->role, "error") ||
+                                 !strcmp(item->role, "warning")
+                             ? "! "
+                         : !strcmp(item->role, "edited")  ? "* "
+                         : !strcmp(item->role, "success") ? "+ "
+                         : !strcmp(item->role, "info")    ? "i "
+                                                          : "";
+    Buffer b = {0};
+    if (i + 1 < count) {
+      snprintf(marker, sizeof(marker), " +%zu", count - i - 1);
+      reserve = (int)strlen(marker);
+    }
+    append(&b, prefix);
+    append(&b, item->text);
+    if (b.failed) {
+      free(b.s);
+      goto fail;
+    }
+    text = b.s;
+    needed = tui_cells(sep) + tui_cells(text);
+    if (needed + reserve > width - line->width) {
+      int available;
+      if (included) {
+        free(text);
+        break;
+      }
+      available = width - reserve > 0 ? width - reserve : width;
+      if (available == 1 && *prefix) {
+        char one[2] = {prefix[0], 0};
+        clipped = copy(one);
+      } else
+        clipped = tui_clip(text, available, 1);
+      free(text);
+      if (!clipped)
+        goto fail;
+      text = clipped;
+      sep = "";
+    }
+    if (*sep && !line_add(line, sep, "hint", "")) {
+      free(text);
+      goto fail;
+    }
+    if (!line_add(line, text, item->role, item->id)) {
+      free(text);
+      goto fail;
+    }
+    free(text);
+    included++;
+    if (needed + reserve > width)
+      break;
+  }
+  line->omitted = count - included;
+  if (line->omitted) {
+    char marker[32];
+    snprintf(marker, sizeof(marker), " +%zu", line->omitted);
+    if (line->width + (int)strlen(marker) <= width &&
+        !line_add(line, marker, "hint", ""))
+      goto fail;
+  }
+  free(order);
+  return line;
+fail:
+  free(order);
+  tui_line_free(line);
+  return NULL;
 }

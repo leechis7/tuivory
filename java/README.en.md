@@ -23,3 +23,5 @@ java -jar .cache/packages/java/tuivory-0.11.1.jar --demo tree --lang en
 Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` to select presentation. C/C++ examples use w/s/a/d plus Enter. Java uses command names followed by Enter and does not claim a raw-terminal adapter. Python/JS examples have opt-in terminal sessions; hosts otherwise own terminal lifecycle and global focus.
 
 [Support/API/verification](../docs/languages.en.md) · [Examples](../docs/examples.en.md) · [TVR-32](https://leechis7.atlassian.net/browse/TVR-32)
+
+[Workspace follow-up](../docs/language-workspace.en.md): select `--demo workspace` for validated tabs, panels, splits, breadcrumbs and status lines.

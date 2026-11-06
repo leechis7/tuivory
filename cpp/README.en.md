@@ -23,3 +23,5 @@ Commands run from the repository root unless shown otherwise. JavaScript users o
 Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` to select presentation. C/C++ examples use w/s/a/d plus Enter. Java uses command names followed by Enter and does not claim a raw-terminal adapter. Python/JS examples have opt-in terminal sessions; hosts otherwise own terminal lifecycle and global focus.
 
 [Support/API/verification](../docs/languages.en.md) · [Examples](../docs/examples.en.md) · [TVR-31](https://leechis7.atlassian.net/browse/TVR-31)
+
+[Workspace follow-up](../docs/language-workspace.en.md): select `--demo workspace` for validated tabs, panels, splits, breadcrumbs and status lines.

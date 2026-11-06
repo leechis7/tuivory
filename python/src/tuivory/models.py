@@ -203,6 +203,17 @@ class Tab:
     disabled: bool = False
 
 
+@dataclass(frozen=True)
+class TabCell:
+    id: str
+    text: str
+    start: int
+    width: int
+    active: bool
+    focused: bool
+    disabled: bool
+
+
 class Tabs:
     def __init__(self, items: list[Tab]):
         unique(items)
@@ -236,40 +247,60 @@ class Tabs:
             return Event("focus", self.focused)
         return Event()
 
-    def layout(self, width: int) -> list[tuple[Tab, int, str]]:
+    def layout(self, width: int) -> list[TabCell]:
         self._eligible()
-        if width <= 2:
+        if width <= 2 or not self.items:
             return []
-        focused = next((i for i, t in enumerate(self.items) if t.id == self.focused), 0)
-        self.first = min(self.first, focused)
-        def build(start: int) -> list[tuple[Tab, int, str]]:
-            out, x = [], 1 if start else 0
-            for item in self.items[start:]:
-                size = min(24, max(6, cells(item.title) + 5))
-                if x + size > width - 1:
-                    break
-                label = ("*" if item.edited else " ") + clip(item.title, size - 4, True) + (" x" if item.closable else "  ")
-                out.append((item, x, label.ljust(size - cells(label) + len(label))))
-                x += size
-            return out
-        out = build(self.first)
-        while self.first < focused and not any(t.id == self.focused for t, _, _ in out):
+        target = next((i for i, t in enumerate(self.items) if t.id == self.focused), 0)
+        self.first = max(0, min(self.first, target))
+        size = lambda item: min(24, max(6, cells(item.title) + 5))
+        while self.first < target and sum(size(t) for t in self.items[self.first:target + 1]) > width - 2:
             self.first += 1
-            out = build(self.first)
+        while self.first > 0 and sum(size(t) for t in self.items[self.first - 1:target + 1]) <= width - 2:
+            self.first -= 1
+        out, x = [], 1
+        for item in self.items[self.first:]:
+            if x >= width - 1:
+                break
+            w = min(size(item), width - 1 - x)
+            if w < 4 and out:
+                break
+            active, focused = item.id == self.active, item.id == self.focused
+            suffix = (' *' if item.edited else '') + (' x' if item.closable else '')
+            label = clip(item.title, max(0, w - 3 - len(suffix)), True)
+            text = clip(('>' if focused else ' ') + ('[' if active else ' ') + label + suffix + (']' if active else ' '), w, True)
+            out.append(TabCell(item.id, text, x, w, active, focused, item.disabled))
+            x += w
         return out
 
     def click(self, x: int, width: int) -> Event:
-        for tab, start, text in self.layout(width):
-            if start <= x < start + cells(text) and not tab.disabled:
-                self.focused = self.active = tab.id
-                return Event("activate", tab.id)
+        views = self.layout(width)
+        if x == 0 and self.first > 0:
+            return self.handle('previous')
+        if width > 0 and x == width - 1 and self.first + len(views) < len(self.items):
+            return self.handle('next')
+        for cell in views:
+            if cell.start <= x < cell.start + cell.width and not cell.disabled:
+                self.focused = cell.id
+                if cell.text.endswith(('x]', 'x ')) and any(t.id == cell.id and t.closable for t in self.items) and x == cell.start + cells(cell.text) - 2:
+                    return Event('close', cell.id)
+                self.active = cell.id
+                return Event('activate', cell.id)
         return Event()
 
     def draw(self, canvas: Canvas, rect: Rect, *, focused: bool = True, ascii: bool = False) -> None:
         canvas.fill(rect)
-        for tab, x, text in self.layout(rect.width):
-            role = "disabled" if tab.disabled else "selection" if self.active == tab.id else "body"
-            canvas.write(rect.x + x, rect.y, text, role, focused=focused and self.focused == tab.id, width=rect.width - x)
+        views = self.layout(rect.width)
+        if self.first > 0:
+            canvas.write(rect.x, rect.y, '<', 'hint', width=1)
+        if self.first + len(views) < len(self.items) and rect.width:
+            canvas.write(rect.x + rect.width - 1, rect.y, '>', 'hint', width=1)
+        for cell in views:
+            role = 'disabled' if cell.disabled else 'selection' if cell.active else 'body'
+            canvas.write(rect.x + cell.start, rect.y, ' ' * cell.width, role, focused=focused and cell.focused, width=cell.width)
+            canvas.write(rect.x + cell.start, rect.y, cell.text,
+                         'disabled' if cell.disabled else 'selection' if cell.active else 'body',
+                         focused=focused and cell.focused, width=cell.width)
 
 
 @dataclass

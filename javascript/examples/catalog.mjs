@@ -9,12 +9,13 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
-if (value("--demo", "tree") !== "tree")
-  throw new Error("Only --demo tree is supported");
+const workspace = value("--demo", "tree") === "workspace";
+if (!workspace && value("--demo", "tree") !== "tree")
+  throw new Error("Supported demos: tree, workspace");
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 let theme = value("--theme", "dark"),
@@ -28,6 +29,85 @@ const tree = new ui.Tree([
   { id: "docs", name: en ? "Documentation" : "문서", parent: "root" },
 ]);
 tree.expanded = new Set(["root", "src", "components", "tree"]);
+const tabs = new ui.Tabs([
+  { id: "overview", title: en ? "Overview" : "개요" },
+  {
+    id: "draft",
+    title: en ? "Draft document" : "초안 문서",
+    edited: true,
+    closable: true,
+  },
+  { id: "disabled", title: en ? "Disabled" : "비활성", disabled: true },
+]);
+const split = new ui.Split(16, 20, 24);
+let tabFocus = false;
+let treeArea = ui.rect();
+function workspaceDraw(c, area) {
+  tabs.draw(c, ui.rect(area.x, area.y, area.width, 1), tabFocus);
+  ui.pathRuns(
+    [
+      { id: "root", label: en ? "Workspace" : "작업 공간" },
+      { id: "current", label: en ? "Components" : "컴포넌트" },
+    ],
+    area.width,
+  ).draw(c, ui.rect(area.x, area.y + 1, area.width, 1));
+  const layout = split.layout(area.width),
+    body = Math.max(0, area.height - 3);
+  let right = ui.rect(area.x, area.y + 2, area.width, body);
+  treeArea = ui.rect();
+  if (!layout.compact) {
+    const left = c.panel(
+      ui.rect(area.x, area.y + 2, layout.first, body),
+      en ? "Explorer" : "탐색",
+      !tabFocus,
+      ascii,
+    );
+    treeArea = left;
+    tree.draw(c, left, !tabFocus, ascii);
+    for (let y = 0; y < body; y++)
+      c.write(
+        area.x + layout.first,
+        area.y + 2 + y,
+        ascii ? "|" : "│",
+        "focus.border",
+      );
+    right = ui.rect(area.x + layout.first + 1, area.y + 2, layout.second, body);
+  }
+  right = c.panel(right, en ? "Content" : "내용", false, ascii);
+  c.write(
+    right.x,
+    right.y,
+    en ? "Selected tab" : "선택한 탭",
+    "hint",
+    false,
+    right.width,
+  );
+  c.write(
+    right.x,
+    right.y + 1,
+    tabs.items.find((t) => t.id === tabs.active)?.title ?? "",
+    "body",
+    false,
+    right.width,
+  );
+  ui.statusLine(
+    [
+      {
+        id: "ready",
+        text: en ? "Ready" : "준비",
+        role: "success",
+        priority: 10,
+      },
+      {
+        id: "keys",
+        text: en ? "Tab focus | < > resize" : "Tab 포커스 | < > 크기",
+        role: "hint",
+        priority: 1,
+      },
+    ],
+    area.width,
+  ).draw(c, ui.rect(area.x, area.y + area.height - 1, area.width, 1));
+}
 let area = ui.rect();
 function draw(snapshot = false, ansiSnapshot = false) {
   const width = snapshot ? 72 : stdout.columns || 80,
@@ -39,7 +119,8 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  tree.draw(c, area, true, ascii);
+  if (workspace) workspaceDraw(c, area);
+  else tree.draw(c, area, true, ascii);
   c.write(
     0,
     height - 1,
@@ -107,8 +188,22 @@ try {
             x < area.x + area.width &&
             y >= area.y &&
             y < area.y + area.height
-          )
-            tree.click(x - area.x, y - area.y, area.height);
+          ) {
+            if (workspace && y === area.y) {
+              tabFocus = true;
+              tabs.click(x - area.x, area.width);
+            } else if (
+              workspace &&
+              x >= treeArea.x &&
+              x < treeArea.x + treeArea.width &&
+              y >= treeArea.y &&
+              y < treeArea.y + treeArea.height
+            ) {
+              tabFocus = false;
+              tree.click(x - treeArea.x, y - treeArea.y, treeArea.height);
+            } else if (!workspace)
+              tree.click(x - area.x, y - area.y, area.height);
+          }
           continue;
         }
         const keys = {
@@ -125,8 +220,26 @@ try {
         };
         const key = Object.keys(keys).find((k) => pending.startsWith(k));
         if (key) {
-          tree.handle(keys[key], area.height);
+          if (workspace && tabFocus)
+            tabs.handle(
+              { left: "previous", right: "next" }[keys[key]] ?? keys[key],
+            );
+          else
+            tree.handle(keys[key], workspace ? treeArea.height : area.height);
           pending = pending.slice(key.length);
+          continue;
+        }
+        if (workspace && pending.startsWith("\t")) {
+          tabFocus = !tabFocus;
+          pending = pending.slice(1);
+          continue;
+        }
+        if (workspace && ["<", ">"].includes(pending[0])) {
+          split.resize(
+            area.width,
+            split.preferred + (pending[0] === "<" ? -1 : 1),
+          );
+          pending = pending.slice(1);
           continue;
         }
         if (pending.startsWith("\x1bOP")) {

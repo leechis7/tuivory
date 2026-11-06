@@ -20,6 +20,11 @@ assert t.handle("right",3).kind=="expand"
 assert t.handle("down",3).id=="child"
 c=ui.Canvas(30,4,p);t.draw(c,ui.Rect(0,0,30,4));assert "한글" in "".join(c.lines())
 assert ui.cells("한글 👩‍💻")==7
+tabs=ui.Tabs([ui.Tab("a","Overview"),ui.Tab("b","Draft",closable=True)])
+assert tabs.handle("next").id=="b" and tabs.handle("close").kind=="close"
+assert ui.path_runs([("r","root"),("f","folder"),("c","현재.sql")],15).text=="... / 현재.sql"
+assert ui.status_line([ui.StatusItem("e","Failure","error",100),ui.StatusItem("h","F1 Help","hint",1)],10).omitted==1
+assert ui.Split(3,4,7).layout(5).compact
 ''')
  run([p,'-I',b/'consumer.py'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','tree','--lang','en'],b)
@@ -33,6 +38,10 @@ const p=new ui.Palette("light","8");const t=new ui.Tree([{id:"root",name:"Worksp
 if(t.handle("right",3).kind!=="expand"||t.handle("down",3).id!=="child")throw new Error("tree");
 const c=new ui.Canvas(30,4,p);t.draw(c,ui.rect(0,0,30,4));if(!c.lines().join("").includes("한글"))throw new Error("render");
 if(ui.cells("한글 👩‍💻")!==7)throw new Error("width");
+const tabs=new ui.Tabs([{id:"a",title:"Overview"},{id:"b",title:"Draft",closable:true}]);
+if(tabs.handle("next").id!=="b"||tabs.handle("close").kind!=="close")throw new Error("tabs");
+if(ui.pathRuns([{id:"r",label:"root"},{id:"f",label:"folder"},{id:"c",label:"현재.sql"}],15).text!=="... / 현재.sql")throw new Error("path");
+if(!new ui.Split(3,4,7).layout(5).compact)throw new Error("split");
 '''
  (b/'consumer.mjs').write_text(source);(b/'consumer.ts').write_text(source)
  run(['node','consumer.mjs'],b)

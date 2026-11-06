@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node tests/components.mjs"
+    "test": "node tests/all.mjs"
   },
   "devDependencies": {
     "typescript": "^7.0.2"
