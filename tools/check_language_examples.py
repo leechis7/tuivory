@@ -47,7 +47,7 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
         if demo=='surface':
-            from ansi_cells import read_cells
+            from ansi_cells import read_cells,complete_frame
             palettes=json.loads((ROOT/'design/tokens/candidate.json').read_text())['palettes'];palette=palettes[theme+'-'+colors]
             def visible():return '\n'.join(''.join(row)for row in screen.rows[:24])
             def wait_text(value):
@@ -63,7 +63,12 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
                 while captured.count(b'\x1b[0m')<=frames and time.monotonic()<deadline:drain(.02)
                 assert captured.count(b'\x1b[0m')>frames,(language,'surface frame',visible())
             def styles(role):
-                current=read_cells(('\x1b[?25l'+captured.rsplit(b'\x1b[?25l',1)[-1].decode()))
+                deadline=time.monotonic()+5
+                frame=complete_frame(captured)
+                while frame is None and time.monotonic()<deadline:
+                    drain(.02);frame=complete_frame(captured)
+                assert frame is not None,(language,'incomplete surface frame',bytes(captured[-400:]))
+                current=read_cells(frame.decode())
                 for yy in [1,2,3,4,7,9]:assert current[1,yy][2]==palette[role]['background'],(language,theme,colors,role,yy,current[1,yy])
                 assert current[1,4][4],(language,'disabled Dim absent')
                 assert current[1,5][2]==palette['selection']['background'],(language,'selection background lost')

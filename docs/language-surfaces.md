@@ -62,3 +62,5 @@ C의 `TuiSurface.role=NULL`은 surface입니다. `TuiSurfacePainter(context,chil
 | Java | ![Java 표면](images/language-java-surface.png) |
 
 [독립 언어](languages.md) · [컨테이너](language-containers.md) · [API](api/README.md) · [예제](examples.md)
+
+실제 출력 검사는 마지막 Canvas 종료 명령을 받은 뒤 프레임을 해석합니다. 분할된 UTF-8/SGR과 다음 프레임·줄 입력 프롬프트가 섞이는 상황도 검사합니다.

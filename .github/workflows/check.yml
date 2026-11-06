@@ -314,6 +314,7 @@ jobs:
           python tools/check_language_containers.py --language c
           python tools/check_language_containers.py --language cpp
           python tools/check_language_containers.py --language java
+          python tools/ansi_cells.py
           python tools/check_language_surfaces.py --language c
           python tools/check_language_surfaces.py --language cpp
           python tools/check_language_surfaces.py --language java

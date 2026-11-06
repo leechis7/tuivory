@@ -2216,5 +2216,18 @@
   "github_ci": "not run for uncommitted milestone",
   "dev_merge": "not performed for this milestone",
   "product_release": "not performed; published0.11.1 unchanged",
-  "centos": "not run per user instruction"
+  "centos": "not run per user instruction",
+  "followup_validation": {
+    "checked_at_utc": "2026-11-06T23:10:48.403646+00:00",
+    "source_base": "6f328d3",
+    "scope": "strict complete-frame boundary before UTF-8/SGR parsing; implementation unchanged",
+    "first_ci": "42308081877:14success; Python surface PTY failed because a frame was parsed before its final reset",
+    "local": "every byte-prefix of fragmented UTF-8/SGR checked; Python surface48palette/locale/glyph PTY cases passed",
+    "fix_sha256": {
+      "tools/ansi_cells.py": "a275c89d22954b06bf7b74c5f94cd7631fce7e3fa6b581f1e1dc36106165c8fe",
+      "tools/check_language_examples.py": "53c0bbcb14d56efde6a4ae047fefb95cd3749e8ac305ffe2c3e5548f8c430e7d",
+      ".github/workflows/check.yml": "b6e69de9722cfac89fa934947764099a857578de7497480941ba49564ea38a0d"
+    },
+    "github_ci": "pending follow-up push"
+  }
 }

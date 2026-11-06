@@ -62,3 +62,5 @@ Integrated `--demo surface` cycles panel/editor/field/focused button backgrounds
 | Java | ![Java surfaces](images/language-java-surface-en.png) |
 
 [Independent languages](languages.en.md) · [Containers](language-containers.en.md) · [API](api/README.en.md) · [Examples](examples.en.md)
+
+Actual-output checks parse a frame only after receiving its final Canvas reset. Regression cases cover split UTF-8/SGR, subsequent incomplete frames and line-input prompts.

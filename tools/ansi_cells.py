@@ -43,3 +43,29 @@ def read_cells(text):
         if width==2:cells[x+1,y]=('',fg,bg,bold,dim,underline)
         x+=width
     return cells
+
+
+def complete_frame(data):
+    """Return the latest complete Canvas frame, excluding prompts/cursor trailers.
+
+    A status label can arrive before later rows and their final reset. Never
+    decode a UTF-8 chunk or inspect SGR attributes until that frame is complete.
+    """
+    start=data.rfind(b'\x1b[?25l')
+    if start<0:return None
+    end=data.find(b'\x1b[0m',start)
+    return bytes(data[start:end+4])if end>=0 else None
+
+
+def check_fragmented_frames():
+    frame=b'\x1b[?25l\x1b[1;1H\x1b[0;37;44m'+"가".encode()+b'\x1b[0m'
+    for n in range(len(frame)):
+        assert complete_frame(frame[:n])is None,n
+    assert complete_frame(frame)==frame
+    assert read_cells(complete_frame(frame).decode())[0,0][0:3]==('가','7','4')
+    assert complete_frame(frame+b'\x1b[?25l\x1b[1;1H')is None
+    assert complete_frame(frame+frame)==frame
+    assert complete_frame(frame+b'\x1b[19;1H\x1b[K> ')==frame
+    print('Fragmented UTF-8/SGR and complete Canvas frame boundaries passed')
+
+if __name__=='__main__':check_fragmented_frames()
