@@ -549,6 +549,15 @@ export interface Tab {
   closable?: boolean;
   disabled?: boolean;
 }
+export interface TabCell {
+  id: string;
+  text: string;
+  start: number;
+  width: number;
+  active: boolean;
+  focused: boolean;
+  disabled: boolean;
+}
 export class Tabs {
   readonly items: Tab[];
   active = "";
@@ -588,60 +597,101 @@ export class Tabs {
     }
     return event();
   }
-  layout(width: number): { tab: Tab; x: number; text: string }[] {
+  layout(width: number): TabCell[] {
     this.eligible();
-    if (width <= 2) return [];
-    const focus = Math.max(
+    if (width <= 2 || !this.items.length) return [];
+    const target = Math.max(
       0,
       this.items.findIndex((t) => t.id === this.focused),
     );
-    this.first = Math.min(this.first, focus);
-    const build = (start: number) => {
-      const out: { tab: Tab; x: number; text: string }[] = [];
-      let x = start ? 1 : 0;
-      for (const tab of this.items.slice(start)) {
-        const n = Math.min(24, Math.max(6, cells(tab.title ?? "") + 5));
-        if (x + n > width - 1) break;
-        let text =
-          (tab.edited ? "*" : " ") +
-          clip(tab.title ?? "", n - 4, true) +
-          (tab.closable ? " x" : "  ");
-        text += " ".repeat(Math.max(0, n - cells(text)));
-        out.push({ tab, x, text });
-        x += n;
-      }
-      return out;
-    };
-    let out = build(this.first);
-    while (this.first < focus && !out.some((t) => t.tab.id === this.focused))
-      out = build(++this.first);
+    this.first = Math.max(0, Math.min(this.first, target));
+    const size = (t: Tab) =>
+      Math.min(24, Math.max(6, cells(t.title ?? "") + 5));
+    const sum = (start: number) =>
+      this.items.slice(start, target + 1).reduce((n, t) => n + size(t), 0);
+    while (this.first < target && sum(this.first) > width - 2) this.first++;
+    while (this.first > 0 && sum(this.first - 1) <= width - 2) this.first--;
+    const out: TabCell[] = [];
+    let x = 1;
+    for (const tab of this.items.slice(this.first)) {
+      if (x >= width - 1) break;
+      const w = Math.min(size(tab), width - 1 - x);
+      if (w < 4 && out.length) break;
+      const active = tab.id === this.active,
+        focused = tab.id === this.focused,
+        suffix = (tab.edited ? " *" : "") + (tab.closable ? " x" : "");
+      const text = clip(
+        (focused ? ">" : " ") +
+          (active ? "[" : " ") +
+          clip(tab.title ?? "", Math.max(0, w - 3 - suffix.length), true) +
+          suffix +
+          (active ? "]" : " "),
+        w,
+        true,
+      );
+      out.push({
+        id: tab.id,
+        text,
+        start: x,
+        width: w,
+        active,
+        focused,
+        disabled: tab.disabled ?? false,
+      });
+      x += w;
+    }
     return out;
   }
   click(x: number, width: number): Event {
-    for (const p of this.layout(width))
-      if (x >= p.x && x < p.x + cells(p.text) && !p.tab.disabled) {
-        this.active = this.focused = p.tab.id;
-        return event("activate", p.tab.id);
+    const views = this.layout(width);
+    if (x === 0 && this.first > 0) return this.handle("previous");
+    if (
+      width > 0 &&
+      x === width - 1 &&
+      this.first + views.length < this.items.length
+    )
+      return this.handle("next");
+    for (const cell of views)
+      if (x >= cell.start && x < cell.start + cell.width && !cell.disabled) {
+        this.focused = cell.id;
+        if (
+          (cell.text.endsWith("x]") || cell.text.endsWith("x ")) &&
+          this.items.some((t) => t.id === cell.id && t.closable) &&
+          x === cell.start + cells(cell.text) - 2
+        )
+          return event("close", cell.id);
+        this.active = cell.id;
+        return event("activate", cell.id);
       }
     return event();
   }
   draw(c: Canvas, r: Rect, focused = true): void {
     c.fill(r);
-    for (const p of this.layout(r.width))
+    const views = this.layout(r.width);
+    if (this.first > 0) c.write(r.x, r.y, "<", "hint");
+    if (this.first + views.length < this.items.length && r.width > 0)
+      c.write(r.x + r.width - 1, r.y, ">", "hint");
+    for (const cell of views) {
       c.write(
-        r.x + p.x,
+        r.x + cell.start,
         r.y,
-        p.text,
-        p.tab.disabled
-          ? "disabled"
-          : p.tab.id === this.active
-            ? "selection"
-            : "body",
-        focused && p.tab.id === this.focused,
-        r.width - p.x,
+        " ".repeat(cell.width),
+        cell.disabled ? "disabled" : cell.active ? "selection" : "body",
+        focused && cell.focused,
+        cell.width,
       );
+      c.write(
+        r.x + cell.start,
+        r.y,
+        cell.text,
+        cell.disabled ? "disabled" : cell.active ? "selection" : "body",
+        focused && cell.focused,
+        cell.width,
+      );
+    }
   }
 }
+
 export interface Item {
   id: string;
   label?: string;
@@ -1458,6 +1508,44 @@ export class Menu {
     if (this.opened) this.level.draw(c, r, false, ascii);
   }
 }
+export interface SplitLayout {
+  first: number;
+  divider: number;
+  second: number;
+  compact: boolean;
+}
+export class Split {
+  preferred: number;
+  firstMin: number;
+  secondMin: number;
+  constructor(firstMin = 1, secondMin = 1, preferred = 0) {
+    this.firstMin = Math.max(1, firstMin);
+    this.secondMin = Math.max(1, secondMin);
+    this.preferred = Math.max(0, preferred);
+  }
+  layout(total: number): SplitLayout {
+    if (total < 0) throw new Error("negative split size");
+    if (total < this.firstMin + this.secondMin + 1)
+      return { first: 0, divider: 0, second: total, compact: true };
+    const first = Math.max(
+      this.firstMin,
+      Math.min(
+        total - 1 - this.secondMin,
+        this.preferred || Math.floor((total - 1) / 2),
+      ),
+    );
+    return { first, divider: 1, second: total - first - 1, compact: false };
+  }
+  resize(total: number, position: number): boolean {
+    const old = this.layout(total);
+    if (old.compact) return false;
+    this.preferred = Math.max(
+      this.firstMin,
+      Math.min(total - 1 - this.secondMin, position),
+    );
+    return old.first !== this.preferred;
+  }
+}
 export function split(
   r: Rect,
   preferred: number,
@@ -1467,25 +1555,23 @@ export function split(
 ): [Rect, Rect, Rect] {
   if (Math.min(r.width, r.height, preferred, firstMin, secondMin) < 0)
     throw new Error("negative geometry");
-  const size = vertical ? r.height : r.width,
-    usable = Math.max(0, size - 1),
-    first =
-      firstMin + secondMin <= usable
-        ? Math.max(firstMin, Math.min(usable - secondMin, preferred))
-        : Math.min(usable, preferred),
-    bar = Math.min(1, size);
+  const layout = new Split(firstMin, secondMin, preferred).layout(
+    vertical ? r.height : r.width,
+  );
+  if (layout.compact) return [rect(r.x, r.y), rect(r.x, r.y), r];
   return vertical
     ? [
-        rect(r.x, r.y, r.width, first),
-        rect(r.x, r.y + first, r.width, bar),
-        rect(r.x, r.y + first + bar, r.width, usable - first),
+        rect(r.x, r.y, r.width, layout.first),
+        rect(r.x, r.y + layout.first, r.width, 1),
+        rect(r.x, r.y + layout.first + 1, r.width, layout.second),
       ]
     : [
-        rect(r.x, r.y, first, r.height),
-        rect(r.x + first, r.y, bar, r.height),
-        rect(r.x + first + bar, r.y, usable - first, r.height),
+        rect(r.x, r.y, layout.first, r.height),
+        rect(r.x + layout.first, r.y, 1, r.height),
+        rect(r.x + layout.first + 1, r.y, layout.second, r.height),
       ];
 }
+
 export function container(
   r: Rect,
   ids: string[],
@@ -1513,15 +1599,93 @@ export function container(
   });
   return out;
 }
+export interface LineRun {
+  text: string;
+  role: string;
+  id: string;
+  start: number;
+  width: number;
+}
+export class LineLayout {
+  readonly runs: LineRun[] = [];
+  omitted = 0;
+  get text(): string {
+    return this.runs.map((r) => r.text).join("");
+  }
+  add(text: string, role: string, id = ""): void {
+    text = clean(text);
+    this.runs.push({
+      text,
+      role,
+      id,
+      start: cells(this.text),
+      width: cells(text),
+    });
+  }
+  hit(x: number): string {
+    return (
+      this.runs.find((r) => x >= r.start && x < r.start + r.width)?.id ?? ""
+    );
+  }
+  draw(c: Canvas, r: Rect): void {
+    c.fill(r);
+    for (const run of this.runs)
+      c.write(
+        r.x + run.start,
+        r.y,
+        run.text,
+        run.role,
+        false,
+        Math.max(0, r.width - run.start),
+      );
+  }
+}
+function tailCells(text: string, width: number): string {
+  text = clean(text);
+  if (cells(text) <= width) return text;
+  if (width <= 0) return "";
+  const parts = graphemes(text);
+  let start = parts.length,
+    used = 0;
+  while (start > 0 && used + cells(parts[start - 1]) <= width - 1)
+    used += cells(parts[--start]);
+  return "~" + parts.slice(start).join("");
+}
+export function pathRuns(
+  items: { id: string; label: string }[],
+  width: number,
+): LineLayout {
+  const out = new LineLayout();
+  if (!items.length || width <= 0) return out;
+  const full =
+    items.reduce((n, p) => n + cells(p.label), 0) + 3 * (items.length - 1);
+  if (full <= width) {
+    items.forEach((p, i) => {
+      if (i) out.add(" / ", "hint");
+      out.add(p.label, i + 1 === items.length ? "body" : "hint", p.id);
+    });
+    return out;
+  }
+  const last = items.at(-1)!;
+  let prefix = "";
+  if (
+    items.length > 2 &&
+    cells(items[0].label) + 9 + cells(last.label) <= width
+  ) {
+    out.add(items[0].label, "hint", items[0].id);
+    prefix = " / ... / ";
+  } else if (items.length > 1 && width >= 7) prefix = "... / ";
+  out.add(prefix, "hint");
+  out.add(tailCells(last.label, width - cells(out.text)), "body", last.id);
+  return out;
+}
 export function breadcrumbs(
   items: { id: string; label: string }[],
   width: number,
   ascii = false,
 ): string {
-  const labels = items.map((i) => i.label),
-    sep = ascii ? " / " : " › ";
-  while (labels.length > 1 && cells(labels.join(sep)) > width) labels.shift();
-  return clip(labels.join(sep), width, true);
+  void ascii;
+  return pathRuns(items, width).text;
 }
 export interface StatusItem {
   id: string;
@@ -1545,6 +1709,50 @@ export function status(items: StatusItem[], width: number): StatusItem[] {
       }
     });
   return items.filter((_, i) => selected.has(i));
+}
+export function statusLine(source: StatusItem[], width: number): LineLayout {
+  const items = [...source].sort(
+      (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+    ),
+    out = new LineLayout();
+  out.omitted = items.length;
+  if (width <= 0) return out;
+  let included = 0;
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i],
+      reserve = i + 1 < items.length ? ` +${items.length - i - 1}`.length : 0,
+      prefix =
+        (
+          {
+            warning: "! ",
+            error: "! ",
+            edited: "* ",
+            success: "+ ",
+            info: "i ",
+          } as Dict<string, string>
+        )[item.role ?? ""] ?? "";
+    let sep = included ? " | " : "",
+      text = prefix + clean(item.text);
+    const needed = cells(sep) + cells(text);
+    if (needed + reserve > width - cells(out.text)) {
+      if (included) break;
+      const available = width - reserve > 0 ? width - reserve : width;
+      text =
+        available === 1 && prefix
+          ? prefix.slice(0, 1)
+          : clip(text, available, true);
+      sep = "";
+    }
+    if (sep) out.add(sep, "hint");
+    out.add(text, item.role || "body", item.id);
+    included++;
+    if (needed + reserve > width) break;
+  }
+  out.omitted = items.length - included;
+  const marker = ` +${out.omitted}`;
+  if (out.omitted && cells(out.text) + marker.length <= width)
+    out.add(marker, "hint");
+  return out;
 }
 export interface Notice {
   id: string;

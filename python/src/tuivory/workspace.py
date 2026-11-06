@@ -1,7 +1,7 @@
 """Host-controlled focus, menus, geometry, feedback and drag requests."""
 from __future__ import annotations
 from dataclasses import dataclass, field
-from .drawing import Canvas, Rect, cells, clip
+from .drawing import Canvas, Rect, cells, clip, clean, graphemes
 from .models import ControlState, Event, Item, List, unique
 
 
@@ -130,20 +130,48 @@ class Menu:
             self.level.draw(canvas, rect, focused=False, ascii=ascii)
 
 
+@dataclass(frozen=True)
+class SplitLayout:
+    first: int
+    divider: int
+    second: int
+    compact: bool
+
+
+class Split:
+    def __init__(self, first_min: int = 1, second_min: int = 1, preferred: int = 0):
+        self.first_min, self.second_min = max(1, first_min), max(1, second_min)
+        self.preferred = max(0, preferred)
+
+    def layout(self, total: int) -> SplitLayout:
+        if total < 0:
+            raise ValueError('negative split size')
+        if total < self.first_min + self.second_min + 1:
+            return SplitLayout(0, 0, total, True)
+        first = max(self.first_min, min(total - 1 - self.second_min, self.preferred or (total - 1) // 2))
+        return SplitLayout(first, 1, total - first - 1, False)
+
+    def resize(self, total: int, position: int) -> bool:
+        old = self.layout(total)
+        if old.compact:
+            return False
+        self.preferred = max(self.first_min, min(total - 1 - self.second_min, position))
+        return self.preferred != old.first
+
+
 def split(rect: Rect, preferred: int, first_min: int = 0, second_min: int = 0, *, vertical: bool = False) -> tuple[Rect, Rect, Rect]:
     if min(rect.width, rect.height, preferred, first_min, second_min) < 0:
         raise ValueError("negative geometry")
     size = rect.height if vertical else rect.width
-    usable = max(0, size - 1)
-    if first_min + second_min <= usable:
-        first = max(first_min, min(usable - second_min, preferred))
-    else:
-        first = min(usable, max(0, preferred))
+    layout = Split(first_min, second_min, preferred).layout(size)
+    if layout.compact:
+        return Rect(rect.x, rect.y, 0, 0), Rect(rect.x, rect.y, 0, 0), rect
+    first, second = layout.first, layout.second
     if vertical:
-        return (Rect(rect.x, rect.y, rect.width, first), Rect(rect.x, rect.y + first, rect.width, min(1, size)),
-                Rect(rect.x, rect.y + first + min(1, size), rect.width, usable - first))
-    return (Rect(rect.x, rect.y, first, rect.height), Rect(rect.x + first, rect.y, min(1, size), rect.height),
-            Rect(rect.x + first + min(1, size), rect.y, usable - first, rect.height))
+        return (Rect(rect.x, rect.y, rect.width, first), Rect(rect.x, rect.y + first, rect.width, 1),
+                Rect(rect.x, rect.y + first + 1, rect.width, second))
+    return (Rect(rect.x, rect.y, first, rect.height), Rect(rect.x + first, rect.y, 1, rect.height),
+            Rect(rect.x + first + 1, rect.y, second, rect.height))
 
 
 def container(rect: Rect, ids: list[str], *, vertical: bool = False, gap: int = 0) -> dict[str, Rect]:
@@ -162,12 +190,76 @@ def container(rect: Rect, ids: list[str], *, vertical: bool = False, gap: int = 
     return result
 
 
+@dataclass(frozen=True)
+class LineRun:
+    text: str
+    role: str
+    id: str
+    start: int
+    width: int
+
+
+@dataclass
+class LineLayout:
+    runs: list[LineRun] = field(default_factory=list)
+    omitted: int = 0
+
+    @property
+    def text(self) -> str:
+        return ''.join(r.text for r in self.runs)
+
+    def add(self, text: str, role: str, id: str = '') -> None:
+        text = clean(text)
+        x = sum(r.width for r in self.runs)
+        self.runs.append(LineRun(text, role, id, x, cells(text)))
+
+    def hit(self, x: int) -> str:
+        return next((r.id for r in self.runs if r.start <= x < r.start + r.width), '')
+
+    def draw(self, canvas: Canvas, rect: Rect) -> None:
+        canvas.fill(rect)
+        for run in self.runs:
+            canvas.write(rect.x + run.start, rect.y, run.text, run.role, width=max(0, rect.width - run.start))
+
+
+def tail_cells(text: str, width: int) -> str:
+    text = clean(text)
+    if cells(text) <= width:
+        return text
+    if width <= 0:
+        return ''
+    parts, used, result = graphemes(text), 0, []
+    for g in reversed(parts):
+        if used + cells(g) > width - 1:
+            break
+        result.insert(0, g)
+        used += cells(g)
+    return '~' + ''.join(result)
+
+
+def path_runs(items: list[tuple[str, str]], width: int) -> LineLayout:
+    out = LineLayout()
+    if not items or width <= 0:
+        return out
+    if sum(cells(label) for _, label in items) + 3 * (len(items) - 1) <= width:
+        for i, (id, label) in enumerate(items):
+            if i:
+                out.add(' / ', 'hint')
+            out.add(label, 'body' if i == len(items) - 1 else 'hint', id)
+        return out
+    prefix = ''
+    if len(items) > 2 and cells(items[0][1]) + 9 + cells(items[-1][1]) <= width:
+        out.add(items[0][1], 'hint', items[0][0])
+        prefix = ' / ... / '
+    elif len(items) > 1 and width >= 7:
+        prefix = '... / '
+    out.add(prefix, 'hint')
+    out.add(tail_cells(items[-1][1], width - cells(out.text)), 'body', items[-1][0])
+    return out
+
+
 def breadcrumbs(items: list[tuple[str, str]], width: int, ascii: bool = False) -> str:
-    labels = [label for _, label in items]
-    separator = " / " if ascii else " › "
-    while len(labels) > 1 and cells(separator.join(labels)) > width:
-        labels.pop(0)
-    return clip(separator.join(labels), width, True)
+    return path_runs(items, width).text
 
 
 @dataclass
@@ -186,6 +278,37 @@ def status(items: list[StatusItem], width: int) -> list[StatusItem]:
             selected.add(i)
             remaining -= need
     return [item for i, item in enumerate(items) if i in selected]
+
+
+def status_line(items: list[StatusItem], width: int) -> LineLayout:
+    ordered = sorted(items, key=lambda item: -item.priority)
+    out = LineLayout(omitted=len(items))
+    if width <= 0:
+        return out
+    included = 0
+    for i, item in enumerate(ordered):
+        reserve = len(f' +{len(ordered) - i - 1}') if i + 1 < len(ordered) else 0
+        separator = ' | ' if included else ''
+        prefix = {'warning': '! ', 'error': '! ', 'edited': '* ', 'success': '+ ', 'info': 'i '}.get(item.role, '')
+        text = prefix + clean(item.text)
+        needed = cells(separator) + cells(text)
+        if needed + reserve > width - cells(out.text):
+            if included:
+                break
+            available = width - reserve if width - reserve > 0 else width
+            text = prefix[:1] if available == 1 and prefix else clip(text, available, True)
+            separator = ''
+        if separator:
+            out.add(separator, 'hint')
+        out.add(text, item.role or 'body', item.id)
+        included += 1
+        if needed + reserve > width:
+            break
+    out.omitted = len(items) - included
+    marker = f' +{out.omitted}'
+    if out.omitted and cells(out.text) + len(marker) <= width:
+        out.add(marker, 'hint')
+    return out
 
 
 @dataclass

@@ -39,11 +39,48 @@ public:
   Session &operator=(const Session &) = delete;
 };
 } // namespace
+static void workspace_draw(tuivory::Tree &tree, tuivory::Tabs &tabs,
+                           tuivory::Split split, tuivory::Canvas &canvas,
+                           tuivory::Rect area, bool tab_focus, bool en,
+                           bool ascii) {
+  using namespace tuivory;
+  tabs.draw(canvas, {area.x, area.y, area.width, 1}, tab_focus, ascii);
+  breadcrumbs({{"root", en ? "Workspace" : "작업 공간"},
+               {"current", en ? "Components" : "컴포넌트"}},
+              area.width)
+      .draw(canvas, {area.x, area.y + 1, area.width, 1});
+  const int body = std::max(0, area.height - 3);
+  auto layout = split.layout(area.width);
+  Rect right{area.x, area.y + 2, area.width, body};
+  if (!layout.compact) {
+    auto left = canvas.panel({area.x, area.y + 2, layout.first, body},
+                             en ? "Explorer" : "탐색", !tab_focus, ascii);
+    tree.draw(canvas, left, !tab_focus, ascii);
+    for (int y = 0; y < body; y++)
+      canvas.write(area.x + layout.first, area.y + 2 + y, ascii ? "|" : "│",
+                   "focus.border");
+    right.x += layout.first + 1;
+    right.width = layout.second;
+  }
+  right = canvas.panel(right, en ? "Content" : "내용", false, ascii);
+  canvas.write(right.x, right.y, en ? "Selected tab" : "선택한 탭", "hint",
+               false, right.width);
+  canvas.write(right.x, right.y + 1,
+               (tabs.active == "draft" ? (en ? "Draft" : "초안")
+                                       : (en ? "Overview" : "개요")),
+               "body", false, right.width);
+  status_line({{"ready", en ? "Ready" : "준비", "success", 10},
+               {"keys", en ? "Tab focus | < > resize" : "Tab 포커스 | < > 크기",
+                "hint", 1}},
+              area.width)
+      .draw(canvas, {area.x, area.y + area.height - 1, area.width, 1});
+}
 int main(int argc, char **argv) {
   try {
     using namespace tuivory;
     std::string theme = "dark", colors = "256";
-    bool en = false, ascii = false, snapshot = false, ansi_snapshot = false;
+    bool en = false, ascii = false, snapshot = false, ansi_snapshot = false,
+         workspace = false, tab_focus = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -60,10 +97,13 @@ int main(int argc, char **argv) {
         snapshot = true;
         ansi_snapshot = true;
       } else if (arg == "--demo" && i + 1 < argc) {
-        if (std::string(argv[++i]) != "tree")
-          throw std::invalid_argument("Only --demo tree is supported");
+        std::string demo = argv[++i];
+        workspace = demo == "workspace";
+        if (demo != "tree" && !workspace)
+          throw std::invalid_argument("Supported demos: tree, workspace");
       } else {
-        std::cout << "--demo tree --lang ko|en --theme dark|light|blackwhite "
+        std::cout << "--demo tree|workspace --lang ko|en --theme "
+                     "dark|light|blackwhite "
                      "--colors 8|16|256|truecolor --ascii --snapshot\n";
         return arg == "--help" ? 0 : 2;
       }
@@ -75,6 +115,11 @@ int main(int argc, char **argv) {
                {"leaf", en ? "Fifth level" : "다섯 단계", "tree"},
                {"docs", en ? "Documentation" : "문서", "root"}});
     tree.expanded = {"root", "src", "components", "tree"};
+    Tabs tabs(
+        {{"overview", en ? "Overview" : "개요"},
+         {"draft", en ? "Draft document" : "초안 문서", true, true, false},
+         {"disabled", en ? "Disabled" : "비활성", false, false, true}});
+    Split split(16, 20, 24);
     std::optional<Session> session;
     if (!snapshot)
       session.emplace();
@@ -90,7 +135,10 @@ int main(int argc, char **argv) {
       auto area = canvas.panel({0, 0, width, std::max(0, height - 1)},
                                en ? "Tuivory C++ example" : "Tuivory C++ 예제",
                                true, ascii);
-      tree.draw(canvas, area, true, ascii);
+      if (workspace)
+        workspace_draw(tree, tabs, split, canvas, area, tab_focus, en, ascii);
+      else
+        tree.draw(canvas, area, true, ascii);
       canvas.write(0, height - 1,
                    en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
                       : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택",
@@ -116,7 +164,16 @@ int main(int argc, char **argv) {
                           : key == '\r' || key == '\n' ? "activate"
                           : key == ' '                 ? "toggle"
                                                        : "";
-      tree.handle(action, area.height);
+      if (workspace && key == 9)
+        tab_focus = !tab_focus;
+      else if (workspace && (key == '<' || key == '>'))
+        split.resize(area.width, split.preferred + (key == '<' ? -1 : 1));
+      else if (workspace && tab_focus)
+        tabs.handle(std::string(action) == "left"    ? "previous"
+                    : std::string(action) == "right" ? "next"
+                                                     : action);
+      else
+        tree.handle(action, area.height);
     }
     return 0;
   } catch (const std::exception &e) {

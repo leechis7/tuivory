@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: independent workspace components in all five language families; shared tab/path/status cases, compact split, hit testing, bilingual unified examples and 240 PTY combinations.
+
 - TVR-15/16/30/31/32: independent Python, TS/JS, C, C++ and Java package foundations and Tree implementations; shared palettes/fixtures, local installation/linking and bilingual documentation. Epics remain in progress; full catalog parity and external publication are not complete.
 
 ## 0.11.1 — 2026-11-06

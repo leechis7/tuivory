@@ -116,3 +116,5 @@ python tools/capture_language_trees.py
 ```
 
 C/C++/Java는 위의 명령으로 먼저 빌드합니다. 참조 화면 캡처에는 한글을 지원하는 D2Coding 폰트와 Cairo도 필요하며 개발 도구 조건입니다. 실제 로컬 검증은 Python 3.14.4, Node 26.13.0, TypeScript 7.0.2, JDK 27로 수행했습니다. Java는 `--release 17`로 컴파일했고 JVM 17 실행은 로컬에서 수행하지 않았습니다. `python tools/package_languages.py`는 `.cache/packages/languages/`에 미배포 로컬 미리보기 6개와 체크섬을 모으며 레지스트리 게시 명령은 실행하지 않습니다.
+
+[독립 언어 workspace API·예제](language-workspace.md): 탭·패널·분할·경로·상태줄을 다섯 구현에서 검증했습니다. 나머지 카탈로그 이식은 진행 중입니다.

@@ -676,3 +676,4 @@ public:
   }
 };
 } // namespace tuivory
+#include "tuivory_workspace.hpp"

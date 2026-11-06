@@ -116,3 +116,5 @@ Use the existing unified binary: `--demo catalog --mode grid --grid-sample --gri
 TVR-7 in 0.11.1: [real grid cursor and backend integration](grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.
 
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
+
+[Independent-language workspace APIs and examples](language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.

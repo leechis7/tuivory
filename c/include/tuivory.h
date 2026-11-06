@@ -68,6 +68,58 @@ int tui_tree_horizontal(const TuiTree *tree);
 size_t tui_tree_visible(const TuiTree *tree, const char **ids, size_t capacity);
 TuiResult tui_tree_draw(TuiTree *tree, TuiCanvas *canvas, TuiRect rect,
                         int focused, int ascii);
+/* Workspace models own their input strings. Layout strings live until the next
+ * layout call or model destruction. Returned lines are owned independently. */
+char *tui_clip(const char *text, int width, int ellipsis);
+typedef struct {
+  const char *id, *title;
+  int edited, closable, disabled;
+} TuiTab;
+typedef struct {
+  const char *id, *text;
+  int start, width, active, focused, disabled;
+} TuiTabCell;
+typedef struct TuiTabs TuiTabs;
+TuiTabs *tui_tabs_new(const TuiTab *items, size_t count);
+void tui_tabs_free(TuiTabs *tabs);
+TuiEvent tui_tabs_handle(TuiTabs *tabs, const char *action);
+TuiEvent tui_tabs_click(TuiTabs *tabs, int column, int width);
+TuiResult tui_tabs_layout(TuiTabs *tabs, int width, TuiTabCell *out,
+                          size_t capacity, size_t *count);
+const char *tui_tabs_active(const TuiTabs *tabs);
+const char *tui_tabs_focused(const TuiTabs *tabs);
+int tui_tabs_first(const TuiTabs *tabs);
+TuiResult tui_tabs_draw(TuiTabs *tabs, TuiCanvas *canvas, TuiRect area,
+                        int focused);
+typedef struct {
+  int preferred, first_min, second_min;
+} TuiSplit;
+typedef struct {
+  int first, divider, second, compact;
+} TuiSplitLayout;
+TuiSplitLayout tui_split_layout(TuiSplit split, int total);
+int tui_split_resize(TuiSplit *split, int total, int position);
+typedef struct {
+  const char *id, *label;
+} TuiPathItem;
+typedef struct {
+  const char *id, *text, *role;
+  int priority;
+} TuiStatusItem;
+typedef struct {
+  const char *text, *role, *id;
+  int start, width;
+} TuiLineRun;
+typedef struct TuiLine TuiLine;
+TuiLine *tui_breadcrumbs(const TuiPathItem *items, size_t count, int width);
+TuiLine *tui_status_line(const TuiStatusItem *items, size_t count, int width);
+void tui_line_free(TuiLine *line);
+size_t tui_line_count(const TuiLine *line);
+size_t tui_line_omitted(const TuiLine *line);
+TuiLineRun tui_line_run(const TuiLine *line, size_t index);
+const char *tui_line_hit(const TuiLine *line, int column);
+char *tui_line_text(const TuiLine *line);
+TuiResult tui_line_draw(const TuiLine *line, TuiCanvas *canvas, TuiRect area);
 #ifdef __cplusplus
 }
 #endif
