@@ -5,7 +5,9 @@ use crate::{
     interaction::ControlState,
 };
 use std::collections::BTreeMap;
+mod cursor;
 mod input;
+pub use cursor::GridCursor;
 mod options;
 mod work;
 pub use work::*;

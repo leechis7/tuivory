@@ -59,3 +59,5 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 [Syntax analysis/highlighting APIs and editor migration](../syntax.en.md): 0.9.2 TVR-24 follow-up.
 
 [Grid workspace APIs and host approval](../grid-workspace.en.md): 0.11.0 TVR-7 source; Go/Rust API declarations below include these additions.
+
+TVR-7 in 0.11.1: [real grid cursor and backend integration](../grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.

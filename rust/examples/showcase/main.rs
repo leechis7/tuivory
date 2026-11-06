@@ -116,7 +116,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                 "--layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --drag"
             ),
             "catalog" => println!(
-                "--mode forms|collections|grid|feedback|layout --grid-preset simple|data --grid-sample --grid-edit-preview --density auto|compact|comfortable"
+                "--mode forms|collections|grid|feedback|layout --grid-preset simple|data --grid-sample --grid-edit-preview (real cursor) --density auto|compact|comfortable"
             ),
             "menu" => println!(
                 "--shadow off|auto|solid (dim: whole-cell compatibility) --open --menu-id ID"

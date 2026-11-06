@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.11.1 — 2026-11-06
+
+- TVR-7: Real Go/Rust inline-grid cursors, shared grapheme/cell/mouse viewport, focus/pending/NULL/clipping/closure lifetime and opt-in Go terminfo factory preserving cursor shape/blink. Rust adds Frame integration while retaining buffer-only Widget. Bilingual APIs/design/examples/references and backend cursor/PTY/escape regressions updated.
+
 ## 0.11.0 — 2026-11-06
 
 - TVR-7: Go/Rust host-approved in-cell editing and navigation, independent dirty-cell/row-gutter cues, column pinning/visibility/reordering, quoted TSV paste requests, loaded-data find/global-search requests, serializable view state and raw-value details. Preserves the existing grid and default edit event. Adds shared fixtures, physical output/PTY coverage, bilingual APIs/design/examples and references. Available from 0.11.0.

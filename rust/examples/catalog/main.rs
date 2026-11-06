@@ -410,14 +410,12 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                 *body,
             );
         } else if mode == "grid" {
-            f.render_widget(
-                tuivory::ui::components::GridWidget {
-                    model: grid,
-                    styles,
-                    focused: true,
-                },
-                *body,
-            );
+            tuivory::ui::components::GridWidget {
+                model: grid,
+                styles,
+                focused: true,
+            }
+            .render_frame(f, *body);
         } else if mode == "collections" {
             let rows = picker.layout(body.width.into(), body.height.into(), ascii);
             f.render_widget(
