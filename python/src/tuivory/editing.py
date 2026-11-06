@@ -3,103 +3,189 @@ from __future__ import annotations
 import csv
 import io
 from dataclasses import dataclass, field
+from copy import deepcopy
 from .drawing import Canvas, Rect, cells, clip, graphemes
 from .models import ControlState, Event, unique
 
 
 class Text:
+    """Literal grapheme buffer. Only copy/cut events contain selected raw text."""
     def __init__(self, value: str = "", *, read_only: bool = False, secret: bool = False, multiline: bool = True):
         self.value = value
         self.cursor = self.anchor = len(graphemes(value))
         self.read_only, self.secret, self.multiline = read_only, secret, multiline
+        self.disabled = False
         self.scroll_x = self.scroll_y = 0
-        self._undo: list[tuple[str, int, int]] = []
-        self._redo: list[tuple[str, int, int]] = []
+        self._undo = []
+        self._redo = []
+
+    def __repr__(self):
+        return f"Text({self.display()!r}, cursor={self.cursor}, anchor={self.anchor})"
+
+    def display(self):
+        return "*" * len(graphemes(self.value)) if self.secret else self.value
 
     def select(self, anchor: int, cursor: int) -> None:
         n = len(graphemes(self.value))
         self.anchor, self.cursor = max(0, min(n, anchor)), max(0, min(n, cursor))
 
-    def _replace(self, text: str) -> None:
-        if self.read_only:
-            return
+    def _save(self):
         self._undo.append((self.value, self.cursor, self.anchor))
-        self._undo = self._undo[-100:]
+        self._undo = self._undo[-128:]
         self._redo.clear()
+
+    def _replace_range(self, lo, hi, text):
         parts = graphemes(self.value)
-        a, b = sorted((self.anchor, self.cursor))
-        if not self.multiline:
-            text = text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
-        self.value = "".join(parts[:a]) + text + "".join(parts[b:])
-        self.cursor = self.anchor = a + len(graphemes(text))
+        if self.disabled or self.read_only or lo == hi and not text:
+            return Event()
+        self._save()
+        prefix = "".join(parts[:lo]) + text
+        self.value = prefix + "".join(parts[hi:])
+        offset = cursor = 0
+        for g in graphemes(self.value):
+            if offset >= len(prefix):
+                break
+            offset += len(g)
+            cursor += 1
+        self.select(cursor, cursor)
+        return Event("change")
+
+    def selection_bytes(self):
+        parts = graphemes(self.value)
+        a, b = sorted((min(self.anchor,len(parts)),min(self.cursor,len(parts))))
+        return len("".join(parts[:a]).encode()), len("".join(parts[:b]).encode())
+
+    def _byte_index(self, byte):
+        offset = 0
+        for i, g in enumerate(graphemes(self.value)):
+            if offset == byte:
+                return i
+            offset += len(g.encode())
+        if offset == byte:
+            return len(graphemes(self.value))
+        raise ValueError("offset splits a grapheme or is outside text")
+
+    def select_bytes(self, anchor, cursor):
+        a, c = self._byte_index(anchor), self._byte_index(cursor)
+        self.select(a,c)
+
+    def replace_bytes(self, start, end, text):
+        if start > end:
+            raise ValueError("reversed byte range")
+        a,b = self._byte_index(start),self._byte_index(end)
+        return self._replace_range(a,b,text)
 
     def handle(self, action: str, text: str = "") -> Event:
+        if self.disabled:
+            return Event()
+        self.select(self.anchor, self.cursor)
         parts = graphemes(self.value)
-        if action == "select_all":
-            self.select(0, len(parts))
-        elif action in ("copy", "cut"):
-            a, b = sorted((self.anchor, self.cursor))
-            event = Event("copy", text="" if self.secret else "".join(parts[a:b]))
-            if action == "cut" and not self.secret:
-                self._replace("")
-            return event
-        elif action in ("undo", "redo") and not self.read_only:
-            src, dst = (self._undo, self._redo) if action == "undo" else (self._redo, self._undo)
-            if src:
-                dst.append((self.value, self.cursor, self.anchor))
-                self.value, self.cursor, self.anchor = src.pop()
-        elif action in ("left", "right", "home", "end"):
-            target = {"left": self.cursor - 1, "right": self.cursor + 1, "home": 0, "end": len(parts)}[action]
-            self.select(target, target)
-        elif action in ("backspace", "delete"):
-            if self.anchor == self.cursor:
-                self.select(self.cursor - 1 if action == "backspace" else self.cursor,
-                            self.cursor if action == "backspace" else self.cursor + 1)
-            self._replace("")
-        elif action in ("insert", "paste"):
-            self._replace(text)
-        elif action == "newline" and self.multiline:
-            self._replace("\n")
-        return Event("change", text="" if self.secret else self.value)
+        lo,hi = sorted((self.anchor,self.cursor))
+        at = self.cursor
+        breaks = ("\n","\r","\r\n")
+        start = at
+        while start and parts[start-1] not in breaks:
+            start -= 1
+        end = at
+        while end < len(parts) and parts[end] not in breaks:
+            end += 1
+        extend = action.startswith("select_")
+        move = action[7:] if extend else action
+        target = None
+        if move == "all" and extend:
+            self.select(0,len(parts)); return Event("select")
+        if move == "left": target = lo if not extend and lo != hi else max(0,at-1)
+        if move == "right": target = hi if not extend and lo != hi else min(len(parts),at+1)
+        if move == "home": target = start
+        if move == "end": target = end
+        if move == "up":
+            previous = max(0,start-1)
+            while previous and parts[previous-1] not in breaks: previous -= 1
+            target = min(previous+at-start,start-1) if start else at
+        if move == "down":
+            following = min(len(parts),end+1)
+            while following < len(parts) and parts[following] not in breaks: following += 1
+            target = min(end+1+at-start,following) if end < len(parts) else at
+        if target is not None:
+            self.select(self.anchor if extend else target,target)
+            return Event("select")
+        if action in ("copy","cut"):
+            if self.secret or lo == hi or action == "cut" and self.read_only:
+                return Event()
+            copied = "".join(parts[lo:hi])
+            if action == "cut": self._replace_range(lo,hi,"")
+            return Event(action,text=copied)
+        if self.read_only: return Event()
+        if action in ("undo","redo"):
+            src,dst = (self._undo,self._redo) if action == "undo" else (self._redo,self._undo)
+            if not src: return Event()
+            dst.append((self.value,self.cursor,self.anchor))
+            self.value,self.cursor,self.anchor = src.pop()
+            return Event("change")
+        if action == "backspace":
+            if lo == hi: lo = max(0,lo-1)
+            text = ""
+        elif action == "delete":
+            if lo == hi: hi = min(len(parts),hi+1)
+            text = ""
+        elif action in ("insert","paste","newline"):
+            if action == "newline": text = "\n"
+            text = text.replace("\r\n","\n").replace("\r","\n")
+            text = "".join(" " if c == "\t" else c for c in text if (ord(c)>=32 and not 127<=ord(c)<160) or c == "\t" or c == "\n" and self.multiline)
+        else: return Event()
+        return self._replace_range(lo,hi,text)
 
     def window(self, width: int) -> tuple[str, int, int]:
-        parts = graphemes(self.value)
-        if self.secret:
-            parts = ["*" for _ in parts]
-        cursor = max(0, min(len(parts), self.cursor))
-        next_width = max(1, cells(parts[cursor])) if cursor < len(parts) else 1
+        parts = graphemes(self.display())
+        cursor = max(0,min(len(parts),self.cursor))
+        next_width = max(1,cells(parts[cursor])) if cursor<len(parts) else 1
         start = 0
-        while start < cursor and cells("".join(parts[start:cursor])) + next_width > width:
-            start += 1
-        x = cells("".join(parts[start:cursor]))
-        # An oversized grapheme is omitted, leaving a valid blank cursor cell.
-        if next_width > width:
-            return "", 0, 1
-        return clip("".join(parts[start:]), width), x, next_width
+        while start<cursor and cells("".join(parts[start:cursor]))+next_width>width: start+=1
+        if next_width>width: return "",0,1
+        return clip("".join(parts[start:]),width),cells("".join(parts[start:cursor])),next_width
+
+    def _visual_rows(self):
+        rows=[[]]
+        for i,g in enumerate(graphemes(self.value)):
+            if g in ("\r","\n","\r\n") and self.multiline:
+                rows.append([])
+            else: rows[-1].append((i,"*" if self.secret else g))
+        return rows
 
     def draw(self, canvas: Canvas, rect: Rect, *, focused: bool = True, ascii: bool = False) -> None:
-        canvas.fill(rect, "field" if not self.read_only else "surface")
-        if not rect.width or not rect.height:
-            return
-        if not self.multiline:
-            value, x, n = self.window(rect.width)
-            canvas.write(rect.x, rect.y, value, "field", width=rect.width, preserve_background=True)
-            if focused and not self.read_only:
-                canvas.set_cursor(rect.x + x, rect.y, n)
-            return
-        before = "".join(graphemes(self.value)[:self.cursor])
-        cursor_y = before.count("\n")
-        cursor_x = cells(before.rsplit("\n", 1)[-1])
-        self.scroll_y = max(min(self.scroll_y, cursor_y), cursor_y - rect.height + 1, 0)
-        self.scroll_x = max(min(self.scroll_x, cursor_x), cursor_x - rect.width + 1, 0)
-        rows = self.value.split("\n")
-        for y, text in enumerate(rows[self.scroll_y:self.scroll_y + rect.height]):
-            x = rect.x - self.scroll_x
-            canvas.write(x, rect.y + y, "*" * len(graphemes(text)) if self.secret else text,
-                         "field" if not self.read_only else "body", width=rect.width + self.scroll_x, preserve_background=True)
-        if focused and not self.read_only:
-            canvas.set_cursor(rect.x + cursor_x - self.scroll_x, rect.y + cursor_y - self.scroll_y)
+        role="disabled" if self.disabled else "field" if not self.read_only else "body"
+        canvas.fill(rect,role)
+        if rect.width<=0 or rect.height<=0: return
+        rows=self._visual_rows()
+        raw=graphemes(self.value)
+        cy=sum(g in ("\r","\n","\r\n") for g in raw[:self.cursor]) if self.multiline else 0
+        cy=min(cy,len(rows)-1)
+        cx=sum(cells(g) for i,g in rows[cy] if i<self.cursor)
+        cursor_g=next((g for i,g in rows[cy] if i==self.cursor)," ")
+        cw=max(1,cells(cursor_g))
+        self.scroll_y=max(0,min(self.scroll_y,cy),cy-rect.height+1)
+        self.scroll_x=max(0,min(self.scroll_x,cx),cx+min(cw,rect.width)-rect.width)
+        lo,hi=sorted((self.anchor,self.cursor))
+        for y,row in enumerate(rows[self.scroll_y:self.scroll_y+rect.height]):
+            x=0
+            for i,g in row:
+                n=cells(g); local=x-self.scroll_x
+                if local>=0 and local+n<=rect.width:
+                    canvas.write(rect.x+local,rect.y+y,g,"selection" if lo<=i<hi else role,width=n,preserve_background=True)
+                x+=n
+        if focused and not self.read_only and not self.disabled and cw<=rect.width:
+            canvas.set_cursor(rect.x+cx-self.scroll_x,rect.y+cy-self.scroll_y,cw)
 
+    def click(self,x,y,width,height,*,extend=False):
+        if self.disabled or x<0 or y<0 or x>=width or y>=height: return Event()
+        rows=self._visual_rows();row_index=min(len(rows)-1,self.scroll_y+y);row=rows[row_index]
+        cell=0; target=(row[-1][0]+1 if row else sum(len(r)+1 for r in rows[:row_index]))
+        for i,g in row:
+            n=cells(g)
+            if x+self.scroll_x<cell+n: target=i;break
+            cell+=n
+        self.select(self.anchor if extend else target,target)
+        return Event("select")
 
 @dataclass
 class Field:
@@ -120,8 +206,10 @@ class Form:
         unique(fields)
         if any(f.kind not in ("text", "password", "textarea", "checkbox", "radio", "select", "button") for f in fields):
             raise ValueError("unknown field kind")
-        self.fields = list(fields)
-        self.inputs = {f.id: Text(f.value, secret=f.kind == "password", multiline=f.kind == "textarea") for f in fields if f.kind in ("text", "password", "textarea")}
+        self.fields = deepcopy(fields)
+        self.inputs = {f.id: Text(f.value, secret=f.kind == "password", multiline=f.kind == "textarea") for f in self.fields if f.kind in ("text", "password", "textarea")}
+        for f in self.fields:
+            if f.kind == "password": f.value = self.inputs[f.id].display()
         self.focused = ""
         self.scroll = 0
         self._eligible()
@@ -158,6 +246,7 @@ class Form:
             return Event()
         if f.id in self.inputs:
             event = self.inputs[f.id].handle(action, text)
+            f.value = self.inputs[f.id].display()
             # Passwords are available through explicit value(), never display/events.
             return Event(event.kind, f.id, event.text)
         if f.kind in ("checkbox", "radio") and action in ("activate", "toggle"):

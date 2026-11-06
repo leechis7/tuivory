@@ -162,12 +162,12 @@ inline Break property(unsigned cp) {
   PROPERTY(grapheme_extend, Extend)
   PROPERTY(grapheme_zwj, ZWJ)
   PROPERTY(grapheme_regional_indicator, Regional)
-      PROPERTY(grapheme_prepend, Prepend)
-          PROPERTY(grapheme_spacingmark, Spacing) PROPERTY(grapheme_l, L)
-              PROPERTY(grapheme_v, V) PROPERTY(grapheme_t, T)
-                  PROPERTY(grapheme_lv, LV) PROPERTY(grapheme_lvt, LVT)
+  PROPERTY(grapheme_prepend, Prepend)
+  PROPERTY(grapheme_spacingmark, Spacing)
+  PROPERTY(grapheme_l, L) PROPERTY(grapheme_v, V) PROPERTY(grapheme_t, T)
+      PROPERTY(grapheme_lv, LV) PROPERTY(grapheme_lvt, LVT)
 #undef PROPERTY
-                      return Break::Other;
+          return Break::Other;
 }
 inline bool pictographic(unsigned c) {
   return range(c, tui_extended_pictographic,
@@ -198,9 +198,7 @@ inline std::vector<Grapheme> graphemes(const std::string &text) {
     const auto cp = detail::decode(text, p);
     auto value = text.substr(start, p - start);
     const bool control = cp < 32 || (cp >= 127 && cp < 160);
-    if (control)
-      value = " ";
-    const auto current = control ? B::Other : detail::property(cp);
+    const auto current = detail::property(cp);
     const bool stop_previous =
         previous == B::CR || previous == B::LF || previous == B::Control;
     const bool stop_current =
@@ -265,9 +263,19 @@ inline std::vector<Grapheme> graphemes(const std::string &text) {
     g.width = detail::cluster_width(g.text);
   return out;
 }
+inline std::string clean(const std::string &text) {
+  std::string out;
+  for (std::size_t p = 0; p < text.size();) {
+    auto start = p;
+    auto cp = detail::decode(text, p);
+    out += cp < 32 || (cp >= 127 && cp < 160) ? " "
+                                              : text.substr(start, p - start);
+  }
+  return out;
+}
 inline int cells(const std::string &text) {
   int n = 0;
-  for (const auto &g : graphemes(text))
+  for (const auto &g : graphemes(clean(text)))
     n += g.width;
   return n;
 }
@@ -275,7 +283,7 @@ inline std::string clip(const std::string &text, int width,
                         bool ellipsis = false) {
   if (width <= 0)
     return "";
-  const auto parts = graphemes(text);
+  const auto parts = graphemes(clean(text));
   int total = 0;
   for (const auto &g : parts)
     total += g.width;
@@ -407,7 +415,7 @@ public:
                       role == "success" || role == "warning" ||
                       role == "error" || role == "header"))
       style.background = palette.style("surface").background;
-    for (const auto &g : graphemes(text)) {
+    for (const auto &g : graphemes(clean(text))) {
       if (g.width <= 0)
         continue;
       if (x >= limit)
@@ -677,3 +685,5 @@ public:
 };
 } // namespace tuivory
 #include "tuivory_workspace.hpp"
+
+#include "tuivory_text.hpp"

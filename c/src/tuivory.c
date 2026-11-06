@@ -94,10 +94,12 @@ static enum Gcb property(unsigned c) {
   PROP(grapheme_prepend, G_PREPEND)
   PROP(grapheme_spacingmark, G_SPACING)
   PROP(grapheme_l, G_L)
-  PROP(grapheme_v, G_V) PROP(grapheme_t, G_T) PROP(grapheme_lv, G_LV)
-      PROP(grapheme_lvt, G_LVT)
+  PROP(grapheme_v, G_V)
+  PROP(grapheme_t, G_T)
+  PROP(grapheme_lv, G_LV)
+  PROP(grapheme_lvt, G_LVT)
 #undef PROP
-          return G_OTHER;
+      return G_OTHER;
 }
 static int pictographic(unsigned c) {
   return range(c, tui_extended_pictographic,
@@ -182,15 +184,16 @@ static int measure(const char *s, size_t start, size_t end) {
 #undef IN
   return total + cluster_width;
 }
-static int cluster(const char *s, size_t size, size_t start, size_t *end,
-                   int *width) {
+static int cluster_mode(const char *s, size_t size, size_t start, size_t *end,
+                        int *width, int raw) {
   size_t p = start, q;
   unsigned cp;
   enum Gcb previous;
   int w, ri, ep_tail, ep_zwj = 0, incb_base, incb_linker = 0;
   if (!decode((const unsigned char *)s, size, &p, &cp))
     return 0;
-  previous = cp < 32 || (cp >= 127 && cp < 160) ? G_OTHER : property(cp);
+  previous =
+      !raw && (cp < 32 || (cp >= 127 && cp < 160)) ? G_OTHER : property(cp);
   w = cp_width(cp);
   ri = previous == G_RI;
   ep_tail = pictographic(cp);
@@ -201,7 +204,8 @@ static int cluster(const char *s, size_t size, size_t start, size_t *end,
     q = p;
     if (!decode((const unsigned char *)s, size, &q, &cp))
       return 0;
-    current = cp < 32 || (cp >= 127 && cp < 160) ? G_OTHER : property(cp);
+    current =
+        !raw && (cp < 32 || (cp >= 127 && cp < 160)) ? G_OTHER : property(cp);
     if (previous == G_CR && current == G_LF)
       join = 1;
     else if (previous == G_CR || previous == G_LF || previous == G_CONTROL ||
@@ -251,6 +255,9 @@ static int cluster(const char *s, size_t size, size_t start, size_t *end,
   *end = p;
   *width = measure(s, start, p);
   return 1;
+}
+static int cluster(const char *s, size_t n, size_t p, size_t *end, int *w) {
+  return cluster_mode(s, n, p, end, w, 0);
 }
 int tui_cells(const char *s) {
   size_t p = 0, end, n;
@@ -1544,4 +1551,513 @@ fail:
   free(order);
   tui_line_free(line);
   return NULL;
+}
+
+/* Text retains literal raw UTF-8 independently of display sanitization. */
+typedef struct {
+  char *value;
+  size_t cursor, anchor;
+} TextSnapshot;
+struct TuiText {
+  char *value, *event;
+  size_t cursor, anchor;
+  TuiState state;
+  int secret, multiline, scroll_x, scroll_y;
+  TextSnapshot undo[128], redo[128];
+  size_t undo_n, redo_n;
+};
+static int raw_offsets(const char *s, size_t **out, size_t *count) {
+  size_t n, p = 0, end, used = 0;
+  int w;
+  size_t *items;
+  if (!s || strlen(s) > 16 * 1024 * 1024)
+    return 0;
+  n = strlen(s);
+  items = malloc((n + 1) * sizeof(size_t));
+  if (!items)
+    return -1;
+  items[used++] = 0;
+  while (p < n) {
+    if (!cluster_mode(s, n, p, &end, &w, 1)) {
+      free(items);
+      return 0;
+    }
+    p = end;
+    items[used++] = p;
+  }
+  *out = items;
+  *count = used - 1;
+  return 1;
+}
+static TuiTextEvent text_event(TuiText *t, const char *kind, TuiResult result) {
+  TuiTextEvent e = {kind, t && t->event ? t->event : "", result};
+  return e;
+}
+static void snapshots_clear(TextSnapshot *s, size_t *n) {
+  for (size_t i = 0; i < *n; i++)
+    free(s[i].value);
+  *n = 0;
+}
+TuiText *tui_text_new(const char *value) {
+  size_t *o, n;
+  TuiText *t;
+  if (raw_offsets(value, &o, &n) != 1)
+    return NULL;
+  free(o);
+  t = calloc(1, sizeof(*t));
+  if (!t)
+    return NULL;
+  t->value = copy(value);
+  if (!t->value) {
+    free(t);
+    return NULL;
+  }
+  t->cursor = t->anchor = n;
+  t->multiline = 1;
+  return t;
+}
+void tui_text_free(TuiText *t) {
+  if (!t)
+    return;
+  free(t->value);
+  free(t->event);
+  snapshots_clear(t->undo, &t->undo_n);
+  snapshots_clear(t->redo, &t->redo_n);
+  free(t);
+}
+const char *tui_text_value(const TuiText *t) { return t ? t->value : ""; }
+size_t tui_text_cursor(const TuiText *t) { return t ? t->cursor : 0; }
+size_t tui_text_anchor(const TuiText *t) { return t ? t->anchor : 0; }
+char *tui_text_display(const TuiText *t) {
+  size_t *o, n;
+  char *out;
+  if (!t)
+    return NULL;
+  if (!t->secret)
+    return copy(t->value);
+  if (raw_offsets(t->value, &o, &n) != 1)
+    return NULL;
+  free(o);
+  out = malloc(n + 1);
+  if (out) {
+    memset(out, '*', n);
+    out[n] = 0;
+  }
+  return out;
+}
+void tui_text_options(TuiText *t, TuiState state, int secret, int multiline) {
+  if (t) {
+    t->state = state;
+    t->secret = !!secret;
+    t->multiline = !!multiline;
+  }
+}
+void tui_text_select(TuiText *t, size_t a, size_t c) {
+  size_t *o, n;
+  if (!t || raw_offsets(t->value, &o, &n) != 1)
+    return;
+  free(o);
+  t->anchor = a < n ? a : n;
+  t->cursor = c < n ? c : n;
+}
+TuiResult tui_text_selection_bytes(const TuiText *t, size_t *a, size_t *b) {
+  size_t *o, n, lo, hi;
+  int ok;
+  if (!t || !a || !b)
+    return TUI_INVALID;
+  ok = raw_offsets(t->value, &o, &n);
+  if (ok != 1)
+    return ok < 0 ? TUI_NOMEM : TUI_INVALID;
+  lo = t->anchor < t->cursor ? t->anchor : t->cursor;
+  hi = t->anchor > t->cursor ? t->anchor : t->cursor;
+  *a = o[lo < n ? lo : n];
+  *b = o[hi < n ? hi : n];
+  free(o);
+  return TUI_OK;
+}
+static int offset_index(const size_t *o, size_t n, size_t byte, size_t *out) {
+  for (size_t i = 0; i <= n; i++)
+    if (o[i] == byte) {
+      *out = i;
+      return 1;
+    }
+  return 0;
+}
+TuiResult tui_text_select_bytes(TuiText *t, size_t a, size_t c) {
+  size_t *o, n, ai, ci;
+  int ok;
+  if (!t)
+    return TUI_INVALID;
+  ok = raw_offsets(t->value, &o, &n);
+  if (ok != 1)
+    return ok < 0 ? TUI_NOMEM : TUI_INVALID;
+  ok = offset_index(o, n, a, &ai) && offset_index(o, n, c, &ci);
+  free(o);
+  if (!ok)
+    return TUI_INVALID;
+  t->anchor = ai;
+  t->cursor = ci;
+  return TUI_OK;
+}
+static void push_snapshot(TextSnapshot *s, size_t *n, TextSnapshot v) {
+  if (*n == 128) {
+    free(s[0].value);
+    memmove(s, s + 1, 127 * sizeof(*s));
+    (*n)--;
+  }
+  s[(*n)++] = v;
+}
+static TuiTextEvent text_replace(TuiText *t, size_t a, size_t b,
+                                 const char *addition) {
+  size_t *o, *next_o, n, next_n, len, prefix, at = 0;
+  char *next;
+  TextSnapshot old;
+  int ok;
+  if (!t || !addition || a > b)
+    return text_event(t, "", TUI_INVALID);
+  ok = raw_offsets(t->value, &o, &n);
+  if (ok != 1)
+    return text_event(t, "", ok < 0 ? TUI_NOMEM : TUI_INVALID);
+  if (b > n) {
+    free(o);
+    return text_event(t, "", TUI_INVALID);
+  }
+  prefix = o[a] + strlen(addition);
+  len = prefix + strlen(t->value) - o[b];
+  if (len > 16 * 1024 * 1024) {
+    free(o);
+    return text_event(t, "", TUI_INVALID);
+  }
+  next = malloc(len + 1);
+  if (!next) {
+    free(o);
+    return text_event(t, "", TUI_NOMEM);
+  }
+  memcpy(next, t->value, o[a]);
+  memcpy(next + o[a], addition, strlen(addition));
+  strcpy(next + prefix, t->value + o[b]);
+  free(o);
+  ok = raw_offsets(next, &next_o, &next_n);
+  if (ok != 1) {
+    free(next);
+    return text_event(t, "", ok < 0 ? TUI_NOMEM : TUI_INVALID);
+  }
+  while (at < next_n && next_o[at] < prefix)
+    at++;
+  free(next_o);
+  if (!tui_state_editable(t->state) || (a == b && !*addition)) {
+    free(next);
+    return text_event(t, "", TUI_OK);
+  }
+  old = (TextSnapshot){t->value, t->cursor, t->anchor};
+  push_snapshot(t->undo, &t->undo_n, old);
+  snapshots_clear(t->redo, &t->redo_n);
+  t->value = next;
+  t->cursor = t->anchor = at;
+  t->state.edited = 1;
+  return text_event(t, "change", TUI_OK);
+}
+TuiTextEvent tui_text_replace_bytes(TuiText *t, size_t a, size_t b,
+                                    const char *s) {
+  size_t *o, n, ai, bi;
+  int ok;
+  if (!t || a > b)
+    return text_event(t, "", TUI_INVALID);
+  free(t->event);
+  t->event = NULL;
+  ok = raw_offsets(t->value, &o, &n);
+  if (ok != 1)
+    return text_event(t, "", ok < 0 ? TUI_NOMEM : TUI_INVALID);
+  ok = offset_index(o, n, a, &ai) && offset_index(o, n, b, &bi);
+  free(o);
+  if (!ok)
+    return text_event(t, "", TUI_INVALID);
+  return text_replace(t, ai, bi, s);
+}
+static int raw_break(const char *s, size_t a, size_t b) {
+  return (b - a == 1 && (s[a] == '\r' || s[a] == '\n')) ||
+         (b - a == 2 && s[a] == '\r' && s[a + 1] == '\n');
+}
+static char *text_clean(const char *s, int multiline) {
+  size_t n, p = 0, q, used = 0;
+  unsigned cp;
+  char *out;
+  if (!s)
+    return NULL;
+  n = strlen(s);
+  if (n > 16 * 1024 * 1024)
+    return NULL;
+  out = malloc(n + 1);
+  if (!out)
+    return NULL;
+  while (p < n) {
+    q = p;
+    if (!decode((const unsigned char *)s, n, &p, &cp)) {
+      free(out);
+      return NULL;
+    }
+    if (cp == '\r') {
+      if (p < n && s[p] == '\n')
+        p++;
+      if (multiline)
+        out[used++] = '\n';
+    } else if (cp == '\n') {
+      if (multiline)
+        out[used++] = '\n';
+    } else if (cp == '\t')
+      out[used++] = ' ';
+    else if (cp >= 32 && !(cp >= 127 && cp < 160)) {
+      memcpy(out + used, s + q, p - q);
+      used += p - q;
+    }
+  }
+  out[used] = 0;
+  return out;
+}
+TuiTextEvent tui_text_handle(TuiText *t, const char *action,
+                             const char *addition) {
+  size_t *o, n, lo, hi, at, start, end, target = 0;
+  int ok, extend, movement = 1;
+  const char *move;
+  char *cleaned;
+  TuiTextEvent e;
+  if (!t || !action)
+    return text_event(t, "", TUI_INVALID);
+  free(t->event);
+  t->event = NULL;
+  if (t->state.disabled)
+    return text_event(t, "", TUI_OK);
+  ok = raw_offsets(t->value, &o, &n);
+  if (ok != 1)
+    return text_event(t, "", ok < 0 ? TUI_NOMEM : TUI_INVALID);
+  if (t->anchor > n)
+    t->anchor = n;
+  if (t->cursor > n)
+    t->cursor = n;
+  lo = t->anchor < t->cursor ? t->anchor : t->cursor;
+  hi = t->anchor > t->cursor ? t->anchor : t->cursor;
+  at = t->cursor;
+  start = end = at;
+  while (start && !raw_break(t->value, o[start - 1], o[start]))
+    start--;
+  while (end < n && !raw_break(t->value, o[end], o[end + 1]))
+    end++;
+  extend = !strncmp(action, "select_", 7);
+  move = extend ? action + 7 : action;
+  if (extend && !strcmp(move, "all")) {
+    t->anchor = 0;
+    t->cursor = n;
+    free(o);
+    return text_event(t, "select", TUI_OK);
+  }
+  if (!strcmp(move, "left"))
+    target = !extend && lo != hi ? lo : at ? at - 1 : 0;
+  else if (!strcmp(move, "right"))
+    target = !extend && lo != hi ? hi : at < n ? at + 1 : n;
+  else if (!strcmp(move, "home"))
+    target = start;
+  else if (!strcmp(move, "end"))
+    target = end;
+  else if (!strcmp(move, "up")) {
+    size_t p = start ? start - 1 : 0;
+    while (p && !raw_break(t->value, o[p - 1], o[p]))
+      p--;
+    target =
+        start ? (p + at - start < start - 1 ? p + at - start : start - 1) : at;
+  } else if (!strcmp(move, "down")) {
+    size_t p = end < n ? end + 1 : n;
+    while (p < n && !raw_break(t->value, o[p], o[p + 1]))
+      p++;
+    target =
+        end < n ? (end + 1 + at - start < p ? end + 1 + at - start : p) : at;
+  } else
+    movement = 0;
+  if (movement) {
+    t->cursor = target;
+    if (!extend)
+      t->anchor = target;
+    free(o);
+    return text_event(t, "select", TUI_OK);
+  }
+  if (!strcmp(action, "copy") || !strcmp(action, "cut")) {
+    if (t->secret || lo == hi ||
+        (!strcmp(action, "cut") && !tui_state_editable(t->state))) {
+      free(o);
+      return text_event(t, "", TUI_OK);
+    }
+    t->event = malloc(o[hi] - o[lo] + 1);
+    if (!t->event) {
+      free(o);
+      return text_event(t, "", TUI_NOMEM);
+    }
+    memcpy(t->event, t->value + o[lo], o[hi] - o[lo]);
+    t->event[o[hi] - o[lo]] = 0;
+    free(o);
+    if (!strcmp(action, "cut")) {
+      e = text_replace(t, lo, hi, "");
+      if (e.result != TUI_OK) {
+        free(t->event);
+        t->event = NULL;
+        return text_event(t, "", e.result);
+      }
+    }
+    return text_event(t, !strcmp(action, "copy") ? "copy" : "cut", TUI_OK);
+  }
+  free(o);
+  if (!tui_state_editable(t->state))
+    return text_event(t, "", TUI_OK);
+  if (!strcmp(action, "undo") || !strcmp(action, "redo")) {
+    int undo = !strcmp(action, "undo");
+    TextSnapshot *src = undo ? t->undo : t->redo,
+                 *dst = undo ? t->redo : t->undo;
+    size_t *sn = undo ? &t->undo_n : &t->redo_n,
+           *dn = undo ? &t->redo_n : &t->undo_n;
+    TextSnapshot old;
+    if (!*sn)
+      return text_event(t, "", TUI_OK);
+    old = src[--(*sn)];
+    push_snapshot(dst, dn, (TextSnapshot){t->value, t->cursor, t->anchor});
+    t->value = old.value;
+    t->cursor = old.cursor;
+    t->anchor = old.anchor;
+    t->state.edited = 1;
+    return text_event(t, "change", TUI_OK);
+  }
+  if (!strcmp(action, "backspace")) {
+    if (lo == hi && lo)
+      lo--;
+    return text_replace(t, lo, hi, "");
+  }
+  if (!strcmp(action, "delete")) {
+    if (lo == hi && hi < n)
+      hi++;
+    return text_replace(t, lo, hi, "");
+  }
+  if (strcmp(action, "insert") && strcmp(action, "paste") &&
+      strcmp(action, "newline"))
+    return text_event(t, "", TUI_OK);
+  cleaned = text_clean(!strcmp(action, "newline") ? "\n"
+                       : addition                 ? addition
+                                                  : "",
+                       t->multiline);
+  if (!cleaned)
+    return text_event(t, "", TUI_INVALID);
+  e = text_replace(t, lo, hi, cleaned);
+  free(cleaned);
+  return e;
+}
+TuiResult tui_text_draw(TuiText *t, TuiCanvas *c, TuiRect r, int focused) {
+  size_t *o, n;
+  int cy = 0, cx = 0, cw = 1, y = 0, x = 0;
+  const char *role;
+  TuiResult result = TUI_OK;
+  if (!t || !c)
+    return TUI_INVALID;
+  if (raw_offsets(t->value, &o, &n) != 1)
+    return TUI_NOMEM;
+  role = t->state.disabled ? "disabled" : t->state.read_only ? "body" : "field";
+  tui_canvas_fill(c, r, role);
+  if (r.width <= 0 || r.height <= 0) {
+    free(o);
+    return TUI_OK;
+  }
+  for (size_t i = 0; i < n; i++) {
+    int br = t->multiline && raw_break(t->value, o[i], o[i + 1]);
+    char *glyph = malloc(o[i + 1] - o[i] + 1);
+    int w;
+    if (!glyph) {
+      result = TUI_NOMEM;
+      break;
+    }
+    memcpy(glyph, t->value + o[i], o[i + 1] - o[i]);
+    glyph[o[i + 1] - o[i]] = 0;
+    w = t->secret ? 1 : tui_cells(glyph);
+    free(glyph);
+    if (i < t->cursor) {
+      if (br) {
+        cy++;
+        cx = 0;
+      } else
+        cx += w;
+    } else if (i == t->cursor && !br)
+      cw = max(1, w);
+  }
+  t->scroll_y = max(0, max(min(t->scroll_y, cy), cy - r.height + 1));
+  t->scroll_x =
+      max(0, max(min(t->scroll_x, cx), cx + min(cw, r.width) - r.width));
+  for (size_t i = 0; i < n && result == TUI_OK; i++) {
+    size_t lo = t->anchor < t->cursor ? t->anchor : t->cursor,
+           hi = t->anchor > t->cursor ? t->anchor : t->cursor;
+    char *glyph;
+    int w, local;
+    if (t->multiline && raw_break(t->value, o[i], o[i + 1])) {
+      y++;
+      x = 0;
+      continue;
+    }
+    glyph = malloc(o[i + 1] - o[i] + 1);
+    if (!glyph) {
+      result = TUI_NOMEM;
+      break;
+    }
+    memcpy(glyph, t->value + o[i], o[i + 1] - o[i]);
+    glyph[o[i + 1] - o[i]] = 0;
+    if (t->secret) {
+      glyph[0] = '*';
+      glyph[1] = 0;
+    }
+    w = tui_cells(glyph);
+    local = x - t->scroll_x;
+    if (y >= t->scroll_y && y < t->scroll_y + r.height && local >= 0 &&
+        local + w <= r.width)
+      result = tui_canvas_write(c, r.x + local, r.y + y - t->scroll_y, glyph,
+                                lo <= i && i < hi ? "selection" : role, 0, w);
+    x += w;
+    free(glyph);
+  }
+  if (focused && tui_state_editable(t->state) && cw <= r.width)
+    tui_canvas_cursor(c, r.x + cx - t->scroll_x, r.y + cy - t->scroll_y, cw);
+  free(o);
+  return result;
+}
+TuiTextEvent tui_text_click(TuiText *t, int x, int y, int width, int height,
+                            int extend) {
+  size_t *o, n, target = 0;
+  int row = 0, cell = 0;
+  if (!t || t->state.disabled || x < 0 || y < 0 || x >= width || y >= height)
+    return text_event(t, "", TUI_OK);
+  if (raw_offsets(t->value, &o, &n) != 1)
+    return text_event(t, "", TUI_NOMEM);
+  target = n;
+  for (size_t i = 0; i < n; i++) {
+    if (t->multiline && raw_break(t->value, o[i], o[i + 1])) {
+      if (row == y + t->scroll_y) {
+        target = i;
+        break;
+      }
+      row++;
+      cell = 0;
+      continue;
+    }
+    if (row == y + t->scroll_y) {
+      char *glyph = malloc(o[i + 1] - o[i] + 1);
+      int w;
+      if (!glyph) {
+        free(o);
+        return text_event(t, "", TUI_NOMEM);
+      }
+      memcpy(glyph, t->value + o[i], o[i + 1] - o[i]);
+      glyph[o[i + 1] - o[i]] = 0;
+      w = t->secret ? 1 : tui_cells(glyph);
+      free(glyph);
+      if (x + t->scroll_x < cell + w) {
+        target = i;
+        break;
+      }
+      cell += w;
+    }
+  }
+  free(o);
+  tui_text_select(t, extend ? t->anchor : target, target);
+  return text_event(t, "select", TUI_OK);
 }

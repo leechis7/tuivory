@@ -798,12 +798,15 @@ export class List {
   }
 }
 export class Text {
-  value: string;
   cursor: number;
   anchor: number;
+  value: string;
   readOnly: boolean;
   secret: boolean;
   multiline: boolean;
+  disabled = false;
+  scrollX = 0;
+  scrollY = 0;
   private undoStack: [string, number, number][] = [];
   private redoStack: [string, number, number][] = [];
   constructor(
@@ -816,111 +819,272 @@ export class Text {
     this.secret = options.secret ?? false;
     this.multiline = options.multiline ?? true;
   }
+  display(): string {
+    return this.secret ? "*".repeat(graphemes(this.value).length) : this.value;
+  }
+  toJSON(): unknown {
+    return {
+      display: this.display(),
+      cursor: this.cursor,
+      anchor: this.anchor,
+    };
+  }
   select(anchor: number, cursor: number): void {
     const n = graphemes(this.value).length;
     this.anchor = Math.max(0, Math.min(n, anchor));
     this.cursor = Math.max(0, Math.min(n, cursor));
   }
-  private replace(text: string): void {
-    if (this.readOnly) return;
+  private replaceRange(lo: number, hi: number, text: string): Event {
+    if (this.disabled || this.readOnly || (lo === hi && !text)) return event();
     this.undoStack.push([this.value, this.cursor, this.anchor]);
-    this.undoStack = this.undoStack.slice(-100);
+    this.undoStack = this.undoStack.slice(-128);
     this.redoStack = [];
-    const parts = graphemes(this.value),
-      a = Math.min(this.cursor, this.anchor),
-      b = Math.max(this.cursor, this.anchor);
-    if (!this.multiline) text = text.replace(/\r\n|\r|\n/g, " ");
-    this.value = parts.slice(0, a).join("") + text + parts.slice(b).join("");
-    this.cursor = this.anchor = a + graphemes(text).length;
+    const g = graphemes(this.value),
+      prefix = g.slice(0, lo).join("") + text;
+    this.value = prefix + g.slice(hi).join("");
+    let offset = 0,
+      cursor = 0;
+    for (const g of graphemes(this.value)) {
+      if (offset >= prefix.length) break;
+      offset += g.length;
+      cursor++;
+    }
+    this.select(cursor, cursor);
+    return event("change");
+  }
+  private byteIndex(byte: number): number {
+    let offset = 0;
+    const g = graphemes(this.value),
+      encoder = {
+        encode: (s: string) => ({
+          length: [...s].reduce(
+            (n, c) =>
+              n +
+              ((c.codePointAt(0) ?? 0) < 128
+                ? 1
+                : (c.codePointAt(0) ?? 0) < 2048
+                  ? 2
+                  : (c.codePointAt(0) ?? 0) < 65536
+                    ? 3
+                    : 4),
+            0,
+          ),
+        }),
+      };
+    for (let i = 0; i < g.length; i++) {
+      if (offset === byte) return i;
+      offset += encoder.encode(g[i]).length;
+    }
+    if (offset === byte) return g.length;
+    throw new Error("offset splits a grapheme or is outside text");
+  }
+  selectionBytes(): [number, number] {
+    const g = graphemes(this.value),
+      a = Math.min(this.anchor, this.cursor, g.length),
+      b = Math.min(Math.max(this.anchor, this.cursor), g.length),
+      encoder = {
+        encode: (s: string) => ({
+          length: [...s].reduce(
+            (n, c) =>
+              n +
+              ((c.codePointAt(0) ?? 0) < 128
+                ? 1
+                : (c.codePointAt(0) ?? 0) < 2048
+                  ? 2
+                  : (c.codePointAt(0) ?? 0) < 65536
+                    ? 3
+                    : 4),
+            0,
+          ),
+        }),
+      };
+    return [
+      encoder.encode(g.slice(0, a).join("")).length,
+      encoder.encode(g.slice(0, b).join("")).length,
+    ];
+  }
+  selectBytes(anchor: number, cursor: number): void {
+    const a = this.byteIndex(anchor),
+      c = this.byteIndex(cursor);
+    this.select(a, c);
+  }
+  replaceBytes(start: number, end: number, text: string): Event {
+    if (start > end) throw new Error("reversed byte range");
+    return this.replaceRange(this.byteIndex(start), this.byteIndex(end), text);
   }
   handle(action: string, text = ""): Event {
-    const parts = graphemes(this.value);
-    if (action === "select_all") this.select(0, parts.length);
-    else if (action === "copy" || action === "cut") {
-      const a = Math.min(this.cursor, this.anchor),
-        b = Math.max(this.cursor, this.anchor),
-        e = event("copy", "", this.secret ? "" : parts.slice(a, b).join(""));
-      if (action === "cut" && !this.secret) this.replace("");
-      return e;
-    } else if (["undo", "redo"].includes(action) && !this.readOnly) {
+    if (this.disabled) return event();
+    this.select(this.anchor, this.cursor);
+    const g = graphemes(this.value),
+      lo = Math.min(this.anchor, this.cursor),
+      hi = Math.max(this.anchor, this.cursor),
+      at = this.cursor;
+    const br = (s: string) => ["\r", "\n", "\r\n"].includes(s);
+    let start = at,
+      end = at;
+    while (start && !br(g[start - 1])) start--;
+    while (end < g.length && !br(g[end])) end++;
+    const extend = action.startsWith("select_"),
+      move = extend ? action.slice(7) : action;
+    let target: number | undefined;
+    if (extend && move === "all") {
+      this.select(0, g.length);
+      return event("select");
+    }
+    if (move === "left")
+      target = !extend && lo !== hi ? lo : Math.max(0, at - 1);
+    if (move === "right")
+      target = !extend && lo !== hi ? hi : Math.min(g.length, at + 1);
+    if (move === "home") target = start;
+    if (move === "end") target = end;
+    if (move === "up") {
+      let p = Math.max(0, start - 1);
+      while (p && !br(g[p - 1])) p--;
+      target = start ? Math.min(p + at - start, start - 1) : at;
+    }
+    if (move === "down") {
+      let e = Math.min(g.length, end + 1);
+      while (e < g.length && !br(g[e])) e++;
+      target = end < g.length ? Math.min(end + 1 + at - start, e) : at;
+    }
+    if (target !== undefined) {
+      this.select(extend ? this.anchor : target, target);
+      return event("select");
+    }
+    if (action === "copy" || action === "cut") {
+      if (this.secret || lo === hi || (action === "cut" && this.readOnly))
+        return event();
+      const copy = g.slice(lo, hi).join("");
+      if (action === "cut") this.replaceRange(lo, hi, "");
+      return event(action, "", copy);
+    }
+    if (this.readOnly) return event();
+    if (action === "undo" || action === "redo") {
       const [src, dst] =
         action === "undo"
           ? [this.undoStack, this.redoStack]
           : [this.redoStack, this.undoStack];
       const previous = src.pop();
-      if (previous) {
-        dst.push([this.value, this.cursor, this.anchor]);
-        [this.value, this.cursor, this.anchor] = previous;
-      }
-    } else if (["left", "right", "home", "end"].includes(action)) {
-      const target = (
-        {
-          left: this.cursor - 1,
-          right: this.cursor + 1,
-          home: 0,
-          end: parts.length,
-        } as Dict<string, number>
-      )[action];
-      this.select(target, target);
-    } else if (action === "backspace" || action === "delete") {
-      if (this.anchor === this.cursor)
-        this.select(
-          action === "backspace" ? this.cursor - 1 : this.cursor,
-          action === "backspace" ? this.cursor : this.cursor + 1,
-        );
-      this.replace("");
-    } else if (action === "insert" || action === "paste") this.replace(text);
-    else if (action === "newline" && this.multiline) this.replace("\n");
-    return event("change", "", this.secret ? "" : this.value);
+      if (!previous) return event();
+      dst.push([this.value, this.cursor, this.anchor]);
+      [this.value, this.cursor, this.anchor] = previous;
+      return event("change");
+    }
+    let a = lo,
+      b = hi;
+    if (action === "backspace") {
+      if (a === b) a = Math.max(0, a - 1);
+      text = "";
+    } else if (action === "delete") {
+      if (a === b) b = Math.min(g.length, b + 1);
+      text = "";
+    } else if (["insert", "paste", "newline"].includes(action)) {
+      if (action === "newline") text = "\n";
+      text = text.replace(/\r\n|\r/g, "\n").replace(/\t/g, " ");
+      text = [...text]
+        .filter((c) =>
+          c === "\n" ? this.multiline : !/[\x00-\x1f\x7f-\x9f]/.test(c),
+        )
+        .join("");
+    } else return event();
+    return this.replaceRange(a, b, text);
   }
   window(width: number): { text: string; x: number; glyphWidth: number } {
-    let parts = graphemes(this.value);
-    if (this.secret) parts = parts.map(() => "*");
-    const cursor = Math.min(parts.length, Math.max(0, this.cursor)),
-      glyphWidth =
-        cursor < parts.length ? Math.max(1, cells(parts[cursor])) : 1;
+    const g = graphemes(this.display()),
+      at = Math.min(g.length, Math.max(0, this.cursor)),
+      n = at < g.length ? Math.max(1, cells(g[at])) : 1;
     let start = 0;
-    while (
-      start < cursor &&
-      cells(parts.slice(start, cursor).join("")) + glyphWidth > width
-    )
+    while (start < at && cells(g.slice(start, at).join("")) + n > width)
       start++;
-    if (glyphWidth > width) return { text: "", x: 0, glyphWidth: 1 };
+    if (n > width) return { text: "", x: 0, glyphWidth: 1 };
     return {
-      text: clip(parts.slice(start).join(""), width),
-      x: cells(parts.slice(start, cursor).join("")),
-      glyphWidth,
+      text: clip(g.slice(start).join(""), width),
+      x: cells(g.slice(start, at).join("")),
+      glyphWidth: n,
     };
   }
+  private visualRows(): { index: number; glyph: string }[][] {
+    const rows: { index: number; glyph: string }[][] = [[]];
+    graphemes(this.value).forEach((g, i) => {
+      if (this.multiline && ["\r", "\n", "\r\n"].includes(g)) rows.push([]);
+      else rows.at(-1)!.push({ index: i, glyph: this.secret ? "*" : g });
+    });
+    return rows;
+  }
   draw(c: Canvas, r: Rect, focused = true): void {
-    c.fill(r, this.readOnly ? "surface" : "field");
+    const role = this.disabled ? "disabled" : this.readOnly ? "body" : "field";
+    c.fill(r, role);
     if (r.width <= 0 || r.height <= 0) return;
-    if (!this.multiline) {
-      const p = this.window(r.width);
-      c.write(r.x, r.y, p.text, "field", false, r.width, true);
-      if (focused && !this.readOnly) c.setCursor(r.x + p.x, r.y, p.glyphWidth);
-      return;
-    }
-    const before = graphemes(this.value).slice(0, this.cursor).join(""),
-      cy = before.split("\n").length - 1,
-      cx = cells(before.split("\n").at(-1) ?? ""),
-      sy = Math.max(0, cy - r.height + 1),
-      sx = Math.max(0, cx - r.width + 1);
-    this.value
-      .split("\n")
-      .slice(sy, sy + r.height)
-      .forEach((text, y) =>
-        c.write(
-          r.x - sx,
-          r.y + y,
-          this.secret ? "*".repeat(graphemes(text).length) : text,
-          this.readOnly ? "body" : "field",
-          false,
-          r.width + sx,
-          true,
-        ),
+    const rows = this.visualRows(),
+      raw = graphemes(this.value);
+    let cy = this.multiline
+      ? raw
+          .slice(0, this.cursor)
+          .filter((g) => ["\r", "\n", "\r\n"].includes(g)).length
+      : 0;
+    cy = Math.min(cy, rows.length - 1);
+    const cx = rows[cy]
+        .filter((g) => g.index < this.cursor)
+        .reduce((n, g) => n + cells(g.glyph), 0),
+      cw = Math.max(
+        1,
+        cells(rows[cy].find((g) => g.index === this.cursor)?.glyph ?? " "),
       );
-    if (focused && !this.readOnly) c.setCursor(r.x + cx - sx, r.y + cy - sy);
+    this.scrollY = Math.max(0, Math.min(this.scrollY, cy), cy - r.height + 1);
+    this.scrollX = Math.max(
+      0,
+      Math.min(this.scrollX, cx),
+      cx + Math.min(cw, r.width) - r.width,
+    );
+    const lo = Math.min(this.anchor, this.cursor),
+      hi = Math.max(this.anchor, this.cursor);
+    rows.slice(this.scrollY, this.scrollY + r.height).forEach((row, y) => {
+      let x = 0;
+      for (const g of row) {
+        const n = cells(g.glyph),
+          local = x - this.scrollX;
+        if (local >= 0 && local + n <= r.width)
+          c.write(
+            r.x + local,
+            r.y + y,
+            g.glyph,
+            lo <= g.index && g.index < hi ? "selection" : role,
+            false,
+            n,
+            true,
+          );
+        x += n;
+      }
+    });
+    if (focused && !this.disabled && !this.readOnly && cw <= r.width)
+      c.setCursor(r.x + cx - this.scrollX, r.y + cy - this.scrollY, cw);
+  }
+  click(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    extend = false,
+  ): Event {
+    if (this.disabled || x < 0 || y < 0 || x >= width || y >= height)
+      return event();
+    const rows = this.visualRows(),
+      rowIndex = Math.min(rows.length - 1, this.scrollY + y),
+      row = rows[rowIndex];
+    let cell = 0,
+      target = row.length
+        ? row.at(-1)!.index + 1
+        : rows.slice(0, rowIndex).reduce((n, r) => n + r.length + 1, 0);
+    for (const g of row) {
+      const n = cells(g.glyph);
+      if (x + this.scrollX < cell + n) {
+        target = g.index;
+        break;
+      }
+      cell += n;
+    }
+    this.select(extend ? this.anchor : target, target);
+    return event("select");
   }
 }
 export interface Field {
@@ -961,6 +1125,8 @@ export class Form {
           }),
         );
     }
+    for (const f of this.fields)
+      if (f.kind === "password") f.value = this.inputs.get(f.id)!.display();
     this.eligible();
   }
   private eligible(): Field[] {
@@ -999,7 +1165,11 @@ export class Form {
       return event("activate", f.id);
     if (!state.editable) return event();
     const input = this.inputs.get(f.id);
-    if (input) return { ...input.handle(action, text), id: f.id };
+    if (input) {
+      const result = input.handle(action, text);
+      f.value = input.display();
+      return { ...result, id: f.id };
+    }
     if (
       ["checkbox", "radio"].includes(f.kind!) &&
       ["activate", "toggle"].includes(action)
