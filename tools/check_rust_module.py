@@ -124,7 +124,9 @@ fn main() {
     terminal.draw(|f| f.render_stateful_widget(tuivory::ui::components::TreeWidget::new(&tree, &styles).unwrap(), f.area(), &mut state)).unwrap();
     assert_eq!(terminal.backend().buffer()[(0, 0)].symbol(), ">");
     terminal.draw(|f| f.render_stateful_widget(tuivory::ui::components::TabsWidget::new(&tabs, &styles).unwrap(),f.area(),&mut tab_state)).unwrap();
-    terminal.draw(|f| f.render_widget(tuivory::ui::components::GridWidget{model:&grid,styles:&styles,focused:true},f.area())).unwrap();
+    assert!(grid.begin_edit("cursor"));assert!(grid.edit_cursor(24,4).is_some());
+    terminal.draw(|f|tuivory::ui::components::GridWidget{model:&grid,styles:&styles,focused:true}.render_frame(f,f.area())).unwrap();assert!(terminal.backend().cursor_visible());grid.cancel_edit();
+    terminal.draw(|f| f.render_widget(tuivory::ui::components::GridWidget{model:&grid,styles:&styles,focused:true},f.area())).unwrap();assert!(!terminal.backend().cursor_visible());
     assert_eq!(terminal.backend().buffer()[(grid.geometry(24,4).gutter as u16-1,0)].symbol(),"│");
     let mut menu_terminal=tuivory::ui::Terminal::new(tuivory::ui::backend::TestBackend::new(40,10)).unwrap();
     menu_terminal.draw(|f|f.render_widget(tuivory::ui::components::MenuPopupWidget::new(&mut menu,&styles,"Menu").ascii(true).padding(1),f.area())).unwrap();assert_eq!(menu_terminal.backend().buffer()[(0,0)].symbol(),"+");assert_eq!(menu_terminal.backend().buffer()[(2,2)].symbol(),">");

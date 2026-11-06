@@ -42,7 +42,7 @@ func Run(args []string) {
 	ascii := flags.Bool("ascii", false, "ASCII borders")
 	gridPreset := flags.String("grid-preset", "simple", "simple/data")
 	gridSample := flags.Bool("grid-sample", false, "five-row grid comparison")
-	editPreview := flags.Bool("grid-edit-preview", false, "start synthetic inline editing")
+	editPreview := flags.Bool("grid-edit-preview", false, "start synthetic inline editing with real cursor")
 	mode := flags.String("mode", "forms", "component")
 	densityFlag := flags.String("density", "auto", "auto/compact/comfortable")
 	_ = flags.Parse(args)
@@ -70,7 +70,7 @@ func Run(args []string) {
 	}
 	palette, _ := ui.Resolve(source)
 	app := ui.NewApplication().EnablePaste(true)
-	screen, screenErr := ui.NewScreen()
+	screen, screenErr := ui.NewCursorScreen()
 	if screenErr != nil {
 		log.Fatal(screenErr)
 	}

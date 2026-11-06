@@ -459,7 +459,7 @@ fn disabled_input_caret_and_removed_approval_row() {
     let geo = g.geometry(60, 8);
     g.pointer("click", geo.columns[0].start as isize + 4, 1, 60, 8, false);
     g.edit_input("insert", "X");
-    assert_eq!(g.edit_session().unwrap().value.text, "abcXdef");
+    assert_eq!(g.edit_session().unwrap().value.text, "abcdXef");
     g.edit_input("next", "");
     let id = g.edit_session().unwrap().id;
     assert!(g.resolve_edit(id, "", Some(Box::new(MemoryRows::new(vec![]).unwrap()))));

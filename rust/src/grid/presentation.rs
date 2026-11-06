@@ -179,7 +179,7 @@ impl Grid {
         if self.range_mode && selected && o.show_cell_markers {
             s.selected = true;
         }
-        let mut raw = if i.has_display {
+        let raw = if i.has_display {
             i.display
         } else if i.null {
             self.label("null", "NULL")
@@ -205,19 +205,25 @@ impl Grid {
             .filter(|e| e.row_id == r.id && e.column_id == c.id)
         {
             let b = self.work.buffer.as_ref().unwrap();
-            raw = crate::forms::edit_window(
-                b.text(),
-                b.cursor,
-                w.saturating_sub(2 * o.padding + if s.edited { 2 } else { 0 }),
-                !e.pending,
-            );
+            let extra = if s.edited { 2 } else { 0 };
+            let content = w.saturating_sub(2 * o.padding);
+            let space = content.saturating_sub(extra);
+            let (mut text, _, _) = super::cursor::editor_window(b.text(), b.cursor, space);
             if e.value.null {
-                raw = self.label("null", "NULL")
+                text = fit(&self.label("null", "NULL"), space, 0, "clip")
             }
-            prefix.clear();
-            if s.edited {
-                prefix.push_str("* ")
-            }
+            let prefix = if s.edited { "* " } else { "" };
+            let text = align(
+                &fit(&format!("{prefix}{text}"), content, 0, "clip"),
+                content,
+                "left",
+            );
+            return fit(
+                &format!("{}{text}", " ".repeat(o.padding.min(w))),
+                w,
+                0,
+                "clip",
+            );
         }
         let content = w.saturating_sub(2 * o.padding);
         let text = fit(

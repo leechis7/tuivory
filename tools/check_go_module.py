@@ -76,6 +76,10 @@ func TestIsolatedModule(t *testing.T) {
     paste,pasteErr:=grid.RequestPaste("one",tuivory.GridPasteOptions{});if pasteErr!=nil||!grid.ResolvePaste(paste.ID,nil){t.Fatal("external paste",pasteErr)}
     grid.SetFind("External",tuivory.GridFindOptions{});if _,ok:=grid.FindNext(false);!ok{t.Fatal("external find")};grid.SetDetailsEnabled(true);if !grid.OpenDetails(){t.Fatal("external details")};grid.CloseDetails();grid.InvalidateRequests()
     if tuivory.PasteSafeScreen(tuivory.NewSimulationScreen("UTF-8"))==nil{t.Fatal("external paste screen")}
+    if !grid.BeginEdit("cursor"){t.Fatal("external cursor editor")};if _,ok:=grid.EditCursor(60,8);!ok{t.Fatal("external cursor geometry")}
+    cursorView,cursorErr:=tuivory.NewGridView(grid,controlsPalette,nil);if cursorErr!=nil{t.Fatal(cursorErr)};cursorScreen:=tuivory.NewSimulationScreen("UTF-8");cursorScreen.Init();cursorScreen.SetSize(60,8);cursorView.SetRect(0,0,60,8);cursorView.Focus(func(tuivory.Primitive){});cursorView.Draw(cursorScreen);cursorScreen.Show();if _,_,visible:=cursorScreen.GetCursor();!visible{t.Fatal("external real cursor")};cursorView.Blur();cursorScreen.Fini();grid.CancelEdit()
+    var _ func()(tuivory.Screen,error)=tuivory.NewCursorScreen
+    if tuivory.PreserveCursorTty(nil)!=nil{t.Fatal("external cursor TTY")}
     menu,menuErr:=tuivory.NewMenu([]tuivory.MenuItem{{ID:"root",Label:"Root"},{ID:"copy",Parent:"root",Label:"Copy",Mnemonic:"c",Icon:"◇",ASCIIIcon:"*"}});if menuErr!=nil{t.Fatal(menuErr)}
     menu.Open("root","editor");if e:=menu.Handle("mnemonic","c",4);e.Kind!="activate"||e.ReturnID!="editor"{t.Fatal("external menu caller")};menu.Open("root","editor")
     notices,_:=tuivory.NewNoticeQueue(2);_ = notices.Push(tuivory.Notice{ID:"err",Severity:"error",ExpiresAt:1})

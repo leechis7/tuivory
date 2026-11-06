@@ -883,7 +883,7 @@ func (g *Grid) editPoint(action string, x, y, width, height int, extend bool) Gr
 		g.work.editDragging = false
 		return GridEvent{}
 	}
-	if e.Pending {
+	if e.Pending || e.Value.Null {
 		return GridEvent{}
 	}
 	geo := g.Geometry(width, height)
@@ -897,18 +897,12 @@ func (g *Grid) editPoint(action string, x, y, width, height int, extend bool) Gr
 			return GridEvent{}
 		}
 		b := g.work.buffer
-		before := strings.Join(clusters(b.Text())[:b.Cursor], "")
-		tail := tailCells(before, max(0, s.Width-2*g.options.Padding-1))
-		start := b.Cursor - len(clusters(tail))
 		extra := 0
 		if g.info(g.source.Row(row), g.columns[g.columnIndex(s.ID)]).State.Edited {
 			extra = 2
 		}
+		_, _, start := gridEditorWindow(b.Text(), b.Cursor, max(0, s.Width-2*g.options.Padding-extra))
 		offset := max(0, x-s.Start-g.options.Padding-extra)
-		caret := gridTextWidth(strings.Join(clusters(b.Text())[start:b.Cursor], ""))
-		if offset > caret {
-			offset--
-		}
 		pos := start
 		used := 0
 		for _, c := range clusters(b.Text())[start:] {

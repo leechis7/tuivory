@@ -1,6 +1,6 @@
 # Tuivory — TUI component library
 
-**0.11.0:** grid editing, columns, paste and find. **Do not use 0.10.1** · [Withdrawal and upgrade](docs/withdrawn-versions.en.md).
+**0.11.1:** real grid cursors and terminal-setting preservation. **Do not use 0.10.1** · [Withdrawal and upgrade](docs/withdrawn-versions.en.md).
 
 TVR-7 in 0.11.0: [grid in-cell editing, column pinning/visibility/order, paste, find, view state and details](docs/grid-workspace.en.md). Available from 0.11.0.
 
@@ -21,17 +21,17 @@ TVR-7 in 0.11.0: [grid in-cell editing, column pinning/visibility/order, paste, 
 
 Reusable TUI components for **Go/tview and Rust/Ratatui**. Hosts compose screens, supply data and execute actions. Python/JavaScript currently provide token-reading examples; reusable UI packages are planned.
 
-**0.11.0** · [Release](docs/release-0.11.0.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
+**0.11.1** · [Release](docs/release-0.11.1.en.md) · [Documentation](docs/README.en.md) · [API](docs/api/README.en.md)
 
 ## Install
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.11.0
+go get github.com/leechis7/tuivory/go@v0.11.1
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.1", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [Installation details](docs/installation.en.md)
@@ -62,3 +62,5 @@ Korean is the default UI; add `--lang en` for English.
 0.6.0 TVR-22–25 adds borderless Surface, standalone/secret controls, text editing/viewing and row/column/grid/layer containers. [Usage, source availability and examples](docs/controls.en.md).
 
 0.7.0 TVR-26 adds SDK-only Go/Rust UI composition, shared input/byte-span conversion and terminal lifetime. [API mappings, examples and availability](docs/ui-facade.en.md).
+
+TVR-7 in 0.11.1: [real grid cursor and backend integration](docs/grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.

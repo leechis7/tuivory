@@ -444,7 +444,7 @@ func TestGridInputGuardsCaretAndRemovedApprovalRow(t *testing.T) {
 	g.Pointer("click", geo.Columns[0].Start+4, 1, 60, 8, false)
 	g.EditInput("insert", "X")
 	s, _ := g.EditSession()
-	if s.Value.Text != "abcXdef" {
+	if s.Value.Text != "abcdXef" {
 		t.Fatal("caret click", s.Value.Text)
 	}
 	g.EditInput("next", "")

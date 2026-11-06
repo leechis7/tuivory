@@ -24,7 +24,7 @@
 
 컴포넌트의 표시·내부 조작은 라이브러리, 실제 화면 조합·전역 키·영역 간 포커스·업무 연결은 앱 책임입니다. 예제는 필수 화면 템플릿이 아닙니다. [컴포넌트와 앱의 책임](../docs/component-boundary.md).
 
-제품 버전은 루트 `VERSION`의 **0.11.0**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.11.0`으로 배포합니다. [릴리스 안내](../docs/release-0.11.0.md).
+제품 버전은 루트 `VERSION`의 **0.11.1**입니다. Go 모듈은 하위 디렉터리 태그 `go/v0.11.1`으로 배포합니다. [릴리스 안내](../docs/release-0.11.1.md).
 
 Go 모듈과 모든 Go 구현은 이 디렉터리에 있습니다. 모듈 경로는 `github.com/leechis7/tuivory/go`, 패키지 이름은 `tuivory`이며 한 번만 import합니다.
 
@@ -36,10 +36,10 @@ if err != nil { return err }
 theme.Form(form)
 ```
 
-현재 버전은 `v0.11.0`이며 Go 하위 모듈 태그는 `go/v0.11.0`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
+현재 버전은 `v0.11.1`이며 Go 하위 모듈 태그는 `go/v0.11.1`입니다. 첫 배포 태그 `go/v0.0.1`도 보존합니다.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.11.0
+go get github.com/leechis7/tuivory/go@v0.11.1
 ```
 
 저장소 루트에서:
@@ -90,3 +90,5 @@ TVR-7 0.9.2 보완: 표의 스타일 재칠에서 두 칸 문자를 보존하고
 TVR-8 0.9.2 후속은 Go 토큰 표의 8색 Dim 누락과 드롭다운 비활성 필드의 테마 적용 누락을 수정합니다. [Go 12팔레트 화면·검증](../docs/disabled-states.md).
 
 0.9.2는 다크/8색 SQL 강조를 Go/Rust 공통 7종 전경·속성 조합으로 개선하고 참조 본문 대비 >=4.5:1을 유지합니다. [규칙·단말 제약](../docs/syntax.md).
+
+TVR-7 0.11.1: [실제 그리드 커서·backend 연결](../docs/grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.

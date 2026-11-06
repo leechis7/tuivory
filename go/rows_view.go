@@ -9,6 +9,10 @@ import (
 
 // RowsView renders literal, cell-clipped semantic lines and delegates actions.
 type RowsView struct {
+	// Cursor optionally supplies a local backend cursor, without changing its shape/blink.
+	Cursor       func(int, int) (GridCursor, bool)
+	cursorScreen tcell.Screen
+	cursorOwned  bool
 	*tview.Box
 	Rows        func(int, int) []ComponentLine
 	Key         func(*tcell.EventKey)
@@ -38,7 +42,16 @@ func NewRowsView(rows func(int, int) []ComponentLine, palette Palette) (*RowsVie
 	}
 	return &RowsView{Box: tview.NewBox(), Rows: rows, palette: p}, nil
 }
+func (v *RowsView) releaseCursor() {
+	if v.cursorOwned && v.cursorScreen != nil {
+		v.cursorScreen.HideCursor()
+	}
+	v.cursorOwned = false
+}
+func (v *RowsView) Blur() { v.Box.Blur(); v.releaseCursor() }
 func (v *RowsView) Draw(screen tcell.Screen) {
+	v.releaseCursor()
+
 	screen = WideSafeScreen(screen)
 	x, y, w, h := v.GetInnerRect()
 	fillComponent(screen, x, y, w, h, v.palette["surface"].Style())
@@ -88,6 +101,17 @@ func (v *RowsView) Draw(screen tcell.Screen) {
 			drawTreeText(screen, x+start, y+i, width, 0, span.Text, style)
 		}
 	}
+	if v.Cursor != nil && v.HasFocus() {
+		screen.HideCursor()
+		sw, sh := screen.Size()
+		c, ok := v.Cursor(w, h)
+		if ok && c.X >= 0 && c.Y >= 0 && c.X+max(1, c.Width) <= w && c.Y < h && x+c.X >= 0 && y+c.Y >= 0 && x+c.X+max(1, c.Width) <= sw && y+c.Y < sh {
+			screen.ShowCursor(x+c.X, y+c.Y)
+			v.cursorScreen = screen
+			v.cursorOwned = true
+		}
+	}
+
 }
 func (v *RowsView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
 	return v.WrapInputHandler(func(e *tcell.EventKey, _ func(tview.Primitive)) {
@@ -370,6 +394,7 @@ func NewGridView(model *Grid, palette Palette, onEvent func(GridEvent)) (*RowsVi
 		}
 	}
 	v.TabBoundary = func(bool) bool { return model.work.edit == nil }
+	v.Cursor = model.EditCursor
 
 	v.Pointer = func(line ComponentLine, x int) { emit(model.Click(line.ID, line.Value, x, width, height)) }
 	v.Mouse = func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {

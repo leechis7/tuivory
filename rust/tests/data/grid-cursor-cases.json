@@ -1,0 +1,92 @@
+{
+  "cases": [
+    {
+      "id": "ascii",
+      "text": "abcdef",
+      "cursor": 3,
+      "width": 4,
+      "visible_text": "abcd",
+      "x": 3
+    },
+    {
+      "id": "cjk-before",
+      "text": "a한b",
+      "cursor": 1,
+      "width": 3,
+      "visible_text": "a한",
+      "x": 1
+    },
+    {
+      "id": "cjk-after",
+      "text": "a한b",
+      "cursor": 2,
+      "width": 3,
+      "visible_text": "한b",
+      "x": 2
+    },
+    {
+      "id": "end",
+      "text": "a한b",
+      "cursor": 3,
+      "width": 3,
+      "visible_text": "b",
+      "x": 1
+    },
+    {
+      "id": "wide-narrow",
+      "text": "한",
+      "cursor": 0,
+      "width": 1,
+      "visible_text": "",
+      "x": 0
+    },
+    {
+      "id": "wide-end",
+      "text": "한",
+      "cursor": 1,
+      "width": 1,
+      "visible_text": "",
+      "x": 0
+    },
+    {
+      "id": "empty",
+      "text": "",
+      "cursor": 0,
+      "width": 1,
+      "visible_text": "",
+      "x": 0
+    },
+    {
+      "id": "emoji",
+      "text": "👩‍💻éZ",
+      "cursor": 1,
+      "width": 3,
+      "visible_text": "👩‍💻é",
+      "x": 2
+    },
+    {
+      "id": "combining",
+      "text": "👩‍💻éZ",
+      "cursor": 2,
+      "width": 2,
+      "visible_text": "éZ",
+      "x": 1
+    },
+    {
+      "id": "literal-pipe",
+      "text": "a|b",
+      "cursor": 1,
+      "width": 4,
+      "visible_text": "a|b",
+      "x": 1
+    },
+    {
+      "id": "controls",
+      "text": "\r\nA",
+      "cursor": 1,
+      "width": 4,
+      "visible_text": "  A",
+      "x": 2
+    }
+  ]
+}

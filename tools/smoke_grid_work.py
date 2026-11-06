@@ -5,6 +5,7 @@ import fcntl
 import os
 from pathlib import Path
 import pty
+import re
 import select
 import signal
 import struct
@@ -22,6 +23,7 @@ def main():
     parser.add_argument('--theme', choices=['dark', 'light', 'blackwhite'], default='dark')
     parser.add_argument('--colors', choices=['8', '16', '256', 'truecolor'], default='256')
     parser.add_argument('--ascii', action='store_true')
+    parser.add_argument('--cursor',action='store_true',help='verify unreleased real-cursor integration and no shape/blink override')
     args = parser.parse_args()
     master, slave = pty.openpty()
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', 36, 120, 0, 0))
@@ -66,7 +68,14 @@ def main():
 
     try:
         drain(.8)
+        before=len(captured)
         send(b'\r'); expect('edit_begin: row-2')
+        if args.cursor:
+            assert b'\x1b[?25h' in captured[before:], 'real cursor was never shown'
+            before=len(captured);send(b'\x0e');assert b'\x1b[?25l' in captured[before:], 'NULL cursor not hidden'
+            before=len(captured);send(b'\x0e');assert b'\x1b[?25h' in captured[before:], 'NULL reset cursor not restored'
+            before=len(captured);send(b'\x1b');assert b'\x1b[?25l' in captured[before:], 'closed editor cursor not hidden'
+            send(b'\r');expect('edit_begin: row-2')
         send(b'\x01'); send(('Updated' if args.lang == 'en' else '수정값').encode()); send(b'\r')
         expect('edit_submit: row-2')
         send(b'reject'); send(b'\r')
@@ -94,6 +103,9 @@ def main():
         assert process.returncode == 0 and b'\x1b[?1049l' in captured
         korean = any('\uac00' <= c <= '\ud7a3' for c in captured.decode(errors='replace'))
         assert korean == (args.lang == 'ko')
+        if args.cursor:
+            assert not re.search(rb'\x1b\[[0-9;]* q',captured),'cursor shape escape leaked'
+            assert not re.search(rb'\x1b\[\?12[hl]',captured),'blink mode override leaked'
         print(f'grid workspace PTY {args.lang}/{args.theme}/{args.colors}/ascii={args.ascii}: passed')
     finally:
         if process.poll() is None:

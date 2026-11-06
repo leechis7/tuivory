@@ -313,14 +313,14 @@ impl Grid {
         self.cancel_edit();
         self.work.edit_options = o
     }
-    fn prepared(&self, r: &GridRecord, c: &GridColumn) -> bool {
+    pub(super) fn prepared(&self, r: &GridRecord, c: &GridColumn) -> bool {
         self.work
             .edit_options
             .prepare
             .as_ref()
             .is_none_or(|p| p(r, c).is_some())
     }
-    fn editable(&self, r: &GridRecord, c: &GridColumn) -> bool {
+    pub(super) fn editable(&self, r: &GridRecord, c: &GridColumn) -> bool {
         !self.options.disable_editing
             && self.work.hidden.get(&c.id) != Some(&true)
             && c.editable
@@ -1158,7 +1158,7 @@ impl Grid {
         let Some(e) = &self.work.edit else {
             return GridEvent::default();
         };
-        if e.pending {
+        if e.pending || e.value.null {
             return GridEvent::default();
         }
         let geo = self.geometry(width, height);
@@ -1186,31 +1186,17 @@ impl Grid {
                 .edited;
             let b = self.work.buffer.as_mut().unwrap();
             let gs = b.text().graphemes(true).collect::<Vec<_>>();
-            let mut start = b.cursor;
-            let mut cells = 0;
-            let max = s
-                .width
-                .saturating_sub(2 * self.options.padding + 1 + if dirty { 2 } else { 0 });
-            while start > 0 {
-                let w = crate::components::cells(gs[start - 1]);
-                if cells + w > max {
-                    break;
-                }
-                cells += w;
-                start -= 1
-            }
-            let mut offset = x
+            let (_, _, start) = super::cursor::editor_window(
+                b.text(),
+                b.cursor,
+                s.width
+                    .saturating_sub(2 * self.options.padding + if dirty { 2 } else { 0 }),
+            );
+            let offset = x
                 .saturating_sub(
                     s.start as isize + self.options.padding as isize + if dirty { 2 } else { 0 },
                 )
                 .max(0) as usize;
-            let caret: usize = gs[start..b.cursor]
-                .iter()
-                .map(|g| crate::components::cells(g))
-                .sum();
-            if offset > caret {
-                offset -= 1
-            }
             let mut pos = start;
             let mut used = 0;
             for g in gs.iter().skip(start) {
