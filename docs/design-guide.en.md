@@ -19,3 +19,5 @@ Shared visual and interaction rules. Hosts choose themes and terminal capabiliti
 ## Real grid cursor (0.11.1)
 
 The editor buffer contains no synthetic caret character. Share grapheme viewport geometry across text, mouse and local cursor projection. Focused views own only position/visibility; NULL, pending, clipping, invalidation and blur suppress stale cursors. Go uses NewGridView with NewCursorScreen/PreserveCursorTty to remove backend default shape/blink controls. Rust uses GridWidget::render_frame; buffer-only Widget cannot register a terminal cursor. Hosts retain global focus/layer choice. [Integration and evidence](grid-workspace.en.md).
+
+[Independent Python·TypeScript/JavaScript·C·C++·Java support](languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.

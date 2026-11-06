@@ -5,3 +5,8 @@ __pycache__/
 bin/
 rust/target/
 .cache/
+
+node_modules/
+javascript/dist/
+python/build/
+*.egg-info/

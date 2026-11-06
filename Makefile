@@ -77,3 +77,17 @@ run-menu-go:
 	go -C go run ./examples/menu $(ARGS)
 run-menu-rust:
 	cargo run --manifest-path rust/Cargo.toml --locked --features playground --example menu -- $(ARGS)
+
+.PHONY: build-c build-cpp build-java test-c test-cpp test-java
+build-c:
+	python3 tools/build_language.py c
+build-cpp:
+	python3 tools/build_language.py cpp
+build-java:
+	python3 tools/build_language.py java
+test-c:
+	python3 tools/check_languages.py --language c
+test-cpp:
+	python3 tools/check_languages.py --language cpp
+test-java:
+	python3 tools/check_languages.py --language java

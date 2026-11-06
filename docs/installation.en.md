@@ -48,6 +48,6 @@ Korean is the default; use --lang en for English. Examples require no database. 
 
 ## Static executables
 
-The release provides Linux ARM64/x86_64 static Go/Rust executables. Local `make build` and `make build-rust` each produce one unified executable for the current Linux host architecture. Binaries live under bin/<language>/ with OS/architecture in their names. CentOS is not validated. Python/JavaScript currently provide token-reading examples, not UI packages.
+The release provides Linux ARM64/x86_64 static Go/Rust executables. Local `make build` and `make build-rust` each produce one unified executable for the current Linux host architecture. Binaries live under bin/<language>/ with OS/architecture in their names. CentOS is not validated. Additional language UI packages are in the [independent support](languages.en.md) unreleased verification stage.
 
 [API](api/README.en.md) · [Components](components.en.md) · [Release](release-0.11.1.en.md) · [Static builds](static-build.en.md)

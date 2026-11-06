@@ -1,0 +1,2055 @@
+{
+  "checked_at_utc": "2026-11-06T13:46:57.567368+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source": {
+    "base": "aacaa369a830ad22fe5d5bed7a1e4c25830771c5",
+    "branch": "codex/TVR-15-TVR-16-TVR-30-TVR-31-TVR-32-independent",
+    "uncommitted": true,
+    "sha256": {
+      "python/src/tuivory/terminal.py": "d3d79a1d002ae19d94a33baa54032be5bbe324e8a8bf00e3e02e3b313ecde01d",
+      "python/src/tuivory/__main__.py": "7ed76f354d4ae2d694b90229d0f4372f39dccc7d110e09af83d6991ca2b9f4be",
+      "python/src/tuivory/drawing.py": "69088c5ab03da8644e315a18399dbc3aab9574572b07ad9b59fd01b23d1903e3",
+      "python/src/tuivory/tokens.json": "e1202ec8269231b8add7cec97340c8a02314a9522f4d7c905c3f5ededafc002e",
+      "python/src/tuivory/editing.py": "65f47cc55977a8e5af71c5a001453d864aaee8f88767512a1b63dda018bf6027",
+      "python/src/tuivory/models.py": "30e32a82a08db76da69d1991b92b142fe74460da8cf64bc12f7963f63e2f103c",
+      "python/src/tuivory/__init__.py": "55b20ae49dd2a03a234ddc8b97143285ae9719b535bcf9f0d194125790f1e336",
+      "python/src/tuivory/workspace.py": "653d3a7cecec7c761c628145c20c8291e34798b3415ba605a16ca51e2edf509e",
+      "javascript/src/index.ts": "1fd0f0147497366762cd2f9a2334e24f19a7a9d77c349983cadc3beae8eed945",
+      "javascript/src/unicode-width.json": "f2be9eface277dcf250e4cbb9937a4602434cb5d606b70103c6356c182c1e8ce",
+      "javascript/src/tokens.json": "e1202ec8269231b8add7cec97340c8a02314a9522f4d7c905c3f5ededafc002e",
+      "c/tests/components.c": "8d336c955e2365a5a2e6454fa43f12d96330b713a48ca4e989f481c23f3a5600",
+      "c/include/tuivory_data.h": "208666243bc12524ef0d2bfe7eff17a4b49f8d1a973d64393f857ffe246d9646",
+      "c/include/tuivory.h": "ceb30e6486237dce52c7fccedd4752aa3305aa85bb864616c61a96cb2fd8fe95",
+      "c/examples/catalog.c": "4d932bb254277d11893dd64d0a8a4a8ddc4e0c53e2cadde1daf7633611e7ac61",
+      "c/src/tuivory.c": "46829af67575837cf7f4a37274a0043603deb1420dab2b307b70b6f013c0099e",
+      "cpp/tests/components.cpp": "fc6e698a87440419f658f9641628782830ed4e5c7622ec5d2a3192a477fb30ab",
+      "cpp/include/tuivory_data.h": "208666243bc12524ef0d2bfe7eff17a4b49f8d1a973d64393f857ffe246d9646",
+      "cpp/include/tuivory.hpp": "eecc89b8702502bad3202c00f87d9d3ef70cb063139aa6dd9fbcec99b6f66107",
+      "cpp/examples/catalog.cpp": "2998c33f2b973824a74f4d16541466a2f09a193def4ace30d54963445258d1bb",
+      "java/src/test/java/io/tuivory/ComponentsTest.java": "c04d3d49619f827d279ee4b9021631d76bb983db522f4eb511523ef7d8d9c60e",
+      "java/src/main/java/io/tuivory/Data.java": "baed0b92a1c2797bcd7da69ffabb9c9303caf690aad9fb22f5f3d5a3c87ff213",
+      "java/src/main/java/io/tuivory/Tuivory.java": "1c5dcc6b906c096a4d965fa4cb31300ae8ae996e2db4df6c478a9f44f71b4318",
+      "java/examples/io/tuivory/examples/Catalog.java": "da4e503efc8682d69d41cda4ce32d20f7044a8985529d96d5e3fc01391d3a7bc",
+      "javascript/examples/catalog.mjs": "67d1fb1c9a28c09313da559c9af2d8c6729725a286ca8c1bf824374efa123306",
+      "tools/check_language_examples.py": "e336a3b5958aa4bd855e0956cc37287a06229040fd0dbc88de892860dcf2ebf3",
+      "tools/check_languages.py": "445b8a66f154f018f74d020118484e1dd3d8d7d169da1be708efe8f360e7e02e",
+      "tools/check_runtime_languages.py": "be0a238aae779a3f7ca3d91331021d2821df3b321c1b3be72a2cd48229a2af31",
+      "tools/build_language.py": "81a98f54805ea90f4ffcec7c37ce19dc81940bd1fba23023c9dab61b02b52835",
+      "tools/package_languages.py": "8ab9306fcb9a2f79df11068e4c729c4e7de19191d803397613f72509fdfdff09",
+      "tools/capture_language_trees.py": "74818c6048eb4aefcf3656dd04f79c27b3deb07e27e8882ca4061ecd964bdd3d",
+      "tools/export_language_data.py": "1361df8080f7349bca25d15b684b2ace6bd48ab4ad855c75a58a02a01a9c580f"
+    }
+  },
+  "scope": {
+    "verified": "independent packages, palettes/states/cell buffers and Tree",
+    "full_catalog": "not complete; follow-up work remains in all epics",
+    "python_typescript_followups": "additional component prototypes, not full Go/Rust parity",
+    "independence": "no other Tuivory implementation/runtime via FFI/JNI/subprocess/shared native engine; C++ does not depend on Tuivory C"
+  },
+  "local_validation": {
+    "host": "Linux-7.0.0-1013-oracle-aarch64-with-glibc2.43",
+    "architecture": "aarch64",
+    "python": "3.14.4; 11 tests and isolated wheel venv install/import/example passed",
+    "javascript": "Node 26.13.0; 5 test groups, npm pack/external JS runtime and TS 7.0.2 declarations passed",
+    "java": "JDK 27 runtime; --release 17 compilation and isolated JAR consumer passed; JVM 17 runtime not locally executed",
+    "c_cpp": "C11/C++17 isolated external static-link consumers; ASan/UBSan passed; leak detector disabled because ptrace host disallows LeakSanitizer",
+    "shared_cases": {
+      "tree_steps": 16,
+      "control_states": 6,
+      "unicode_widths": 18
+    },
+    "pty": {
+      "count": 240,
+      "passed": true,
+      "cases": [
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "python",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "javascript",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "c",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "cpp",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "ko",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "dark",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "light",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "light",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "light",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "light",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "8",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "16",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "256",
+          "ascii": true,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": false,
+          "passed": true
+        },
+        {
+          "language": "java",
+          "lang": "en",
+          "theme": "blackwhite",
+          "colors": "truecolor",
+          "ascii": true,
+          "passed": true
+        }
+      ],
+      "checks": "KO/EN, three themes, four profiles, Unicode/ASCII; actual VT selection after navigation; terminal restoration; no forced shape/blink commands; English ASCII mode is checked for ASCII-only bytes",
+      "java_limit": "standard-JVM line input, not raw-terminal adapter"
+    },
+    "native_static_elf": {
+      "passed": [
+        "bin/c/tuivory-linux-arm64",
+        "bin/cpp/tuivory-linux-arm64"
+      ],
+      "format": "native host only, no PT_INTERP/DT_NEEDED"
+    },
+    "localized_references": 10,
+    "shared_checks": "make check and independent-language data synchronization passed",
+    "packaged_sdk_archives": "six archive hashes; actual isolated C/C++ SDK static-link consumers and pure Java JAR payload passed",
+    "native_invalid_utf8": "C rejects and C++ throws for illegal leading bytes, overlong encodings, surrogate encodings, out-of-range scalars and truncation"
+  },
+  "packages": {
+    "location": ".cache/packages/languages/",
+    "manifest": "UNRELEASED-MANIFEST.json",
+    "status": "local uncommitted preview; six archives; no registry publication",
+    "assets": {
+      "tuivory-c-0.11.1-linux-arm64.tar.gz": {
+        "sha256": "6a14491c7f4cc2727d5a9a545fed108203802f195c606aea685ca26ee3692979",
+        "size": 370731
+      },
+      "tuivory-cpp-0.11.1-linux-arm64.tar.gz": {
+        "sha256": "033808c1a1883c95e0dd8f9445e6e01ef297ca9e3bb1a175cf6e558ece50933a",
+        "size": 860060
+      },
+      "tuivory-0.11.1-py3-none-any.whl": {
+        "sha256": "04783b16b1ab79ad9848693e4d85b893420fa0c721f156bc9656857f860ee8d7",
+        "size": 35148
+      },
+      "tuivory-0.11.1.tar.gz": {
+        "sha256": "456db25e2def432526b579b504553f7e0dcbc7255b574e395353ee56b3e06e95",
+        "size": 36603
+      },
+      "tuivory-0.11.1.tgz": {
+        "sha256": "c6df1816218729e7956454f4ed652d62a7f32e6f4f49ee3bee8e04f4144ccade",
+        "size": 38740
+      },
+      "tuivory-0.11.1.jar": {
+        "sha256": "28e6f9ed515c17fd3b4f0f3d00719de8d2cb75a4b3d3a5dcec824ef99cc756e4",
+        "size": 45503
+      }
+    }
+  },
+  "status": {
+    "epics": "In Progress; open",
+    "commit": "not performed",
+    "publication": "not performed",
+    "remote_ci": "not run",
+    "release": "not performed; existing published 0.11.1 unchanged",
+    "centos": "not run per user instruction",
+    "physical_clients": "not tested"
+  },
+  "logs": ".cache/validation/languages/",
+  "jira_progress_comments": {
+    "TVR-15": "11018",
+    "TVR-16": "11019",
+    "TVR-30": "11020",
+    "TVR-31": "11021",
+    "TVR-32": "11022"
+  }
+}

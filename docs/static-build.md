@@ -55,3 +55,7 @@ python3 tools/check_centos74.py --kernel /tmp/tuivory-centos74-vmlinuz \
 ## 과거 0.2.0 게시 이력
 
 이 정적 빌드는 v0.2.0 태그 릴리스에 포함합니다. 기존 `v0.1.0` 릴리스의 Rust ARM64 바이너리는 GNU/glibc 2.39 의존성이 있으므로 이번 정적 산출물과 다릅니다. 기존 태그·릴리스 자산은 변경하지 않았습니다. Go의 기존 ARM64 자산은 이미 정적이지만 CentOS 7.4 x86_64용 자산은 아닙니다. 새 커밋·게시와 원격 CI 결과는 별도로 기록합니다.
+
+## 미배포 독립 언어 패키지
+
+C·C++ 예제도 Linux 네이티브 호스트용 실행파일 하나를 만들고 ELF 정적 검사를 통과합니다. C++는 Tuivory C를 링크하지 않습니다. Python/JS/Java는 일반 런타임 패키지 예외이며 Java는 JNI 없는 순수 JAR입니다. 신규 패키지는 기존 공개 0.11.1에 포함되지 않습니다. [제공 범위·검증](languages.md).

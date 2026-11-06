@@ -1,11 +1,27 @@
-# Tuivory JavaScript
+# Tuivory TypeScript / JavaScript
 
-[한국어 (default)](README.md) · **English**
+[한국어 (기본)](README.md) · **English**
 
-Only a Node.js example reading [shared design data](../design/README.en.md) is available. A JavaScript TUI style package, framework adapters, and npm distribution are not implemented. It does not depend on Go.
+**Unreleased independent-language implementation. Not included in published 0.11.1.** No PyPI/npm/Maven/native SDK publication has occurred. The epic remains in progress.
+
+First verification unit: an installable/importable package, embedded palettes, semantic states, cell buffer and Tree. Python/TS also contain follow-up component prototypes; these do not establish full Go/Rust feature parity.
+
+Implementations and runtimes are independent. No other Tuivory language implementation, FFI/JNI, subprocess engine or native bridge is required. Only design data/specifications/fixtures/build-time tools are shared. C++ does not call Tuivory C. TS emits JavaScript and declarations from one implementation.
+
+Runtime / build: Node.js 22+; TypeScript 7 (development only).
 
 ```sh
-node javascript/examples/read-tokens.mjs dark 256
+npm --prefix javascript install
+npm --prefix javascript run build
+npm pack ./javascript
 ```
 
-The example reads `design/tokens/candidate.json` without external packages. Requires Node.js 18 or later. Future package APIs and distribution are separate work.
+Commands run from the repository root unless shown otherwise. JavaScript users of the packed package need neither a TypeScript compiler nor a build step.
+
+```sh
+node javascript/examples/catalog.mjs --demo tree --lang en
+```
+
+Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` to select presentation. C/C++ examples use w/s/a/d plus Enter. Java uses command names followed by Enter and does not claim a raw-terminal adapter. Python/JS examples have opt-in terminal sessions; hosts otherwise own terminal lifecycle and global focus.
+
+[Support/API/verification](../docs/languages.en.md) · [Examples](../docs/examples.en.md) · [TVR-16](https://leechis7.atlassian.net/browse/TVR-16)

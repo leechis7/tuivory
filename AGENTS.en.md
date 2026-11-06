@@ -2,7 +2,7 @@
 
 [한국어 (default)](AGENTS.md) · **English**
 
-- Keep the repository root language-neutral. Go source, go.mod, and go.sum belong in go/; shared themes, tokens, and specifications in design/. Keep Rust source, Cargo.toml, and Cargo.lock in rust/. Keep Python, JavaScript, and Shell implementations in their language directories.
+- Keep the repository root language-neutral. Go source, go.mod, and go.sum belong in go/; shared themes, tokens, and specifications in design/. Keep Rust source, Cargo.toml, and Cargo.lock in rust/. Keep Python, JavaScript/TypeScript, C, C++, Java, and Shell implementations in their language directories.
 - Tuivory is independent of LazyOra. Track its work in Jira project TVR. Do not create Tuivory tasks in LORA or continue reusing LORA-69.
 - Check related Tuivory work before starting. If there is no issue, ask the user before creating one. If the project does not exist, do not substitute a LORA issue while waiting for project creation.
 - Move the TVR issue to in progress when actual work starts. After implementation and required validation, complete it and add evidence in a comment. Distinguish local checks from unrun GitHub CI and publication state.
@@ -18,8 +18,10 @@
 
 - Distributed executables for Go, Rust and future languages without an explicit exception must be static artifacts requiring no dynamic loader, shared libraries or separately installed language runtime. Those packages must not introduce mandatory native dependencies that prevent host static linking. Build-time modules/crates are allowed. Verify static Linux artifacts through ELF inspection and execution in available local/CI environments. Per user instruction, do not run CentOS validation; retain existing CentOS results only as historical evidence. Shell sources are interpreter-based references; standalone executable distributions must meet the same static requirements. [Static distribution](docs/static-build.en.md)
 
-- Python, TypeScript and JavaScript support are user-authorized exceptions. Deliver normal Python/npm packages and examples using their language runtimes. Static linking, standalone executables, static ELF checks and CentOS validation are not required. Document supported runtimes/versions/dependencies and verify installation/import/execution in clean external environments. [Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) · [TypeScript/JavaScript TVR-16](https://leechis7.atlassian.net/browse/TVR-16)
+- Python, TypeScript, JavaScript and Java support are user-authorized exceptions. Deliver normal Python/npm/JAR packages and examples using their language runtimes. Static linking, standalone executables, static ELF checks and CentOS validation are not required. Document supported runtimes/versions/dependencies and verify installation/import/execution in clean external environments. [Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) · [TypeScript/JavaScript TVR-16](https://leechis7.atlassian.net/browse/TVR-16) · [Java TVR-32](https://leechis7.atlassian.net/browse/TVR-32)
 
 - After user approval, publish and merge each component stage into `dev` only. Update `main`, tags and Releases only after all work is complete and a separate release instruction is given. Do not automatically synchronize `main` and `dev` during stage publication.
 
 - Tuivory is a TUI component library. Provide reusable controls, internal interaction/drawing and configurable layout tools; hosts own whole screens, cross-component focus order, global keys, menu/help content and business bindings. Normal host composition is not an incomplete migration defect. [Boundary](docs/component-boundary.en.md)
+
+- Each supported language has an independent implementation and runtime. Do not call another Tuivory language implementation through FFI/JNI, subprocesses, or shared runtime libraries. C++ must not depend on Tuivory C. Shared design data, specifications, test fixtures and build-time generators are permitted. TypeScript/JavaScript share one TypeScript implementation emitting JavaScript and declarations.

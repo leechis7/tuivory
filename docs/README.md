@@ -29,3 +29,5 @@
 [현재 릴리스](release-0.11.1.md)
 
 0.7.0 TVR-26: Go·Rust에서 Tuivory 경로만 사용하는 UI 구성, 공통 입력·바이트 span 변환과 터미널 수명을 제공합니다. [API 대응·예제·현재 제공 상태](ui-facade.md).
+
+[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.

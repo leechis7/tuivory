@@ -55,3 +55,7 @@ Checks cover Korean/English startup, Ctrl+Q exit, alternate-screen restoration a
 ## Historical 0.2.0 publication
 
 These static builds are included in the v0.2.0 tagged release. The existing `v0.1.0` Rust ARM64 release binary uses GNU/glibc 2.39 and differs from the new static artifacts. Existing tags and assets have not been changed. The previous Go ARM64 artifact is already static but is not a CentOS 7.4 x86_64 artifact. Record new commits, publication and remote CI results separately.
+
+## Unreleased independent language packages
+
+C and C++ examples also build one executable for the native Linux host and pass static ELF checks. C++ does not link Tuivory C. Python/JS/Java use their normal runtimes and are explicit exceptions to runtime-free static distributions; Java uses a pure JAR without JNI. These new packages are not part of published 0.11.1. [Availability and validation](languages.en.md).

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=78"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tuivory"
+version = "0.11.1"
+description = "Independent Python TUI component models and semantic terminal drawing"
+requires-python = ">=3.11"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE"]
+dependencies = ["regex>=2026.9.29", "wcwidth>=0.9.4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+tuivory = ["*.json", "py.typed"]

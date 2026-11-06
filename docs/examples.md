@@ -116,3 +116,5 @@ Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](overlay-dr
 기존 통합 실행파일에서 `--demo catalog --mode grid --grid-sample --grid-preset data`로 실행합니다. `--grid-edit-preview`는 편집 중 화면으로 시작합니다. 합성 데이터의 앱 승인·거절/재시도·NULL·붙여넣기·찾기·열 관리·메모리 보기 복원·원문 상세를 한 예제에 모으며 실행파일을 추가하지 않습니다. [키와 화면](grid-workspace.md).
 
 TVR-7 0.11.1: [실제 그리드 커서·backend 연결](grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.
+
+[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.
