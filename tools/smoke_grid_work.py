@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--theme', choices=['dark', 'light', 'blackwhite'], default='dark')
     parser.add_argument('--colors', choices=['8', '16', '256', 'truecolor'], default='256')
     parser.add_argument('--ascii', action='store_true')
-    parser.add_argument('--cursor',action='store_true',help='verify unreleased real-cursor integration and no shape/blink override')
+    parser.add_argument('--cursor',action='store_true',help='verify real-cursor integration and no shape/blink override')
     args = parser.parse_args()
     master, slave = pty.openpty()
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', 36, 120, 0, 0))

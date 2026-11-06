@@ -1,4 +1,4 @@
-# Rust API — source (0.11.0)
+# Rust API — source (0.11.1)
 
 [한국어 (default)](rust.md) · **English**
 
