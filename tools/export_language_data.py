@@ -16,6 +16,24 @@ def emit(path, content):
         path.write_text(content)
 
 def generate():
+    syntax_unicode=json.loads((ROOT/'design/syntax-unicode.json').read_text())
+    for path in ['python/src/tuivory/syntax-unicode.json','javascript/src/syntax-unicode.json']:emit(ROOT/path,json.dumps(syntax_unicode,ensure_ascii=False,separators=(',',':'))+'\n')
+    header='/* Generated Unicode17 syntax character data; Unicode License V3, see CASEFOLD-LICENSE. */\n#pragma once\n'
+    for name in ['alphabetic','number','whitespace']:header+='static const unsigned int tui_syntax_'+name+'[][2] = {'+','.join('{'+str(a)+','+str(b)+'}'for a,b in syntax_unicode[name])+'};\n'
+    for language in ['c','cpp']:emit(ROOT/f'{language}/include/tuivory_syntax_unicode.h',header)
+    java='package io.tuivory;\n// Generated Unicode17 syntax data, Unicode License V3; see CASEFOLD-LICENSE.\nfinal class SyntaxUnicodeData {\n'
+    for name in ['alphabetic','number','whitespace']:java+='static final int[][] '+name.upper()+' = {'+','.join('{'+str(a)+','+str(b)+'}'for a,b in syntax_unicode[name])+'};\n'
+    java+='private SyntaxUnicodeData(){}\n}\n';emit(ROOT/'java/src/main/java/io/tuivory/SyntaxUnicodeData.java',java)
+    sql=json.loads((ROOT/'design/sql-syntax-words.json').read_text())
+    for path in ['python/src/tuivory/sql-syntax-words.json','javascript/src/sql-syntax-words.json']:
+        emit(ROOT/path,json.dumps(sql,ensure_ascii=False,separators=(',',':'))+'\n')
+    header='/* Generated SQL highlighting vocabulary; no executable logic. */\n#pragma once\n'
+    for group,words in sql.items():
+        header+='static const char *const tui_sql_'+group+'[] = {'+','.join(json.dumps(w)for w in words)+'};\n'
+    for language in ['c','cpp']:emit(ROOT/f'{language}/include/tuivory_sql_words.h',header)
+    java='package io.tuivory;\n// Generated SQL highlighting vocabulary, not an implementation.\nfinal class SqlWordsData {\n'
+    for group,words in sql.items():java+='static final String[] '+group.upper()+'={'+','.join(json.dumps(w)for w in words)+'};\n'
+    java+='private SqlWordsData(){}\n}\n';emit(ROOT/'java/src/main/java/io/tuivory/SqlWordsData.java',java)
     fold=json.loads((ROOT/'design/casefold.json').read_text())
     for path in ['python/src/tuivory/casefold.json','javascript/src/casefold.json']:
         emit(ROOT/path,json.dumps(fold,ensure_ascii=False,separators=(',',':'))+'\n')

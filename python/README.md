@@ -49,3 +49,5 @@ python3 -m tuivory --demo tree --lang ko
 [독립 언어 팝업 그림자와 대화상자](../docs/language-popups.md)
 
 [독립 언어 문서 보기·편집 API](../docs/language-documents.md)
+
+[독립 언어 구문 강조·SQL 분류 API](../docs/language-syntax.md)

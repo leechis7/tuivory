@@ -14,7 +14,7 @@ typedef struct {
 /* RGB uses 0x1000000 | RRGGBB; other values are ANSI indices 0..255. */
 typedef struct {
   unsigned foreground, background;
-  int bold, dim, underline;
+  int bold, dim, underline, italic;
 } TuiStyle;
 typedef struct {
   int disabled, read_only, busy, selected, edited, invalid;
@@ -746,6 +746,52 @@ TuiResult tui_document_draw(TuiDocument *document, TuiCanvas *canvas,
                             TuiRect bounds, int focused, int ascii);
 TuiTextEvent tui_document_click(TuiDocument *document, int x, int y, int width,
                                 int height, int extend);
+/* Optional source-tagged syntax analysis; offsets are original UTF-8 bytes. */
+typedef struct {
+  size_t start, end;
+  const char *role;
+} TuiSyntaxToken;
+typedef struct {
+  const char *language, *dialect;
+} TuiSyntaxRequest;
+typedef struct {
+  const char *source, *language, *dialect;
+  const TuiSyntaxToken *tokens;
+  size_t count;
+} TuiSyntaxAnalysis;
+/* Callback returns owned analysis created with
+ * tui_syntax_analysis_new/sql_analyze. The library frees it on success or
+ * failure. Context remains caller-owned. */
+typedef TuiResult (*TuiSyntaxAnalyzer)(void *context, const char *text,
+                                       const TuiSyntaxRequest *request,
+                                       TuiSyntaxAnalysis **out);
+TuiSyntaxAnalysis *tui_syntax_analysis_new(const char *source,
+                                           const char *language,
+                                           const char *dialect,
+                                           const TuiSyntaxToken *tokens,
+                                           size_t count);
+void tui_syntax_analysis_free(TuiSyntaxAnalysis *analysis);
+TuiResult tui_syntax_validate(const TuiSyntaxAnalysis *analysis,
+                              const char *source);
+const char *tui_syntax_role_style(const char *role);
+const char *tui_syntax_palette_role(const char *role);
+TuiResult tui_syntax_style(const char *theme, const char *profile,
+                           const char *role, const char *surface,
+                           TuiStyle *out);
+/* Signature adapter for use directly as a TuiSyntaxAnalyzer callback. */
+TuiResult tui_sql_analyzer(void *context, const char *text,
+                           const TuiSyntaxRequest *request,
+                           TuiSyntaxAnalysis **out);
+TuiResult tui_sql_analyze(const char *text, const TuiSyntaxRequest *request,
+                          TuiSyntaxAnalysis **out);
+TuiResult tui_document_set_syntax_analysis(TuiDocument *document,
+                                           const TuiSyntaxAnalysis *analysis);
+TuiResult tui_document_set_syntax_analyzer(TuiDocument *document,
+                                           TuiSyntaxAnalyzer analyzer,
+                                           void *context,
+                                           const TuiSyntaxRequest *request);
+TuiResult tui_document_refresh_syntax(TuiDocument *document);
+const char *tui_document_syntax_error(const TuiDocument *document);
 #ifdef __cplusplus
 }
 #endif

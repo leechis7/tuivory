@@ -45,6 +45,7 @@ class Style:
     bold: bool = False
     dim: bool = False
     underline: bool = False
+    italic: bool = False
 
     def sgr(self) -> str:
         def color(value: str, background: bool) -> str:
@@ -59,7 +60,7 @@ class Style:
                 return str((100 if background else 90) + n - 8)
             return f"{base};5;{n}"
         codes = ["0", color(self.foreground, False), color(self.background, True)]
-        codes += [str(code) for on, code in [(self.bold, 1), (self.dim, 2), (self.underline, 4)] if on]
+        codes += [str(code) for on, code in [(self.bold, 1), (self.dim, 2), (self.italic, 3), (self.underline, 4)] if on]
         return "\x1b[" + ";".join(codes) + "m"
 
 

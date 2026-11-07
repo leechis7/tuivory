@@ -333,7 +333,7 @@ struct State {
 };
 struct Style {
   unsigned foreground = 7, background = 0;
-  bool bold = false, dim = false, underline = false;
+  bool bold = false, dim = false, underline = false, italic = false;
   std::string sgr() const {
     auto color = [](unsigned c, bool bg) {
       std::string prefix = bg ? "48" : "38";
@@ -346,7 +346,7 @@ struct Style {
     };
     return "\033[0;" + color(foreground, false) + ";" +
            color(background, true) + (bold ? ";1" : "") + (dim ? ";2" : "") +
-           (underline ? ";4" : "") + "m";
+           (italic ? ";3" : "") + (underline ? ";4" : "") + "m";
   }
 };
 inline bool plain_text_role(const std::string &role) {
@@ -403,6 +403,8 @@ public:
     if (theme_ < 0 || profile_ < 0)
       throw std::invalid_argument("unknown palette");
   }
+  std::string theme()const{return theme_==0?"dark":theme_==1?"light":"blackwhite";}
+  std::string colors()const{return profile_==0?"8":profile_==1?"16":profile_==2?"256":"truecolor";}
   Style style(const std::string &role = "body", bool focused = false) const {
     int i = 0;
     for (; i < 16; i++)
@@ -855,5 +857,6 @@ inline std::string fold(const std::string &text) {
 #include "tuivory_surfaces.hpp"
 #include "tuivory_popups.hpp"
 #include "tuivory_dialogs.hpp"
+#include "tuivory_syntax.hpp"
 #include "tuivory_documents.hpp"
 // clang-format on

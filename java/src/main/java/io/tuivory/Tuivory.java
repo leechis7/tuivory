@@ -146,8 +146,11 @@ public final class Tuivory {
           + (edited ? "*" : "") + (busy ? "~" : "") + (readOnly ? "=" : "");
     }
   }
-  public record
-      Style(int foreground, int background, boolean bold, boolean dim, boolean underline) {
+  public record Style(int foreground, int background, boolean bold, boolean dim, boolean underline,
+      boolean italic) {
+    public Style(int foreground, int background, boolean bold, boolean dim, boolean underline) {
+      this(foreground, background, bold, dim, underline, false);
+    }
     private String color(int c, boolean bg) {
       String base = bg ? "48" : "38";
       if ((c & 0x1000000) != 0)
@@ -158,7 +161,8 @@ public final class Tuivory {
     }
     public String sgr() {
       return "\033[0;" + color(foreground, false) + ";" + color(background, true)
-          + (bold ? ";1" : "") + (dim ? ";2" : "") + (underline ? ";4" : "") + "m";
+          + (bold ? ";1" : "") + (dim ? ";2" : "") + (italic ? ";3" : "") + (underline ? ";4" : "")
+          + "m";
     }
   }
   private static boolean plainTextRole(String role) {
@@ -3562,7 +3566,7 @@ public final class Tuivory {
       for (int x = left; x < right; x++) {
         if (options.mode.equals("dim")) {
           var s = row[x].style;
-          row[x].style = new Style(s.foreground, s.background, s.bold, true, s.underline);
+          row[x].style = new Style(s.foreground, s.background, s.bold, true, s.underline, s.italic);
           continue;
         }
         int bg = backgrounds[x - left],
@@ -3980,6 +3984,7 @@ public final class Tuivory {
     return new MarkupDocument(source.toString(), spans);
   }
   public static final class TextDocument {
+    private SyntaxBinding syntaxBinding;
     public Text buffer;
     public boolean wrap, lineNumbers;
     public int scrollX, scrollY;
@@ -4022,7 +4027,7 @@ public final class Tuivory {
       dialogText(text, 1000000);
       var old = buffer;
       buffer = new Text(text);
-      buffer.state = old.state;
+      buffer.state = copyState(old.state);
       buffer.secret = old.secret;
       styles = List.of();
       matches = List.of();
@@ -4031,6 +4036,7 @@ public final class Tuivory {
       hits = List.of();
       lastSource = null;
       reveal = !buffer.state.readOnly;
+      refreshSyntaxSafe();
     }
     private void range(int start, int end, int n) {
       if (start < 0 || end < start || end > n)
@@ -4081,8 +4087,94 @@ public final class Tuivory {
     }
     public void setMarkup(String markup) {
       var parsed = parseMarkup(markup);
+      setSyntaxAnalyzer(null);
       setText(parsed.source());
       setSyntax(parsed.spans());
+    }
+    private void applySyntax(SyntaxAnalysis analysis) {
+      if (buffer.secret)
+        throw new IllegalArgumentException("syntax analysis unavailable for secret buffers");
+      analysis.validate(buffer.value());
+      var spans = new ArrayList<DocumentSpan>();
+      for (var t : analysis.tokens())
+        spans.add(new DocumentSpan(t.start(), t.end(), syntaxRoleStyle(t.role())));
+      setByteSyntax(spans);
+    }
+    public void setSyntaxAnalysis(SyntaxAnalysis analysis) {
+      if (syntaxBinding != null && syntaxBinding.refreshing)
+        throw new IllegalArgumentException("recursive syntax analysis");
+      applySyntax(analysis);
+      syntaxBinding = new SyntaxBinding(null, new SyntaxRequest(), buffer.value());
+    }
+    public void setSyntaxAnalyzer(SyntaxAnalyzer analyzer) {
+      setSyntaxAnalyzer(analyzer, new SyntaxRequest());
+    }
+    public void setSyntaxAnalyzer(SyntaxAnalyzer analyzer, SyntaxRequest request) {
+      if (syntaxBinding != null && syntaxBinding.refreshing)
+        throw new IllegalArgumentException("recursive syntax analysis");
+      if (analyzer == null) {
+        syntaxBinding = null;
+        styles = List.of();
+        syntaxSource = buffer.value();
+        return;
+      }
+      if (buffer.secret)
+        throw new IllegalArgumentException("syntax analysis unavailable for secret buffers");
+      if (request == null)
+        request = new SyntaxRequest();
+      var analysis = analyzer.analyzeSyntax(buffer.value(), request);
+      applySyntax(analysis);
+      syntaxBinding = new SyntaxBinding(analyzer, request, buffer.value());
+    }
+    public String syntaxError() {
+      return buffer.secret || syntaxBinding == null ? null : syntaxBinding.error;
+    }
+    private void refreshSyntaxSafe() {
+      try {
+        refreshSyntax();
+      } catch (RuntimeException ignored) {
+      }
+    }
+    public void refreshSyntax() {
+      var binding = syntaxBinding;
+      if (buffer.secret) {
+        if (binding != null) {
+          binding.source = "";
+          binding.dirty = true;
+        }
+        styles = List.of();
+        return;
+      }
+      if (binding == null)
+        return;
+      if (binding.refreshing)
+        throw new IllegalArgumentException("recursive syntax analysis");
+      if (binding.source.equals(buffer.value()) && !binding.dirty) {
+        if (binding.error != null)
+          throw new IllegalArgumentException(binding.error);
+        return;
+      }
+      String source = buffer.value();
+      binding.refreshing = true;
+      try {
+        if (binding.analyzer != null)
+          applySyntax(binding.analyzer.analyzeSyntax(source, binding.request));
+        else {
+          styles = List.of();
+          syntaxSource = source;
+        }
+        binding.error = null;
+      } catch (RuntimeException error) {
+        styles = List.of();
+        syntaxSource = buffer.value();
+        binding.error =
+            error.getMessage() == null ? error.getClass().getSimpleName() : error.getMessage();
+        throw error;
+      } finally {
+        binding.source = source;
+        binding.dirty = false;
+        binding.refreshing = false;
+      }
     }
     public void revealCursor() {
       reveal = true;
@@ -4120,6 +4212,7 @@ public final class Tuivory {
           var e = buffer.handle(action, text);
           if (Set.of("select", "change", "cut").contains(e.kind()))
             reveal = true;
+          refreshSyntaxSafe();
           return e;
         }
       }
@@ -4139,6 +4232,7 @@ public final class Tuivory {
       if (width < 0 || height < 0 || width > 1000000 || height > 1000000)
         throw new IllegalArgumentException("invalid document dimensions");
       dialogText(buffer.value(), 1000000);
+      refreshSyntaxSafe();
       this.height = height;
       hits = List.of();
       if (width == 0 || height == 0)
@@ -4280,9 +4374,7 @@ public final class Tuivory {
             canvas.palette.textOnSurface(buffer.state.disabled ? "disabled" : "hint", role),
             bounds.width());
         for (var g : row.glyphs()) {
-          Style style = g.role().startsWith("syntax.")
-              ? canvas.palette.textOnSurface(
-                    DOCUMENT_SYNTAX.getOrDefault(g.role().substring(7), "body"), role)
+          Style style = g.role().startsWith("syntax.") ? syntaxStyle(canvas.palette, g.role(), role)
               : Set.of("selection", "edited", "field", "button", "header").contains(g.role())
               ? canvas.palette.style(g.role())
               : canvas.palette.textOnSurface(g.role(), role);
@@ -4311,6 +4403,298 @@ public final class Tuivory {
       buffer.select(extend ? buffer.anchor : at, at);
       reveal = true;
       return new Event("select", "", "");
+    }
+  }
+  public record SyntaxToken(int start, int end, String role) {}
+  public record SyntaxRequest(String language, String dialect) {
+    public SyntaxRequest() {
+      this("", "");
+    }
+    public SyntaxRequest {
+      language = dialogText(language, 128);
+      dialect = dialogText(dialect, 128);
+    }
+  }
+  public record
+      SyntaxAnalysis(String source, String language, String dialect, List<SyntaxToken> tokens) {
+    public SyntaxAnalysis {
+      tokens = List.copyOf(tokens);
+    }
+    public void validate(String text) {
+      dialogText(source, 1000000);
+      dialogText(language, 128);
+      dialogText(dialect, 128);
+      if (!source.equals(text))
+        throw new IllegalArgumentException("stale syntax source");
+      if (tokens.size() > 1000000)
+        throw new IllegalArgumentException("too many syntax tokens");
+      var boundaries = new HashSet<Integer>();
+      boundaries.add(0);
+      int offset = 0;
+      for (int at = 0; at < text.length();) {
+        int cp = text.codePointAt(at);
+        offset += cp < 128 ? 1 : cp < 2048 ? 2 : cp < 65536 ? 3 : 4;
+        at += Character.charCount(cp);
+        boundaries.add(offset);
+      }
+      int end = 0;
+      for (var t : tokens) {
+        dialogText(t.role(), 128);
+        if (t.start() < end || t.end() <= t.start() || !boundaries.contains(t.start())
+            || !boundaries.contains(t.end()))
+          throw new IllegalArgumentException(
+              "unordered, overlapping or invalid UTF-8 syntax range");
+        end = t.end();
+      }
+    }
+  }
+  @FunctionalInterface
+  public interface SyntaxAnalyzer {
+    SyntaxAnalysis analyzeSyntax(String text, SyntaxRequest request);
+  }
+  private static final class SyntaxBinding {
+    final SyntaxAnalyzer analyzer;
+    final SyntaxRequest request;
+    String source, error;
+    boolean dirty, refreshing;
+    SyntaxBinding(SyntaxAnalyzer analyzer, SyntaxRequest request, String source) {
+      this.analyzer = analyzer;
+      this.request = request;
+      this.source = source;
+    }
+  }
+  public static String syntaxRoleStyle(String role) {
+    if (role == null)
+      return "body";
+    return switch (role) {
+      case "keyword" -> "syntax.keyword";
+      case "function", "macro", "attribute" -> "syntax.function";
+      case "type" -> "syntax.type";
+      case "string", "character" -> "syntax.string";
+      case "number", "constant" -> "syntax.number";
+      case "comment", "directive" -> "syntax.comment";
+      case "parameter", "lifetime" -> "syntax.parameter";
+      default -> "body";
+    };
+  }
+  public static String syntaxPaletteRole(String role) {
+    if (role == null)
+      return "body";
+    if (role.startsWith("syntax."))
+      role = role.substring(7);
+    return DOCUMENT_SYNTAX.getOrDefault(role, "body");
+  }
+  public static Style syntaxStyle(Palette palette, String role) {
+    return syntaxStyle(palette, role, "editor");
+  }
+  public static Style syntaxStyle(Palette palette, String role, String surface) {
+    String kind = role == null       ? ""
+        : role.startsWith("syntax.") ? role.substring(7)
+                                     : role,
+           mapped = syntaxPaletteRole(kind);
+    var base = palette.textOnSurface(mapped, surface);
+    if (mapped.equals("body"))
+      return base;
+    if (palette.theme == 2)
+      return new Style(base.foreground, base.background, false, false,
+          Set.of("keyword", "parameter").contains(kind), kind.equals("comment"));
+    boolean dark =
+        palette.style("surface").background == 0 && palette.style("warning").foreground == 3;
+    for (String name : Data.ROLES) {
+      var s = palette.style(name);
+      dark &= s.foreground >= 0 && s.foreground <= 7 && s.background >= 0 && s.background <= 7;
+    }
+    if (dark) {
+      int foreground = Set.of("keyword", "function", "string", "parameter").contains(kind) ? 3 : 7;
+      if (colorContrast(foreground, base.background) < 4.5
+          && colorContrast(base.foreground, base.background)
+              > colorContrast(foreground, base.background))
+        foreground = base.foreground;
+      return new Style(foreground, base.background, Set.of("keyword", "number").contains(kind),
+          false, Set.of("keyword", "type", "parameter").contains(kind),
+          Set.of("string", "comment").contains(kind));
+    }
+    return base;
+  }
+  private static boolean sqlStart(int cp) {
+    return cp == '_' || inRanges(cp, SyntaxUnicodeData.ALPHABETIC);
+  }
+  private static boolean sqlPart(int cp) {
+    return sqlStart(cp) || inRanges(cp, SyntaxUnicodeData.NUMBER) || cp == '$' || cp == '#'
+        || cp >= 0x300 && cp <= 0x36f || cp >= 0x1ab0 && cp <= 0x1aff
+        || cp >= 0x1dc0 && cp <= 0x1dff || cp >= 0x20d0 && cp <= 0x20ff
+        || cp >= 0xfe20 && cp <= 0xfe2f;
+  }
+  private static boolean sqlSpace(int cp) {
+    return inRanges(cp, SyntaxUnicodeData.WHITESPACE);
+  }
+  private static boolean sqlDigit(int cp) {
+    return cp >= '0' && cp <= '9';
+  }
+  private static int sqlQuoted(String text, int at, char quote) {
+    at++;
+    while (at < text.length()) {
+      if (text.charAt(at) == quote) {
+        at++;
+        if (at < text.length() && text.charAt(at) == quote) {
+          at++;
+          continue;
+        }
+        return at;
+      }
+      at++;
+    }
+    return at;
+  }
+  /** Independent optional SQL/PLSQL classification; never executes SQL. */
+  public static final class SQLAnalyzer implements SyntaxAnalyzer {
+    private static final Set<String> TYPES = Set.copyOf(Arrays.asList(SqlWordsData.TYPES)),
+                                     FUNCTIONS = Set.copyOf(Arrays.asList(SqlWordsData.FUNCTIONS)),
+                                     KEYWORDS = Set.copyOf(Arrays.asList(SqlWordsData.KEYWORDS));
+    public SyntaxAnalysis analyzeSyntax(String text) {
+      return analyzeSyntax(text, new SyntaxRequest());
+    }
+    @Override
+    public SyntaxAnalysis analyzeSyntax(String text, SyntaxRequest request) {
+      dialogText(text, 1000000);
+      if (request == null)
+        request = new SyntaxRequest();
+      String language =
+                 request.language().isEmpty() ? "sql" : request.language().toLowerCase(Locale.ROOT),
+             dialect = request.dialect().isEmpty() ? "oracle"
+                                                   : request.dialect().toLowerCase(Locale.ROOT);
+      if (!Set.of("sql", "plsql").contains(language) || !dialect.equals("oracle"))
+        throw new IllegalArgumentException("unsupported syntax language/dialect");
+      int n = text.length(), i = 0;
+      var raw = new ArrayList<SyntaxToken>();
+      while (i < n) {
+        int start = i, cp = text.codePointAt(i);
+        if (sqlSpace(cp)) {
+          i += Character.charCount(cp);
+          continue;
+        }
+        String role = "punctuation";
+        int prefix = i + 2 < n && (text.charAt(i) == 'q' || text.charAt(i) == 'Q')
+                && text.charAt(i + 1) == '\''
+            ? 2
+            : i + 3 < n && (text.charAt(i) == 'n' || text.charAt(i) == 'N')
+                && (text.charAt(i + 1) == 'q' || text.charAt(i + 1) == 'Q')
+                && text.charAt(i + 2) == '\''
+            ? 3
+            : 0;
+        if (text.startsWith("--", i)) {
+          role = "comment";
+          i += 2;
+          while (i < n && text.charAt(i) != '\r' && text.charAt(i) != '\n') i++;
+        } else if (text.startsWith("/*", i)) {
+          role = "comment";
+          int end = text.indexOf("*/", i + 2);
+          i = end < 0 ? n : end + 2;
+        } else if (prefix > 0) {
+          role = "string";
+          i += prefix;
+          if (i < n) {
+            int open = text.codePointAt(i);
+            if (!sqlSpace(open)) {
+              String close = switch (open) {
+                case '[' -> "]";
+                case '{' -> "}";
+                case '(' -> ")";
+                case '<' -> ">";
+                default -> new String(Character.toChars(open));
+              };
+              String ending = close + "'";
+              int end = text.indexOf(ending, i + Character.charCount(open));
+              i = end < 0 ? n : end + ending.length();
+            } else {
+              i = start + Character.charCount(cp);
+              role = "identifier";
+            }
+          }
+        } else if (cp == '\''
+            || (cp == 'n' || cp == 'N') && i + 1 < n && text.charAt(i + 1) == '\'') {
+          role = "string";
+          i = sqlQuoted(text, i + (cp == '\'' ? 0 : 1), '\'');
+        } else if (cp == '"') {
+          role = "identifier";
+          i = sqlQuoted(text, i, '"');
+        } else if (cp == ':' && i + 1 < n
+            && (sqlStart(text.codePointAt(i + 1)) || sqlDigit(text.charAt(i + 1))
+                || text.charAt(i + 1) == '"')) {
+          role = "parameter";
+          i++;
+          if (text.charAt(i) == '"')
+            i = sqlQuoted(text, i, '"');
+          else
+            while (i < n && sqlPart(text.codePointAt(i)))
+              i += Character.charCount(text.codePointAt(i));
+        } else if (text.startsWith("..", i)) {
+          role = "operator";
+          i += 2;
+        } else if (sqlDigit(cp) || cp == '.' && i + 1 < n && sqlDigit(text.charAt(i + 1))) {
+          role = "number";
+          while (i < n && sqlDigit(text.charAt(i))) i++;
+          if (i < n && text.charAt(i) == '.' && !text.startsWith("..", i)) {
+            i++;
+            while (i < n && sqlDigit(text.charAt(i))) i++;
+          }
+          if (i < n && (text.charAt(i) == 'e' || text.charAt(i) == 'E')) {
+            int end = i + 1;
+            if (end < n && (text.charAt(end) == '+' || text.charAt(end) == '-'))
+              end++;
+            int first = end;
+            while (end < n && sqlDigit(text.charAt(end))) end++;
+            if (end > first)
+              i = end;
+          }
+          if (i < n && "fFdD".indexOf(text.charAt(i)) >= 0)
+            i++;
+        } else if (sqlStart(cp)) {
+          i += Character.charCount(cp);
+          while (i < n && sqlPart(text.codePointAt(i)))
+            i += Character.charCount(text.codePointAt(i));
+          var word = new StringBuilder(text.substring(start, i));
+          for (int k = 0; k < word.length(); k++) {
+            char c = word.charAt(k);
+            if (c >= 'a' && c <= 'z')
+              word.setCharAt(k, (char) (c - 32));
+          }
+          String upper = word.toString();
+          role = TYPES.contains(upper)    ? "type"
+              : FUNCTIONS.contains(upper) ? "function"
+              : KEYWORDS.contains(upper)  ? "keyword"
+                                          : "identifier";
+        } else {
+          i += Character.charCount(cp);
+          if (cp < 128 && "+-*/%=<>!|:^~".indexOf(cp) >= 0) {
+            role = "operator";
+            if (i < n
+                && Set.of(":=", "=>", "<=", ">=", "!=", "<>", "||", "**")
+                    .contains(text.substring(start, i + 1)))
+              i++;
+          }
+        }
+        raw.add(new SyntaxToken(start, i, role));
+      }
+      var tokens = new ArrayList<SyntaxToken>();
+      int which = 0, previous = -1, offset = 0, bytes = 0;
+      for (String g : graphemes(text)) {
+        int end = offset + g.length(),
+            size = g.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        while (which < raw.size() && raw.get(which).end() <= offset) which++;
+        if (which < raw.size() && raw.get(which).start() < end) {
+          SyntaxToken last = tokens.isEmpty() ? null : tokens.get(tokens.size() - 1);
+          if (previous == which && last != null && last.end() == bytes)
+            tokens.set(tokens.size() - 1, new SyntaxToken(last.start(), bytes + size, last.role()));
+          else
+            tokens.add(new SyntaxToken(bytes, bytes + size, raw.get(which).role()));
+          previous = which;
+        } else
+          previous = -1;
+        offset = end;
+        bytes += size;
+      }
+      return new SyntaxAnalysis(text, language, dialect, tokens);
     }
   }
 }

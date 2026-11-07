@@ -96,7 +96,8 @@ int main(int argc, char **argv) {
          form_demo = false, list_demo = false, picker_demo = false,
          menu_demo = false, context_demo = false, feedback_demo = false,
          layout_demo = false, container_demo = false, surface_demo = false,
-         shadow_demo = false, dialog_demo = false, document_demo = false;
+         shadow_demo = false, dialog_demo = false, document_demo = false,
+         syntax_demo = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -126,7 +127,8 @@ int main(int argc, char **argv) {
         surface_demo = demo == "surface";
         shadow_demo = demo == "shadow";
         dialog_demo = demo == "dialog";
-        document_demo = demo == "document";
+        syntax_demo = demo == "syntax";
+        document_demo = demo == "document" || syntax_demo;
         if (shadow_demo)
           menu_demo = context_demo = true;
         menu_demo = context_demo || demo == "menu";
@@ -134,14 +136,15 @@ int main(int argc, char **argv) {
             !list_demo && !picker_demo && !menu_demo && !feedback_demo &&
             !layout_demo && !container_demo && !surface_demo && !dialog_demo &&
             !document_demo)
-          throw std::invalid_argument(
-              "Supported demos: tree, workspace, text, "
-              "form, list, picker, menu, context-menu, "
-              "feedback, layout, container, surface, shadow, dialog, document");
+          throw std::invalid_argument("Supported demos: tree, workspace, text, "
+                                      "form, list, picker, menu, context-menu, "
+                                      "feedback, layout, container, surface, "
+                                      "shadow, dialog, document, syntax");
       } else {
         std::cout << "--demo "
                      "tree|workspace|text|form|list|picker|menu|context-menu|"
-                     "feedback|layout|container|surface|shadow|dialog|document "
+                     "feedback|layout|container|surface|shadow|dialog|document|"
+                     "syntax "
                      "--lang ko|en "
                      "--theme "
                      "dark|light|blackwhite "
@@ -153,7 +156,7 @@ int main(int argc, char **argv) {
     FeedbackDemo feedback_host(en);
     LayoutDemo layout_host(en);
     ContainerDemo container_host(en, ascii);
-    DocumentDemo document_host(en, ascii);
+    DocumentDemo document_host(en, ascii, syntax_demo);
     DialogDemo dialog_host(en);
     SurfaceDemo surface_host(en);
     Tree tree({{"root", en ? "Workspace" : "작업 공간"},

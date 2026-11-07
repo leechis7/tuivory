@@ -63,7 +63,7 @@ class WorkspaceDemo:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu', 'layout', 'container','surface','shadow','dialog','document'], default='tree')
+    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu', 'layout', 'container','surface','shadow','dialog','document','syntax'], default='tree')
     parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
     parser.add_argument('--theme', choices=['dark', 'light', 'blackwhite'], default='dark')
     parser.add_argument('--colors', choices=['8', '16', '256', 'truecolor'], default='256')
@@ -119,6 +119,7 @@ def main():
     models['dialog'] = DialogDemo(not ko)
     from ._document_example import DocumentDemo
     models['document'] = DocumentDemo(not ko,args.ascii)
+    models['syntax'] = DocumentDemo(not ko,args.ascii,True)
     model = models[args.demo]
     themes, profiles = ['dark', 'light', 'blackwhite'], ['8', '16', '256', 'truecolor']
     theme, colors = args.theme, args.colors

@@ -16,11 +16,12 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog|document --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog|document|syntax --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
-const documentDemo = value("--demo", "tree") === "document";
+const syntaxDemo = value("--demo", "tree") === "syntax";
+const documentDemo = ["document", "syntax"].includes(value("--demo", "tree"));
 const dialogDemo = value("--demo", "tree") === "dialog";
 const surfaceDemo = value("--demo", "tree") === "surface";
 const containerDemo = value("--demo", "tree") === "container";
@@ -50,13 +51,13 @@ if (
   value("--demo", "tree") !== "tree"
 )
   throw new Error(
-    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog, document",
+    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog, document, syntax",
   );
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 const layoutHost = new LayoutDemo(en);
 const containerHost = new ContainerDemo(en, ascii);
-const documentHost = new DocumentDemo(en, ascii);
+const documentHost = new DocumentDemo(en, ascii, syntaxDemo);
 const dialogHost = new DialogDemo(en);
 const surfaceHost = new SurfaceDemo(en);
 const feedbackHost = new FeedbackDemo(en);

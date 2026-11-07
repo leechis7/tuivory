@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
       text_demo = 0, form_demo = 0, list_demo = 0, picker_demo = 0,
       menu_demo = 0, context_demo = 0, feedback_demo = 0, layout_demo = 0,
       container_demo = 0, surface_demo = 0, shadow_demo = 0, dialog_demo = 0,
-      document_demo = 0;
+      document_demo = 0, syntax_demo = 0;
   TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
@@ -111,7 +111,8 @@ int main(int argc, char **argv) {
       surface_demo = !strcmp(demo, "surface");
       shadow_demo = !strcmp(demo, "shadow");
       dialog_demo = !strcmp(demo, "dialog");
-      document_demo = !strcmp(demo, "document");
+      syntax_demo = !strcmp(demo, "syntax");
+      document_demo = !strcmp(demo, "document") || syntax_demo;
       if (shadow_demo)
         menu_demo = context_demo = 1;
       menu_demo = context_demo || !strcmp(demo, "menu");
@@ -127,7 +128,7 @@ int main(int argc, char **argv) {
     } else {
       puts("--demo "
            "tree|workspace|text|form|list|picker|menu|context-menu|feedback|"
-           "layout|container|surface|shadow|dialog|document "
+           "layout|container|surface|shadow|dialog|document|syntax "
            "--lang ko|en --theme "
            "dark|light|blackwhite "
            "--colors "
@@ -146,6 +147,8 @@ int main(int argc, char **argv) {
   menu_host.shadow_demo = shadow_demo;
   DocumentDemo document_host;
   if (!document_demo_init(&document_host, en, ascii))
+    return 1;
+  if (syntax_demo && !document_demo_use_syntax(&document_host, ascii))
     return 1;
   DialogDemo dialog_host;
   if (!dialog_demo_init(&dialog_host, en))

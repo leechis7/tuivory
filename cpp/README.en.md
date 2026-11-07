@@ -47,3 +47,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Independent popup shadows and dialogs](../docs/language-popups.en.md)
 
 [Independent document viewing/editing API](../docs/language-documents.en.md)
+
+[Independent syntax highlighting/SQL classification API](../docs/language-syntax.en.md)

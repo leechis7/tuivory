@@ -1,6 +1,8 @@
 #include "tuivory.h"
 #include "tuivory_data.h"
 #include "tuivory_fold.h"
+#include "tuivory_sql_words.h"
+#include "tuivory_syntax_unicode.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -331,8 +333,8 @@ TuiResult tui_style(const char *theme, const char *profile, const char *role,
     return TUI_INVALID;
   {
     const unsigned *v = tui_palette_data[(t * 4 + p) * 16 + r];
-    *out =
-        (TuiStyle){v[0], v[1], (int)v[2], !strcmp(role, "disabled"), focused};
+    *out = (TuiStyle){v[0],    v[1], (int)v[2], !strcmp(role, "disabled"),
+                      focused, 0};
   }
   return TUI_OK;
 }
@@ -784,7 +786,8 @@ char *tui_canvas_ansi(const TuiCanvas *c) {
           previous.background != cell->style.background ||
           previous.bold != cell->style.bold ||
           previous.dim != cell->style.dim ||
-          previous.underline != cell->style.underline) {
+          previous.underline != cell->style.underline ||
+          previous.italic != cell->style.italic) {
         append(&b, "\033[0;");
         color(&b, cell->style.foreground, 0);
         append(&b, ";");
@@ -793,6 +796,8 @@ char *tui_canvas_ansi(const TuiCanvas *c) {
           append(&b, ";1");
         if (cell->style.dim)
           append(&b, ";2");
+        if (cell->style.italic)
+          append(&b, ";3");
         if (cell->style.underline)
           append(&b, ";4");
         append(&b, "m");
@@ -7721,7 +7726,23 @@ struct TuiDocument {
   char *syntax_source, *search_source, *last_source;
   size_t last_cursor, last_anchor;
   int height, reveal;
+  TuiSyntaxAnalyzer syntax_analyzer;
+  void *syntax_context;
+  char *syntax_language, *syntax_dialect, *syntax_binding_source;
+  int syntax_bound, syntax_dirty, syntax_refreshing;
+  TuiResult syntax_status;
 };
+static void document_clear_binding(TuiDocument *d) {
+  free(d->syntax_language);
+  free(d->syntax_dialect);
+  free(d->syntax_binding_source);
+  d->syntax_language = d->syntax_dialect = d->syntax_binding_source = NULL;
+  d->syntax_analyzer = NULL;
+  d->syntax_context = NULL;
+  d->syntax_bound = d->syntax_dirty = d->syntax_refreshing = 0;
+  d->syntax_status = TUI_OK;
+}
+
 void tui_document_spans_free(TuiDocumentSpan *s, size_t count) {
   if (s) {
     for (size_t i = 0; i < count; i++)
@@ -7731,6 +7752,7 @@ void tui_document_spans_free(TuiDocumentSpan *s, size_t count) {
 }
 void tui_document_free(TuiDocument *d) {
   if (d) {
+    document_clear_binding(d);
     tui_text_free(d->buffer);
     tui_document_spans_free(d->styles, d->style_count);
     free(d->matches);
@@ -7772,7 +7794,7 @@ TuiResult tui_document_configure(TuiDocument *d, TuiDocumentOptions o) {
   return TUI_OK;
 }
 TuiResult tui_document_set_text(TuiDocument *d, const char *text) {
-  if (!d || !dialog_text(text, 1000000))
+  if (!d || d->syntax_refreshing || !dialog_text(text, 1000000))
     return TUI_INVALID;
   TuiText *t = tui_text_new(text);
   char *s = copy(text), *q = copy(text);
@@ -7800,6 +7822,7 @@ TuiResult tui_document_set_text(TuiDocument *d, const char *text) {
   d->search_source = q;
   d->options.scroll_x = d->options.scroll_y = 0;
   d->reveal = !t->state.read_only;
+  (void)tui_document_refresh_syntax(d);
   return TUI_OK;
 }
 TuiResult tui_document_set_syntax(TuiDocument *d, const TuiDocumentSpan *spans,
@@ -8028,7 +8051,7 @@ TuiResult tui_parse_markup(const char *markup, char **source,
   return result;
 }
 TuiResult tui_document_set_markup(TuiDocument *d, const char *markup) {
-  if (!d)
+  if (!d || d->syntax_refreshing)
     return TUI_INVALID;
   char *source = NULL;
   TuiDocumentSpan *spans = NULL;
@@ -8105,6 +8128,7 @@ TuiTextEvent tui_document_handle(TuiDocument *d, const char *action,
     if (!strcmp(e.kind, "select") || !strcmp(e.kind, "change") ||
         !strcmp(e.kind, "cut"))
       d->reveal = 1;
+    (void)tui_document_refresh_syntax(d);
     return e;
   }
   d->reveal = 0;
@@ -8203,6 +8227,7 @@ TuiResult tui_document_layout(TuiDocument *d, int width, int height,
   if (!d || !out || width < 0 || height < 0 || width > 1000000 ||
       height > 1000000 || !dialog_text(d->buffer->value, 1000000))
     return TUI_INVALID;
+  (void)tui_document_refresh_syntax(d);
   TuiDocumentLayout *l = calloc(1, sizeof *l);
   if (!l)
     return TUI_NOMEM;
@@ -8427,16 +8452,6 @@ done:
     tui_document_layout_free(l);
   return result;
 }
-static const char *document_family(const char *role) {
-  static const char *families[] = {"keyword", "function", "type",     "string",
-                                   "number",  "comment",  "parameter"};
-  static const char *palettes[] = {"info",   "success", "header", "warning",
-                                   "edited", "hint",    "error"};
-  for (size_t i = 0; i < 7; i++)
-    if (!strcmp(role + 7, families[i]))
-      return palettes[i];
-  return "body";
-}
 TuiResult tui_document_draw(TuiDocument *d, TuiCanvas *c, TuiRect bounds,
                             int focused, int ascii) {
   (void)ascii;
@@ -8464,8 +8479,7 @@ TuiResult tui_document_draw(TuiDocument *d, TuiCanvas *c, TuiRect bounds,
     for (size_t i = 0; i < r->glyph_count && result == TUI_OK; i++) {
       const TuiDocumentGlyph *g = &r->glyphs[i];
       if (!strncmp(g->role, "syntax.", 7))
-        result = tui_text_on_surface(c->theme, c->profile,
-                                     document_family(g->role), role, 0, &style);
+        result = tui_syntax_style(c->theme, c->profile, g->role, role, &style);
       else if (!strcmp(g->role, "selection") || !strcmp(g->role, "edited") ||
                !strcmp(g->role, "field") || !strcmp(g->role, "button") ||
                !strcmp(g->role, "header"))
@@ -8512,4 +8526,596 @@ TuiTextEvent tui_document_click(TuiDocument *d, int x, int y, int width,
   d->reveal = 1;
   tui_document_layout_free(l);
   return text_event(d->buffer, "select", TUI_OK);
+}
+
+const char *tui_syntax_role_style(const char *role) {
+  if (!role)
+    return "body";
+  const char *names[] = {"keyword",  "function", "macro",     "attribute",
+                         "type",     "string",   "character", "number",
+                         "constant", "comment",  "directive", "parameter",
+                         "lifetime"};
+  const char *styles[] = {
+      "syntax.keyword",  "syntax.function", "syntax.function",
+      "syntax.function", "syntax.type",     "syntax.string",
+      "syntax.string",   "syntax.number",   "syntax.number",
+      "syntax.comment",  "syntax.comment",  "syntax.parameter",
+      "syntax.parameter"};
+  for (size_t i = 0; i < sizeof names / sizeof *names; i++)
+    if (!strcmp(role, names[i]))
+      return styles[i];
+  return "body";
+}
+const char *tui_syntax_palette_role(const char *role) {
+  if (!role)
+    return "body";
+  if (!strncmp(role, "syntax.", 7))
+    role += 7;
+  const char *names[] = {"keyword", "function", "type",     "string",
+                         "number",  "comment",  "parameter"},
+             *styles[] = {"info",   "success", "header", "warning",
+                          "edited", "hint",    "error"};
+  for (size_t i = 0; i < 7; i++)
+    if (!strcmp(role, names[i]))
+      return styles[i];
+  return "body";
+}
+TuiResult tui_syntax_style(const char *theme, const char *profile,
+                           const char *role, const char *surface,
+                           TuiStyle *out) {
+  if (!out)
+    return TUI_INVALID;
+  const char *kind = role ? role : "";
+  if (!strncmp(kind, "syntax.", 7))
+    kind += 7;
+  const char *mapped = tui_syntax_palette_role(kind);
+  TuiStyle base;
+  TuiResult result = tui_text_on_surface(
+      theme, profile, mapped, surface ? surface : "editor", 0, &base);
+  if (result != TUI_OK)
+    return result;
+  if (strcmp(mapped, "body")) {
+    if (!strcmp(theme, "blackwhite")) {
+      base.bold = base.dim = 0;
+      base.underline = !strcmp(kind, "keyword") || !strcmp(kind, "parameter");
+      base.italic = !strcmp(kind, "comment");
+    } else {
+      TuiStyle s;
+      int dark = tui_style(theme, profile, "surface", 0, &s) == TUI_OK &&
+                 s.background == 0;
+      dark = dark && tui_style(theme, profile, "warning", 0, &s) == TUI_OK &&
+             s.foreground == 3;
+      for (size_t i = 0; i < sizeof tui_roles / sizeof *tui_roles && dark;
+           i++) {
+        tui_style(theme, profile, tui_roles[i], 0, &s);
+        dark = s.foreground <= 7 && s.background <= 7;
+      }
+      if (dark) {
+        unsigned fg = !strcmp(kind, "keyword") || !strcmp(kind, "function") ||
+                              !strcmp(kind, "string") ||
+                              !strcmp(kind, "parameter")
+                          ? 3
+                          : 7;
+        if (style_contrast(fg, base.background) < 4.5 &&
+            style_contrast(base.foreground, base.background) >
+                style_contrast(fg, base.background))
+          fg = base.foreground;
+        base.foreground = fg;
+        base.bold = !strcmp(kind, "keyword") || !strcmp(kind, "number");
+        base.dim = 0;
+        base.underline = !strcmp(kind, "keyword") || !strcmp(kind, "type") ||
+                         !strcmp(kind, "parameter");
+        base.italic = !strcmp(kind, "string") || !strcmp(kind, "comment");
+      }
+    }
+  }
+  *out = base;
+  return TUI_OK;
+}
+TuiResult tui_syntax_validate(const TuiSyntaxAnalysis *a, const char *text) {
+  if (!a || !text || !dialog_text(a->source, 1000000) ||
+      !dialog_text(a->language ? a->language : "", 128) ||
+      !dialog_text(a->dialect ? a->dialect : "", 128) ||
+      strcmp(a->source, text) || a->count > 1000000 || (!a->tokens && a->count))
+    return TUI_INVALID;
+  size_t bytes = strlen(text), at = 0, end = 0;
+  unsigned cp;
+  unsigned char *boundaries = calloc(bytes + 1, 1);
+  if (!boundaries)
+    return TUI_NOMEM;
+  boundaries[0] = 1;
+  while (at < bytes) {
+    if (!decode((const unsigned char *)text, bytes, &at, &cp)) {
+      free(boundaries);
+      return TUI_INVALID;
+    }
+    boundaries[at] = 1;
+  }
+  TuiResult result = TUI_OK;
+  for (size_t i = 0; i < a->count; i++) {
+    const TuiSyntaxToken *t = &a->tokens[i];
+    if (!dialog_text(t->role, 128) || t->start < end || t->end <= t->start ||
+        t->end > bytes || !boundaries[t->start] || !boundaries[t->end]) {
+      result = TUI_INVALID;
+      break;
+    }
+    end = t->end;
+  }
+  free(boundaries);
+  return result;
+}
+void tui_syntax_analysis_free(TuiSyntaxAnalysis *a) {
+  if (a) {
+    free((void *)a->source);
+    free((void *)a->language);
+    free((void *)a->dialect);
+    for (size_t i = 0; i < a->count; i++)
+      free((void *)a->tokens[i].role);
+    free((void *)a->tokens);
+    free(a);
+  }
+}
+TuiSyntaxAnalysis *tui_syntax_analysis_new(const char *source,
+                                           const char *language,
+                                           const char *dialect,
+                                           const TuiSyntaxToken *tokens,
+                                           size_t count) {
+  TuiSyntaxAnalysis value = {source, language ? language : "",
+                             dialect ? dialect : "", tokens, count};
+  if (tui_syntax_validate(&value, source) != TUI_OK)
+    return NULL;
+  TuiSyntaxAnalysis *a = calloc(1, sizeof *a);
+  if (!a)
+    return NULL;
+  TuiSyntaxToken *items = calloc(count + 1, sizeof *items);
+  a->tokens = items;
+  a->source = copy(source);
+  a->language = copy(value.language);
+  a->dialect = copy(value.dialect);
+  if (!items || !a->source || !a->language || !a->dialect) {
+    tui_syntax_analysis_free(a);
+    return NULL;
+  }
+  a->count = count;
+  for (size_t i = 0; i < count; i++) {
+    items[i] = tokens[i];
+    items[i].role = copy(tokens[i].role);
+    if (!items[i].role) {
+      tui_syntax_analysis_free(a);
+      return NULL;
+    }
+  }
+  return a;
+}
+static TuiResult document_apply_analysis(TuiDocument *d,
+                                         const TuiSyntaxAnalysis *a) {
+  if (!d || d->buffer->secret)
+    return TUI_INVALID;
+  TuiResult result = tui_syntax_validate(a, d->buffer->value);
+  if (result != TUI_OK)
+    return result;
+  TuiDocumentSpan *spans = calloc(a->count + 1, sizeof *spans);
+  if (!spans)
+    return TUI_NOMEM;
+  for (size_t i = 0; i < a->count; i++)
+    spans[i] = (TuiDocumentSpan){a->tokens[i].start, a->tokens[i].end,
+                                 tui_syntax_role_style(a->tokens[i].role)};
+  result = tui_document_set_byte_syntax(d, spans, a->count);
+  free(spans);
+  return result;
+}
+TuiResult tui_document_set_syntax_analysis(TuiDocument *d,
+                                           const TuiSyntaxAnalysis *a) {
+  if (!d || d->syntax_refreshing || d->buffer->secret)
+    return TUI_INVALID;
+  char *source = copy(d->buffer->value);
+  if (!source)
+    return TUI_NOMEM;
+  TuiResult result = document_apply_analysis(d, a);
+  if (result != TUI_OK) {
+    free(source);
+    return result;
+  }
+  document_clear_binding(d);
+  d->syntax_bound = 1;
+  d->syntax_binding_source = source;
+  return TUI_OK;
+}
+TuiResult tui_document_set_syntax_analyzer(TuiDocument *d,
+                                           TuiSyntaxAnalyzer analyzer,
+                                           void *context,
+                                           const TuiSyntaxRequest *request) {
+  if (!d || d->syntax_refreshing)
+    return TUI_INVALID;
+  if (!analyzer) {
+    document_clear_binding(d);
+    tui_document_spans_free(d->styles, d->style_count);
+    d->styles = NULL;
+    d->style_count = 0;
+    return TUI_OK;
+  }
+  if (d->buffer->secret)
+    return TUI_INVALID;
+  const char *language = request && request->language ? request->language : "",
+             *dialect = request && request->dialect ? request->dialect : "";
+  if (!dialog_text(language, 128) || !dialog_text(dialect, 128))
+    return TUI_INVALID;
+  char *lang = copy(language), *dial = copy(dialect),
+       *source = copy(d->buffer->value);
+  if (!lang || !dial || !source) {
+    free(lang);
+    free(dial);
+    free(source);
+    return TUI_NOMEM;
+  }
+  TuiSyntaxRequest copied = {lang, dial};
+  TuiSyntaxAnalysis *analysis = NULL;
+  d->syntax_refreshing = 1;
+  TuiResult result = analyzer(context, source, &copied, &analysis);
+  d->syntax_refreshing = 0;
+  if (result == TUI_OK)
+    result = document_apply_analysis(d, analysis);
+  tui_syntax_analysis_free(analysis);
+  if (result == TUI_OK) {
+    document_clear_binding(d);
+    d->syntax_bound = 1;
+    d->syntax_analyzer = analyzer;
+    d->syntax_context = context;
+    d->syntax_language = lang;
+    d->syntax_dialect = dial;
+    d->syntax_binding_source = source;
+  } else {
+    free(lang);
+    free(dial);
+    free(source);
+  }
+  return result;
+}
+const char *tui_document_syntax_error(const TuiDocument *d) {
+  return !d || d->buffer->secret || !d->syntax_bound ||
+                 d->syntax_status == TUI_OK
+             ? ""
+         : d->syntax_status == TUI_NOMEM ? "syntax analysis allocation failed"
+                                         : "syntax analysis failed";
+}
+TuiResult tui_document_refresh_syntax(TuiDocument *d) {
+  if (!d || d->syntax_refreshing)
+    return TUI_INVALID;
+  if (d->buffer->secret) {
+    if (d->syntax_bound) {
+      free(d->syntax_binding_source);
+      d->syntax_binding_source = NULL;
+      d->syntax_dirty = 1;
+    }
+    tui_document_spans_free(d->styles, d->style_count);
+    d->styles = NULL;
+    d->style_count = 0;
+    return TUI_OK;
+  }
+  if (!d->syntax_bound)
+    return TUI_OK;
+  if (d->syntax_binding_source &&
+      !strcmp(d->syntax_binding_source, d->buffer->value) && !d->syntax_dirty)
+    return d->syntax_status;
+  char *source = copy(d->buffer->value);
+  if (!source)
+    return TUI_NOMEM;
+  TuiResult result = TUI_OK;
+  d->syntax_refreshing = 1;
+  if (d->syntax_analyzer) {
+    TuiSyntaxAnalysis *analysis = NULL;
+    TuiSyntaxRequest request = {d->syntax_language, d->syntax_dialect};
+    result = d->syntax_analyzer(d->syntax_context, source, &request, &analysis);
+    if (result == TUI_OK)
+      result = document_apply_analysis(d, analysis);
+    tui_syntax_analysis_free(analysis);
+  } else {
+    tui_document_spans_free(d->styles, d->style_count);
+    d->styles = NULL;
+    d->style_count = 0;
+  }
+  if (result != TUI_OK) {
+    tui_document_spans_free(d->styles, d->style_count);
+    d->styles = NULL;
+    d->style_count = 0;
+  }
+  free(d->syntax_binding_source);
+  d->syntax_binding_source = source;
+  d->syntax_dirty = 0;
+  d->syntax_refreshing = 0;
+  d->syntax_status = result;
+  return result;
+}
+
+static int sql_alpha(unsigned cp) {
+  return range(cp, tui_syntax_alphabetic,
+               sizeof tui_syntax_alphabetic / sizeof *tui_syntax_alphabetic);
+}
+static int sql_number(unsigned cp) {
+  return range(cp, tui_syntax_number,
+               sizeof tui_syntax_number / sizeof *tui_syntax_number);
+}
+static int sql_space(unsigned cp) {
+  return range(cp, tui_syntax_whitespace,
+               sizeof tui_syntax_whitespace / sizeof *tui_syntax_whitespace);
+}
+static int sql_start(unsigned cp) { return cp == '_' || sql_alpha(cp); }
+static int sql_part(unsigned cp) {
+  return sql_start(cp) || sql_number(cp) || cp == '$' || cp == '#' ||
+         (cp >= 0x300 && cp <= 0x36f) || (cp >= 0x1ab0 && cp <= 0x1aff) ||
+         (cp >= 0x1dc0 && cp <= 0x1dff) || (cp >= 0x20d0 && cp <= 0x20ff) ||
+         (cp >= 0xfe20 && cp <= 0xfe2f);
+}
+static int sql_digit(unsigned cp) { return cp >= '0' && cp <= '9'; }
+static unsigned sql_cp(const char *text, size_t n, size_t at) {
+  unsigned cp = 0;
+  decode((const unsigned char *)text, n, &at, &cp);
+  return cp;
+}
+static void sql_advance(const char *text, size_t n, size_t *at) {
+  unsigned cp;
+  decode((const unsigned char *)text, n, at, &cp);
+}
+static size_t sql_quoted(const char *text, size_t n, size_t at, char quote) {
+  at++;
+  while (at < n) {
+    if (text[at] == quote) {
+      at++;
+      if (at < n && text[at] == quote) {
+        at++;
+        continue;
+      }
+      return at;
+    }
+    at++;
+  }
+  return at;
+}
+static int sql_word(const char *word, const char *const *words, size_t count) {
+  for (size_t i = 0; i < count; i++)
+    if (!strcmp(word, words[i]))
+      return 1;
+  return 0;
+}
+static TuiResult sql_token_add(TuiSyntaxToken **items, size_t *count,
+                               size_t *capacity, size_t start, size_t end,
+                               const char *role) {
+  if (*count >= 1000000)
+    return TUI_INVALID;
+  if (*count == *capacity) {
+    size_t cap = *capacity ? *capacity * 2 : 16;
+    if (cap > 1000000)
+      cap = 1000000;
+    TuiSyntaxToken *next = realloc(*items, cap * sizeof *next);
+    if (!next)
+      return TUI_NOMEM;
+    *items = next;
+    *capacity = cap;
+  }
+  (*items)[(*count)++] = (TuiSyntaxToken){start, end, role};
+  return TUI_OK;
+}
+TuiResult tui_sql_analyze(const char *text, const TuiSyntaxRequest *request,
+                          TuiSyntaxAnalysis **out) {
+  if (!out || !dialog_text(text, 1000000))
+    return TUI_INVALID;
+  const char *req_language =
+                 request && request->language ? request->language : "",
+             *req_dialect = request && request->dialect ? request->dialect : "";
+  if (!dialog_text(req_language, 128) || !dialog_text(req_dialect, 128))
+    return TUI_INVALID;
+  char *language = copy(*req_language ? req_language : "sql"),
+       *dialect = copy(*req_dialect ? req_dialect : "oracle");
+  if (!language || !dialect) {
+    free(language);
+    free(dialect);
+    return TUI_NOMEM;
+  }
+  for (char *p = language; *p; p++)
+    if (*p >= 'A' && *p <= 'Z')
+      *p = (char)(*p + 32);
+  for (char *p = dialect; *p; p++)
+    if (*p >= 'A' && *p <= 'Z')
+      *p = (char)(*p + 32);
+  if ((strcmp(language, "sql") && strcmp(language, "plsql")) ||
+      strcmp(dialect, "oracle")) {
+    free(language);
+    free(dialect);
+    return TUI_INVALID;
+  }
+  size_t n = strlen(text), i = 0, count = 0, capacity = 0;
+  TuiSyntaxToken *raw = NULL;
+  TuiResult result = TUI_OK;
+  while (i < n) {
+    size_t start = i;
+    unsigned cp = sql_cp(text, n, i);
+    if (sql_space(cp)) {
+      sql_advance(text, n, &i);
+      continue;
+    }
+    const char *role = "punctuation";
+    size_t prefix =
+        i + 2 < n && (text[i] == 'q' || text[i] == 'Q') && text[i + 1] == '\''
+            ? 2
+        : i + 3 < n && (text[i] == 'n' || text[i] == 'N') &&
+                (text[i + 1] == 'q' || text[i + 1] == 'Q') &&
+                text[i + 2] == '\''
+            ? 3
+            : 0;
+    if (i + 1 < n && text[i] == '-' && text[i + 1] == '-') {
+      role = "comment";
+      i += 2;
+      while (i < n && text[i] != '\r' && text[i] != '\n')
+        i++;
+    } else if (i + 1 < n && text[i] == '/' && text[i + 1] == '*') {
+      role = "comment";
+      const char *end = strstr(text + i + 2, "*/");
+      i = end ? (size_t)(end - text) + 2 : n;
+    } else if (prefix) {
+      role = "string";
+      i += prefix;
+      if (i < n) {
+        size_t after = i;
+        unsigned open = sql_cp(text, n, i);
+        sql_advance(text, n, &after);
+        if (!sql_space(open)) {
+          char ending[8];
+          size_t bytes = 0;
+          if (open == '[' || open == '{' || open == '(' || open == '<') {
+            ending[0] = open == '['   ? ']'
+                        : open == '{' ? '}'
+                        : open == '(' ? ')'
+                                      : '>';
+            bytes = 1;
+          } else {
+            bytes = after - i;
+            memcpy(ending, text + i, bytes);
+          }
+          ending[bytes++] = '\'';
+          ending[bytes] = 0;
+          const char *end = strstr(text + after, ending);
+          i = end ? (size_t)(end - text) + bytes : n;
+        } else {
+          i = start;
+          sql_advance(text, n, &i);
+          role = "identifier";
+        }
+      }
+    } else if (cp == '\'' ||
+               ((cp == 'n' || cp == 'N') && i + 1 < n && text[i + 1] == '\'')) {
+      role = "string";
+      i = sql_quoted(text, n, i + (cp == '\'' ? 0 : 1), '\'');
+    } else if (cp == '"') {
+      role = "identifier";
+      i = sql_quoted(text, n, i, '"');
+    } else if (cp == ':' && i + 1 < n &&
+               (sql_start(sql_cp(text, n, i + 1)) ||
+                sql_digit((unsigned char)text[i + 1]) || text[i + 1] == '"')) {
+      role = "parameter";
+      i++;
+      if (text[i] == '"')
+        i = sql_quoted(text, n, i, '"');
+      else
+        while (i < n && sql_part(sql_cp(text, n, i)))
+          sql_advance(text, n, &i);
+    } else if (i + 1 < n && text[i] == '.' && text[i + 1] == '.') {
+      role = "operator";
+      i += 2;
+    } else if (sql_digit(cp) || (cp == '.' && i + 1 < n &&
+                                 sql_digit((unsigned char)text[i + 1]))) {
+      role = "number";
+      while (i < n && sql_digit((unsigned char)text[i]))
+        i++;
+      if (i < n && text[i] == '.' && !(i + 1 < n && text[i + 1] == '.')) {
+        i++;
+        while (i < n && sql_digit((unsigned char)text[i]))
+          i++;
+      }
+      if (i < n && (text[i] == 'e' || text[i] == 'E')) {
+        size_t end = i + 1;
+        if (end < n && (text[end] == '+' || text[end] == '-'))
+          end++;
+        size_t first = end;
+        while (end < n && sql_digit((unsigned char)text[end]))
+          end++;
+        if (end > first)
+          i = end;
+      }
+      if (i < n && (text[i] == 'f' || text[i] == 'F' || text[i] == 'd' ||
+                    text[i] == 'D'))
+        i++;
+    } else if (sql_start(cp)) {
+      sql_advance(text, n, &i);
+      while (i < n && sql_part(sql_cp(text, n, i)))
+        sql_advance(text, n, &i);
+      size_t length = i - start;
+      char *word = malloc(length + 1);
+      if (!word) {
+        result = TUI_NOMEM;
+        break;
+      }
+      memcpy(word, text + start, length);
+      word[length] = 0;
+      for (size_t k = 0; k < length; k++)
+        if (word[k] >= 'a' && word[k] <= 'z')
+          word[k] = (char)(word[k] - 32);
+      role = sql_word(word, tui_sql_types,
+                      sizeof tui_sql_types / sizeof *tui_sql_types)
+                 ? "type"
+             : sql_word(word, tui_sql_functions,
+                        sizeof tui_sql_functions / sizeof *tui_sql_functions)
+                 ? "function"
+             : sql_word(word, tui_sql_keywords,
+                        sizeof tui_sql_keywords / sizeof *tui_sql_keywords)
+                 ? "keyword"
+                 : "identifier";
+      free(word);
+    } else {
+      sql_advance(text, n, &i);
+      if (cp < 128 && strchr("+-*/%=<>!|:^~", (int)cp)) {
+        role = "operator";
+        if (i < n) {
+          char pair[3] = {(char)cp, text[i], 0};
+          if (!strcmp(pair, ":=") || !strcmp(pair, "=>") ||
+              !strcmp(pair, "<=") || !strcmp(pair, ">=") ||
+              !strcmp(pair, "!=") || !strcmp(pair, "<>") ||
+              !strcmp(pair, "||") || !strcmp(pair, "**"))
+            i++;
+        }
+      }
+    }
+    result = sql_token_add(&raw, &count, &capacity, start, i, role);
+    if (result != TUI_OK)
+      break;
+  }
+  size_t *offsets = NULL, gcount = 0;
+  TuiSyntaxToken *aligned = NULL;
+  size_t used = 0;
+  if (result == TUI_OK) {
+    int valid = raw_offsets(text, &offsets, &gcount);
+    if (valid != 1)
+      result = valid < 0 ? TUI_NOMEM : TUI_INVALID;
+    else {
+      aligned = calloc(gcount + 1, sizeof *aligned);
+      if (!aligned)
+        result = TUI_NOMEM;
+      else {
+        size_t which = 0, previous = (size_t)-1;
+        for (size_t g = 0; g < gcount; g++) {
+          size_t start = offsets[g], end = offsets[g + 1];
+          while (which < count && raw[which].end <= start)
+            which++;
+          if (which < count && raw[which].start < end) {
+            if (previous == which && used && aligned[used - 1].end == start)
+              aligned[used - 1].end = end;
+            else
+              aligned[used++] = (TuiSyntaxToken){start, end, raw[which].role};
+            previous = which;
+          } else
+            previous = (size_t)-1;
+        }
+      }
+    }
+  }
+  if (result == TUI_OK) {
+    TuiSyntaxAnalysis *a =
+        tui_syntax_analysis_new(text, language, dialect, aligned, used);
+    if (!a)
+      result = TUI_NOMEM;
+    else
+      *out = a;
+  }
+  free(language);
+  free(dialect);
+  free(raw);
+  free(offsets);
+  free(aligned);
+  return result;
+}
+
+TuiResult tui_sql_analyzer(void *context, const char *text,
+                           const TuiSyntaxRequest *request,
+                           TuiSyntaxAnalysis **out) {
+  (void)context;
+  return tui_sql_analyze(text, request, out);
 }

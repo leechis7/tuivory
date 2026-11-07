@@ -127,6 +127,7 @@ parse_markup(const std::string &markup) {
   return {source, spans};
 }
 class TextDocument {
+  std::optional<syntax_detail::Binding> binding_;
   std::string syntax_source_, search_source_;
   std::vector<DocumentSpan> styles_;
   std::vector<DocumentRange> matches_;
@@ -146,6 +147,23 @@ class TextDocument {
     for (const auto &r : ranges)
       if (r.end < r.start || r.end > n)
         throw std::invalid_argument("invalid document grapheme range");
+  }
+
+  void apply_syntax(const SyntaxAnalysis &analysis) {
+    if (buffer.secret)
+      throw std::invalid_argument(
+          "syntax analysis unavailable for secret buffers");
+    analysis.validate(buffer.value);
+    std::vector<DocumentSpan> spans;
+    for (const auto &t : analysis.tokens)
+      spans.push_back({t.start, t.end, syntax_role_style(t.role)});
+    set_byte_syntax(spans);
+  }
+  void refresh_syntax_safe() {
+    try {
+      refresh_syntax();
+    } catch (...) {
+    }
   }
 
 public:
@@ -180,6 +198,7 @@ public:
     hits_.clear();
     last_.reset();
     reveal_ = !state.read_only;
+    refresh_syntax_safe();
   }
   void set_syntax(std::vector<DocumentSpan> spans) {
     validate(spans);
@@ -213,8 +232,90 @@ public:
   }
   void set_markup(const std::string &markup) {
     auto parsed = parse_markup(markup);
+    set_syntax_analyzer({});
     set_text(std::move(parsed.first));
     set_syntax(std::move(parsed.second));
+  }
+  void set_syntax_analysis(const SyntaxAnalysis &analysis) {
+    if (binding_ && binding_->refreshing)
+      throw std::invalid_argument("recursive syntax analysis");
+    apply_syntax(analysis);
+    binding_ = syntax_detail::Binding{{},    {},           buffer.value,
+                                      false, std::nullopt, false};
+  }
+  void set_syntax_analyzer(SyntaxAnalyzer analyzer,
+                           SyntaxRequest request = {}) {
+    if (binding_ && binding_->refreshing)
+      throw std::invalid_argument("recursive syntax analysis");
+    if (!analyzer) {
+      binding_.reset();
+      styles_.clear();
+      syntax_source_ = buffer.value;
+      return;
+    }
+    if (buffer.secret)
+      throw std::invalid_argument(
+          "syntax analysis unavailable for secret buffers");
+    dialog_detail::text(request.language, 128);
+    dialog_detail::text(request.dialect, 128);
+    auto analysis = analyzer(buffer.value, request);
+    apply_syntax(analysis);
+    binding_ = syntax_detail::Binding{std::move(analyzer), std::move(request),
+                                      buffer.value,        false,
+                                      std::nullopt,        false};
+  }
+  std::optional<std::string> syntax_error() const {
+    return !buffer.secret && binding_ ? binding_->error : std::nullopt;
+  }
+  void refresh_syntax() {
+    if (buffer.secret) {
+      if (binding_) {
+        binding_->source.clear();
+        binding_->dirty = true;
+      }
+      styles_.clear();
+      return;
+    }
+    if (!binding_)
+      return;
+    auto &b = *binding_;
+    if (b.refreshing)
+      throw std::invalid_argument("recursive syntax analysis");
+    if (b.source == buffer.value && !b.dirty) {
+      if (b.error)
+        throw std::invalid_argument(*b.error);
+      return;
+    }
+    auto source = buffer.value;
+    b.refreshing = true;
+    try {
+      if (b.analyzer)
+        apply_syntax(b.analyzer(source, b.request));
+      else {
+        styles_.clear();
+        syntax_source_ = source;
+      }
+      b.error.reset();
+      b.source = source;
+      b.dirty = false;
+      b.refreshing = false;
+    } catch (const std::exception &error) {
+      styles_.clear();
+      syntax_source_ = buffer.value;
+      b.error = error.what();
+      b.source = source;
+      b.dirty = false;
+      b.refreshing = false;
+      throw;
+    } catch (...) {
+      styles_.clear();
+      syntax_source_ = buffer.value;
+      b.error = "syntax analyzer failed";
+      b.source = source;
+      b.dirty = false;
+      b.refreshing = false;
+      throw;
+    }
   }
   void reveal_cursor() { reveal_ = true; }
   Event handle(const std::string &action, const std::string &text = "") {
@@ -264,6 +365,7 @@ public:
       auto e = buffer.handle(action, text);
       if (e.kind == "select" || e.kind == "change" || e.kind == "cut")
         reveal_ = true;
+      refresh_syntax_safe();
       return e;
     }
     reveal_ = false;
@@ -274,6 +376,7 @@ public:
     if (width < 0 || height < 0 || width > 1000000 || height > 1000000)
       throw std::invalid_argument("invalid document dimensions");
     document_detail::text(buffer.value);
+    refresh_syntax_safe();
     height_ = height;
     hits_.clear();
     if (!width || !height)
@@ -429,8 +532,7 @@ public:
       for (const auto &g : row.glyphs) {
         Style style;
         if (g.role.rfind("syntax.", 0) == 0)
-          style = canvas.palette.text_on_surface(
-              document_detail::family(g.role), role);
+          style = syntax_style(canvas.palette, g.role, role);
         else if (g.role == "selection" || g.role == "edited" ||
                  g.role == "field" || g.role == "button" || g.role == "header")
           style = canvas.palette.style(g.role);
