@@ -18,7 +18,7 @@
 | [C++](../cpp/README.md) | `#include "tuivory.hpp"` | 독립 C++17 헤더 패키지 | 독립 캔버스·POSIX RAII 예제 |
 | [Java](../java/README.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, JNI 없음 | 독립 캔버스·줄 입력 예제. raw 터미널 어댑터 없음 |
 
-다섯 언어의 [작업 영역](language-workspace.md)과 [입력·편집](language-text.md)은 공유 사례와 외부 적용 앱으로 검증합니다. [폼·컨트롤](language-forms.md)도 다섯 언어에서 검증합니다. [목록·검색 선택기](language-collections.md)도 다섯 언어에서 검증합니다. [메뉴·문맥 메뉴](language-menu.md)도 다섯 언어에서 검증합니다. [알림·진행·데이터 상태](language-feedback.md)도 다섯 언어에서 검증합니다. [간격·스택과 보조 컴포넌트](language-layout.md)도 다섯 언어에서 검증합니다. [설정 가능한 컨테이너·잘린 셀 복사](language-containers.md)도 다섯 언어에서 검증합니다. [데이터 그리드](language-grid.md)도 다섯 언어에서 독립 구현합니다. 전체 카탈로그 이식을 마쳤다는 뜻은 아니며 드래그 앤 드롭·터미널 API와 나머지 항목은 각 에픽에서 검증을 이어갑니다.
+다섯 언어의 [작업 영역](language-workspace.md)과 [입력·편집](language-text.md)은 공유 사례와 외부 적용 앱으로 검증합니다. [폼·컨트롤](language-forms.md)도 다섯 언어에서 검증합니다. [목록·검색 선택기](language-collections.md)도 다섯 언어에서 검증합니다. [메뉴·문맥 메뉴](language-menu.md)도 다섯 언어에서 검증합니다. [알림·진행·데이터 상태](language-feedback.md)도 다섯 언어에서 검증합니다. [간격·스택과 보조 컴포넌트](language-layout.md)도 다섯 언어에서 검증합니다. [설정 가능한 컨테이너·잘린 셀 복사](language-containers.md)도 다섯 언어에서 검증합니다. [데이터 그리드](language-grid.md)도 다섯 언어에서 독립 구현합니다. [드래그앤드롭](language-drag.md)도 다섯 언어에서 검증합니다. 전체 카탈로그 이식을 마쳤다는 뜻은 아니며 터미널 API와 나머지 항목은 각 에픽에서 검증을 이어갑니다.
 
 ## API 사용
 
@@ -144,3 +144,5 @@ C/C++/Java는 위의 명령으로 먼저 빌드합니다. 참조 화면 캡처�
 [독립 언어 구문 강조·SQL 분류 API](language-syntax.md)
 
 [독립 언어 데이터 그리드: 가상 데이터·앱 승인·원문/표시·실제 커서](language-grid.md)
+
+[독립 언어 드래그앤드롭: 캡처·미리보기·앱 승인](language-drag.md)

@@ -19,8 +19,9 @@ class InputEvent:
 
 
 class Terminal:
-    def __init__(self, *, mouse: bool = True):
+    def __init__(self, *, mouse: bool = True, mouse_motion: bool = False):
         self.mouse = mouse
+        self.mouse_motion = mouse_motion
         self._saved = None
         self._buffer = b""
         self._paste: bytearray | None = None
@@ -40,7 +41,7 @@ class Terminal:
         self._saved = termios.tcgetattr(sys.stdin.fileno())
         try:
             tty.setraw(sys.stdin.fileno())
-            self.write("\x1b[?1049h\x1b[?2004h" + ("\x1b[?1000h\x1b[?1006h" if self.mouse else ""))
+            self.write("\x1b[?1049h\x1b[?2004h" + (("\x1b[?1002h" if self.mouse_motion else "\x1b[?1000h") + "\x1b[?1006h" if self.mouse else ""))
         except BaseException:
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self._saved)
             self._saved = None
@@ -52,7 +53,7 @@ class Terminal:
         if self._saved is not None:
             import termios
             try:
-                self.write("\x1b[0m\x1b[?1000l\x1b[?1006l\x1b[?2004l\x1b[?25h\x1b[?1049l")
+                self.write("\x1b[0m\x1b[?1000l\x1b[?1002l\x1b[?1006l\x1b[?2004l\x1b[?25h\x1b[?1049l")
             finally:
                 termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self._saved)
                 self._saved = None

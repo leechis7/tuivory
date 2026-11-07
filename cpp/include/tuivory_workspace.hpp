@@ -36,6 +36,16 @@ public:
         throw std::invalid_argument("empty/duplicate tab ID");
     reconcile();
   }
+
+  DropRequest request_drop(const std::string &, const std::string &,
+                           const std::string &, const DragOptions &,
+                           const DropPolicy & = {}) const;
+  DropRequest request_drop(const std::string &, const std::string &,
+                           const std::string &) const;
+  Tabs apply_drop(const DropRequest &) const;
+  DropRequest keyboard_drop(const std::string &, const DragOptions &,
+                            const DropPolicy & = {}) const;
+  DropRequest keyboard_drop(const std::string &) const;
   const std::vector<Tab> &items() const { return items_; }
   Event handle(const std::string &action) {
     reconcile();

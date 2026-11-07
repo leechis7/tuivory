@@ -4,6 +4,7 @@
 #include "tuivory_sql_words.h"
 #include "tuivory_syntax_unicode.h"
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1046,8 +1047,8 @@ TuiEvent tui_tree_click(TuiTree *t, int x, int y, int height) {
     }
   return none;
 }
-TuiResult tui_tree_draw(TuiTree *t, TuiCanvas *c, TuiRect r, int focused,
-                        int ascii) {
+static TuiResult tree_draw_at(TuiTree *t, TuiCanvas *c, TuiRect r, int focused,
+                              int ascii, int follow) {
   int i, index = 0, y = 0;
   TuiResult result;
   if (!t || !c)
@@ -1055,7 +1056,8 @@ TuiResult tui_tree_draw(TuiTree *t, TuiCanvas *c, TuiRect r, int focused,
   result = tui_canvas_fill(c, r, "surface");
   if (result != TUI_OK)
     return result;
-  reconcile(t, r.height);
+  if (follow)
+    reconcile(t, r.height);
   for (i = 0; i < (int)t->count && y < r.height; i++)
     if (visible(t, i)) {
       Buffer b = {0};
@@ -1347,8 +1349,8 @@ static int tab_sum(const TuiTabs *t, int start, int target) {
     width += tab_width(&t->items[i]);
   return width;
 }
-TuiResult tui_tabs_layout(TuiTabs *t, int width, TuiTabCell *out,
-                          size_t capacity, size_t *count) {
+static TuiResult tabs_layout_at(TuiTabs *t, int width, TuiTabCell *out,
+                                size_t capacity, size_t *count, int follow) {
   int target, x;
   size_t i;
   if (!t || !count || width < 0 || (!out && capacity))
@@ -1358,12 +1360,14 @@ TuiResult tui_tabs_layout(TuiTabs *t, int width, TuiTabCell *out,
   tabs_reconcile(t);
   if (width <= 2 || !t->count)
     return TUI_OK;
-  target = max(0, t->focused);
-  t->first = min(max(0, t->first), target);
-  while (t->first < target && tab_sum(t, t->first, target) > width - 2)
-    t->first++;
-  while (t->first > 0 && tab_sum(t, t->first - 1, target) <= width - 2)
-    t->first--;
+  if (follow) {
+    target = max(0, t->focused);
+    t->first = min(max(0, t->first), target);
+    while (t->first < target && tab_sum(t, t->first, target) > width - 2)
+      t->first++;
+    while (t->first > 0 && tab_sum(t, t->first - 1, target) <= width - 2)
+      t->first--;
+  }
   x = 1;
   for (i = (size_t)t->first; i < t->count && x < width - 1; i++) {
     const TuiTab *item = &t->items[i];
@@ -12028,4 +12032,943 @@ TuiResult tui_grid_set_labels(TuiGrid *g, TuiGridLabels labels) {
   free((void *)g->labels.more);
   g->labels = (TuiGridLabels){owned[0], owned[1], owned[2], owned[3], owned[4]};
   return TUI_OK;
+}
+
+TuiResult tui_tree_draw(TuiTree *t, TuiCanvas *c, TuiRect r, int focus,
+                        int ascii) {
+  return tree_draw_at(t, c, r, focus, ascii, 1);
+}
+
+TuiResult tui_tabs_layout(TuiTabs *t, int w, TuiTabCell *out, size_t cap,
+                          size_t *n) {
+  return tabs_layout_at(t, w, out, cap, n, 1);
+}
+
+/* Independent immutable drop models and pointer capture. */
+size_t tui_tree_count(const TuiTree *t) { return t ? t->count : 0; }
+const TuiNode *tui_tree_node(const TuiTree *t, size_t i) {
+  return t && i < t->count ? &t->nodes[i] : NULL;
+}
+size_t tui_tabs_count(const TuiTabs *t) { return t ? t->count : 0; }
+const TuiTab *tui_tabs_item(const TuiTabs *t, size_t i) {
+  return t && i < t->count ? &t->items[i] : NULL;
+}
+static void drop_reason(const char **out, const char *reason) {
+  if (out)
+    *out = reason;
+}
+static uint64_t drag_hash(uint64_t h, const char *s) {
+  char prefix[32];
+  const unsigned char *p;
+  s = s ? s : "";
+  snprintf(prefix, sizeof(prefix), "%zu:", strlen(s));
+  for (p = (const unsigned char *)prefix; *p; p++) {
+    h ^= *p;
+    h *= UINT64_C(1099511628211);
+  }
+  for (p = (const unsigned char *)s; *p; p++) {
+    h ^= *p;
+    h *= UINT64_C(1099511628211);
+  }
+  return h;
+}
+static void drag_hex(uint64_t h, char out[17]) {
+  snprintf(out, 17, "%016llx", (unsigned long long)h);
+}
+TuiResult tui_tabs_drag_revision(const TuiTabs *t, char out[17]) {
+  uint64_t h = UINT64_C(14695981039346656037);
+  size_t i;
+  if (!t || !out)
+    return TUI_INVALID;
+  for (i = 0; i < t->count; i++) {
+    const TuiTab *n = &t->items[i];
+    h = drag_hash(h, n->id);
+    h = drag_hash(h, n->title);
+    h = drag_hash(h, n->edited ? "true" : "false");
+    h = drag_hash(h, n->closable ? "true" : "false");
+    h = drag_hash(h, n->disabled ? "true" : "false");
+  }
+  drag_hex(h, out);
+  return TUI_OK;
+}
+TuiResult tui_tree_drag_revision(const TuiTree *t, char out[17]) {
+  uint64_t h = UINT64_C(14695981039346656037);
+  size_t i;
+  char number[32];
+  if (!t || !out)
+    return TUI_INVALID;
+  for (i = 0; i < t->count; i++) {
+    const TuiNode *n = &t->nodes[i];
+    h = drag_hash(h, n->id);
+    h = drag_hash(h, n->parent);
+    h = drag_hash(h, n->name);
+    h = drag_hash(h, n->secondary);
+    h = drag_hash(h, n->icon);
+    h = drag_hash(h, n->ascii_icon);
+    number[0] = 0;
+    if (n->has_count)
+      snprintf(number, sizeof(number), "%llu", n->count);
+    h = drag_hash(h, number);
+    h = drag_hash(h, t->branch[i] ? "true" : "false");
+  }
+  drag_hex(h, out);
+  return TUI_OK;
+}
+static int drag_tree_index(const TuiTree *t, const char *id) {
+  size_t i;
+  for (i = 0; t && id && i < t->count; i++)
+    if (!strcmp(t->nodes[i].id, id))
+      return (int)i;
+  return -1;
+}
+static int drag_tab_index(const TuiTabs *t, const char *id) {
+  size_t i;
+  for (i = 0; t && id && i < t->count; i++)
+    if (!strcmp(t->items[i].id, id))
+      return (int)i;
+  return -1;
+}
+static TuiTree *drag_tree_clone(const TuiTree *t) {
+  size_t i;
+  TuiTree *n;
+  TuiNode *nodes = calloc(t->count + 1, sizeof(*nodes));
+  if (!nodes)
+    return NULL;
+  for (i = 0; i < t->count; i++) {
+    nodes[i] = t->nodes[i];
+    nodes[i].branch = t->branch[i];
+  }
+  n = tui_tree_new(nodes, t->count);
+  free(nodes);
+  if (!n)
+    return NULL;
+  memcpy(n->expanded, t->expanded, t->count * sizeof(int));
+  n->selected = t->selected;
+  n->scroll = t->scroll;
+  n->horizontal = t->horizontal;
+  return n;
+}
+static TuiTabs *drag_tabs_clone(const TuiTabs *t) {
+  TuiTabs *n = tui_tabs_new(t->items, t->count);
+  if (n) {
+    n->active = t->active;
+    n->focused = t->focused;
+    n->first = t->first;
+  }
+  return n;
+}
+void tui_drop_request_free(TuiDropRequest *r) {
+  if (r) {
+    free((void *)r->source_id);
+    free((void *)r->target_id);
+    free((void *)r->position);
+    free((void *)r->revision);
+    free(r);
+  }
+}
+static TuiDropRequest *drop_new(const char *s, const char *t, const char *p,
+                                const char *revision) {
+  TuiDropRequest *r = calloc(1, sizeof(*r));
+  if (!r)
+    return NULL;
+  r->source_id = copy(s);
+  r->target_id = copy(t);
+  r->position = copy(p);
+  r->revision = copy(revision);
+  if (!r->source_id || !r->target_id || !r->position || !r->revision) {
+    tui_drop_request_free(r);
+    return NULL;
+  }
+  return r;
+}
+static int drop_fields(const TuiDropRequest *r) {
+  return r && r->source_id && r->target_id && r->position && r->revision;
+}
+TuiTabs *tui_tabs_apply_drop(const TuiTabs *t, const TuiDropRequest *r,
+                             const char **reason) {
+  char rev[17];
+  int si, ti, at;
+  size_t i, j;
+  TuiTab *items;
+  TuiTabs *n;
+  drop_reason(reason, "invalid");
+  if (!t || !drop_fields(r))
+    return NULL;
+  tui_tabs_drag_revision(t, rev);
+  if (strcmp(rev, r->revision)) {
+    drop_reason(reason, "stale");
+    return NULL;
+  }
+  if (!strcmp(r->source_id, r->target_id)) {
+    drop_reason(reason, "self");
+    return NULL;
+  }
+  if (strcmp(r->position, "before") && strcmp(r->position, "after")) {
+    drop_reason(reason, "position");
+    return NULL;
+  }
+  si = drag_tab_index(t, r->source_id);
+  ti = drag_tab_index(t, r->target_id);
+  if (si < 0 || ti < 0) {
+    drop_reason(reason, "missing");
+    return NULL;
+  }
+  if (t->items[si].disabled || t->items[ti].disabled) {
+    drop_reason(reason, "disabled");
+    return NULL;
+  }
+  at = ti - (si < ti) + !strcmp(r->position, "after");
+  if (at == si) {
+    drop_reason(reason, "unchanged");
+    return NULL;
+  }
+  items = calloc(t->count + 1, sizeof(*items));
+  if (!items) {
+    drop_reason(reason, "memory");
+    return NULL;
+  }
+  for (i = 0, j = 0; i < t->count; i++) {
+    if ((int)i == at)
+      items[i] = t->items[si];
+    else {
+      if ((int)j == si)
+        j++;
+      items[i] = t->items[j++];
+    }
+  }
+  n = tui_tabs_new(items, t->count);
+  free(items);
+  if (!n) {
+    drop_reason(reason, "memory");
+    return NULL;
+  }
+  n->active = drag_tab_index(n, tui_tabs_active(t));
+  n->focused = drag_tab_index(n, tui_tabs_focused(t));
+  n->first = t->first;
+  tabs_reconcile(n);
+  drop_reason(reason, "");
+  return n;
+}
+TuiTree *tui_tree_apply_drop(const TuiTree *t, const TuiDropRequest *r,
+                             const char **reason) {
+  char rev[17];
+  int si, ti, end, p, extra = 0, at, depth;
+  size_t i, j, k;
+  TuiNode *nodes;
+  TuiTree *n;
+  const char *parent;
+  drop_reason(reason, "invalid");
+  if (!t || !drop_fields(r))
+    return NULL;
+  tui_tree_drag_revision(t, rev);
+  if (strcmp(rev, r->revision)) {
+    drop_reason(reason, "stale");
+    return NULL;
+  }
+  si = drag_tree_index(t, r->source_id);
+  ti = drag_tree_index(t, r->target_id);
+  if (si < 0 || ti < 0) {
+    drop_reason(reason, "missing");
+    return NULL;
+  }
+  if (si == ti) {
+    drop_reason(reason, "self");
+    return NULL;
+  }
+  if (strcmp(r->position, "before") && strcmp(r->position, "after") &&
+      strcmp(r->position, "inside")) {
+    drop_reason(reason, "position");
+    return NULL;
+  }
+  for (p = ti; p >= 0; p = t->parent[p])
+    if (p == si) {
+      drop_reason(reason, "cycle");
+      return NULL;
+    }
+  if (!strcmp(r->position, "inside") && !t->branch[ti]) {
+    drop_reason(reason, "leaf");
+    return NULL;
+  }
+  for (end = si + 1; end < (int)t->count && t->depth[end] > t->depth[si]; end++)
+    ;
+  for (p = si; p < end; p++)
+    extra = max(extra, t->depth[p] - t->depth[si]);
+  depth = t->depth[ti] + !strcmp(r->position, "inside");
+  if (depth + extra > 128) {
+    drop_reason(reason, "depth");
+    return NULL;
+  }
+  at = ti;
+  if (strcmp(r->position, "before")) {
+    at++;
+    while (at < (int)t->count && t->depth[at] > t->depth[ti])
+      at++;
+  }
+  if (at > si)
+    at -= end - si;
+  parent =
+      !strcmp(r->position, "inside") ? t->nodes[ti].id : t->nodes[ti].parent;
+  nodes = calloc(t->count + 1, sizeof(*nodes));
+  if (!nodes) {
+    drop_reason(reason, "memory");
+    return NULL;
+  }
+  for (i = 0, j = 0; i < t->count;) {
+    if ((int)i == at) {
+      for (k = (size_t)si; k < (size_t)end; k++) {
+        nodes[i] = t->nodes[k];
+        nodes[i].branch = t->branch[k];
+        if ((int)k == si)
+          nodes[i].parent = parent;
+        i++;
+      }
+    } else {
+      if ((int)j == si)
+        j = (size_t)end;
+      nodes[i] = t->nodes[j];
+      nodes[i].branch = t->branch[j];
+      i++;
+      j++;
+    }
+  }
+  for (i = 0; i < t->count; i++)
+    if (strcmp(nodes[i].id, t->nodes[i].id) ||
+        strcmp(nodes[i].parent, t->nodes[i].parent))
+      break;
+  if (i == t->count) {
+    free(nodes);
+    drop_reason(reason, "unchanged");
+    return NULL;
+  }
+  n = tui_tree_new(nodes, t->count);
+  free(nodes);
+  if (!n) {
+    drop_reason(reason, "memory");
+    return NULL;
+  }
+  n->selected = drag_tree_index(n, tui_tree_selected(t));
+  n->scroll = t->scroll;
+  n->horizontal = t->horizontal;
+  for (i = 0; i < t->count; i++)
+    if (t->expanded[i]) {
+      p = drag_tree_index(n, t->nodes[i].id);
+      if (p >= 0)
+        n->expanded[p] = 1;
+    }
+  drop_reason(reason, "");
+  return n;
+}
+static int drag_options(const TuiDragOptions *o) {
+  size_t i;
+  if (!o)
+    return 1;
+  if (o->threshold < 0 || o->threshold > 1000000 || o->locked_count > 65536 ||
+      (o->locked_count && !o->locked))
+    return 0;
+  for (i = 0; i < o->locked_count; i++)
+    if (!o->locked[i] || !*o->locked[i])
+      return 0;
+  return 1;
+}
+static int drag_locked(const TuiDragOptions *o, const char *id) {
+  size_t i;
+  for (i = 0; o && i < o->locked_count; i++)
+    if (!strcmp(o->locked[i], id))
+      return 1;
+  return 0;
+}
+static TuiDropRequest *drag_request(const void *m, int tree, const char *s,
+                                    const char *t, const char *p,
+                                    const TuiDragOptions *o,
+                                    TuiDropPolicy allow, void *ctx,
+                                    const char **reason) {
+  TuiDropRequest *r;
+  char before[17], after[17];
+  void *n;
+  drop_reason(reason, "invalid");
+  if (!m || !s || !t || !p)
+    return NULL;
+  if (!drag_options(o)) {
+    drop_reason(reason, "options");
+    return NULL;
+  }
+  if (drag_locked(o, s) || drag_locked(o, t)) {
+    drop_reason(reason, "locked");
+    return NULL;
+  }
+  if (tree)
+    tui_tree_drag_revision(m, before);
+  else
+    tui_tabs_drag_revision(m, before);
+  r = drop_new(s, t, p, before);
+  if (!r) {
+    drop_reason(reason, "memory");
+    return NULL;
+  }
+  n = tree ? (void *)tui_tree_apply_drop(m, r, reason)
+           : (void *)tui_tabs_apply_drop(m, r, reason);
+  if (!n) {
+    tui_drop_request_free(r);
+    return NULL;
+  }
+  if (tree)
+    tui_tree_free(n);
+  else
+    tui_tabs_free(n);
+  if (allow) {
+    if (!allow(ctx, r)) {
+      drop_reason(reason, "policy");
+      tui_drop_request_free(r);
+      return NULL;
+    }
+    if (tree)
+      tui_tree_drag_revision(m, after);
+    else
+      tui_tabs_drag_revision(m, after);
+    if (strcmp(before, after)) {
+      drop_reason(reason, "stale");
+      tui_drop_request_free(r);
+      return NULL;
+    }
+  }
+  drop_reason(reason, "");
+  return r;
+}
+TuiDropRequest *tui_tree_request_drop(const TuiTree *m, const char *s,
+                                      const char *t, const char *p,
+                                      const TuiDragOptions *o,
+                                      TuiDropPolicy allow, void *ctx,
+                                      const char **reason) {
+  return drag_request(m, 1, s, t, p, o, allow, ctx, reason);
+}
+TuiDropRequest *tui_tabs_request_drop(const TuiTabs *m, const char *s,
+                                      const char *t, const char *p,
+                                      const TuiDragOptions *o,
+                                      TuiDropPolicy allow, void *ctx,
+                                      const char **reason) {
+  return drag_request(m, 0, s, t, p, o, allow, ctx, reason);
+}
+TuiDropRequest *tui_tabs_keyboard_drop(const TuiTabs *t, const char *d,
+                                       const TuiDragOptions *o,
+                                       TuiDropPolicy allow, void *ctx,
+                                       const char **reason) {
+  int i, j;
+  drop_reason(reason, "missing");
+  if (!t || !d || t->focused < 0)
+    return NULL;
+  i = t->focused;
+  if (strcmp(d, "previous") && strcmp(d, "next")) {
+    drop_reason(reason, "position");
+    return NULL;
+  }
+  j = i + (!strcmp(d, "previous") ? -1 : 1);
+  if (j < 0 || j >= (int)t->count)
+    return NULL;
+  return tui_tabs_request_drop(t, t->items[i].id, t->items[j].id,
+                               !strcmp(d, "previous") ? "before" : "after", o,
+                               allow, ctx, reason);
+}
+TuiDropRequest *tui_tree_keyboard_drop(const TuiTree *t, const char *d,
+                                       const TuiDragOptions *o,
+                                       TuiDropPolicy allow, void *ctx,
+                                       const char **reason) {
+  int i, j, dir;
+  drop_reason(reason, "missing");
+  if (!t || !d || t->selected < 0)
+    return NULL;
+  i = t->selected;
+  if (!strcmp(d, "outside") && t->parent[i] >= 0)
+    return tui_tree_request_drop(t, t->nodes[i].id, t->nodes[t->parent[i]].id,
+                                 "after", o, allow, ctx, reason);
+  if (strcmp(d, "previous") && strcmp(d, "next") && strcmp(d, "inside")) {
+    drop_reason(reason, "position");
+    return NULL;
+  }
+  dir = !strcmp(d, "next") ? 1 : -1;
+  for (j = i + dir; j >= 0 && j < (int)t->count; j += dir)
+    if (t->parent[j] == t->parent[i])
+      return tui_tree_request_drop(t, t->nodes[i].id, t->nodes[j].id,
+                                   !strcmp(d, "inside") ? "inside"
+                                   : dir > 0            ? "after"
+                                                        : "before",
+                                   o, allow, ctx, reason);
+  return NULL;
+}
+struct TuiDragState {
+  int enabled, busy, phase, allowed, down_x, down_y, width, height, first,
+      scroll;
+  const char *result, *reason;
+  char *source, *render_key;
+  char revision[17], state_revision[17];
+  int *expanded;
+  size_t expanded_count;
+  TuiDropRequest *request;
+  TuiDragPointer pointer;
+};
+static int drag_captured(const TuiDragState *d) { return d && d->phase > 0; }
+static void drag_reset(TuiDragState *d, const char *outcome) {
+  free(d->source);
+  d->source = NULL;
+  free(d->expanded);
+  d->expanded = NULL;
+  d->expanded_count = 0;
+  tui_drop_request_free(d->request);
+  d->request = NULL;
+  d->phase = d->allowed = d->down_x = d->down_y = d->width = d->height =
+      d->first = d->scroll = 0;
+  d->revision[0] = d->state_revision[0] = 0;
+  d->result = outcome;
+  d->reason = "";
+  d->pointer = (TuiDragPointer){0};
+}
+TuiDragState *tui_drag_new(int enabled) {
+  TuiDragState *d = calloc(1, sizeof(*d));
+  if (d) {
+    d->enabled = !!enabled;
+    d->result = d->reason = "";
+  }
+  return d;
+}
+void tui_drag_free(TuiDragState *d) {
+  if (d && !d->busy) {
+    drag_reset(d, "");
+    free(d->render_key);
+    free(d);
+  }
+}
+TuiResult tui_drag_enable(TuiDragState *d, int enabled) {
+  if (!d || d->busy)
+    return TUI_INVALID;
+  d->enabled = !!enabled;
+  if (!enabled && drag_captured(d))
+    drag_reset(d, "cancel");
+  return TUI_OK;
+}
+TuiResult tui_drag_cancel(TuiDragState *d) {
+  if (!d || d->busy)
+    return TUI_INVALID;
+  drag_reset(d, "cancel");
+  return TUI_OK;
+}
+TuiDragView tui_drag_view(const TuiDragState *d) {
+  TuiDragView v = {"idle", "", "", "", "", "", 0, 0};
+  if (d) {
+    v.phase = d->phase == 1 ? "armed" : d->phase == 2 ? "dragging" : "idle";
+    v.result = d->result;
+    v.source_id = d->source ? d->source : "";
+    v.target_id = d->request ? d->request->target_id : "";
+    v.position = d->request ? d->request->position : "";
+    v.reason = d->reason;
+    v.allowed = d->allowed;
+    v.captured = drag_captured(d);
+  }
+  return v;
+}
+TuiResult tui_drag_render_key(TuiDragState *d, const char *key) {
+  char *owned;
+  if (!d || d->busy || !key)
+    return TUI_INVALID;
+  owned = copy(key);
+  if (!owned)
+    return TUI_NOMEM;
+  if (drag_captured(d) && d->render_key && *d->render_key &&
+      strcmp(d->render_key, key))
+    drag_reset(d, "stale");
+  free(d->render_key);
+  d->render_key = owned;
+  return TUI_OK;
+}
+static void drag_model_revision(const void *m, int tree, char out[17]) {
+  if (tree)
+    tui_tree_drag_revision(m, out);
+  else
+    tui_tabs_drag_revision(m, out);
+}
+static void drag_state_revision(const void *m, int tree, char out[17]) {
+  uint64_t hash = UINT64_C(14695981039346656037);
+  char n[32];
+  size_t i;
+  if (tree) {
+    const TuiTree *t = m;
+    hash = drag_hash(hash, tui_tree_selected(t));
+    snprintf(n, sizeof(n), "%d", t->scroll);
+    hash = drag_hash(hash, n);
+    snprintf(n, sizeof(n), "%d", t->horizontal);
+    hash = drag_hash(hash, n);
+    for (i = 0; i < t->count; i++)
+      if (t->expanded[i])
+        hash = drag_hash(hash, t->nodes[i].id);
+  } else {
+    const TuiTabs *t = m;
+    hash = drag_hash(hash, tui_tabs_active(t));
+    hash = drag_hash(hash, tui_tabs_focused(t));
+    snprintf(n, sizeof(n), "%d", t->first);
+    hash = drag_hash(hash, n);
+  }
+  drag_hex(hash, out);
+}
+static int drag_valid(TuiDragState *d, const void *m, int tree, int w, int h) {
+  char rev[17], state[17];
+  if (!drag_captured(d))
+    return 0;
+  if (!d->enabled) {
+    drag_reset(d, "cancel");
+    return 0;
+  }
+  drag_model_revision(m, tree, rev);
+  drag_state_revision(m, tree, state);
+  if (strcmp(rev, d->revision) || strcmp(state, d->state_revision) ||
+      d->width != w || d->height != h) {
+    drag_reset(d, "stale");
+    return 0;
+  }
+  return 1;
+}
+static int drag_bounds(int w, int h) {
+  return w >= 0 && w <= 65535 && h >= 0 && h <= 4096;
+}
+void tui_drag_layout_free(TuiDragLayout *l) {
+  if (l) {
+    tui_tree_free(l->tree);
+    tui_tabs_free(l->tabs);
+    free(l);
+  }
+}
+static TuiDragLayout *drag_preview(TuiDragState *d, const void *m, int tree,
+                                   int w, int h) {
+  TuiDragLayout *l;
+  int captured;
+  size_t n;
+  if (!d || d->busy || !m || !drag_bounds(w, h))
+    return NULL;
+  captured = drag_valid(d, m, tree, w, h);
+  l = calloc(1, sizeof(*l));
+  if (!l)
+    return NULL;
+  if (tree) {
+    l->tree = drag_tree_clone(m);
+    if (!l->tree)
+      goto fail;
+    if (captured) {
+      memcpy(l->tree->expanded, d->expanded, l->tree->count * sizeof(int));
+      d->scroll =
+          max(0, min(d->scroll,
+                     (int)tui_tree_visible(l->tree, NULL, 0) - max(1, h)));
+      l->tree->scroll = d->scroll;
+    } else
+      reconcile(l->tree, h);
+  } else {
+    l->tabs = drag_tabs_clone(m);
+    if (!l->tabs)
+      goto fail;
+    if (captured)
+      l->tabs->first = d->first;
+    if (tabs_layout_at(l->tabs, w, NULL, 0, &n, !captured) != TUI_OK)
+      goto fail;
+    l->tab_cells = l->tabs->views;
+    l->tab_count = n;
+  }
+  return l;
+fail:
+  tui_drag_layout_free(l);
+  return NULL;
+}
+TuiDragLayout *tui_drag_tree_preview(TuiDragState *d, const TuiTree *t, int w,
+                                     int h) {
+  return drag_preview(d, t, 1, w, h);
+}
+TuiDragLayout *tui_drag_tabs_preview(TuiDragState *d, const TuiTabs *t, int w,
+                                     int h) {
+  return drag_preview(d, t, 0, w, h);
+}
+static TuiResult drag_pointer(TuiDragState *d, const void *m, int tree,
+                              TuiDragPointer p, const TuiDragOptions *o,
+                              TuiDropPolicy policy, void *ctx,
+                              TuiDropRequest **out) {
+  TuiDragLayout *l;
+  const char *id = "", *target = "", *pos = "", *error = "outside";
+  TuiDropRequest *raw = NULL;
+  size_t i;
+  int index, threshold = o && o->threshold ? o->threshold : 2;
+  char *source;
+  int *expanded = NULL;
+  if (!out)
+    return TUI_INVALID;
+  *out = NULL;
+  if (!d || d->busy || !m || !p.action || !drag_options(o) ||
+      !drag_bounds(p.width, p.height) || p.x < -1000000000 ||
+      p.x > 1000000000 || p.y < -1000000000 || p.y > 1000000000 ||
+      (strcmp(p.action, "down") && strcmp(p.action, "move") &&
+       strcmp(p.action, "up") && strcmp(p.action, "cancel")))
+    return TUI_INVALID;
+  if (!strcmp(p.action, "cancel"))
+    return tui_drag_cancel(d);
+  if (!d->enabled) {
+    if (drag_captured(d))
+      drag_reset(d, "cancel");
+    return TUI_OK;
+  }
+  if (!strcmp(p.action, "down")) {
+    drag_reset(d, "");
+    if (p.x < 0 || p.x >= p.width || p.y < 0 || p.y >= p.height)
+      return TUI_OK;
+    l = drag_preview(d, m, tree, p.width, p.height);
+    if (!l)
+      return TUI_NOMEM;
+    if (tree) {
+      TuiTree *t = l->tree;
+      index = t->scroll + p.y;
+      for (i = 0; i < t->count; i++)
+        if (visible(t, (int)i) && index-- == 0) {
+          id = t->nodes[i].id;
+          break;
+        }
+    } else if (p.y == 0)
+      for (i = 0; i < l->tab_count; i++) {
+        const TuiTabCell *c = &l->tab_cells[i];
+        if (p.x >= c->start && p.x < c->start + c->width && !c->disabled) {
+          id = c->id;
+          break;
+        }
+      }
+    if (!*id || drag_locked(o, id)) {
+      tui_drag_layout_free(l);
+      return TUI_OK;
+    }
+    source = copy(id);
+    if (tree) {
+      const TuiTree *t = m;
+      expanded = calloc(t->count + 1, sizeof(int));
+      if (expanded)
+        memcpy(expanded, l->tree->expanded, t->count * sizeof(int));
+    }
+    if (!source || (tree && !expanded)) {
+      free(source);
+      free(expanded);
+      tui_drag_layout_free(l);
+      return TUI_NOMEM;
+    }
+    d->source = source;
+    d->phase = 1;
+    d->down_x = p.x;
+    d->down_y = p.y;
+    d->width = p.width;
+    d->height = p.height;
+    d->pointer = p;
+    d->pointer.action = NULL;
+    d->expanded = expanded;
+    d->expanded_count = tree ? ((const TuiTree *)m)->count : 0;
+    d->first = tree ? 0 : l->tabs->first;
+    d->scroll = tree ? l->tree->scroll : 0;
+    drag_model_revision(m, tree, d->revision);
+    drag_state_revision(m, tree, d->state_revision);
+    tui_drag_layout_free(l);
+    return TUI_OK;
+  }
+  if (!drag_valid(d, m, tree, p.width, p.height))
+    return TUI_OK;
+  d->pointer = p;
+  d->pointer.action = NULL;
+  if (max(abs(p.x - d->down_x), abs(p.y - d->down_y)) >= threshold)
+    d->phase = 2;
+  if (d->phase == 2) {
+    if (!tree && o && o->auto_scroll && !strcmp(p.action, "move")) {
+      const TuiTabs *t = m;
+      if (p.x <= 0)
+        d->first = max(0, d->first - 1);
+      else if (p.x >= p.width - 1)
+        d->first = min(max(0, (int)t->count - 1), d->first + 1);
+    }
+    l = drag_preview(d, m, tree, p.width, p.height);
+    if (!l)
+      return TUI_NOMEM;
+    if (tree) {
+      TuiTree *t = l->tree;
+      if (o && o->auto_scroll && !strcmp(p.action, "move")) {
+        if (p.y <= 0)
+          d->scroll = max(0, d->scroll - 1);
+        else if (p.y >= p.height - 1)
+          d->scroll =
+              min(max(0, (int)tui_tree_visible(t, NULL, 0) - max(1, p.height)),
+                  d->scroll + 1);
+        t->scroll = d->scroll;
+      }
+      index = d->scroll + p.y;
+      if (p.x >= 0 && p.x < p.width && p.y >= 0 && p.y < p.height)
+        for (i = 0; i < t->count; i++)
+          if (visible(t, (int)i) && index-- == 0) {
+            target = t->nodes[i].id;
+            pos = p.x <= 2 + t->depth[i] * 2          ? "before"
+                  : t->branch[i] && p.x < p.width - 2 ? "inside"
+                                                      : "after";
+            break;
+          }
+    } else if (p.x >= 0 && p.x < p.width && p.y == 0)
+      for (i = 0; i < l->tab_count; i++) {
+        const TuiTabCell *c = &l->tab_cells[i];
+        if (p.x >= c->start && p.x < c->start + c->width) {
+          target = c->id;
+          pos = p.x - c->start >= c->width / 2 ? "after" : "before";
+          break;
+        }
+      }
+    if (*target) {
+      raw = drop_new(d->source, target, pos, d->revision);
+      if (!raw) {
+        tui_drag_layout_free(l);
+        return TUI_NOMEM;
+      }
+      d->busy = 1;
+      TuiDropRequest *checked =
+          drag_request(m, tree, d->source, target, pos, o, policy, ctx, &error);
+      d->busy = 0;
+      tui_drop_request_free(checked);
+    }
+    tui_drag_layout_free(l);
+    if (!drag_valid(d, m, tree, p.width, p.height)) {
+      tui_drop_request_free(raw);
+      return TUI_OK;
+    }
+    tui_drop_request_free(d->request);
+    d->request = raw;
+    d->allowed = !*error;
+    d->reason = error;
+    if (tree && raw && d->allowed && o && o->hover_expand &&
+        !strcmp(raw->position, "inside")) {
+      int target_index = drag_tree_index(m, raw->target_id);
+      if (target_index >= 0)
+        d->expanded[target_index] = 1;
+    }
+  }
+  if (strcmp(p.action, "up"))
+    return TUI_OK;
+  if (d->phase == 2 && d->allowed) {
+    *out = d->request;
+    d->request = NULL;
+    drag_reset(d, "drop");
+  } else
+    drag_reset(d, d->phase == 2 ? "reject" : "");
+  return TUI_OK;
+}
+TuiResult tui_drag_tree_pointer(TuiDragState *d, const TuiTree *m,
+                                TuiDragPointer p, const TuiDragOptions *o,
+                                TuiDropPolicy allow, void *ctx,
+                                TuiDropRequest **out) {
+  return drag_pointer(d, m, 1, p, o, allow, ctx, out);
+}
+TuiResult tui_drag_tabs_pointer(TuiDragState *d, const TuiTabs *m,
+                                TuiDragPointer p, const TuiDragOptions *o,
+                                TuiDropPolicy allow, void *ctx,
+                                TuiDropRequest **out) {
+  return drag_pointer(d, m, 0, p, o, allow, ctx, out);
+}
+static TuiResult drag_draw(TuiDragState *d, void *m, int tree, TuiCanvas *c,
+                           TuiRect r, int focused, int ascii) {
+  char key[256];
+  TuiResult result;
+  TuiCanvas *child;
+  TuiDragLayout *l;
+  const char *marker = "!";
+  int mx = 0, my = 0, index;
+  size_t i;
+  if (!d || d->busy || !m || !c || !drag_bounds(r.width, r.height) || r.x < 0 ||
+      r.x > 1000000000 || r.y < 0 || r.y > 1000000000)
+    return TUI_INVALID;
+  if (!focused && drag_captured(d))
+    drag_reset(d, "cancel");
+  snprintf(key, sizeof(key), "%d|%d|%d|%d|%s|%s|%s|%d|%d", r.x, r.y, r.width,
+           r.height, c->theme, c->profile, c->surface, !!focused, !!ascii);
+  result = tui_drag_render_key(d, key);
+  if (result != TUI_OK)
+    return result;
+  if (!drag_valid(d, m, tree, r.width, r.height))
+    return tree ? tui_tree_draw(m, c, r, focused, ascii)
+                : tui_tabs_draw(m, c, r, focused);
+  l = drag_preview(d, m, tree, r.width, r.height);
+  if (!l)
+    return TUI_NOMEM;
+  child = tui_canvas_new(r.width, r.height, c->theme, c->profile);
+  if (!child) {
+    tui_drag_layout_free(l);
+    return TUI_NOMEM;
+  }
+  tui_canvas_surface(child, c->surface);
+  tui_canvas_fill(child, (TuiRect){0, 0, r.width, r.height}, "surface");
+  if (tree) {
+    result = tree_draw_at(l->tree, child, (TuiRect){0, 0, r.width, r.height},
+                          focused, ascii, 0);
+    index = 0;
+    my = max(0, min(r.height - 1, d->pointer.y));
+    for (i = 0; i < l->tree->count; i++)
+      if (visible(l->tree, (int)i)) {
+        if (d->request &&
+            !strcmp(l->tree->nodes[i].id, d->request->target_id)) {
+          my = index - l->tree->scroll;
+          break;
+        }
+        index++;
+      }
+    if (d->request)
+      marker = !strcmp(d->request->position, "before")  ? ascii ? "^" : "↑"
+               : !strcmp(d->request->position, "after") ? ascii ? "v" : "↓"
+               : ascii                                  ? "+"
+                                                        : "↳";
+  } else {
+    TuiTabs *t = l->tabs;
+    result = TUI_OK;
+    if (t->first)
+      tui_canvas_write(child, 0, 0, "<", "hint", 0, 1);
+    if ((size_t)t->first + l->tab_count < t->count && r.width)
+      tui_canvas_write(child, r.width - 1, 0, ">", "hint", 0, 1);
+    mx = max(0, min(r.width - 1, d->pointer.x));
+    for (i = 0; i < l->tab_count; i++) {
+      const TuiTabCell *v = &l->tab_cells[i];
+      const char *role = v->disabled ? "disabled"
+                         : v->active ? "selection"
+                                     : "body";
+      char spaces[25];
+      memset(spaces, ' ', (size_t)v->width);
+      spaces[v->width] = 0;
+      result = tui_canvas_write(child, v->start, 0, spaces, role,
+                                focused && v->focused, v->width);
+      if (result == TUI_OK)
+        result = tui_canvas_write(child, v->start, 0, v->text, role,
+                                  focused && v->focused, v->width);
+      if (result != TUI_OK)
+        break;
+      if (d->request && !strcmp(v->id, d->request->target_id))
+        mx = v->start +
+             (!strcmp(d->request->position, "after") ? v->width - 1 : 0);
+    }
+    marker = ascii ? "|" : "│";
+  }
+  if (result == TUI_OK && d->phase == 2 && mx >= 0 && mx < r.width && my >= 0 &&
+      my < r.height) {
+    TuiStyle old = child->cells[(size_t)my * r.width + mx].style, semantic;
+    unsigned fg;
+    tui_style(c->theme, c->profile, d->allowed ? "info" : "error", 0,
+              &semantic);
+    fg = semantic.foreground;
+    if (style_contrast(fg, old.background) < 4.5 &&
+        style_contrast(old.foreground, old.background) >
+            style_contrast(fg, old.background))
+      fg = old.foreground;
+    semantic = (TuiStyle){fg, old.background, 1, 0, 1, 0};
+    result = tui_canvas_write_style(child, mx, my, d->allowed ? marker : "!",
+                                    &semantic, 1);
+  }
+  if (result == TUI_OK)
+    result =
+        tui_canvas_blit(c, child, (TuiRect){0, 0, r.width, r.height}, r.x, r.y);
+  tui_canvas_free(child);
+  tui_drag_layout_free(l);
+  return result;
+}
+TuiResult tui_drag_tree_draw(TuiDragState *d, TuiTree *t, TuiCanvas *c,
+                             TuiRect r, int focused, int ascii) {
+  return drag_draw(d, t, 1, c, r, focused, ascii);
+}
+TuiResult tui_drag_tabs_draw(TuiDragState *d, TuiTabs *t, TuiCanvas *c,
+                             TuiRect r, int focused, int ascii) {
+  return drag_draw(d, t, 0, c, r, focused, ascii);
 }

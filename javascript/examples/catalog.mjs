@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { DragDemo } from "./drag-host.mjs";
 import { GridDemo } from "./grid-host.mjs";
 import { DocumentDemo } from "./document-host.mjs";
 import { DialogDemo } from "./dialog-host.mjs";
@@ -17,11 +18,12 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog|document|syntax|grid --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog|document|syntax|grid|drag --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
-const gridDemo = value("--demo", "tree") === "grid";
+const dragDemo = value("--demo", "tree") === "drag";
+const gridDemo = dragDemo || value("--demo", "tree") === "grid";
 const syntaxDemo = value("--demo", "tree") === "syntax";
 const documentDemo = ["document", "syntax"].includes(value("--demo", "tree"));
 const dialogDemo = value("--demo", "tree") === "dialog";
@@ -54,13 +56,13 @@ if (
   value("--demo", "tree") !== "tree"
 )
   throw new Error(
-    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog, document, syntax, grid",
+    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog, document, syntax, grid, drag",
   );
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 const layoutHost = new LayoutDemo(en);
 const containerHost = new ContainerDemo(en, ascii);
-const gridHost = new GridDemo(en, ascii);
+const gridHost = dragDemo ? new DragDemo(en, ascii) : new GridDemo(en, ascii);
 const documentHost = new DocumentDemo(en, ascii, syntaxDemo);
 const dialogHost = new DialogDemo(en);
 const surfaceHost = new SurfaceDemo(en);
@@ -306,7 +308,9 @@ function restore() {
   if (!active) return;
   active = false;
   try {
-    stdout.write("\x1b[0m\x1b[?1000l\x1b[?1006l\x1b[?25h\x1b[?1049l");
+    stdout.write(
+      "\x1b[0m\x1b[?1000l\x1b[?1002l\x1b[?1006l\x1b[?25h\x1b[?1049l",
+    );
   } finally {
     stdin.setRawMode(false);
     stdin.pause();
@@ -321,7 +325,9 @@ for (const signal of ["SIGINT", "SIGTERM"])
 try {
   stdin.setRawMode(true);
   active = true;
-  stdout.write("\x1b[?1049h\x1b[?1000h\x1b[?1006h");
+  stdout.write(
+    "\x1b[?1049h" + (dragDemo ? "\x1b[?1002h" : "\x1b[?1000h") + "\x1b[?1006h",
+  );
   draw();
   stdout.on("resize", () => draw());
   stdin.on("data", (chunk) => {
@@ -352,7 +358,15 @@ try {
           pending = pending.slice(mouse[0].length);
           const x = Number(mouse[2]) - 1,
             y = Number(mouse[3]) - 1;
-          if (
+          if (dragDemo) {
+            const button = Number(mouse[1]);
+            gridHost.pointer(
+              x,
+              y,
+              button,
+              mouse[4] === "m" ? "up" : button & 32 ? "move" : "down",
+            );
+          } else if (
             (menuDemo ||
               feedbackDemo ||
               layoutDemo ||

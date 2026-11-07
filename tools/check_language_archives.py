@@ -18,6 +18,7 @@ from check_language_documents import source as document_source,validate_output a
 
 from check_language_syntax import source as syntax_source,validate_output as validate_syntax_output
 from check_language_grid import source as grid_source,validate_output as validate_grid_output
+from check_language_drag import source as drag_source,validate_output as validate_drag_output
 
 def main():
  out=ROOT/'.cache/packages/languages'
@@ -43,9 +44,9 @@ def main():
    src.write_text(copy_source(lang));run(args,base);run([base/'consumer'],base)
    src.write_text(container_source(lang));run(args,base);run([base/'consumer'],base)
    src.write_text(surface_source(lang));run(args,base);validate_surface_output(subprocess.check_output([base/'consumer'],cwd=base,text=True))
-   for make,validate in [(popup_source,validate_popup_output),(dialog_source,validate_dialog_output),(document_source,validate_document_output),(syntax_source,validate_syntax_output),(grid_source,validate_grid_output)]:
+   for make,validate in [(popup_source,validate_popup_output),(dialog_source,validate_dialog_output),(document_source,validate_document_output),(syntax_source,validate_syntax_output),(grid_source,validate_grid_output),(drag_source,validate_drag_output)]:
     src.write_text(make(lang));run(args,base);validate(subprocess.check_output([base/'consumer'],cwd=base,text=True))
-   for demo,label in [('shadow',b'Context menu'),('dialog',b'Reconnect'),('document',b'Document viewer/editor'),('syntax',b'SELECT COUNT'),('grid',b'1,234')]:
+   for demo,label in [('shadow',b'Context menu'),('dialog',b'Reconnect'),('document',b'Document viewer/editor'),('syntax',b'SELECT COUNT'),('grid',b'1,234'),('drag',b'Dragging: ON')]:
     assert label in subprocess.check_output([example,'--demo',demo,'--lang','en','--snapshot'],cwd=base)
    snapshot=subprocess.check_output([example,'--demo','surface','--lang','en','--snapshot'],cwd=base);assert b'Body on surface'in snapshot
    snapshot=subprocess.check_output([example,'--demo','container','--lang','en','--snapshot'],cwd=base);assert b'Navigator'in snapshot
@@ -54,7 +55,7 @@ def main():
  jar_name=next(name for name in manifest['assets']if name.endswith('.jar'))
  with zipfile.ZipFile(out/jar_name)as jar:
   names=jar.namelist();assert not any(n.endswith(('.so','.dll','.dylib'))for n in names)
-  assert not any('ComponentsTest'in n or 'CollectionCases'in n or 'MenuCases'in n or 'FeedbackCases'in n or 'LayoutCases'in n or 'CanvasCopyCases'in n or 'ContainerCases'in n or 'SurfaceCases'in n or 'PopupCases'in n or 'DialogCases'in n or 'DocumentCases'in n or 'SyntaxCases'in n or 'GridCases'in n for n in names)
+  assert not any('ComponentsTest'in n or 'CollectionCases'in n or 'MenuCases'in n or 'FeedbackCases'in n or 'LayoutCases'in n or 'CanvasCopyCases'in n or 'ContainerCases'in n or 'SurfaceCases'in n or 'PopupCases'in n or 'DialogCases'in n or 'DocumentCases'in n or 'SyntaxCases'in n or 'GridCases'in n or 'DragCases'in n for n in names)
   assert jar.read('CASEFOLD-LICENSE')==(ROOT/'design/casefold.LICENSE').read_bytes()
   assert jar.read('NOTICE.md')==(ROOT/'java/NOTICE.md').read_bytes()and jar.read('NOTICE.en.md')==(ROOT/'java/NOTICE.en.md').read_bytes()
   assert 'io/tuivory/FoldData.class'in names
@@ -78,7 +79,9 @@ def main():
   run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);validate_surface_output(subprocess.check_output(['java','-cp',str(jar)+os.pathsep+str(base),'SurfaceCases'],cwd=base,text=True))
   for name,make,validate in [('PopupCases',popup_source,validate_popup_output),('DialogCases',dialog_source,validate_dialog_output),('DocumentCases',document_source,validate_document_output),('SyntaxCases',syntax_source,validate_syntax_output),('GridCases',grid_source,validate_grid_output)]:
    src=base/(name+'.java');src.write_text(make('java'));run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);validate(subprocess.check_output(['java','-cp',str(jar)+os.pathsep+str(base),name],cwd=base,text=True))
-  for demo,label in [('shadow',b'Context menu'),('dialog',b'Reconnect'),('document',b'Document viewer/editor'),('syntax',b'SELECT COUNT'),('grid',b'1,234')]:
+  src=base/'DragCases.java';src.write_text(drag_source('java'))
+  run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);validate_drag_output(subprocess.check_output(['java','-ea','-cp',str(jar)+os.pathsep+str(base),'DragCases'],cwd=base,text=True))
+  for demo,label in [('shadow',b'Context menu'),('dialog',b'Reconnect'),('document',b'Document viewer/editor'),('syntax',b'SELECT COUNT'),('grid',b'1,234'),('drag',b'Dragging: ON')]:
    assert label in subprocess.check_output(['java','-jar',jar,'--demo',demo,'--lang','en','--snapshot'],cwd=base)
   snapshot=subprocess.check_output(['java','-jar',jar,'--demo','surface','--lang','en','--snapshot'],cwd=base);assert b'Body on surface'in snapshot
  wheel_name=next(name for name in manifest['assets']if name.endswith('.whl'))
@@ -90,6 +93,7 @@ def main():
  with tarfile.open(out/npm_name)as npm:
   assert 'package/CASEFOLD-LICENSE'in npm.getnames()
   assert 'package/dist/casefold.json'in npm.getnames()
+  assert 'package/examples/drag-host.mjs'in npm.getnames()and'package/dist/drag.js'in npm.getnames()and'package/dist/drag.d.ts'in npm.getnames()
   assert 'package/dist/sql-syntax-words.json'in npm.getnames()and'package/dist/syntax-unicode.json'in npm.getnames()
  print('Six actual archive hashes/licenses, isolated static C/C++ SDK consumers, pure Java JAR and runtime package data passed')
 if __name__=='__main__':main()

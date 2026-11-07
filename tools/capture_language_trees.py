@@ -74,7 +74,7 @@ def svg(data):
     out.append('</svg>');return '\n'.join(out)+'\n'
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--python',default=sys.executable);p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout','container','surface','shadow','dialog','document','syntax','grid'],default='tree');p.add_argument('--theme',choices=['dark','light','blackwhite'],default='dark');p.add_argument('--colors',choices=['8','16','256','truecolor'],default='truecolor');args=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--python',default=sys.executable);p.add_argument('--demo',choices=['drag','tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout','container','surface','shadow','dialog','document','syntax','grid'],default='tree');p.add_argument('--theme',choices=['dark','light','blackwhite'],default='dark');p.add_argument('--colors',choices=['8','16','256','truecolor'],default='truecolor');args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     cmds={'python':[args.python,'-m','tuivory'],'javascript':['node','javascript/examples/catalog.mjs'],'c':[f'bin/c/tuivory-linux-{arch}'],'cpp':[f'bin/cpp/tuivory-linux-{arch}'],'java':['java','-jar',f'.cache/packages/java/tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}
     for language,cmd in cmds.items():

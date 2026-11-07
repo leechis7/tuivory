@@ -1,6 +1,7 @@
 #include "container_host.hpp"
 #include "dialog_host.hpp"
 #include "document_host.hpp"
+#include "drag_host.hpp"
 #include "feedback_host.hpp"
 #include "grid_host.hpp"
 #include "layout_host.hpp"
@@ -22,7 +23,7 @@ class Session {
   bool active = false;
 
 public:
-  explicit Session(bool mouse = false) {
+  explicit Session(bool mouse = false, bool motion = false) {
     if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO) ||
         tcgetattr(STDIN_FILENO, &saved))
       throw std::runtime_error(
@@ -37,14 +38,15 @@ public:
     active = true;
     std::cout << "\033[?1049h";
     if (mouse)
-      std::cout << "\033[?1000h\033[?1006h";
+      std::cout << (motion ? "\033[?1002h" : "\033[?1000h") << "\033[?1006h";
     std::signal(SIGTERM, stop);
     std::signal(SIGINT, stop);
   }
   ~Session() {
     if (active) {
-      std::cout << "\033[0m\033[?1000l\033[?1006l\033[?25h\033[?1049l"
-                << std::flush;
+      std::cout
+          << "\033[0m\033[?1000l\033[?1002l\033[?1006l\033[?25h\033[?1049l"
+          << std::flush;
       tcsetattr(STDIN_FILENO, TCSADRAIN, &saved);
     }
   }
@@ -98,7 +100,7 @@ int main(int argc, char **argv) {
          menu_demo = false, context_demo = false, feedback_demo = false,
          layout_demo = false, container_demo = false, surface_demo = false,
          shadow_demo = false, dialog_demo = false, document_demo = false,
-         syntax_demo = false, grid_demo = false;
+         syntax_demo = false, grid_demo = false, drag_demo = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -129,6 +131,7 @@ int main(int argc, char **argv) {
         shadow_demo = demo == "shadow";
         dialog_demo = demo == "dialog";
         grid_demo = demo == "grid";
+        drag_demo = demo == "drag";
         syntax_demo = demo == "syntax";
         document_demo = demo == "document" || syntax_demo;
         if (shadow_demo)
@@ -137,16 +140,17 @@ int main(int argc, char **argv) {
         if (demo != "tree" && !workspace && !text_demo && !form_demo &&
             !list_demo && !picker_demo && !menu_demo && !feedback_demo &&
             !layout_demo && !container_demo && !surface_demo && !dialog_demo &&
-            !document_demo && !grid_demo)
-          throw std::invalid_argument("Supported demos: tree, workspace, text, "
-                                      "form, list, picker, menu, context-menu, "
-                                      "feedback, layout, container, surface, "
-                                      "shadow, dialog, document, syntax, grid");
+            !document_demo && !grid_demo && !drag_demo)
+          throw std::invalid_argument(
+              "Supported demos: tree, workspace, text, "
+              "form, list, picker, menu, context-menu, "
+              "feedback, layout, container, surface, "
+              "shadow, dialog, document, syntax, grid, drag");
       } else {
         std::cout << "--demo "
                      "tree|workspace|text|form|list|picker|menu|context-menu|"
                      "feedback|layout|container|surface|shadow|dialog|document|"
-                     "syntax|grid "
+                     "syntax|grid|drag "
                      "--lang ko|en "
                      "--theme "
                      "dark|light|blackwhite "
@@ -159,6 +163,7 @@ int main(int argc, char **argv) {
     LayoutDemo layout_host(en);
     ContainerDemo container_host(en, ascii);
     GridDemo grid_host(en, ascii);
+    DragDemo drag_host(en);
     DocumentDemo document_host(en, ascii, syntax_demo);
     DialogDemo dialog_host(en);
     SurfaceDemo surface_host(en);
@@ -248,8 +253,9 @@ int main(int argc, char **argv) {
     std::optional<Session> session;
     if (!snapshot)
       session.emplace(menu_demo || feedback_demo || layout_demo ||
-                      container_demo || surface_demo || dialog_demo ||
-                      document_demo || grid_demo);
+                          container_demo || surface_demo || dialog_demo ||
+                          document_demo || grid_demo || drag_demo,
+                      drag_demo);
     while (!stopped) {
       int width = 72, height = 18;
       winsize size{};
@@ -262,7 +268,9 @@ int main(int argc, char **argv) {
       auto area = canvas.panel({0, 0, width, std::max(0, height - 1)},
                                en ? "Tuivory C++ example" : "Tuivory C++ 예제",
                                true, ascii);
-      if (grid_demo)
+      if (drag_demo)
+        drag_host.draw(canvas, area, ascii);
+      else if (grid_demo)
         grid_host.draw(canvas, area, ascii);
       else if (document_demo)
         document_host.draw(canvas, area, ascii);
@@ -345,7 +353,7 @@ int main(int argc, char **argv) {
                                                        : "";
       if (text_demo || form_demo || list_demo || picker_demo || menu_demo ||
           feedback_demo || layout_demo || container_demo || surface_demo ||
-          dialog_demo || document_demo || grid_demo) {
+          dialog_demo || document_demo || grid_demo || drag_demo) {
         std::string input, edit_action;
         if (key == 27) {
           std::string seq;
@@ -365,10 +373,17 @@ int main(int argc, char **argv) {
           int button = 0, x = 0, y = 0;
           char ending = 0;
           if ((menu_demo || feedback_demo || layout_demo || container_demo ||
-               surface_demo || dialog_demo || document_demo || grid_demo) &&
+               surface_demo || dialog_demo || document_demo || grid_demo ||
+               drag_demo) &&
               std::sscanf(seq.c_str(), "[<%d;%d;%d%c", &button, &x, &y,
                           &ending) == 4) {
-            if (ending == 'M' && x > 0 && y > 0) {
+            if (drag_demo && (ending == 'M' || ending == 'm') && x > 0 &&
+                y > 0) {
+              drag_host.pointer(x - 1, y - 1, button,
+                                ending == 'm' ? "up"
+                                : button & 32 ? "move"
+                                              : "down");
+            } else if (ending == 'M' && x > 0 && y > 0) {
               if (grid_demo)
                 grid_host.pointer(x - 1, y - 1, button);
               else if (document_demo)
@@ -425,7 +440,12 @@ int main(int argc, char **argv) {
           }
           edit_action = "insert";
         }
-        if (grid_demo)
+        if (drag_demo)
+          drag_host.handle(key == 9                   ? "next"
+                           : edit_action == "newline" ? "activate"
+                                                      : edit_action,
+                           input);
+        else if (grid_demo)
           grid_host.handle(key == 9                   ? "next"
                            : edit_action == "newline" ? "activate"
                                                       : edit_action,

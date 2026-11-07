@@ -30,7 +30,8 @@
     "examples/surface-host.mjs",
     "examples/dialog-host.mjs",
     "examples/document-host.mjs",
-    "examples/grid-host.mjs"
+    "examples/grid-host.mjs",
+    "examples/drag-host.mjs"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

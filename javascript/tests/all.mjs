@@ -10,8 +10,8 @@ import "./focus.mjs";
 import "./collections.mjs";
 
 import "./menu.mjs";
-import './feedback.mjs';
-import './layout.mjs';
+import "./feedback.mjs";
+import "./layout.mjs";
 
 import "./canvas-copy.mjs";
 
@@ -23,8 +23,11 @@ import "./popups.mjs";
 
 import "./dialogs.mjs";
 
-await import("./documents.mjs");
+import test from "node:test";
 
-await import("./syntax.mjs");
-
-await import("./grid.mjs");
+test("document, syntax, grid and drag shared regressions", async () => {
+  await import("./documents.mjs");
+  await import("./syntax.mjs");
+  await import("./grid.mjs");
+  await import("./drag.mjs");
+});

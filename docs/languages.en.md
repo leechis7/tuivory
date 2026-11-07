@@ -18,7 +18,7 @@ The first verification unit covers installation/import/include, 12 embedded pale
 | [C++](../cpp/README.en.md) | `#include "tuivory.hpp"` | Independent C++17 header package | Independent canvas and POSIX RAII example |
 | [Java](../java/README.en.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, no JNI | Independent canvas and line-input example; no raw-terminal adapter |
 
-All five languages provide [workspace](language-workspace.en.md) and [text editing](language-text.en.md), checked with shared fixtures and external consumers. [Forms and controls](language-forms.en.md) are also validated in all five languages. [Lists and search pickers](language-collections.en.md) are also validated in all five languages. [Menus and context menus](language-menu.en.md) are validated in all five languages. [Notices, progress and data states](language-feedback.en.md) are also validated in all five languages. [Spacing/stacks and supporting components](language-layout.en.md) are also validated in all five languages. [Configured containers and clipped cell copying](language-containers.en.md) are also validated in all five languages. The [data grid](language-grid.en.md) is independently implemented in all five languages. This does not complete the full catalog migration; drag-and-drop, terminal APIs and remaining items continue under the individual epics.
+All five languages provide [workspace](language-workspace.en.md) and [text editing](language-text.en.md), checked with shared fixtures and external consumers. [Forms and controls](language-forms.en.md) are also validated in all five languages. [Lists and search pickers](language-collections.en.md) are also validated in all five languages. [Menus and context menus](language-menu.en.md) are validated in all five languages. [Notices, progress and data states](language-feedback.en.md) are also validated in all five languages. [Spacing/stacks and supporting components](language-layout.en.md) are also validated in all five languages. [Configured containers and clipped cell copying](language-containers.en.md) are also validated in all five languages. The [data grid](language-grid.en.md) is independently implemented in all five languages. [Drag and drop](language-drag.en.md) is also validated in all five languages. This does not complete the full catalog migration; terminal APIs and remaining items continue under the individual epics.
 
 ## API use
 
@@ -144,3 +144,5 @@ Build C/C++/Java first as shown above. Reference capture also needs a CJK-capabl
 [Independent syntax highlighting/SQL classification API](language-syntax.en.md)
 
 [Independent data grid: virtual sources, approval, raw/display values and real cursors](language-grid.en.md)
+
+[Independent-language drag and drop: captured previews and host-approved moves](language-drag.en.md)

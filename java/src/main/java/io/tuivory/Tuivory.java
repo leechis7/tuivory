@@ -456,6 +456,29 @@ public final class Tuivory {
     }
   }
   public static final class Tree {
+    public DropRequest requestDrop(
+        String source, String target, String position, DragOptions options, DropPolicy allow) {
+      return Tuivory.requestDrop(this, source, target, position, options, allow);
+    }
+    public DropRequest requestDrop(
+        String source, String target, String position, DragOptions options) {
+      return requestDrop(source, target, position, options, null);
+    }
+    public DropRequest requestDrop(String source, String target, String position) {
+      return requestDrop(source, target, position, null, null);
+    }
+    public Tree applyDrop(DropRequest request) {
+      return Tuivory.applyDrop(this, request);
+    }
+    public DropRequest keyboardDrop(String direction, DragOptions options, DropPolicy allow) {
+      return Tuivory.keyboardDrop(this, direction, options, allow);
+    }
+    public DropRequest keyboardDrop(String direction) {
+      return keyboardDrop(direction, null, null);
+    }
+    public List<Node> nodes() {
+      return nodes.stream().map(Node::copy).toList();
+    }
     private final List<Node> nodes;
     private final Map<String, Integer> depth = new HashMap<>();
     private final Set<String> branches = new HashSet<>();
@@ -624,6 +647,29 @@ public final class Tuivory {
   public record TabCell(String id, String text, int start, int width, boolean active,
       boolean focused, boolean disabled) {}
   public static final class Tabs {
+    public DropRequest requestDrop(
+        String source, String target, String position, DragOptions options, DropPolicy allow) {
+      return Tuivory.requestDrop(this, source, target, position, options, allow);
+    }
+    public DropRequest requestDrop(
+        String source, String target, String position, DragOptions options) {
+      return requestDrop(source, target, position, options, null);
+    }
+    public DropRequest requestDrop(String source, String target, String position) {
+      return requestDrop(source, target, position, null, null);
+    }
+    public Tabs applyDrop(DropRequest request) {
+      return Tuivory.applyDrop(this, request);
+    }
+    public DropRequest keyboardDrop(String direction, DragOptions options, DropPolicy allow) {
+      return Tuivory.keyboardDrop(this, direction, options, allow);
+    }
+    public DropRequest keyboardDrop(String direction) {
+      return keyboardDrop(direction, null, null);
+    }
+    public List<Tab> items() {
+      return items.stream().map(Tab::copy).toList();
+    }
     private final List<Tab> items;
     public String active = "", focused = "";
     public int first;
@@ -6133,6 +6179,654 @@ public final class Tuivory {
       status.filter = state.filter;
       selected = state.selection;
       focus(state.rowId, state.columnId);
+    }
+  }
+  public static final class DropError extends IllegalArgumentException {
+    private static final long serialVersionUID = 1L;
+    public final String reason;
+    public DropError(String reason) {
+      super(reason);
+      this.reason = reason;
+    }
+  }
+  public record DropRequest(String sourceId, String targetId, String position, String revision) {}
+  @FunctionalInterface
+  public interface DropPolicy {
+    boolean allow(DropRequest request);
+  }
+  public static final class DragOptions {
+    public int threshold;
+    public boolean autoScroll, hoverExpand;
+    public List<String> locked = new ArrayList<>();
+    public DragOptions copy() {
+      var o = new DragOptions();
+      o.threshold = threshold;
+      o.autoScroll = autoScroll;
+      o.hoverExpand = hoverExpand;
+      o.locked = new ArrayList<>(locked);
+      return o;
+    }
+  }
+  public record DragPointer(String action, int x, int y, int width, int height) {}
+  public record
+      DragLayout(int first, int scroll, Set<String> expanded, List<TabCell> tabs, List<Node> rows) {
+    public DragLayout {
+      expanded = Set.copyOf(expanded);
+      tabs = List.copyOf(tabs);
+      rows = rows.stream().map(Node::copy).toList();
+    }
+  }
+  private static DragOptions dragOptions(DragOptions value) {
+    var o = value == null ? new DragOptions() : value.copy();
+    if (o.threshold < 0 || o.threshold > 1000000 || o.locked.size() > 65536
+        || o.locked.stream().anyMatch(id -> id == null || id.isEmpty()))
+      throw new DropError("options");
+    return o;
+  }
+  private static String dragRevisionParts(List<String> parts) {
+    long hash = 0xcbf29ce484222325L;
+    for (var s : parts) {
+      dialogText(s, 1000000);
+      byte[] bytes = s.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+      byte[] prefix = (bytes.length + ":").getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+      for (byte b : prefix) {
+        hash ^= b & 255;
+        hash *= 1099511628211L;
+      }
+      for (byte b : bytes) {
+        hash ^= b & 255;
+        hash *= 1099511628211L;
+      }
+    }
+    String hex = Long.toUnsignedString(hash, 16);
+    return "0".repeat(16 - hex.length()) + hex;
+  }
+  private static List<Node> dragNodes(Tree model) {
+    return model.nodes.stream()
+        .map(n -> {
+          var copy = n.copy();
+          copy.branch = model.branches.contains(n.id);
+          return copy;
+        })
+        .toList();
+  }
+  public static String dragRevision(Tabs model) {
+    var parts = new ArrayList<String>();
+    for (var t : model.items) {
+      parts.add(t.id);
+      parts.add(t.title);
+      parts.add(String.valueOf(t.edited));
+      parts.add(String.valueOf(t.closable));
+      parts.add(String.valueOf(t.disabled));
+    }
+    return dragRevisionParts(parts);
+  }
+  public static String dragRevision(Tree model) {
+    var parts = new ArrayList<String>();
+    for (var n : dragNodes(model)) {
+      parts.add(n.id);
+      parts.add(n.parent);
+      parts.add(n.name);
+      parts.add(n.secondary);
+      parts.add(n.icon);
+      parts.add(n.asciiIcon);
+      parts.add(n.count == null ? "" : String.valueOf(n.count));
+      parts.add(String.valueOf(n.branch));
+    }
+    return dragRevisionParts(parts);
+  }
+  private static String dragStateRevision(Tabs model) {
+    return dragRevisionParts(List.of(model.active, model.focused, String.valueOf(model.first)));
+  }
+  private static String dragStateRevision(Tree model) {
+    var parts = new ArrayList<>(
+        List.of(model.selected, String.valueOf(model.scroll), String.valueOf(model.horizontal)));
+    parts.addAll(new TreeSet<>(model.expanded));
+    return dragRevisionParts(parts);
+  }
+  private static Tabs dragCopyState(Tabs old, Tabs next) {
+    next.active = old.active;
+    next.focused = old.focused;
+    next.first = old.first;
+    next.reconcile();
+    return next;
+  }
+  private static Tree dragCopyState(Tree old, Tree next) {
+    next.selected = old.selected;
+    next.scroll = old.scroll;
+    next.horizontal = old.horizontal;
+    for (var id : old.expanded)
+      if (next.byId.containsKey(id))
+        next.expanded.add(id);
+    return next;
+  }
+  public static Tabs applyDrop(Tabs model, DropRequest request) {
+    if (!request.revision().equals(dragRevision(model)))
+      throw new DropError("stale");
+    if (request.sourceId().equals(request.targetId()))
+      throw new DropError("self");
+    if (!List.of("before", "after").contains(request.position()))
+      throw new DropError("position");
+    var items = new ArrayList<>(model.items.stream().map(Tab::copy).toList());
+    int source = -1, target = -1;
+    for (int i = 0; i < items.size(); i++) {
+      if (items.get(i).id.equals(request.sourceId()))
+        source = i;
+      if (items.get(i).id.equals(request.targetId()))
+        target = i;
+    }
+    if (source < 0 || target < 0)
+      throw new DropError("missing");
+    if (items.get(source).disabled || items.get(target).disabled)
+      throw new DropError("disabled");
+    var item = items.remove(source);
+    if (source < target)
+      target--;
+    if (request.position().equals("after"))
+      target++;
+    if (source == target)
+      throw new DropError("unchanged");
+    items.add(target, item);
+    return dragCopyState(model, new Tabs(items));
+  }
+  public static Tree applyDrop(Tree model, DropRequest request) {
+    if (!request.revision().equals(dragRevision(model)))
+      throw new DropError("stale");
+    var nodes = dragNodes(model);
+    var index = new HashMap<String, Integer>();
+    for (int i = 0; i < nodes.size(); i++) index.put(nodes.get(i).id, i);
+    var source = index.get(request.sourceId());
+    var target = index.get(request.targetId());
+    if (source == null || target == null)
+      throw new DropError("missing");
+    if (source.equals(target))
+      throw new DropError("self");
+    if (!List.of("before", "after", "inside").contains(request.position()))
+      throw new DropError("position");
+    String parent = request.targetId();
+    while (!parent.isEmpty()) {
+      if (parent.equals(request.sourceId()))
+        throw new DropError("cycle");
+      parent = nodes.get(index.get(parent)).parent;
+    }
+    if (request.position().equals("inside") && !nodes.get(target).branch)
+      throw new DropError("leaf");
+    int end = source + 1;
+    while (end < nodes.size()
+        && model.depth.get(nodes.get(end).id) > model.depth.get(request.sourceId()))
+      end++;
+    int extra = 0;
+    for (int i = source; i < end; i++)
+      extra =
+          Math.max(extra, model.depth.get(nodes.get(i).id) - model.depth.get(request.sourceId()));
+    if (model.depth.get(request.targetId()) + (request.position().equals("inside") ? 1 : 0) + extra
+        > 128)
+      throw new DropError("depth");
+    var block = new ArrayList<>(nodes.subList(source, end).stream().map(Node::copy).toList());
+    var remaining = new ArrayList<>(nodes);
+    remaining.subList(source, end).clear();
+    int at = 0;
+    while (!remaining.get(at).id.equals(request.targetId())) at++;
+    parent = request.position().equals("inside") ? request.targetId() : remaining.get(at).parent;
+    if (!request.position().equals("before")) {
+      at++;
+      while (at < remaining.size()
+          && model.depth.get(remaining.get(at).id) > model.depth.get(request.targetId()))
+        at++;
+    }
+    block.get(0).parent = parent;
+    remaining.addAll(at, block);
+    boolean same = true;
+    for (int i = 0; same && i < nodes.size(); i++)
+      same = remaining.get(i).id.equals(nodes.get(i).id)
+          && remaining.get(i).parent.equals(nodes.get(i).parent);
+    if (same)
+      throw new DropError("unchanged");
+    return dragCopyState(model, new Tree(remaining));
+  }
+  public static DropRequest requestDrop(Tabs model, String source, String target, String position,
+      DragOptions value, DropPolicy allow) {
+    var o = dragOptions(value);
+    if (o.locked.contains(source) || o.locked.contains(target))
+      throw new DropError("locked");
+    var r = new DropRequest(source, target, position, dragRevision(model));
+    applyDrop(model, r);
+    if (allow != null) {
+      boolean accepted;
+      try {
+        accepted = allow.allow(r);
+      } catch (RuntimeException error) {
+        throw new DropError("policy");
+      }
+      if (!accepted)
+        throw new DropError("policy");
+      if (!r.revision().equals(dragRevision(model)))
+        throw new DropError("stale");
+    }
+    return r;
+  }
+  public static DropRequest requestDrop(Tree model, String source, String target, String position,
+      DragOptions value, DropPolicy allow) {
+    var o = dragOptions(value);
+    if (o.locked.contains(source) || o.locked.contains(target))
+      throw new DropError("locked");
+    var r = new DropRequest(source, target, position, dragRevision(model));
+    applyDrop(model, r);
+    if (allow != null) {
+      boolean accepted;
+      try {
+        accepted = allow.allow(r);
+      } catch (RuntimeException error) {
+        throw new DropError("policy");
+      }
+      if (!accepted)
+        throw new DropError("policy");
+      if (!r.revision().equals(dragRevision(model)))
+        throw new DropError("stale");
+    }
+    return r;
+  }
+  public static DropRequest keyboardDrop(
+      Tabs model, String direction, DragOptions o, DropPolicy allow) {
+    int i = 0;
+    while (i < model.items.size() && !model.items.get(i).id.equals(model.focused)) i++;
+    if (i == model.items.size())
+      throw new DropError("missing");
+    if (!List.of("previous", "next").contains(direction))
+      throw new DropError("position");
+    int j = i + (direction.equals("previous") ? -1 : 1);
+    if (j < 0 || j >= model.items.size())
+      throw new DropError("missing");
+    return requestDrop(model, model.focused, model.items.get(j).id,
+        direction.equals("previous") ? "before" : "after", o, allow);
+  }
+  public static DropRequest keyboardDrop(
+      Tree model, String direction, DragOptions o, DropPolicy allow) {
+    var source = model.byId.get(model.selected);
+    if (source == null)
+      throw new DropError("missing");
+    if (direction.equals("outside") && !source.parent.isEmpty())
+      return requestDrop(model, source.id, source.parent, "after", o, allow);
+    var siblings = model.nodes.stream().filter(n -> n.parent.equals(source.parent)).toList();
+    int i = 0;
+    while (!siblings.get(i).id.equals(source.id)) i++;
+    if (!List.of("previous", "next", "inside").contains(direction))
+      throw new DropError("position");
+    int j = i + (direction.equals("next") ? 1 : -1);
+    if (j < 0 || j >= siblings.size())
+      throw new DropError("missing");
+    return requestDrop(model, source.id, siblings.get(j).id,
+        direction.equals("inside")     ? "inside"
+            : direction.equals("next") ? "after"
+                                       : "before",
+        o, allow);
+  }
+  /** Captured request-only drag gestures. The host approves and installs replacements. */
+  public static final class DragState {
+    public boolean enabled;
+    public String phase = "idle", result = "", sourceId = "", targetId = "", position = "",
+                  reason = "";
+    public boolean allowed;
+    private boolean busy;
+    private String renderKey = "", revision = "", stateRevision = "";
+    private int downX, downY, width, height, first, scroll;
+    private Set<String> expanded = new HashSet<>();
+    private DropRequest request;
+    private DragPointer last = new DragPointer("cancel", 0, 0, 0, 0);
+    public DragState() {}
+    public DragState(boolean enabled) {
+      this.enabled = enabled;
+    }
+    public boolean captured() {
+      return phase.equals("armed") || phase.equals("dragging");
+    }
+    private void reset(String outcome) {
+      phase = "idle";
+      result = outcome;
+      sourceId = targetId = position = reason = revision = stateRevision = "";
+      allowed = false;
+      downX = downY = width = height = first = scroll = 0;
+      expanded.clear();
+      request = null;
+      last = new DragPointer("cancel", 0, 0, 0, 0);
+    }
+    public void cancel() {
+      if (busy)
+        throw new DropError("reentrant");
+      reset("cancel");
+    }
+    public void renderKey(String key) {
+      if (busy)
+        throw new DropError("reentrant");
+      if (key == null)
+        throw new DropError("bounds");
+      if (captured() && !renderKey.isEmpty() && !renderKey.equals(key))
+        reset("stale");
+      renderKey = key;
+    }
+    private static void bounds(int value, int min, int max, String error) {
+      if (value < min || value > max)
+        throw new DropError(error);
+    }
+    private static String revision(Object model) {
+      return model instanceof Tabs t ? dragRevision(t) : dragRevision((Tree) model);
+    }
+    private static String stateRevision(Object model) {
+      return model instanceof Tabs t ? dragStateRevision(t) : dragStateRevision((Tree) model);
+    }
+    private boolean valid(Object model, int w, int h) {
+      if (!captured())
+        return false;
+      if (!enabled) {
+        reset("cancel");
+        return false;
+      }
+      if (width != w || height != h || !revision.equals(revision(model))
+          || !stateRevision.equals(stateRevision(model))) {
+        reset("stale");
+        return false;
+      }
+      return true;
+    }
+    private static Tabs copy(Tabs model) {
+      return dragCopyState(model, new Tabs(model.items));
+    }
+    private static Tree copy(Tree model) {
+      return dragCopyState(model, new Tree(dragNodes(model)));
+    }
+    private List<TabCell> tabCells(Tabs model, int w, int start) {
+      var out = new ArrayList<TabCell>();
+      int x = 1;
+      if (w <= 2)
+        return out;
+      for (int i = Math.max(0, start); i < model.items.size() && x < w - 1; i++) {
+        var t = model.items.get(i);
+        int extent = Math.min(Tabs.itemWidth(t), w - 1 - x);
+        if (extent < 4 && !out.isEmpty())
+          break;
+        boolean active = t.id.equals(model.active), focused = t.id.equals(model.focused);
+        String suffix = (t.edited ? " *" : "") + (t.closable ? " x" : "");
+        String text = clip((focused ? ">" : " ") + (active ? "[" : " ")
+                + clip(t.title, Math.max(0, extent - 3 - suffix.length()), true) + suffix
+                + (active ? "]" : " "),
+            extent, true);
+        out.add(new TabCell(t.id, text, x, extent, active, focused, t.disabled));
+        x += extent;
+      }
+      return out;
+    }
+    private List<Node> treeRows(Tree model, int h) {
+      var preview = copy(model);
+      preview.expanded.clear();
+      preview.expanded.addAll(expanded);
+      var rows = preview.visible();
+      scroll = Math.max(0, Math.min(scroll, rows.size() - Math.max(1, h)));
+      return rows;
+    }
+    public DragLayout previewLayout(Tabs model, int w, int h) {
+      return preview(model, w, h);
+    }
+    public DragLayout previewLayout(Tree model, int w, int h) {
+      return preview(model, w, h);
+    }
+    private DragLayout preview(Object model, int w, int h) {
+      if (busy)
+        throw new DropError("reentrant");
+      bounds(w, 0, 65535, "bounds");
+      bounds(h, 0, 4096, "bounds");
+      if (!valid(model, w, h)) {
+        if (model instanceof Tabs t) {
+          var p = copy(t);
+          var cells = p.layout(w);
+          return new DragLayout(p.first, 0, Set.of(), cells, List.of());
+        }
+        var p = copy((Tree) model);
+        var rows = p.reconcile(h);
+        return new DragLayout(0, p.scroll, p.expanded, List.of(), rows);
+      }
+      if (model instanceof Tabs t)
+        return new DragLayout(first, 0, Set.of(), tabCells(t, w, first), List.of());
+      var rows = treeRows((Tree) model, h);
+      return new DragLayout(0, scroll, expanded, List.of(), rows);
+    }
+    public DropRequest pointer(Tabs model, DragPointer p) {
+      return pointer(model, p, null, null);
+    }
+    public DropRequest pointer(Tree model, DragPointer p) {
+      return pointer(model, p, null, null);
+    }
+    public DropRequest pointer(Tabs model, DragPointer p, DragOptions options, DropPolicy policy) {
+      return point(model, p, options, policy);
+    }
+    public DropRequest pointer(Tree model, DragPointer p, DragOptions options, DropPolicy policy) {
+      return point(model, p, options, policy);
+    }
+    private DropRequest point(Object model, DragPointer p, DragOptions options, DropPolicy policy) {
+      if (busy)
+        throw new DropError("reentrant");
+      var o = dragOptions(options);
+      if (p == null || !List.of("down", "move", "up", "cancel").contains(p.action()))
+        throw new DropError("pointer");
+      bounds(p.x(), -1000000000, 1000000000, "pointer");
+      bounds(p.y(), -1000000000, 1000000000, "pointer");
+      bounds(p.width(), 0, 65535, "pointer");
+      bounds(p.height(), 0, 4096, "pointer");
+      if (p.action().equals("cancel")) {
+        cancel();
+        return null;
+      }
+      if (!enabled) {
+        if (captured())
+          reset("cancel");
+        return null;
+      }
+      if (p.action().equals("down")) {
+        reset("");
+        if (p.x() < 0 || p.x() >= p.width() || p.y() < 0 || p.y() >= p.height())
+          return null;
+        String id = "";
+        int f = 0, s = 0;
+        Set<String> e = new HashSet<>();
+        if (model instanceof Tabs t) {
+          if (p.y() != 0)
+            return null;
+          var preview = copy(t);
+          for (var c : preview.layout(p.width()))
+            if (c.start() <= p.x() && p.x() < c.start() + c.width() && !c.disabled()) {
+              id = c.id();
+              break;
+            }
+          f = preview.first;
+        } else {
+          var preview = copy((Tree) model);
+          var rows = preview.reconcile(p.height());
+          int i = preview.scroll + p.y();
+          if (i < rows.size())
+            id = rows.get(i).id;
+          s = preview.scroll;
+          e = new HashSet<>(preview.expanded);
+        }
+        if (id.isEmpty() || o.locked.contains(id))
+          return null;
+        phase = "armed";
+        sourceId = id;
+        revision = revision(model);
+        stateRevision = stateRevision(model);
+        downX = p.x();
+        downY = p.y();
+        width = p.width();
+        height = p.height();
+        first = f;
+        scroll = s;
+        expanded = e;
+        last = p;
+        return null;
+      }
+      if (!valid(model, p.width(), p.height()))
+        return null;
+      last = p;
+      if (Math.max(Math.abs(p.x() - downX), Math.abs(p.y() - downY))
+          >= (o.threshold == 0 ? 2 : o.threshold))
+        phase = "dragging";
+      if (phase.equals("dragging")) {
+        DropRequest raw = null;
+        String error = "outside";
+        if (model instanceof Tabs t) {
+          if (o.autoScroll && p.action().equals("move")) {
+            if (p.x() <= 0)
+              first = Math.max(0, first - 1);
+            else if (p.x() >= p.width() - 1)
+              first = Math.min(Math.max(0, t.items.size() - 1), first + 1);
+          }
+          for (var c : tabCells(t, p.width(), first))
+            if (p.x() >= 0 && p.x() < p.width() && p.y() == 0 && c.start() <= p.x()
+                && p.x() < c.start() + c.width()) {
+              raw = new DropRequest(sourceId, c.id(),
+                  p.x() - c.start() >= c.width() / 2 ? "after" : "before", revision);
+              break;
+            }
+        } else {
+          var t = (Tree) model;
+          var rows = treeRows(t, p.height());
+          if (o.autoScroll && p.action().equals("move")) {
+            if (p.y() <= 0)
+              scroll = Math.max(0, scroll - 1);
+            else if (p.y() >= p.height() - 1)
+              scroll = Math.min(Math.max(0, rows.size() - Math.max(1, p.height())), scroll + 1);
+          }
+          int i = scroll + p.y();
+          if (p.x() >= 0 && p.x() < p.width() && p.y() >= 0 && p.y() < p.height() && i >= 0
+              && i < rows.size()) {
+            var target = rows.get(i);
+            String pos = p.x() <= 2 + t.depth.get(target.id) * 2          ? "before"
+                : t.branches.contains(target.id) && p.x() < p.width() - 2 ? "inside"
+                                                                          : "after";
+            raw = new DropRequest(sourceId, target.id, pos, revision);
+          }
+        }
+        if (raw != null) {
+          busy = true;
+          try {
+            if (model instanceof Tabs t)
+              requestDrop(t, raw.sourceId(), raw.targetId(), raw.position(), o, policy);
+            else
+              requestDrop((Tree) model, raw.sourceId(), raw.targetId(), raw.position(), o, policy);
+            error = "";
+          } catch (DropError failure) {
+            error = failure.reason;
+          } finally {
+            busy = false;
+          }
+          if (!valid(model, p.width(), p.height()))
+            return null;
+        }
+        request = raw;
+        targetId = raw == null ? "" : raw.targetId();
+        position = raw == null ? "" : raw.position();
+        allowed = error.isEmpty();
+        reason = error;
+        if (model instanceof Tree && raw != null && allowed && o.hoverExpand
+            && position.equals("inside"))
+          expanded.add(targetId);
+      }
+      if (!p.action().equals("up"))
+        return null;
+      var out = phase.equals("dragging") && allowed ? request : null;
+      String outcome = out != null ? "drop" : phase.equals("dragging") ? "reject" : "";
+      reset(outcome);
+      return out;
+    }
+    public void draw(Tabs model, Canvas canvas, Rect r, boolean focused, boolean ascii) {
+      paint(model, canvas, r, focused, ascii);
+    }
+    public void draw(Tree model, Canvas canvas, Rect r, boolean focused, boolean ascii) {
+      paint(model, canvas, r, focused, ascii);
+    }
+    private void paint(Object model, Canvas canvas, Rect r, boolean focused, boolean ascii) {
+      if (busy)
+        throw new DropError("reentrant");
+      bounds(r.x(), 0, 1000000000, "bounds");
+      bounds(r.y(), 0, 1000000000, "bounds");
+      bounds(r.width(), 0, 65535, "bounds");
+      bounds(r.height(), 0, 4096, "bounds");
+      if (!focused && captured())
+        reset("cancel");
+      renderKey(r.x() + "|" + r.y() + "|" + r.width() + "|" + r.height() + "|"
+          + canvas.palette.theme + "|" + canvas.palette.profile + "|" + canvas.surfaceRole + "|"
+          + focused + "|" + ascii);
+      if (!valid(model, r.width(), r.height())) {
+        if (model instanceof Tabs t)
+          t.draw(canvas, r, focused, ascii);
+        else
+          ((Tree) model).draw(canvas, r, focused, ascii);
+        return;
+      }
+      var child = new Canvas(r.width(), r.height(), canvas.palette, canvas.surfaceRole);
+      int mx = 0, my = 0;
+      String marker = "!";
+      if (model instanceof Tabs t) {
+        var views = tabCells(t, r.width(), first);
+        if (first > 0)
+          child.write(0, 0, "<", "hint");
+        if (first + views.size() < t.items.size() && r.width() > 0)
+          child.write(r.width() - 1, 0, ">", "hint");
+        for (var c : views) {
+          String role = c.disabled() ? "disabled" : c.active() ? "selection" : "body";
+          child.write(c.start(), 0, " ".repeat(c.width()), role, focused && c.focused(), c.width());
+          child.write(c.start(), 0, c.text(), role, focused && c.focused(), c.width());
+        }
+        var target = views.stream().filter(c -> c.id().equals(targetId)).findFirst();
+        mx = target.isEmpty()
+            ? Math.max(0, Math.min(r.width() - 1, last.x()))
+            : target.get().start() + (position.equals("after") ? target.get().width() - 1 : 0);
+        marker = ascii ? "|" : "│";
+      } else {
+        var t = (Tree) model;
+        var rows = treeRows(t, r.height());
+        for (int y = 0; y < r.height() && scroll + y < rows.size(); y++) {
+          var n = rows.get(scroll + y);
+          boolean selected = t.selected.equals(n.id);
+          String arrow = t.branches.contains(n.id) ? expanded.contains(n.id) ? ascii ? "v" : "▾"
+                  : ascii                                                    ? ">"
+                                                                             : "▸"
+                                                   : " ";
+          String icon = ascii ? n.asciiIcon : n.icon;
+          String text = " ".repeat(t.depth.get(n.id) * 2) + arrow + " "
+              + (icon.isEmpty() ? "" : icon + " ") + n.name
+              + (n.secondary.isEmpty() ? "" : "  " + n.secondary)
+              + (n.count == null ? "" : " (" + n.count + ")");
+          var gs = graphemes(text);
+          int start = 0, skipped = 0;
+          while (start < gs.size() && skipped < t.horizontal) skipped += cells(gs.get(start++));
+          var out = new StringBuilder();
+          for (int i = start; i < gs.size(); i++) out.append(gs.get(i));
+          child.write(0, y,
+              (selected ? "> " : "  ") + clip(out.toString(), Math.max(0, r.width() - 2), true),
+              selected ? "selection" : "body", focused && selected, r.width());
+        }
+        int at = -1;
+        for (int i = 0; i < rows.size(); i++)
+          if (rows.get(i).id.equals(targetId)) {
+            at = i;
+            break;
+          }
+        my = at < 0 ? Math.max(0, Math.min(r.height() - 1, last.y())) : at - scroll;
+        marker = position.equals("before") ? ascii ? "^" : "↑"
+            : position.equals("after")     ? ascii ? "v" : "↓"
+            : position.equals("inside")    ? ascii ? "+" : "↳"
+                                           : "!";
+      }
+      if (phase.equals("dragging") && mx >= 0 && mx < r.width() && my >= 0 && my < r.height()) {
+        var old = child.data[my][mx].style;
+        var semantic = child.palette.style(allowed ? "info" : "error");
+        int fg = semantic.foreground;
+        if (colorContrast(fg, old.background) < 4.5
+            && colorContrast(old.foreground, old.background) > colorContrast(fg, old.background))
+          fg = old.foreground;
+        child.writeStyle(mx, my, allowed ? marker : "!",
+            new Style(fg, old.background, true, false, true, false), 1);
+      }
+      canvas.blit(child, new Rect(0, 0, r.width(), r.height()), r.x(), r.y());
     }
   }
 }

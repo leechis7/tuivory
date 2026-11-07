@@ -1,3 +1,4 @@
+#include "drag_host.h"
 #include "grid_host.h"
 #define _POSIX_C_SOURCE 200809L
 #include "container_host.h"
@@ -26,7 +27,8 @@ static void stop_signal(int signal_number) {
 }
 static void restore(void) {
   if (active) {
-    fputs("\033[0m\033[?1000l\033[?1006l\033[?25h\033[?1049l", stdout);
+    fputs("\033[0m\033[?1000l\033[?1002l\033[?1006l\033[?25h\033[?1049l",
+          stdout);
     fflush(stdout);
     tcsetattr(STDIN_FILENO, TCSADRAIN, &saved);
     active = 0;
@@ -83,7 +85,7 @@ int main(int argc, char **argv) {
       text_demo = 0, form_demo = 0, list_demo = 0, picker_demo = 0,
       menu_demo = 0, context_demo = 0, feedback_demo = 0, layout_demo = 0,
       container_demo = 0, surface_demo = 0, shadow_demo = 0, dialog_demo = 0,
-      document_demo = 0, syntax_demo = 0, grid_demo = 0;
+      document_demo = 0, syntax_demo = 0, grid_demo = 0, drag_demo = 0;
   TuiSplit split = {24, 16, 20};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
@@ -113,6 +115,7 @@ int main(int argc, char **argv) {
       shadow_demo = !strcmp(demo, "shadow");
       dialog_demo = !strcmp(demo, "dialog");
       grid_demo = !strcmp(demo, "grid");
+      drag_demo = !strcmp(demo, "drag");
       syntax_demo = !strcmp(demo, "syntax");
       document_demo = !strcmp(demo, "document") || syntax_demo;
       if (shadow_demo)
@@ -121,7 +124,7 @@ int main(int argc, char **argv) {
       if (strcmp(demo, "tree") && !workspace && !text_demo && !form_demo &&
           !list_demo && !picker_demo && !menu_demo && !feedback_demo &&
           !layout_demo && !container_demo && !surface_demo && !dialog_demo &&
-          !document_demo && !grid_demo) {
+          !document_demo && !grid_demo && !drag_demo) {
         fputs("Supported demos: tree, workspace, text, form, list, picker, "
               "menu, context-menu\n",
               stderr);
@@ -130,7 +133,7 @@ int main(int argc, char **argv) {
     } else {
       puts("--demo "
            "tree|workspace|text|form|list|picker|menu|context-menu|feedback|"
-           "layout|container|surface|shadow|dialog|document|syntax|grid "
+           "layout|container|surface|shadow|dialog|document|syntax|grid|drag "
            "--lang ko|en --theme "
            "dark|light|blackwhite "
            "--colors "
@@ -147,6 +150,9 @@ int main(int argc, char **argv) {
     return 1;
   }
   menu_host.shadow_demo = shadow_demo;
+  DragDemo drag_host;
+  if (!drag_demo_init(&drag_host, en))
+    return 1;
   GridDemo grid_host;
   if (!grid_demo_init(&grid_host, en, ascii))
     return 1;
@@ -296,8 +302,9 @@ int main(int argc, char **argv) {
     }
     fputs("\033[?1049h", stdout);
     if (menu_demo || feedback_demo || layout_demo || container_demo ||
-        surface_demo)
-      fputs("\033[?1000h\033[?1006h", stdout);
+        surface_demo || dialog_demo || document_demo || grid_demo || drag_demo)
+      fputs(drag_demo ? "\033[?1002h\033[?1006h" : "\033[?1000h\033[?1006h",
+            stdout);
     signal(SIGTERM, stop_signal);
     signal(SIGINT, stop_signal);
   }
@@ -319,7 +326,10 @@ int main(int argc, char **argv) {
     TuiRect inner = tui_canvas_panel(
         canvas, (TuiRect){0, 0, width, height > 0 ? height - 1 : 0},
         en ? "Tuivory C example" : "Tuivory C 예제", 1, ascii);
-    if (grid_demo) {
+    if (drag_demo) {
+      if (!drag_demo_draw(&drag_host, canvas, inner, ascii))
+        return 1;
+    } else if (grid_demo) {
       if (!grid_demo_draw(&grid_host, canvas, inner, ascii))
         return 1;
     } else if (document_demo)
@@ -431,7 +441,7 @@ int main(int argc, char **argv) {
                                                       : "";
     if (text_demo || form_demo || list_demo || picker_demo || menu_demo ||
         feedback_demo || layout_demo || container_demo || surface_demo ||
-        dialog_demo || document_demo || grid_demo) {
+        dialog_demo || document_demo || grid_demo || drag_demo) {
       char input[8] = {0};
       const char *edit_action = "";
       if (key == 27) {
@@ -452,9 +462,15 @@ int main(int argc, char **argv) {
         int button = 0, x = 0, y = 0;
         char ending = 0;
         if ((menu_demo || feedback_demo || layout_demo || container_demo ||
-             surface_demo || dialog_demo || document_demo || grid_demo) &&
+             surface_demo || dialog_demo || document_demo || grid_demo ||
+             drag_demo) &&
             sscanf(seq, "[<%d;%d;%d%c", &button, &x, &y, &ending) == 4) {
-          if (ending == 'M' && x > 0 && y > 0) {
+          if (drag_demo && (ending == 'M' || ending == 'm') && x > 0 && y > 0) {
+            drag_demo_pointer(&drag_host, x - 1, y - 1, button,
+                              ending == 'm' ? "up"
+                              : button & 32 ? "move"
+                                            : "down");
+          } else if (ending == 'M' && x > 0 && y > 0) {
             if (grid_demo)
               grid_demo_pointer(&grid_host, x - 1, y - 1, button);
             else if (document_demo)
@@ -509,7 +525,13 @@ int main(int argc, char **argv) {
           }
         edit_action = "insert";
       }
-      if (grid_demo)
+      if (drag_demo)
+        drag_demo_handle(&drag_host,
+                         key == 9                          ? "next"
+                         : !strcmp(edit_action, "newline") ? "activate"
+                                                           : edit_action,
+                         input);
+      else if (grid_demo)
         grid_demo_handle(&grid_host,
                          key == 9                          ? "next"
                          : !strcmp(edit_action, "newline") ? "activate"
@@ -578,6 +600,7 @@ int main(int argc, char **argv) {
       tui_tree_handle(tree, action, inner.height);
   }
   restore();
+  drag_demo_free(&drag_host);
   grid_demo_free(&grid_host);
   document_demo_free(&document_host);
   dialog_demo_free(&dialog_host);
