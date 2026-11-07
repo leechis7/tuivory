@@ -4,7 +4,7 @@
 
 **미배포 독립 언어 구현입니다. 기존 공개 0.11.1에는 포함되지 않습니다.** PyPI/npm/Maven/네이티브 SDK 게시는 수행하지 않았으며 에픽은 진행 중입니다.
 
-첫 검증 단위는 실제 설치·import/include 가능한 패키지, 내장 팔레트·의미별 상태·셀 버퍼와 Tree입니다. Python/TS에는 후속 컴포넌트 초안도 있으나 Go/Rust 전체 기능 이식 완료를 의미하지 않습니다.
+다섯 언어는 설치·import/include 가능한 패키지와 독립 캔버스, Tree·작업 영역·입력·폼·목록·메뉴·알림·배치·팝업·문서·구문 강조·데이터 그리드를 제공합니다. 에픽은 진행 중이며 드래그 앤 드롭·터미널 API 등 남은 카탈로그를 별도로 검증합니다.
 
 구현과 런타임은 언어별로 독립적입니다. 다른 Tuivory 언어 구현·FFI/JNI·서브프로세스 엔진·네이티브 연결을 요구하지 않습니다. 디자인 데이터·명세·테스트 사례·개발 도구만 공유합니다. C++도 Tuivory C를 호출하지 않으며 TS는 한 구현에서 JavaScript와 타입 선언을 생성합니다.
 
@@ -20,7 +20,7 @@ make build-cpp
 ./bin/cpp/tuivory-linux-<arch> --demo tree --lang ko
 ```
 
-비대화형 출력은 `--snapshot`, 표현 선택은 `--ascii`·`--theme`·`--colors`를 사용합니다. C/C++ 예제는 w/s/a/d와 Enter를 사용합니다. Java 예제는 명령어 입력 후 Enter를 누르는 줄 입력 방식이며 raw 터미널 어댑터를 제공한다고 주장하지 않습니다. Python/JS 예제는 명시적으로 터미널 모드에 진입하며 그 밖의 단말 수명과 전역 포커스는 앱 책임입니다.
+비대화형 출력은 `--snapshot`, 표현 선택은 `--ascii`·`--theme`·`--colors`를 사용합니다. C/C++ Tree 예제는 w/s/a/d와 Enter를 사용하고, 컴포넌트 예제는 방향키와 화면에 표시한 키를 사용합니다. Java 예제는 명령어 입력 후 Enter를 누르는 줄 입력 방식이며 raw 터미널 어댑터를 제공한다고 주장하지 않습니다. Python/JS 예제는 명시적으로 터미널 모드에 진입하며 그 밖의 단말 수명과 전역 포커스는 앱 책임입니다.
 
 [Support/API/verification](../docs/languages.md) · [Examples](../docs/examples.md) · [TVR-31](https://leechis7.atlassian.net/browse/TVR-31)
 
@@ -49,3 +49,5 @@ make build-cpp
 [독립 언어 문서 보기·편집 API](../docs/language-documents.md)
 
 [독립 언어 구문 강조·SQL 분류 API](../docs/language-syntax.md)
+
+[독립 언어 데이터 그리드 API](../docs/language-grid.md)

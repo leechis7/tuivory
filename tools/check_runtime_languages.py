@@ -41,6 +41,7 @@ chip=ui.Chip("tag","Recent",removable=True);assert chip.request_remove().kind=="
 assert ui.Help([ui.Shortcut("F1","Help")]).layout(40,1)[0].text=="[F1] Help"
 src=ui.Canvas(4,1);src.write(0,0,"界a");src.set_cursor(0,0,2);dest=ui.Canvas(2,1);dest.blit(src,ui.Rect(1,0,2,1),0,0);assert dest.lines()==[" a"]and dest.cursor is None
 container=ui.Container([ui.LayoutItem("editor")]);container.draw(dest,ui.Rect(0,0,2,1),lambda id,child,focused: child.write(0,0,"OK"));assert dest.lines()==["OK"]
+grid=ui.Grid([ui.Column("a",width=4,editable=True)],[ui.Record("r",{"a":None})]);grid.set_labels(ui.GridLabels(null_text="한글"));grid.set_column_options("a",ui.GridColumnOptions(auto_fit=True));grid.set_edit_options(ui.GridEditOptions(True,True,True));assert grid.geometry(20,3).columns[0].width==4;assert grid.begin_edit();assert grid.handle("submit").kind=="edit_submit";assert grid.resolve_edit(grid.edit["id"],error="retry");old=grid.edit["id"];new=grid.handle("submit").data["id"];assert new!=old and not grid.resolve_edit(old);assert grid.resolve_edit(new);assert ui.parse_grid_tsv('"a\\tb"\\tc')==[["a\\tb","c"]]
 analysis=ui.SQLAnalyzer().analyze_syntax("SELECT 1");analysis.validate("SELECT 1");assert analysis.tokens[0].role=="keyword";syntaxdoc=ui.TextDocument.editor("SELECT 1");syntaxdoc.set_syntax_analyzer(ui.SQLAnalyzer());assert syntaxdoc.syntax[0].role=="syntax.keyword";syntaxstyle=ui.syntax_style(ui.Palette("dark","8"),"syntax.string");assert syntaxstyle.italic and syntaxstyle.foreground=="3"
 document=ui.TextDocument.editor("한é界");document.set_byte_syntax([ui.DocumentSpan(3,6,"warning")]);assert document.syntax==[ui.DocumentSpan(1,2,"warning")];document.wrap=True;document.draw(dest,ui.Rect(0,0,2,1));assert ui.parse_markup("[info]x[/]")[0]=="x"
 dialog=ui.Dialog("Confirm","Literal [error]",[ui.DialogButton("ok","OK"),ui.DialogButton("cancel","Cancel")],"cancel");assert dialog.handle("activate").id=="cancel"
@@ -56,7 +57,7 @@ assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").f
  run([p,'-I','-m','tuivory','--snapshot','--demo','feedback','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','layout','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','container','--lang','en'],b)
- for demo in ['surface','shadow','dialog','document','syntax']:run([p,'-I','-m','tuivory','--snapshot','--demo',demo,'--lang','en'],b)
+ for demo in ['surface','shadow','dialog','document','syntax','grid']:run([p,'-I','-m','tuivory','--snapshot','--demo',demo,'--lang','en'],b)
  print('Independent Python wheel: isolated external venv install/import/Tree/example passed')
 with tempfile.TemporaryDirectory(prefix='tuivory-javascript-')as directory:
  b=Path(directory);(b/'package.json').write_text('{"type":"module"}\n')
@@ -83,6 +84,7 @@ if(ui.stackLayout([{id:"main",min:12,preferred:40,weight:1},{id:"aside",min:10,p
 const chip=new ui.Chip({id:"tag",label:"Recent",removable:true});if(chip.requestRemove().kind!=="remove"||!chip.removable||new ui.Badge({label:"Items",count:123}).line(40).text!=="Items [99+]"||new ui.Help([{key:"F1",text:"Help"}]).layout(40,1)[0].text!=="[F1] Help")throw new Error("supporting components");
 const src=new ui.Canvas(4,1);src.write(0,0,"界a");src.setCursor(0,0,2);const dst=new ui.Canvas(2,1);dst.blit(src,ui.rect(1,0,2,1),0,0);if(dst.lines()[0]!==" a"||dst.cursor)throw new Error("clipped copy");
 const container=new ui.Container([{id:"editor"}]);container.draw(dst,ui.rect(0,0,2,1),(id,child,focused)=>child.write(0,0,"OK"));if(dst.lines()[0]!=="OK")throw new Error("container painter");
+const grid=new ui.Grid([{id:"a",width:4,editable:true}],[{id:"r",cells:{a:null}}]);grid.setLabels(new ui.GridLabels({nullText:"한글"}));grid.setColumnOptions("a",new ui.GridColumnOptions({autoFit:true}));grid.setEditOptions({enabled:true,startTyping:true,allowNull:true});if(grid.geometry(20,3).columns[0].width!==4||!grid.beginEdit())throw new Error("Grid sizing/prepare");grid.handle("submit");const firstId=grid.edit?.id;if(firstId===undefined||!grid.resolveEdit(firstId,"retry"))throw new Error("Grid reject");grid.handle("submit");const secondId=grid.edit?.id;if(secondId===undefined||firstId===secondId||grid.resolveEdit(firstId)||!grid.resolveEdit(secondId))throw new Error("Grid stale approval");if(ui.parseGridTSV('"a\\tb"\\tc')[0][0]!=="a\\tb")throw new Error("Grid TSV");
 const analysis=new ui.SQLAnalyzer().analyzeSyntax("SELECT 1");ui.validateSyntaxAnalysis(analysis,"SELECT 1");if(analysis.tokens[0].role!=="keyword")throw new Error("SQL classification");const syntaxdoc=ui.TextDocument.editor("SELECT 1");syntaxdoc.setSyntaxAnalyzer(new ui.SQLAnalyzer());if(syntaxdoc.syntax[0].role!=="syntax.keyword")throw new Error("syntax binding");const syntaxstyle=ui.syntaxStyle(new ui.Palette("dark","8"),"syntax.string");if(!syntaxstyle.italic||syntaxstyle.foreground!=="3")throw new Error("ANSI8 syntax attributes");
 const document=ui.TextDocument.editor("한é界");document.setByteSyntax([{start:3,end:6,role:"warning"}]);if(document.syntax[0].start!==1||ui.parseMarkup("[info]x[/]").source!=="x")throw new Error("document ranges/markup");document.wrap=true;document.draw(dst,ui.rect(0,0,2,1));
 const dialog=new ui.Dialog("Confirm","Literal [error]",[{id:"ok",label:"OK"},{id:"cancel",label:"Cancel"}],"cancel");if(dialog.handle("activate").id!=="cancel")throw new Error("dialog default");new ui.Shadow(new ui.ShadowOptions("auto")).draw(dst,ui.rect(0,0,2,1),child=>child.write(0,0,"X"));
@@ -98,5 +100,5 @@ const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','feedback','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','layout','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','container','--lang','en'],b)
- for demo in ['surface','shadow','dialog','document','syntax']:run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo',demo,'--lang','en'],b)
+ for demo in ['surface','shadow','dialog','document','syntax','grid']:run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo',demo,'--lang','en'],b)
  print('Independent npm package: isolated external JS import/runtime, TS declarations and example passed')

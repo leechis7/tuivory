@@ -1,0 +1,2234 @@
+{
+  "checked_at_utc": "2026-11-07T03:32:13.724060+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source_base": "c38cd855cae00a384e2b99e13245ab10d321c5b2",
+  "source_uncommitted": true,
+  "scope": "Independent Grid models, stable virtual sources, formatting/state, pinning/sizing, request-safe editing/paste, raw range copy, Unicode find/details/view snapshots and actual hardware cursors. Drag/drop and terminal APIs remain in progress.",
+  "sha256": {
+    "c/include/tuivory.h": "c96cf2a81b4ba836a6912d1dcd65180e72d93f1e92785cf369c1542f5ef60504",
+    "c/src/tuivory.c": "e54eb5f3e23a1b5e596d03ba4b5b5d0f0fdff8886e7f96ceaadf07861e438957",
+    "c/examples/grid_host.h": "05c46641ba0663e564f3d63a19bf87eb4ab7f1646028ca767f2557251bf07903",
+    "cpp/include/tuivory.hpp": "406777a0473e4e776d05265fc13e78fb509b6f9f39a746b6adf9fbe14fcd5c29",
+    "cpp/include/tuivory_grid.hpp": "0c42de4267afda94ff5f9de2c97f2b708d87ee6650730435cca62015e8f28084",
+    "cpp/examples/grid_host.hpp": "ff3c0d3cf76f8635e085123560c45252f3adab25b7fcf1adfa5eae11544b4161",
+    "java/src/main/java/io/tuivory/Tuivory.java": "e45d2d4107690fdfb673543703324e7a355b30a74f8509a6cc24d06597e9d261",
+    "java/examples/io/tuivory/examples/GridHost.java": "9c0790b72835b40dbaf08a2cd5ba6b5571f5cfc44293de394245746fb12d129c",
+    "javascript/src/index.ts": "5125c38b9d1b0bc20666b72b538abf32b41e6143ad5d1a309b7f6ecf6b0315de",
+    "javascript/src/grid.ts": "ec80fe10a0aba17441bd7a7029019a4127610ba8bf3eee59048330b7ca286b62",
+    "javascript/examples/grid-host.mjs": "3fbb928d0e419548a650a1cd4fcb27db7abc394d532db586dc8d8053687a2b07",
+    "python/src/tuivory/__init__.py": "8d3f8673cb0bf896b302d52479258aade8ab3b979fb4888e912ef2e3194a81b1",
+    "python/src/tuivory/grid.py": "48e725230ae8096e60e098286f3e16873529f157bc7e5a44ea9afa4345e2df64",
+    "python/src/tuivory/_grid_example.py": "ed272dde6f76b59bb1f8987c02889494dac348493daba3c5b812a8ccc3432569",
+    "tools/check_language_grid.py": "a0d887a39b36803a40644731a584f3ab4043f2f58a4e6aa947f0e3ba17ea71d0",
+    "tools/check_grid_example.py": "91ce476f2d610bdddf3c5a7fa0b57f06ebbe213dbf39c08dcc499950d76c1fb5",
+    "tools/check_runtime_languages.py": "0993eeca045d349f93106e298fb285cc67e469c55e022d3381059b3459d58950",
+    "tools/check_language_archives.py": "ea4fc500274cce43f92a8c9671763e4acd7db4b0ea09253a89d6be66fb387f2b",
+    "design/grid-work-cases.json": "042349f54678c1c5b8caaa89a4f0288857bbb0321657983e96484b9c9cf912cb",
+    "design/grid-cursor-cases.json": "ba61ff37f127c3e2c236e0b2b1c979f8a841e328531799d3675d5547b0463140"
+  },
+  "local": {
+    "python_suite_tests": 75,
+    "python_grid_tests": 14,
+    "javascript": "strict declarations and complete suite passed",
+    "shared_tsv_cases": 14,
+    "shared_cursor_cases": 11,
+    "native_sdk_languages": [
+      "c",
+      "cpp",
+      "java"
+    ],
+    "actual_ansi_frames_per_native_sdk": 23,
+    "native_memory_checks": "C and C++ ASan/UBSan; leak detection disabled in local runner",
+    "native_static": "C/C++ Linux ARM64 ELF: no PT_INTERP/DT_NEEDED; isolated static SDK consumers passed",
+    "java": "external Java17 JAR consumer; no JNI",
+    "runtime_archives": "fresh isolated wheel/npm install, single public import, strict external TypeScript and packaged Grid demos passed",
+    "preview_archives": "six actual SHA256-checked archives, prior component consumers plus Grid and packaged examples passed",
+    "pty": [
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "grid",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      }
+    ],
+    "screenshots": [
+      "docs/images/language-python-grid.png",
+      "docs/images/language-python-grid-en.png",
+      "docs/images/language-javascript-grid.png",
+      "docs/images/language-javascript-grid-en.png",
+      "docs/images/language-c-grid.png",
+      "docs/images/language-c-grid-en.png",
+      "docs/images/language-cpp-grid.png",
+      "docs/images/language-cpp-grid-en.png",
+      "docs/images/language-java-grid.png",
+      "docs/images/language-java-grid-en.png"
+    ],
+    "shared_exports": "export_language_data --check passed",
+    "public_api_reference": "Go/Rust generated source reference check passed",
+    "repository_tests": 13,
+    "links": "local Markdown targets passed"
+  },
+  "github_ci": "not run for this uncommitted Grid change",
+  "publication": "not performed; public version remains 0.11.1; main/tags/Releases/registries unchanged",
+  "centos": "not run per user instruction"
+}

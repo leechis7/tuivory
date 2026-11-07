@@ -9,9 +9,9 @@
 
 **0.10.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../ui-facade.md).
 
-이 명세는 0.10.2 소스를 따르며 **TVR-22~26 API를 포함합니다.** [제공 범위·전환 안내](../controls.md).
+이 명세는 0.11.1 소스를 따르며 **TVR-22~26 API를 포함합니다.** [제공 범위·전환 안내](../controls.md).
 
-기준 버전은 **0.10.2**입니다. Go 모듈은 `github.com/leechis7/tuivory/go`, Rust crate는 `tuivory`입니다. Rust 렌더러는 `ratatui`, 대화형 예제는 `playground` 기능을 켭니다.
+기준 버전은 **0.11.1**입니다. Go 모듈은 `github.com/leechis7/tuivory/go`, Rust crate는 `tuivory`입니다. Rust 렌더러는 `ratatui`, 대화형 예제는 `playground` 기능을 켭니다.
 
 - [Go 공개 선언](go.md)
 - [Rust 공개 선언](rust.md)
@@ -89,3 +89,5 @@ TVR-7 0.11.1: [실제 그리드 커서·backend 연결](../grid-workspace.md). 0
 [독립 언어 문서 보기·편집 API](../language-documents.md)
 
 [독립 언어 구문 강조·SQL 분류 API](../language-syntax.md)
+
+[독립 언어 데이터 그리드: 가상 데이터·앱 승인·원문/표시·실제 커서](../language-grid.md)

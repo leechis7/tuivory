@@ -144,3 +144,5 @@ TVR-7 0.11.1: [실제 그리드 커서·backend 연결](grid-workspace.md). 0.11
 [독립 언어 문서 보기·편집 API](language-documents.md)
 
 [독립 언어 구문 강조·SQL 분류 API](language-syntax.md)
+
+[독립 언어 데이터 그리드: 가상 데이터·앱 승인·원문/표시·실제 커서](language-grid.md)

@@ -1,7 +1,7 @@
 """Tuivory Python: import one independent package; hosts own composition and I/O."""
 from .drawing import Palette, Style, Rect, Cell, Canvas, graphemes, cells, clip
 from .models import Event, ControlState, Node, Tree, Tab, TabCell, Tabs, Item, List
-from .editing import Text, Field, FormOption, FormRow, Form, Control, Column, Record, Grid
+from .editing import Text, Field, FormOption, FormRow, Form, Control, Column, Record
 from .workspace import (FocusTarget, Focus, Menu, split, container, breadcrumbs,
                         StatusItem, status,
                         Drag)
@@ -54,3 +54,12 @@ __all__ += ['DocumentRange','DocumentSpan','DocumentGlyph','DocumentLine','TextD
 
 from .syntax import SyntaxToken,SyntaxRequest,SyntaxAnalysis,SQLAnalyzer,syntax_role_style,syntax_palette_role,syntax_style
 __all__ += ["SyntaxToken","SyntaxRequest","SyntaxAnalysis","SQLAnalyzer","syntax_role_style","syntax_palette_role","syntax_style"]
+
+from .grid import Grid, MemoryRows, GridOptions, GridColumnOptions, GridCellInfo, GridRange, GridDataStatus, GridSpan, GridGeometry, grid_preset, parse_grid_tsv, format_grid_tsv
+__all__ += ["MemoryRows","GridOptions","GridColumnOptions","GridCellInfo","GridRange","GridDataStatus","GridSpan","GridGeometry","grid_preset","parse_grid_tsv","format_grid_tsv"]
+
+from .grid import GridValue, GridEditOptions, GridSource
+__all__ += ["GridValue", "GridEditOptions", "GridSource"]
+
+from .grid import GridLabels
+__all__ += ["GridLabels"]

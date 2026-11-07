@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { GridDemo } from "./grid-host.mjs";
 import { DocumentDemo } from "./document-host.mjs";
 import { DialogDemo } from "./dialog-host.mjs";
 import { SurfaceDemo } from "./surface-host.mjs";
@@ -16,10 +17,11 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog|document|syntax --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog|document|syntax|grid --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
+const gridDemo = value("--demo", "tree") === "grid";
 const syntaxDemo = value("--demo", "tree") === "syntax";
 const documentDemo = ["document", "syntax"].includes(value("--demo", "tree"));
 const dialogDemo = value("--demo", "tree") === "dialog";
@@ -41,6 +43,7 @@ if (
   !surfaceDemo &&
   !dialogDemo &&
   !documentDemo &&
+  !gridDemo &&
   !feedbackDemo &&
   !menuDemo &&
   !workspace &&
@@ -51,12 +54,13 @@ if (
   value("--demo", "tree") !== "tree"
 )
   throw new Error(
-    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog, document, syntax",
+    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog, document, syntax, grid",
   );
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 const layoutHost = new LayoutDemo(en);
 const containerHost = new ContainerDemo(en, ascii);
+const gridHost = new GridDemo(en, ascii);
 const documentHost = new DocumentDemo(en, ascii, syntaxDemo);
 const dialogHost = new DialogDemo(en);
 const surfaceHost = new SurfaceDemo(en);
@@ -242,7 +246,8 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  if (documentDemo) documentHost.draw(c, area, ascii);
+  if (gridDemo) gridHost.draw(c, area, ascii);
+  else if (documentDemo) documentHost.draw(c, area, ascii);
   else if (dialogDemo) dialogHost.draw(c, area, ascii);
   else if (surfaceDemo) surfaceHost.draw(c, area, ascii);
   else if (containerDemo) containerHost.draw(c, area, ascii);
@@ -354,22 +359,25 @@ try {
               containerDemo ||
               surfaceDemo ||
               dialogDemo ||
-              documentDemo) &&
+              documentDemo ||
+              gridDemo) &&
             mouse[4] === "M"
           ) {
-            (documentDemo
-              ? documentHost
-              : dialogDemo
-                ? dialogHost
-                : surfaceDemo
-                  ? surfaceHost
-                  : containerDemo
-                    ? containerHost
-                    : layoutDemo
-                      ? layoutHost
-                      : feedbackDemo
-                        ? feedbackHost
-                        : menuHost
+            (gridDemo
+              ? gridHost
+              : documentDemo
+                ? documentHost
+                : dialogDemo
+                  ? dialogHost
+                  : surfaceDemo
+                    ? surfaceHost
+                    : containerDemo
+                      ? containerHost
+                      : layoutDemo
+                        ? layoutHost
+                        : feedbackDemo
+                          ? feedbackHost
+                          : menuHost
             ).pointer(x, y, Number(mouse[1]));
           } else if (
             mouse[4] === "M" &&
@@ -419,6 +427,8 @@ try {
           "\x01": "select_all",
           "\x1a": "undo",
           "\x19": "redo",
+          "\x0e": "null",
+          "\x1b[Z": "previous",
           " ": "toggle",
         };
         const key = Object.keys(keys).find((k) => pending.startsWith(k));
@@ -430,21 +440,24 @@ try {
             containerDemo ||
             surfaceDemo ||
             dialogDemo ||
-            documentDemo
+            documentDemo ||
+            gridDemo
           )
-            (documentDemo
-              ? documentHost
-              : dialogDemo
-                ? dialogHost
-                : surfaceDemo
-                  ? surfaceHost
-                  : containerDemo
-                    ? containerHost
-                    : layoutDemo
-                      ? layoutHost
-                      : feedbackDemo
-                        ? feedbackHost
-                        : menuHost
+            (gridDemo
+              ? gridHost
+              : documentDemo
+                ? documentHost
+                : dialogDemo
+                  ? dialogHost
+                  : surfaceDemo
+                    ? surfaceHost
+                    : containerDemo
+                      ? containerHost
+                      : layoutDemo
+                        ? layoutHost
+                        : feedbackDemo
+                          ? feedbackHost
+                          : menuHost
             ).handle(
               keys[key] === "toggle" ? "insert" : keys[key],
               keys[key] === "toggle" ? " " : "",
@@ -484,14 +497,16 @@ try {
           continue;
         }
         if (
-          (containerDemo || dialogDemo || documentDemo) &&
+          (containerDemo || dialogDemo || documentDemo || gridDemo) &&
           pending.startsWith("\t")
         ) {
-          (documentDemo
-            ? documentHost
-            : dialogDemo
-              ? dialogHost
-              : containerHost
+          (gridDemo
+            ? gridHost
+            : documentDemo
+              ? documentHost
+              : dialogDemo
+                ? dialogHost
+                : containerHost
           ).handle("next");
           pending = pending.slice(1);
           continue;
@@ -542,7 +557,8 @@ try {
         )
           break;
         if (
-          (documentDemo ||
+          (gridDemo ||
+            documentDemo ||
             dialogDemo ||
             surfaceDemo ||
             containerDemo ||
@@ -556,25 +572,27 @@ try {
           pending[0] !== "\x1b"
         ) {
           const cp = String.fromCodePoint(pending.codePointAt(0));
-          (documentDemo
-            ? documentHost
-            : dialogDemo
-              ? dialogHost
-              : surfaceDemo
-                ? surfaceHost
-                : containerDemo
-                  ? containerHost
-                  : layoutDemo
-                    ? layoutHost
-                    : feedbackDemo
-                      ? feedbackHost
-                      : menuDemo
-                        ? menuHost
-                        : pickerDemo
-                          ? picker
-                          : formDemo
-                            ? form
-                            : text
+          (gridDemo
+            ? gridHost
+            : documentDemo
+              ? documentHost
+              : dialogDemo
+                ? dialogHost
+                : surfaceDemo
+                  ? surfaceHost
+                  : containerDemo
+                    ? containerHost
+                    : layoutDemo
+                      ? layoutHost
+                      : feedbackDemo
+                        ? feedbackHost
+                        : menuDemo
+                          ? menuHost
+                          : pickerDemo
+                            ? picker
+                            : formDemo
+                              ? form
+                              : text
           ).handle("insert", cp);
           pending = pending.slice(cp.length);
         } else pending = pending.slice(1);
@@ -583,7 +601,9 @@ try {
         escapeTimer = setTimeout(() => {
           if (pending === "\x1b") {
             pending = "";
-            if (dialogDemo) dialogHost.handle("cancel");
+            if (gridDemo) gridHost.handle("cancel");
+            else if (documentDemo) documentHost.handle("cancel");
+            else if (dialogDemo) dialogHost.handle("cancel");
             else if (containerDemo) containerHost.handle("cancel");
             else if (menuDemo) menuHost.handle("cancel");
             else if (pickerDemo) picker.handle("cancel");
