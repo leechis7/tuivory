@@ -44,7 +44,7 @@ C requests, replacement models and previews require tui_drop_request_free, tui_t
 
 Python’s optional POSIX Terminal(mouse_motion=True) enables button-motion events and restores the mode on exit. Other models do not require this option.
 
-Select --demo drag in each integrated example. Tab switches the target; [ / ] request previous/next moves, i/o move inside/outside, d toggles dragging and Esc cancels. Drag with the mouse, then y approves or r rejects. Java currently uses portable line commands followed by Enter: next, ], y, or pointer down/move/up x y. Coordinates are zero-based screen positions. Terminal adapter expansion is separate follow-up work.
+Select --demo drag in each integrated example. Tab switches the target; [ / ] request previous/next moves, i/o move inside/outside, d toggles dragging and Esc cancels. Drag with the mouse, then y approves or r rejects. Java currently uses portable line commands followed by Enter: next, ], y, or pointer down/move/up x y. Coordinates are zero-based screen positions. [Optional raw sessions](language-terminal.en.md) are provided separately from the example’s line input.
 
 Validation covers 22 shared movement cases, exact revisions, keyboard/capture, policy rechecks, stale contexts and independent previews. External C/C++ SDK consumers run ASan/UBSan and static linking; external Java17 JAR consumers inspect 24 actual ANSI feedback frames each. Bilingual theme/color/glyph PTY and installed-package evidence distinguishes local checks, CI and publication in [evidence](evidence/).
 

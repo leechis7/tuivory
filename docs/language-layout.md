@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](language-layout.en.md)
 
-TVR-15·16·30·31·32의 미배포 구현입니다. 다섯 언어가 같은 셀 단위 배치 원칙과 보조 컴포넌트를 직접 구현합니다. 다른 Tuivory 언어 구현을 호출하지 않으며 공개 0.11.1은 유지합니다. 이 단계는 **스택·서랍 위치 계산과 배지·칩·안내**입니다. [행·열·그리드·겹침 실행과 잘린 가상 뷰포트](language-containers.md)는 다음 단계에서 구현했습니다. [실제 Surface 스타일](language-surfaces.md)을 제공합니다. 대화상자는 후속 범위입니다.
+TVR-15·16·30·31·32의 미배포 구현입니다. 다섯 언어가 같은 셀 단위 배치 원칙과 보조 컴포넌트를 직접 구현합니다. 다른 Tuivory 언어 구현을 호출하지 않으며 공개 0.11.1은 유지합니다. 이 단계는 **스택·서랍 위치 계산과 배지·칩·안내**입니다. [행·열·그리드·겹침 실행과 잘린 가상 뷰포트](language-containers.md)는 다음 단계에서 구현했습니다. [실제 Surface 스타일](language-surfaces.md)을 제공합니다. [팝업·대화상자](language-popups.md)도 제공합니다.
 
 ## API
 
@@ -42,7 +42,7 @@ TVR-15·16·30·31·32의 미배포 구현입니다. 다섯 언어가 같은 셀
 
 배치 함수는 원본을 수정하지 않고 결과를 만듭니다. C 스택 결과는 `tui_stack_slot_count/at`, `tui_stack_hidden_count/at`, `tui_stack_gap/free`로 사용합니다. 사각형 결과는 `tui_layout_rect_count/at`, `tui_layout_hidden_count/at/free`로 사용하며 각 ID를 소유합니다. 배지/칩 line과 도움말 layout은 소유하는 `TuiFeedbackView`이며 `tui_feedback_free`로 해제합니다. Help는 `tui_help_free`로 해제합니다. 칩 요청 ID는 원본 수명까지 빌린 값입니다. 함수 오류는 `TuiResult`, 생성 실패는 NULL입니다. C++는 값/RAII, 나머지는 해당 런타임을 사용합니다.
 
-통합 예제 `--demo layout`에서 `d`는 앱이 density를 바꾸고 `x`/Enter 또는 활성 x 클릭은 앱이 필터 제거를 처리합니다. 비활성·읽기 전용 x는 동작하지 않습니다. Java는 `d`, `x`, `activate`, `click x y`, `quit`을 Enter로 실행하는 줄 입력 방식입니다. `click`은 호스트 입력 모의입니다. 네 개 raw 예제의 실제 40열 재배치를 확인하고 Java의 좁은 영역은 배치 API로 검사합니다. Java 줄 입력 예제의 크기는 고정이며 일반 TTY 어댑터는 후속 작업입니다.
+통합 예제 `--demo layout`에서 `d`는 앱이 density를 바꾸고 `x`/Enter 또는 활성 x 클릭은 앱이 필터 제거를 처리합니다. 비활성·읽기 전용 x는 동작하지 않습니다. Java는 `d`, `x`, `activate`, `click x y`, `quit`을 Enter로 실행하는 줄 입력 방식입니다. `click`은 호스트 입력 모의입니다. 네 개 raw 예제의 실제 40열 재배치를 확인하고 Java의 좁은 영역은 배치 API로 검사합니다. Java 줄 입력 예제의 크기는 고정이며 앱에서 [선택적 터미널 세션](language-terminal.md)을 사용할 수 있습니다.
 
 [공유 사례](../design/layout-cases.json), 가중치 나머지·숨긴 중간 항목·작은 영역·원본 보존·Unicode 안내 키·상태·앱 처리형 제거, 외부 SDK/JAR/wheel/npm와 실제 PTY를 검사합니다. [검증 기록](evidence/language-layout-results.json)은 로컬·CI·dev·제품 게시 상태를 구분합니다.
 

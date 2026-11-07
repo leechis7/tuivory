@@ -50,7 +50,6 @@ python3 tools/snapshot_tree.py bin/rust/tuivory-linux-arm64 --demo tree --output
 
 [Example sources](examples.en.md) · [Static distribution](static-build.en.md) · [Local validation record](evidence/showcase-results.json). Passed 24 bilingual PTY scenarios per language, static ELF checks and 20 unchanged reference images. Remote CI/publication, x86_64 execution and CentOS validation were not performed.
 
-
 Go is the reference for the examples. Rust also provides the default playground navigation, theme/color selectors, password, disabled button, and focus order. Tree title/button alignment and SQL editor padding/pointer coordinates follow Go. Both unified executables accept value options such as `--lang=en`, `--theme=light`, and `--colors=16`. Terminal backends and automatic color detection remain language-specific, so actual terminal output can vary. [Rust screens and controls](rust-playground.en.md).
 
 ## Example sources and component guides
@@ -68,7 +67,6 @@ Implementation code lives inside each language directory. This guide indexes exa
 | Shell | [ANSI sample](../shell/examples/terminal-colors.sh) | Reference output; no style function package |
 
 The [static component layout](examples-components.txt) is language-independent reference material. The starter and static layout have Korean example labels; the current [playground](playground.en.md) supports `--lang en`.
-
 
 ## Shared Tree examples
 
@@ -104,7 +102,6 @@ See [overlay drawing](overlay-drawing.en.md) for Go popup/external-card usage. E
 
 0.8.0 Go/Rust examples use Tuivory SDK paths without direct backend imports; commands and visual output are retained. [New APIs, migration and availability](ui-facade.en.md).
 
-
 0.9.1 TVR-28 layout: use `.cache/validation/` for logs/generated references and `.cache/releases/` for local release archives. [Repository layout](architecture.en.md).
 
 0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
@@ -116,33 +113,3 @@ Use the existing unified binary: `--demo catalog --mode grid --grid-sample --gri
 TVR-7 in 0.11.1: [real grid cursor and backend integration](grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.
 
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
-
-[Independent-language workspace APIs and examples](language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.
-
-[Independent text editing API](language-text.en.md)
-
-[Independent forms and controls API](language-forms.en.md)
-
-[Independent focus scope API](language-focus.en.md)
-
-[Independent lists and search pickers API](language-collections.en.md)
-
-[Independent menu/context-menu API](language-menu.en.md)
-
-[Independent notices/progress/data-state API](language-feedback.en.md)
-
-[Independent spacing/stack and badge/chip/hint API](language-layout.en.md)
-
-[Independent containers and cell-copy API](language-containers.en.md)
-
-[Independent Surface and background API](language-surfaces.en.md)
-
-[Independent popup shadows and dialogs](language-popups.en.md)
-
-[Independent document viewing/editing API](language-documents.en.md)
-
-[Independent syntax highlighting/SQL classification API](language-syntax.en.md)
-
-[Independent data grid: virtual sources, approval, raw/display values and real cursors](language-grid.en.md)
-
-[Independent-language drag and drop: captured previews and host-approved moves](language-drag.en.md)

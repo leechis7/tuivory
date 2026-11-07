@@ -13,12 +13,33 @@ The first verification unit covers installation/import/include, 12 embedded pale
 | Language | One public entry point | Package | Current adapter scope |
 | --- | --- | --- | --- |
 | [Python](../python/README.en.md) | `import tuivory` | Normal wheel/sdist, Python 3.11+, regex/wcwidth | Independent canvas, opt-in POSIX session, bilingual source execution |
-| [TypeScript/JavaScript](../javascript/README.en.md) | `import * as ui from 'tuivory'` | ESM npm package, JS and declarations, Node.js 22+ | Independent canvas and Node TTY example |
-| [C](../c/README.en.md) | `#include "tuivory.h"` | C11 static library and headers | Independent canvas and POSIX example |
-| [C++](../cpp/README.en.md) | `#include "tuivory.hpp"` | Independent C++17 header package | Independent canvas and POSIX RAII example |
-| [Java](../java/README.en.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, no JNI | Independent canvas and line-input example; no raw-terminal adapter |
+| [TypeScript/JavaScript](../javascript/README.en.md) | `import * as ui from 'tuivory'` | ESM npm package, JS and declarations, Node.js 22+ | Independent canvas, Node TerminalIO and TTY example |
+| [C](../c/README.en.md) | `#include "tuivory.h"` | C11 static library and headers | Independent canvas, optional POSIX Terminal and example |
+| [C++](../cpp/README.en.md) | `#include "tuivory.hpp"` | Independent C++17 header package | Independent canvas, optional POSIX Terminal and RAII example |
+| [Java](../java/README.en.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, no JNI | Independent canvas, line-input example, optional POSIX Terminal (stty) |
 
-All five languages provide [workspace](language-workspace.en.md) and [text editing](language-text.en.md), checked with shared fixtures and external consumers. [Forms and controls](language-forms.en.md) are also validated in all five languages. [Lists and search pickers](language-collections.en.md) are also validated in all five languages. [Menus and context menus](language-menu.en.md) are validated in all five languages. [Notices, progress and data states](language-feedback.en.md) are also validated in all five languages. [Spacing/stacks and supporting components](language-layout.en.md) are also validated in all five languages. [Configured containers and clipped cell copying](language-containers.en.md) are also validated in all five languages. The [data grid](language-grid.en.md) is independently implemented in all five languages. [Drag and drop](language-drag.en.md) is also validated in all five languages. This does not complete the full catalog migration; terminal APIs and remaining items continue under the individual epics.
+## Component APIs
+
+| Area | Available API | Specification |
+| --- | --- | --- |
+| Workspace | Tree, Tabs, panels, splits, paths, status | [API](language-workspace.en.md) |
+| Text | Text, real cursor, source ranges | [API](language-text.en.md) |
+| Forms and controls | Form, Field, choices, disabled states | [API](language-forms.en.md) |
+| Focus scopes | Focus, popup blocking, restoration | [API](language-focus.en.md) |
+| Collections | List, SearchPicker | [API](language-collections.en.md) |
+| Menus | Hierarchy, menu bar, context menu | [API](language-menu.en.md) |
+| Feedback | NoticeQueue, Progress, DataState | [API](language-feedback.en.md) |
+| Layout and supporting components | Spacing, stacks, Badge, Chip, Help | [API](language-layout.en.md) |
+| Containers and cell copying | Container, virtual children, Canvas copy | [API](language-containers.en.md) |
+| Surfaces and styles | Surface, semantic text on actual backgrounds | [API](language-surfaces.en.md) |
+| Popups and dialogs | Shadow, Dialog | [API](language-popups.en.md) |
+| Documents | TextDocument, markup, highlight ranges | [API](language-documents.en.md) |
+| Syntax | SQLAnalyzer, optional analyzer binding | [API](language-syntax.en.md) |
+| Data grids | Virtual data, edits, paste, ranges, views | [API](language-grid.en.md) |
+| Drag and drop | DragState, move requests, host approval | [API](language-drag.en.md) |
+| Input and terminals | InputDecoder, optional Terminal | [API](language-terminal.en.md) |
+
+Each specification states concrete APIs, ownership, host responsibilities and verification. Additional grid pointer behavior and the final catalog audit remain in progress; the epic is not marked complete.
 
 ## API use
 
@@ -94,7 +115,6 @@ Captured from each implementation’s actual ANSI buffer in dark/True Color. The
 
 ![java Tree](images/language-java-tree-en.png)
 
-
 Native C/C++/Java style colors encode RGB as `0x1000000 | RRGGBB`; other values are ANSI indices 0–255. Python/TS use `#RRGGBB` strings or decimal index strings. The canvas handles this conversion internally. Unicode width cases explicitly cover emoji modifiers, flags, combining marks, Hangul Jamo and presentation selectors.
 
 ## Reproducing local package checks
@@ -116,33 +136,3 @@ python tools/capture_language_trees.py
 ```
 
 Build C/C++/Java first as shown above. Reference capture also needs a CJK-capable D2Coding font and Cairo; these are tooling dependencies. Local results used Python 3.14.4, Node 26.13.0, TypeScript 7.0.2 and JDK 27. Java was compiled with `--release 17`; a JVM 17 runtime was not executed locally. Six unreleased local preview archives and checksums are assembled by `python tools/package_languages.py` under `.cache/packages/languages/`. No registry publish command is run.
-
-[Independent-language workspace APIs and examples](language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.
-
-[Independent text editing API](language-text.en.md)
-
-[Independent forms and controls API](language-forms.en.md)
-
-[Independent focus scope API](language-focus.en.md)
-
-[Independent lists and search pickers API](language-collections.en.md)
-
-[Independent menu/context-menu API](language-menu.en.md)
-
-[Independent notices/progress/data-state API](language-feedback.en.md)
-
-[Independent spacing/stack and badge/chip/hint API](language-layout.en.md)
-
-[Independent containers and cell-copy API](language-containers.en.md)
-
-[Independent Surface and background API](language-surfaces.en.md)
-
-[Independent popup shadows and dialogs](language-popups.en.md)
-
-[Independent document viewing/editing API](language-documents.en.md)
-
-[Independent syntax highlighting/SQL classification API](language-syntax.en.md)
-
-[Independent data grid: virtual sources, approval, raw/display values and real cursors](language-grid.en.md)
-
-[Independent-language drag and drop: captured previews and host-approved moves](language-drag.en.md)

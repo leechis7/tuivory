@@ -4,7 +4,6 @@
 
 0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](../docs/drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.
 
-
 **0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](../docs/syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다.
 
 **0.8.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../docs/ui-facade.md).
@@ -71,9 +70,3 @@
 0.10.2 TVR-29는 auto/solid를 오른쪽 1칸·아래 반 줄로 통일하고 실제 배경 대비·반 블록 모서리·ASCII 점을 적용합니다. 배치에서는 1행을 예약하며 그림자 셀의 배경 글자를 대체하고 입력은 받지 않습니다. Dim은 셀 전체 호환 모드로 유지합니다. 0.10.0 이하 태그에는 이전 표현이 남습니다.
 
 [Python·TypeScript/JavaScript·C·C++·Java 독립 지원](../docs/languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.
-
-[독립 언어 팝업 그림자와 대화상자](../docs/language-popups.md)
-
-[독립 언어 문서 보기·편집 API](../docs/language-documents.md)
-
-[독립 언어 구문 강조·SQL 분류 API](../docs/language-syntax.md)

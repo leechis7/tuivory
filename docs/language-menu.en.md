@@ -29,7 +29,7 @@ Free C models with `tui_menu_free`; free `tui_menu_title` strings with `tui_stri
 
 Menus show **selection and open state**, without an additional focus highlight, underline or hardware cursor. Menu-bar actions and clicks return `open_request`; the host calls `open` with the actual return target. Activation returns `activate`, item ID and return ID, and closes the menu. Hosts connect business callbacks and [Focus](language-focus.en.md) scopes. Hosts own global F10/Escape policy, the overall screen, menu contents and approval for outside-click dismissal.
 
-`draw_popup(canvas, rect, title, padding, ascii)` paints a single border and padding in a host-assigned rectangle, returning the **content rectangle for item hit testing**. Python makes `padding/ascii` keyword-only; C uses a final `content` output argument. Padding defaults to one cell and shrinks in small allocations; C/Java require an explicit padding argument. Shadows are a later milestone.
+`draw_popup(canvas, rect, title, padding, ascii)` paints a single border and padding in a host-assigned rectangle, returning the **content rectangle for item hit testing**. Python makes `padding/ascii` keyword-only; C uses a final `content` output argument. Padding defaults to one cell and shrinks in small allocations; C/Java require an explicit padding argument. [Optional shadows](language-popups.en.md) are also available.
 
 Placement prefers below the anchor, flips above when needed and clamps to the viewport. After resizing, use the latest returned content rectangle for hits. Long labels use `~` ellipsis; shortcuts and submenu indicators align right. The menu bar provides overflow arrows and keeps its candidate visible.
 

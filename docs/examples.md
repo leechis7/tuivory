@@ -50,7 +50,6 @@ python3 tools/snapshot_tree.py bin/rust/tuivory-linux-arm64 --demo tree --output
 
 [예제 소스](examples.md) · [정적 배포](static-build.md) · [로컬 검증 기록](evidence/showcase-results.json). 언어별 24개 한영 PTY 시나리오와 정적 ELF 검사, 20개 참조 화면 일치를 확인했습니다. 원격 CI·게시·x86_64 실행·CentOS 검증은 수행하지 않았습니다.
 
-
 Go를 예제 기준으로 사용합니다. 기본 playground의 탐색·테마/색상 선택·암호·비활성 버튼과 조작 순서를 Rust에도 제공합니다. 트리 제목/버튼 정렬과 SQL 편집기의 여백·마우스 좌표도 Go 기준으로 맞춥니다. `--lang=en`, `--theme=light`, `--colors=16` 같은 값 지정 옵션은 두 통합 실행파일에서 사용할 수 있습니다. 터미널 백엔드와 자동 색상 감지는 언어별 구현을 사용하며 실제 단말 출력은 달라질 수 있습니다. [Rust 화면·조작](rust-playground.md).
 
 ## 예제 소스·컴포넌트 안내
@@ -70,7 +69,6 @@ Go를 예제 기준으로 사용합니다. 기본 playground의 탐색·테마/�
 [공통 컴포넌트 정적 배치](examples-components.txt)는 언어와 무관한 참고 예시입니다.
 
 시작 템플릿과 정적 배치 예시의 라벨은 한국어이며, 현재 [견본](playground.md)은 `--lang en`으로 영어 UI를 제공합니다.
-
 
 ## 공통 Tree 예제
 
@@ -106,7 +104,6 @@ Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](overlay-dr
 
 0.7.0 TVR-26의 Go·Rust 공개 예제는 backend 직접 import 없이 Tuivory SDK 경로를 사용합니다. 실행 명령과 화면은 유지합니다. [새 API·전환·배포 상태](ui-facade.md).
 
-
 0.9.1 TVR-28 폴더 정리: 검증 로그·참조 화면 생성물은 `.cache/validation/`, 로컬 릴리스 보관은 `.cache/releases/`를 사용합니다. [저장소 구조](architecture.md).
 
 0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.
@@ -118,33 +115,3 @@ Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](overlay-dr
 TVR-7 0.11.1: [실제 그리드 커서·backend 연결](grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.
 
 [Python·TypeScript/JavaScript·C·C++·Java 독립 지원](languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.
-
-[독립 언어 workspace API·예제](language-workspace.md): 탭·패널·분할·경로·상태줄을 다섯 구현에서 검증했습니다. 나머지 카탈로그 이식은 진행 중입니다.
-
-[독립 언어 입력·편집 API](language-text.md)
-
-[독립 언어 폼·컨트롤 API](language-forms.md)
-
-[독립 언어 포커스 범위 API](language-focus.md)
-
-[독립 언어 목록·검색 선택기 API](language-collections.md)
-
-[독립 언어 메뉴·문맥 메뉴 API](language-menu.md)
-
-[독립 언어 알림·진행·데이터 상태 API](language-feedback.md)
-
-[독립 언어 간격·스택·배지·칩·단축키 안내 API](language-layout.md)
-
-[독립 언어 컨테이너·셀 복사 API](language-containers.md)
-
-[독립 언어 Surface·실제 바탕 API](language-surfaces.md)
-
-[독립 언어 팝업 그림자와 대화상자](language-popups.md)
-
-[독립 언어 문서 보기·편집 API](language-documents.md)
-
-[독립 언어 구문 강조·SQL 분류 API](language-syntax.md)
-
-[독립 언어 데이터 그리드: 가상 데이터·앱 승인·원문/표시·실제 커서](language-grid.md)
-
-[독립 언어 드래그앤드롭: 캡처·미리보기·앱 승인](language-drag.md)

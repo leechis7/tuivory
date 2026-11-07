@@ -5544,3 +5544,12 @@ export class SQLAnalyzer {
 export * from "./grid.js";
 
 export * from "./drag.js";
+
+export { InputDecoder, Terminal } from "./terminal.js";
+export type {
+  InputEvent,
+  TerminalInput,
+  TerminalOutput,
+  TerminalIO,
+  TerminalOptions,
+} from "./terminal.js";

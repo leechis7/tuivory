@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-layout.md) · **English**
 
-This unreleased TVR-15/16/30/31/32 milestone implements the same cell-layout principles and supporting components in five independent languages, without calling another Tuivory implementation. Published 0.11.1 stays unchanged. This step covers **stacks/drawer placement and badges/chips/hints**. [Configured row/column/grid/layer execution and clipped virtual viewports](language-containers.en.md) are now implemented in a following milestone. [Actual Surface styles](language-surfaces.en.md) are now available; dialogs remain a later milestone.
+This unreleased TVR-15/16/30/31/32 milestone implements the same cell-layout principles and supporting components in five independent languages, without calling another Tuivory implementation. Published 0.11.1 stays unchanged. This step covers **stacks/drawer placement and badges/chips/hints**. [Configured row/column/grid/layer execution and clipped virtual viewports](language-containers.en.md) are now implemented in a following milestone. [Actual Surface styles](language-surfaces.en.md) are now available; [popups and dialogs](language-popups.en.md) are also available.
 
 ## API
 
@@ -42,7 +42,7 @@ Badge/chip `line` and Help `layout` use shared `FeedbackRow/FeedbackSpan` values
 
 Geometry functions preserve their sources. C stack results use `tui_stack_slot_count/at`, `tui_stack_hidden_count/at`, `tui_stack_gap/free`. Rectangle results use `tui_layout_rect_count/at`, `tui_layout_hidden_count/at/free` and own their IDs. Badge/chip lines and Help layouts own `TuiFeedbackView` objects freed with `tui_feedback_free`. Free Help with `tui_help_free`. Chip-request IDs are borrowed for the source lifetime. Functions report `TuiResult`; constructors fail with NULL. C++ uses values/RAII; other languages use runtime lifetimes.
 
-Run integrated `--demo layout`. The host handles `d` density changes and removal through `x`/Enter or an enabled x click. Disabled/read-only x targets do nothing. Java uses line commands `d`, `x`, `activate`, `click x y`, `quit`, followed by Enter; `click` simulates host input. Four raw examples are checked after actual 40-column resizing; Java narrow bounds are checked through the geometry API. The Java line example has fixed dimensions; a general TTY adapter is a later milestone.
+Run integrated `--demo layout`. The host handles `d` density changes and removal through `x`/Enter or an enabled x click. Disabled/read-only x targets do nothing. Java uses line commands `d`, `x`, `activate`, `click x y`, `quit`, followed by Enter; `click` simulates host input. Four raw examples are checked after actual 40-column resizing; Java narrow bounds are checked through the geometry API. The Java line example has fixed dimensions; applications may use the [optional terminal session](language-terminal.en.md).
 
 Checks cover [shared cases](../design/layout-cases.json), weighted remainders, skipped middle items, tiny bounds, source retention, Unicode hint keys, states, host-handled removal, external SDK/JAR/wheel/npm consumers and actual PTYs. [Evidence](evidence/language-layout-results.json) separates local checks, CI, dev and product publication.
 

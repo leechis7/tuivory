@@ -19,6 +19,7 @@ from check_language_documents import source as document_source,validate_output a
 from check_language_syntax import source as syntax_source,validate_output as validate_syntax_output
 from check_language_grid import source as grid_source,validate_output as validate_grid_output
 from check_language_drag import source as drag_source,validate_output as validate_drag_output
+from check_language_terminal import source as terminal_source
 
 def main():
  out=ROOT/'.cache/packages/languages'
@@ -46,6 +47,7 @@ def main():
    src.write_text(surface_source(lang));run(args,base);validate_surface_output(subprocess.check_output([base/'consumer'],cwd=base,text=True))
    for make,validate in [(popup_source,validate_popup_output),(dialog_source,validate_dialog_output),(document_source,validate_document_output),(syntax_source,validate_syntax_output),(grid_source,validate_grid_output),(drag_source,validate_drag_output)]:
     src.write_text(make(lang));run(args,base);validate(subprocess.check_output([base/'consumer'],cwd=base,text=True))
+   src.write_text(terminal_source(lang));run(args,base);run([base/'consumer'],base)
    for demo,label in [('shadow',b'Context menu'),('dialog',b'Reconnect'),('document',b'Document viewer/editor'),('syntax',b'SELECT COUNT'),('grid',b'1,234'),('drag',b'Dragging: ON')]:
     assert label in subprocess.check_output([example,'--demo',demo,'--lang','en','--snapshot'],cwd=base)
    snapshot=subprocess.check_output([example,'--demo','surface','--lang','en','--snapshot'],cwd=base);assert b'Body on surface'in snapshot
@@ -55,7 +57,7 @@ def main():
  jar_name=next(name for name in manifest['assets']if name.endswith('.jar'))
  with zipfile.ZipFile(out/jar_name)as jar:
   names=jar.namelist();assert not any(n.endswith(('.so','.dll','.dylib'))for n in names)
-  assert not any('ComponentsTest'in n or 'CollectionCases'in n or 'MenuCases'in n or 'FeedbackCases'in n or 'LayoutCases'in n or 'CanvasCopyCases'in n or 'ContainerCases'in n or 'SurfaceCases'in n or 'PopupCases'in n or 'DialogCases'in n or 'DocumentCases'in n or 'SyntaxCases'in n or 'GridCases'in n or 'DragCases'in n for n in names)
+  assert not any('ComponentsTest'in n or 'CollectionCases'in n or 'MenuCases'in n or 'FeedbackCases'in n or 'LayoutCases'in n or 'CanvasCopyCases'in n or 'ContainerCases'in n or 'SurfaceCases'in n or 'PopupCases'in n or 'DialogCases'in n or 'DocumentCases'in n or 'SyntaxCases'in n or 'GridCases'in n or 'DragCases'in n or 'TerminalCases'in n or 'TerminalSession'in n for n in names)
   assert jar.read('CASEFOLD-LICENSE')==(ROOT/'design/casefold.LICENSE').read_bytes()
   assert jar.read('NOTICE.md')==(ROOT/'java/NOTICE.md').read_bytes()and jar.read('NOTICE.en.md')==(ROOT/'java/NOTICE.en.md').read_bytes()
   assert 'io/tuivory/FoldData.class'in names
@@ -81,6 +83,8 @@ def main():
    src=base/(name+'.java');src.write_text(make('java'));run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);validate(subprocess.check_output(['java','-cp',str(jar)+os.pathsep+str(base),name],cwd=base,text=True))
   src=base/'DragCases.java';src.write_text(drag_source('java'))
   run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);validate_drag_output(subprocess.check_output(['java','-ea','-cp',str(jar)+os.pathsep+str(base),'DragCases'],cwd=base,text=True))
+  src=base/'TerminalCases.java';src.write_text(terminal_source('java'))
+  run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);run(['java','-ea','-cp',str(jar)+os.pathsep+str(base),'TerminalCases'],base)
   for demo,label in [('shadow',b'Context menu'),('dialog',b'Reconnect'),('document',b'Document viewer/editor'),('syntax',b'SELECT COUNT'),('grid',b'1,234'),('drag',b'Dragging: ON')]:
    assert label in subprocess.check_output(['java','-jar',jar,'--demo',demo,'--lang','en','--snapshot'],cwd=base)
   snapshot=subprocess.check_output(['java','-jar',jar,'--demo','surface','--lang','en','--snapshot'],cwd=base);assert b'Body on surface'in snapshot
@@ -93,6 +97,7 @@ def main():
  with tarfile.open(out/npm_name)as npm:
   assert 'package/CASEFOLD-LICENSE'in npm.getnames()
   assert 'package/dist/casefold.json'in npm.getnames()
+  assert 'package/dist/terminal.js'in npm.getnames()and'package/dist/terminal.d.ts'in npm.getnames()
   assert 'package/examples/drag-host.mjs'in npm.getnames()and'package/dist/drag.js'in npm.getnames()and'package/dist/drag.d.ts'in npm.getnames()
   assert 'package/dist/sql-syntax-words.json'in npm.getnames()and'package/dist/syntax-unicode.json'in npm.getnames()
  print('Six actual archive hashes/licenses, isolated static C/C++ SDK consumers, pure Java JAR and runtime package data passed')

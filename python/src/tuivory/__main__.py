@@ -1,6 +1,7 @@
 """One bilingual, database-free integrated example. python -m tuivory --help."""
 import argparse
 import json
+import signal
 from . import (Canvas, Palette, Rect, Tree, Node, Tabs, Tab, List, Item, Form, Field,
                Grid, Column, Record, Text, ControlState, SearchPicker, FormOption, Menu, Progress, DataState,
                NoticeQueue, Notice, Terminal)
@@ -145,50 +146,56 @@ def main():
         else:
             print(json.dumps({'lines': c.lines(), 'cursor': c.cursor}, ensure_ascii=False))
         return
-    with Terminal(mouse_motion=args.demo=='drag') as terminal:
-        while True:
-            c, area = draw(*terminal.size)
-            terminal.write(c.ansi())
-            event = terminal.read()
-            if event is None:
-                continue
-            if event.key in ('ctrl_q', 'eof'):
-                break
-            if event.key == 'f1':
-                theme = themes[(themes.index(theme) + 1) % len(themes)]
-            elif event.key == 'f2':
-                colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
-            elif isinstance(model, DragDemo) and event.key in ('mouse','mouse_move','mouse_release'):
-                model.pointer(event.x,event.y,event.button,{'mouse':'down','mouse_move':'move','mouse_release':'up'}[event.key])
-            elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo)):
-                model.pointer(event.x, event.y, event.button)
-            elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
-                if isinstance(model, (Grid, Text)):
-                    model.click(event.x - area.x, event.y - area.y, area.width, area.height)
-                elif isinstance(model, Tabs):
-                    model.click(event.x - area.x, area.width)
+    def stop(*_):
+        raise SystemExit(0)
+    previous_signal=signal.signal(signal.SIGTERM,stop)
+    try:
+        with Terminal(mouse_motion=args.demo=='drag') as terminal:
+            while True:
+                c, area = draw(*terminal.size)
+                terminal.write(c.ansi())
+                event = terminal.read()
+                if event is None:
+                    continue
+                if event.key in ('ctrl_q', 'eof'):
+                    break
+                if event.key == 'f1':
+                    theme = themes[(themes.index(theme) + 1) % len(themes)]
+                elif event.key == 'f2':
+                    colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
+                elif isinstance(model, DragDemo) and event.key in ('mouse','mouse_move','mouse_release'):
+                    model.pointer(event.x,event.y,event.button,{'mouse':'down','mouse_move':'move','mouse_release':'up'}[event.key])
+                elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo)):
+                    model.pointer(event.x, event.y, event.button)
+                elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
+                    if isinstance(model, (Grid, Text)):
+                        model.click(event.x - area.x, event.y - area.y, area.width, area.height)
+                    elif isinstance(model, Tabs):
+                        model.click(event.x - area.x, area.width)
+                    else:
+                        model.click(event.x - area.x, event.y - area.y, area.height)
                 else:
-                    model.click(event.x - area.x, event.y - area.y, area.height)
-            else:
-                action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
-                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo,DragDemo)):
-                    model.handle(action, area.height, event.text)
-                elif isinstance(model, SearchPicker):
-                    model.handle(action,event.text,area.height)
-                elif isinstance(model,List) and action=="insert" and event.text==" ":
-                    model.handle("select",area.height)
-                elif isinstance(model, (Form, Text)):
-                    model.handle("newline" if isinstance(model,Text) and action=="activate" else action, event.text)
-                elif isinstance(model, Tabs):
-                    model.handle({'left': 'previous', 'right': 'next'}.get(action, action))
-                elif isinstance(model, Menu):
-                    model.handle("mnemonic" if action=="insert" else action,event.text,area.height)
-                elif isinstance(model, (Grid, List)):
-                    model.handle(action, area.height, event.text)
-                elif isinstance(model, Tree):
-                    model.handle(action, area.height)
-                elif isinstance(model, WorkspaceDemo):
-                    model.handle(action, area.height, event.text)
+                    action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
+                    if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo,DragDemo)):
+                        model.handle(action, area.height, event.text)
+                    elif isinstance(model, SearchPicker):
+                        model.handle(action,event.text,area.height)
+                    elif isinstance(model,List) and action=="insert" and event.text==" ":
+                        model.handle("select",area.height)
+                    elif isinstance(model, (Form, Text)):
+                        model.handle("newline" if isinstance(model,Text) and action=="activate" else action, event.text)
+                    elif isinstance(model, Tabs):
+                        model.handle({'left': 'previous', 'right': 'next'}.get(action, action))
+                    elif isinstance(model, Menu):
+                        model.handle("mnemonic" if action=="insert" else action,event.text,area.height)
+                    elif isinstance(model, (Grid, List)):
+                        model.handle(action, area.height, event.text)
+                    elif isinstance(model, Tree):
+                        model.handle(action, area.height)
+                    elif isinstance(model, WorkspaceDemo):
+                        model.handle(action, area.height, event.text)
+    finally:
+        signal.signal(signal.SIGTERM,previous_signal)
 
 if __name__ == '__main__':
     main()

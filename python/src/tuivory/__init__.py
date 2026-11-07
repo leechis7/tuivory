@@ -10,8 +10,8 @@ __all__ = ["Palette", "Style", "Rect", "Cell", "Canvas", "graphemes", "cells", "
            "Text", "Field", "Form", "Control", "Column", "Record", "Grid", "FocusTarget",
            "Focus", "Menu", "split", "container", "breadcrumbs", "StatusItem", "status",
            "popup_placement"]
-from .terminal import InputEvent, Terminal
-__all__ += ["InputEvent", "Terminal"]
+from .terminal import InputEvent, InputDecoder, Terminal
+__all__ += ["InputEvent", "InputDecoder", "Terminal"]
 
 from .workspace import LineRun, LineLayout, path_runs, status_line
 __all__ += ["TabCell", "LineRun", "LineLayout", "path_runs", "status_line"]

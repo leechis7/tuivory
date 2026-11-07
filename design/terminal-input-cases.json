@@ -1,0 +1,642 @@
+{
+  "description": "Independent optional terminal input decoders; host owns lifecycle and keys.",
+  "cases": [
+    {
+      "name": "text",
+      "chunks": [
+        "41"
+      ],
+      "events": [
+        {
+          "key": "text",
+          "text": "A",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "tab",
+      "chunks": [
+        "09"
+      ],
+      "events": [
+        {
+          "key": "tab",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "enter",
+      "chunks": [
+        "0d"
+      ],
+      "events": [
+        {
+          "key": "enter",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "backspace",
+      "chunks": [
+        "7f"
+      ],
+      "events": [
+        {
+          "key": "backspace",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "ctrl_a",
+      "chunks": [
+        "01"
+      ],
+      "events": [
+        {
+          "key": "ctrl_a",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "ctrl_q",
+      "chunks": [
+        "11"
+      ],
+      "events": [
+        {
+          "key": "ctrl_q",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "up",
+      "chunks": [
+        "1b5b41"
+      ],
+      "events": [
+        {
+          "key": "up",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "down",
+      "chunks": [
+        "1b5b42"
+      ],
+      "events": [
+        {
+          "key": "down",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "right",
+      "chunks": [
+        "1b5b43"
+      ],
+      "events": [
+        {
+          "key": "right",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "left",
+      "chunks": [
+        "1b5b44"
+      ],
+      "events": [
+        {
+          "key": "left",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "home",
+      "chunks": [
+        "1b5b48"
+      ],
+      "events": [
+        {
+          "key": "home",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "end",
+      "chunks": [
+        "1b5b46"
+      ],
+      "events": [
+        {
+          "key": "end",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "page_up",
+      "chunks": [
+        "1b5b357e"
+      ],
+      "events": [
+        {
+          "key": "page_up",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "page_down",
+      "chunks": [
+        "1b5b367e"
+      ],
+      "events": [
+        {
+          "key": "page_down",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "delete",
+      "chunks": [
+        "1b5b337e"
+      ],
+      "events": [
+        {
+          "key": "delete",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "shift_tab",
+      "chunks": [
+        "1b5b5a"
+      ],
+      "events": [
+        {
+          "key": "shift_tab",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "f1",
+      "chunks": [
+        "1b4f50"
+      ],
+      "events": [
+        {
+          "key": "f1",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "f2",
+      "chunks": [
+        "1b4f51"
+      ],
+      "events": [
+        {
+          "key": "f2",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "f10",
+      "chunks": [
+        "1b5b32317e"
+      ],
+      "events": [
+        {
+          "key": "f10",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "shift_f10",
+      "chunks": [
+        "1b5b32313b327e"
+      ],
+      "events": [
+        {
+          "key": "shift_f10",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "split arrow",
+      "chunks": [
+        "1b",
+        "5b",
+        "41"
+      ],
+      "events": [
+        {
+          "key": "up",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "split Unicode 한",
+      "chunks": [
+        "ed",
+        "95",
+        "9c"
+      ],
+      "events": [
+        {
+          "key": "text",
+          "text": "한",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "split Unicode 界",
+      "chunks": [
+        "e7",
+        "95",
+        "8c"
+      ],
+      "events": [
+        {
+          "key": "text",
+          "text": "界",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "split Unicode 👩",
+      "chunks": [
+        "f0",
+        "9f",
+        "91a9"
+      ],
+      "events": [
+        {
+          "key": "text",
+          "text": "👩",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "split Unicode ́",
+      "chunks": [
+        "cc",
+        "81",
+        ""
+      ],
+      "events": [
+        {
+          "key": "text",
+          "text": "́",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "mouse down",
+      "chunks": [
+        "1b5b3c303b333b344d"
+      ],
+      "events": [
+        {
+          "key": "mouse",
+          "text": "",
+          "x": 2,
+          "y": 3,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "mouse move",
+      "chunks": [
+        "1b5b3c33323b333b344d"
+      ],
+      "events": [
+        {
+          "key": "mouse_move",
+          "text": "",
+          "x": 2,
+          "y": 3,
+          "button": 32
+        }
+      ]
+    },
+    {
+      "name": "mouse up",
+      "chunks": [
+        "1b5b3c303b333b346d"
+      ],
+      "events": [
+        {
+          "key": "mouse_release",
+          "text": "",
+          "x": 2,
+          "y": 3,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "wheel",
+      "chunks": [
+        "1b5b3c36343b333b344d"
+      ],
+      "events": [
+        {
+          "key": "wheel",
+          "text": "",
+          "x": 2,
+          "y": 3,
+          "button": 64
+        }
+      ]
+    },
+    {
+      "name": "split mouse",
+      "chunks": [
+        "1b5b3c33323b",
+        "31323b35",
+        "4d"
+      ],
+      "events": [
+        {
+          "key": "mouse_move",
+          "text": "",
+          "x": 11,
+          "y": 4,
+          "button": 32
+        }
+      ]
+    },
+    {
+      "name": "split paste",
+      "chunks": [
+        "1b5b3230307eed959c0a",
+        "7465787409",
+        "1b5b3230",
+        "317e"
+      ],
+      "events": [
+        {
+          "key": "paste",
+          "text": "한\ntext\t",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "literal escape in paste",
+      "chunks": [
+        "1b5b3230307e1b5b411b5b3230317e"
+      ],
+      "events": [
+        {
+          "key": "paste",
+          "text": "\u001b[A",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "empty paste",
+      "chunks": [
+        "1b5b3230307e1b5b3230317e"
+      ],
+      "events": [
+        {
+          "key": "paste",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "unknown CSI",
+      "chunks": [
+        "1b5b39397e"
+      ],
+      "events": [
+        {
+          "key": "unknown",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "escape timeout",
+      "chunks": [
+        "1b"
+      ],
+      "events": [
+        {
+          "key": "escape",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ],
+      "flush_escape": true
+    },
+    {
+      "name": "consecutive",
+      "chunks": [
+        "61091b5b4262"
+      ],
+      "events": [
+        {
+          "key": "text",
+          "text": "a",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        },
+        {
+          "key": "tab",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        },
+        {
+          "key": "down",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        },
+        {
+          "key": "text",
+          "text": "b",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "invalid UTF-8 byte",
+      "chunks": [
+        "ff"
+      ],
+      "events": [
+        {
+          "key": "text",
+          "text": "�",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "invalid mouse coordinate",
+      "chunks": [
+        "1b5b3c303b303b324d"
+      ],
+      "events": [
+        {
+          "key": "unknown",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "missing mouse button",
+      "chunks": [
+        "1b5b3c3b313b324d"
+      ],
+      "events": [
+        {
+          "key": "unknown",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "oversized mouse button",
+      "chunks": [
+        "1b5b3c313030303030303030313b313b314d"
+      ],
+      "events": [
+        {
+          "key": "unknown",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "button": 0
+        }
+      ]
+    }
+  ]
+}

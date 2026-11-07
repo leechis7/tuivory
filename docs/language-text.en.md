@@ -32,7 +32,7 @@ C construction copies its input and `tui_text_free` releases the complete histor
 
 ## Examples and validation
 
-Select `--demo text` in each language's unified example, with `--lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii`. Python/JS/C/C++ support typing, arrows, Home/End, Backspace, Enter, Ctrl+A selection, Ctrl+Z/Y history, and Ctrl+Q exit. Java currently uses line commands such as `home`, `insert text`, `backspace`, `undo`, and `quit`, followed by Enter. Raw Java terminal integration is a later milestone.
+Select `--demo text` in each language's unified example, with `--lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii`. Python/JS/C/C++ support typing, arrows, Home/End, Backspace, Enter, Ctrl+A selection, Ctrl+Z/Y history, and Ctrl+Q exit. Java currently uses line commands such as `home`, `insert text`, `backspace`, `undo`, and `quit`, followed by Enter. Applications may opt into the separately provided [POSIX raw session](language-terminal.en.md).
 
 [Shared editing fixtures](../design/controls-cases.json) cover combining insertion, selection, secrets, read-only behavior and single-line paste. Additional checks cover atomic UTF-8 range failures, narrow bounds, isolated static SDK/JAR consumers, and C/C++ ASan/UBSan. Actual PTY input and theme/profile/glyph results are recorded separately in the [evidence](evidence/language-text-results.json). Images do not establish physical terminal font or blink behavior.
 

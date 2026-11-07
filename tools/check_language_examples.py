@@ -279,16 +279,23 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             assert 'example'not in visible,(language,'raw password in output')
             assert b'\x1b[?25h'in captured,(language,'real form cursor absent')
         elif demo=='text':
-            drain(.25)
-            # Move to line start and insert a sentinel; backspace must restore it.
-            os.write(master,b'home\n'if language=='java'else b'\x1b[H');drain(.06)
-            os.write(master,b'insert Z\n'if language=='java'else b'Z');drain(.08)
-            visible='\n'.join(''.join(r)for r in screen.rows[1:17])
-            assert 'Z'in visible,(language,'text insert',visible)
-            os.write(master,b'backspace\n'if language=='java'else b'\x7f');drain(.08)
-            visible='\n'.join(''.join(r)for r in screen.rows[1:17])
-            assert 'Z'not in visible,(language,'text deletion',visible)
-            assert b'\x1b[?25h'in captured,(language,'real cursor absent')
+            from ansi_cells import complete_frame
+            def wait_text_frame(previous, expected=None):
+                deadline=time.monotonic()+5
+                while time.monotonic()<deadline:
+                    drain(.02)
+                    visible='\n'.join(''.join(r)for r in screen.rows[1:17])
+                    trailer=bytes(captured).rsplit(b'\x1b[?25l',1)[-1]
+                    if language=='java':trailer=trailer.split(b'\x1b[19;1H',1)[0]
+                    cursor=re.search(rb'\x1b\[(\d+);(\d+)H\x1b\[\?25h',trailer)
+                    if captured.count(b'\x1b[?25l')>previous and complete_frame(captured)is not None and cursor and (expected is None or ('Z'in visible)==expected):return
+                    if process.poll()is not None:break
+                raise AssertionError((language,'text frame/cursor',expected,visible,bytes(captured[-600:])))
+            wait_text_frame(0)
+            for command,raw,expected in [('home',b'\x1b[H',None),('insert Z',b'Z',True),('backspace',b'\x7f',False)]:
+                frames=captured.count(b'\x1b[?25l')
+                os.write(master,(command+'\n').encode()if language=='java'else raw)
+                wait_text_frame(frames,expected)
         else:
             # Row one contains the selected root. The actual VT buffer is inspected.
             root=4 if demo=='workspace' else 2 if demo=='list' else 1

@@ -1,10 +1,10 @@
-#include "drag_host.h"
-#include "grid_host.h"
 #define _POSIX_C_SOURCE 200809L
 #include "container_host.h"
 #include "dialog_host.h"
 #include "document_host.h"
+#include "drag_host.h"
 #include "feedback_host.h"
+#include "grid_host.h"
 #include "layout_host.h"
 #include "menu_host.h"
 #include "surface_host.h"
@@ -21,6 +21,16 @@
 static struct termios saved;
 static int active;
 static volatile sig_atomic_t stopped;
+static int example_read_byte(void *output) {
+  struct pollfd input = {STDIN_FILENO, POLLIN, 0};
+  while (!stopped) {
+    int ready = poll(&input, 1, 100);
+    if (ready > 0)
+      return read(STDIN_FILENO, output, 1) == 1;
+  }
+  return 0;
+}
+
 static void stop_signal(int signal_number) {
   (void)signal_number;
   stopped = 1;
@@ -428,7 +438,23 @@ int main(int argc, char **argv) {
     tui_string_free(output);
     tui_canvas_free(canvas);
     unsigned char key;
-    if (read(STDIN_FILENO, &key, 1) != 1)
+    struct pollfd input_fd = {STDIN_FILENO, POLLIN, 0};
+    int ready = 0;
+    while (!stopped) {
+      ready = poll(&input_fd, 1, 100);
+      if (ready > 0)
+        break;
+      struct winsize current = {0};
+      if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &current) == 0 && current.ws_col &&
+          current.ws_row &&
+          ((int)current.ws_col != width || (int)current.ws_row != height))
+        break;
+    }
+    if (stopped)
+      break;
+    if (ready <= 0)
+      continue;
+    if (!example_read_byte(&key))
       break;
     if (key == 17 || key == 3)
       break;
@@ -519,12 +545,14 @@ int main(int argc, char **argv) {
         input[0] = (char)key;
         int n = key < 128 ? 1 : key < 224 ? 2 : key < 240 ? 3 : 4;
         for (int i = 1; i < n; i++)
-          if (read(STDIN_FILENO, &input[i], 1) != 1) {
+          if (!example_read_byte(&input[i])) {
             input[0] = 0;
             break;
           }
         edit_action = "insert";
       }
+      if (stopped)
+        break;
       if (drag_demo)
         drag_demo_handle(&drag_host,
                          key == 9                          ? "next"
