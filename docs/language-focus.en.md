@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-focus.md) · **English**
 
-This unreleased TVR-15/16/30/31/32 API provides an independent `Focus` in all five languages. It is a pure model of host-defined targets and popup scopes; it does not draw screens or own event loops/global keys. It is absent from public 0.11.1.
+This TVR-15/16/30/31/32 API provides an independent `Focus` in all five languages. It is a pure model of host-defined targets and popup scopes; it does not draw screens or own event loops/global keys. Available in 0.12.0.
 
 | Feature | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |

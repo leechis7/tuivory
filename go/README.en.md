@@ -24,12 +24,12 @@ TVR-7 in 0.11.0: [grid editing and data work](../docs/grid-workspace.en.md). Ext
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
-Product version is **0.11.1** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.11.1`. [Release guide](../docs/release-0.11.1.en.md).
+Product version is **0.12.0** in root `VERSION`. The Go module is distributed through subdirectory tag `go/v0.11.1`. [Release guide](../docs/release-0.11.1.en.md).
 
 All Go implementation code and module configuration live in this directory. The module path is `github.com/leechis7/tuivory/go`; the package name is `tuivory`. Requires Go 1.24 or later.
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.11.1
+go get github.com/leechis7/tuivory/go@v0.12.0
 ```
 
 ```go

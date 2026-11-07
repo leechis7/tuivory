@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-popups.md) · **English**
 
-This is unreleased TVR-15/16/30/31/32 work. Python, TypeScript/JavaScript, C, C++ and Java implement behavior independently without calling another Tuivory implementation. Published 0.11.1 support is unchanged.
+This is TVR-15/16/30/31/32 work. Python, TypeScript/JavaScript, C, C++ and Java implement behavior independently without calling another Tuivory implementation. Available in 0.12.0.
 
 | Feature | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |
@@ -11,6 +11,8 @@ This is unreleased TVR-15/16/30/31/32 work. Python, TypeScript/JavaScript, C, C+
 | Card/shadow geometry | `PopupLayout` | `PopupLayout` | `TuiPopupLayout` | `PopupLayout` | `PopupLayout` |
 | Composition | `Shadow.draw` | `Shadow.draw` | `tui_shadow_draw` | `Shadow::draw` | `Shadow.draw` |
 | Dialog | `Dialog`, `DialogButton` | `Dialog`, `DialogButton` type | `TuiDialog`, `TuiDialogButton` | `Dialog`, `DialogButton` | `Dialog`, `DialogButton` |
+
+After wrapping, each button row is centered in the content width. Odd extra space goes on the right. Drawing and mouse input share the same clipped button rectangles. [Shared dialog rules and Go/Rust APIs](modals.en.md)
 
 Use one public import/include. ShadowOptions defaults to off. auto adjusts shading to the actual background; solid uses black. Default auto/solid shadows extend one cell right and half a row below, using Unicode half blocks or ASCII dots. dim preserves underlying text and colors with the Dim attribute for compatibility. Terminal palette and Dim overrides can change physical appearance.
 

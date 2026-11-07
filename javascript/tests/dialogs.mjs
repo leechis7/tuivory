@@ -73,3 +73,32 @@ assert.throws(() => literal.setText(undefined, "\ud800"));
 console.log(
   "Dialog wrapping/default cancel, requests, disabled actions, stale hits, tiny geometry and literal text passed",
 );
+
+for (const labels of [
+  ["확인", "다시 연결한 다음 계속", "설정 열기", "취소"],
+  ["OK", "Reconnect and continue", "Open settings", "Cancel"],
+]) {
+  for (let count = 1; count <= labels.length; count++) {
+    const dialog = new ui.Dialog(
+      "",
+      "",
+      labels
+        .slice(0, count)
+        .map((label, index) => ({ id: String(index), label })),
+      "0",
+    );
+    for (const width of [36, 116]) {
+      const layout = dialog.layout(width, 12);
+      assert.equal(layout.buttons.length, count);
+      const rows = new Map();
+      for (const { rect } of layout.buttons) {
+        const first = rows.get(rect.y)?.[0] ?? rect.x;
+        rows.set(rect.y, [first, rect.x + rect.width]);
+      }
+      for (const [left, right] of rows.values()) {
+        assert.ok(right <= width);
+        assert.equal(left, Math.floor((width - (right - left)) / 2));
+      }
+    }
+  }
+}

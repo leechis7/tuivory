@@ -6,12 +6,12 @@
 
 소스의 예제 빌드는 0.9.1 TVR-27 변경으로 [언어별 통합 실행파일 하나·호스트 아키텍처 자동 감지](examples.md)를 사용합니다.
 
-현재 버전은 **0.11.1**입니다. Go 1.24+, Rust 코어 1.85+, Rust UI/예제 1.88+가 필요합니다.
+현재 버전은 **0.12.0**입니다. Go 1.24+, Rust 코어 1.85+, Rust UI/예제 1.88+가 필요합니다.
 
 ## Go
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.11.1
+go get github.com/leechis7/tuivory/go@v0.12.0
 ```
 
 ```go
@@ -28,7 +28,7 @@ button은 앱이 만든 tview 버튼입니다. Go 모듈은 저장소 루트가 
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.1", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.0", features = ["ratatui"] }
 ```
 
 Rust는 crates.io 대신 Git 태그로 배포합니다. 모델·토큰만 사용할 때는 ratatui 기능을 생략할 수 있고, 로컬 체크아웃은 rust/를 path 의존성으로 연결합니다.

@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](language-syntax.en.md)
 
-TVR-15·16·30·31·32의 미배포 기능이다. Python·TypeScript/JavaScript·C·C++·Java는 각 언어에서 직접 분석하고 그린다. 다른 Tuivory 구현을 FFI/JNI·서브프로세스·공유 엔진으로 호출하지 않는다. 공개 0.11.1에는 포함되지 않는다.
+TVR-15·16·30·31·32의 기능이다. Python·TypeScript/JavaScript·C·C++·Java는 각 언어에서 직접 분석하고 그린다. 다른 Tuivory 구현을 FFI/JNI·서브프로세스·공유 엔진으로 호출하지 않는다. 0.12.0에서 제공합니다.
 
 | 기능 | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |

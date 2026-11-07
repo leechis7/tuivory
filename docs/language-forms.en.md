@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-forms.md) · **English**
 
-This unreleased TVR-15/16/30/31/32 milestone provides independent `Form` and `Control` models in all five languages: text, textarea, password, checkbox, radio, select, and button. No other Tuivory language engine or business runtime is required. These changes are absent from public 0.11.1.
+This TVR-15/16/30/31/32 milestone provides independent `Form` and `Control` models in all five languages: text, textarea, password, checkbox, radio, select, and button. No other Tuivory language engine or business runtime is required. Available in 0.12.0.
 
 ## API
 

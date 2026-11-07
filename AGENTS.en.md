@@ -2,6 +2,7 @@
 
 [한국어 (default)](AGENTS.md) · **English**
 
+- Apply feature additions, improvements, and fixes across all supported languages in the same change. Where a component is absent, determine how to provide the shared behavior and document what was implemented and verified for each language.
 - Keep the repository root language-neutral. Go source, go.mod, and go.sum belong in go/; shared themes, tokens, and specifications in design/. Keep Rust source, Cargo.toml, and Cargo.lock in rust/. Keep Python, JavaScript/TypeScript, C, C++, Java, and Shell implementations in their language directories.
 - Tuivory is independent of LazyOra. Track its work in Jira project TVR. Do not create Tuivory tasks in LORA or continue reusing LORA-69.
 - Check related Tuivory work before starting. If there is no issue, ask the user before creating one. If the project does not exist, do not substitute a LORA issue while waiting for project creation.
@@ -13,6 +14,7 @@
 - Keep only unified language executables in `bin/`. Put temporary build/validation data and local release archives in ignored `.cache/`. Keep validation records in `docs/evidence/` and shared example guidance in `docs/examples.md` and `.en.md`.
 - Only the user decides the product major version.
 - Create and update documentation in Korean and English together. Keep Korean as default, provide `.en.md` counterparts, and link them reciprocally. Align usage, support scope, and validation results. UI images use their document's language.
+- Start the root README with an explanation of Tuivory. Keep version-by-version changes in the changelog and release notes.
 - For feature additions, changes, and bug fixes, update affected READMEs, usage/API guides, examples, UI images, and changelog in the same task. Update Korean and English together and confirm implementation/documentation/validation agreement before completing work.
 - Keep the playground database-free and the style principles general. Do not pull LazyOra/Oracle internals into the shared core. Connect cross-project application examples through source links.
 

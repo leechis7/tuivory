@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-workspace.md) · **English**
 
-This is an unreleased follow-up for TVR-15, 16, 30, 31 and 32, adding tabs, panels, splits, breadcrumbs and status lines to all five independent Tree implementations. Only common behavior cases are shared. These additions are absent from published 0.11.1.
+This is a follow-up for TVR-15, 16, 30, 31 and 32, adding tabs, panels, splits, breadcrumbs and status lines to all five independent Tree implementations. Only common behavior cases are shared. Available in 0.12.0.
 
 ## API mapping
 

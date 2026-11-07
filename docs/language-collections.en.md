@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-collections.md) · **English**
 
-This unreleased TVR-15/16/30/31/32 milestone provides independent lists, search pickers and Unicode search keys in all five languages. It calls no other Tuivory engine or shared runtime and is absent from public 0.11.1.
+This TVR-15/16/30/31/32 milestone provides independent lists, search pickers and Unicode search keys in all five languages. It calls no other Tuivory engine or shared runtime. Available in 0.12.0.
 
 ## API
 

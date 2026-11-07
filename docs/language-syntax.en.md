@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-syntax.md) · **English**
 
-This is unreleased TVR-15/16/30/31/32 work. Python, TypeScript/JavaScript, C, C++ and Java analyze/render independently. They do not call another Tuivory implementation through FFI/JNI, subprocesses or shared engines. Published0.11.1 is unchanged.
+This is TVR-15/16/30/31/32 work. Python, TypeScript/JavaScript, C, C++ and Java analyze/render independently. They do not call another Tuivory implementation through FFI/JNI, subprocesses or shared engines. Available in 0.12.0.
 
 | Feature | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |

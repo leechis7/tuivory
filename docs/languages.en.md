@@ -2,7 +2,7 @@
 
 [한국어 (기본)](languages.md) · **English**
 
-**Unreleased work for TVR-15, 16, 30, 31 and 32. Not included in published 0.11.1.** Source stages integrate through dev; registry and product releases are separate publication stages. The epics remain in progress; this is not a completed port of the full Go/Rust catalog.
+Version 0.12.0 distributes the independent packages through [GitHub Release](release-0.12.0.en.md). The language epics remain open as the remaining differences are addressed.
 
 ## Independence and availability
 
@@ -45,7 +45,7 @@ Each specification states concrete APIs, ownership, host responsibilities and ve
 
 The common design covers the component areas above. API names, ownership, rendering adapters and terminal sessions follow each language. The independent packages return component events and draw to their own Canvas; Go tview views and Rust Ratatui widgets are specific to those implementations.
 
-The independent Grid offers on-demand `find`, per-cell edited state and in-memory view snapshots. The Go/Rust persistent search match layer and separate callback for edited row markers are outside this milestone. See the [Grid specification](language-grid.en.md) for the behavior available now.
+The independent Grid offers on-demand `find`, per-cell edited state and in-memory view snapshots. Two confirmed gaps in the five independent packages are persistent Grid search highlighting and the separate edited row marker callback. Go and Rust provide both. See the [Grid specification](language-grid.en.md) for the behavior available now.
 
 ## API use
 

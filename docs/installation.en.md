@@ -6,12 +6,12 @@
 
 Source example builds use the 0.9.1 TVR-27 [single executable per language and host architecture detection](examples.en.md).
 
-Current version: **0.11.1**. Go 1.24+, Rust core 1.85+, Rust UI/examples 1.88+.
+Current version: **0.12.0**. Go 1.24+, Rust core 1.85+, Rust UI/examples 1.88+.
 
 ## Go
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.11.1
+go get github.com/leechis7/tuivory/go@v0.12.0
 ```
 
 ```go
@@ -28,7 +28,7 @@ Use your host-created tview button. The Go module lives under go/, not the repos
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.1", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.0", features = ["ratatui"] }
 ```
 
 Rust is distributed through Git tags, not crates.io. Omit ratatui for models/tokens only; a local checkout can use a path dependency to rust/.

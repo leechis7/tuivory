@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-menu.md) · **English**
 
-This is unreleased work for TVR-15/16/30/31/32. Python, TS/JS, C, C++ and Java implement menus independently, without another Tuivory implementation, FFI/JNI or a subprocess engine. It is absent from published 0.11.1.
+This is work for TVR-15/16/30/31/32. Python, TS/JS, C, C++ and Java implement menus independently, without another Tuivory implementation, FFI/JNI or a subprocess engine. Available in 0.12.0.
 
 ## API and ownership
 

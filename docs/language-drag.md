@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](language-drag.en.md)
 
-Python·TypeScript/JavaScript·C·C++·Java가 각각 트리·탭 이동 요청과 드래그 미리보기를 구현한다. 다른 언어의 Tuivory 엔진을 호출하지 않는다. TVR-15·16·30·31·32의 미배포 기능이며 공개 0.11.1에는 포함되지 않는다.
+Python·TypeScript/JavaScript·C·C++·Java가 각각 트리·탭 이동 요청과 드래그 미리보기를 구현한다. 다른 언어의 Tuivory 엔진을 호출하지 않는다. TVR-15·16·30·31·32의 기능이며 0.12.0에서 제공합니다.
 
 | 용도 | Python | TS/JS·Java | C++ | C |
 | --- | --- | --- | --- | --- |

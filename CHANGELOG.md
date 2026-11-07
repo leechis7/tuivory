@@ -2,7 +2,9 @@
 
 **한국어 (기본)** · [English](CHANGELOG.en.md)
 
-## 미배포
+## 0.12.0
+
+- TVR-7은 Go·Rust·Python·TypeScript/JavaScript·C·C++·Java의 대화상자 버튼 행을 가운데 정렬합니다. Rust에 재사용 가능한 Dialog 모델과 Ratatui 위젯을 추가합니다.
 
 - TVR-15/16/30/31/32: 독립 그리드에 포인터 캡처를 통한 범위 선택, Shift+방향키, 열 너비·순서 변경과 편집기 문자 단위 선택을 추가합니다. 통합 예제에서 공통 조작을 확인할 수 있습니다.
 

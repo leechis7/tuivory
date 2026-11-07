@@ -7562,6 +7562,7 @@ TuiResult tui_dialog_layout(const TuiDialog *d, int width, int height,
   l->indices = calloc(d->count + 1, sizeof *l->indices);
   TuiResult result = TUI_OK;
   int x = 0, y = 0, focus_row = 0;
+  size_t row_start = 0;
   if (!positions || !l->buttons || !l->indices) {
     result = TUI_NOMEM;
     goto done;
@@ -7570,6 +7571,10 @@ TuiResult tui_dialog_layout(const TuiDialog *d, int width, int height,
     const TuiDialogButton *b = d->buttons + n;
     int w = min(width, max(1, tui_cells(*b->label ? b->label : b->id) + 4));
     if (x && x + 1 + w > width) {
+      int offset = (width - x) / 2;
+      for (size_t i = row_start; i < n; i++)
+        positions[i].x += offset;
+      row_start = n;
       x = 0;
       y++;
     }
@@ -7580,6 +7585,8 @@ TuiResult tui_dialog_layout(const TuiDialog *d, int width, int height,
       focus_row = y;
     x += w;
   }
+  for (size_t i = row_start; i < d->count; i++)
+    positions[i].x += (width - x) / 2;
   int total_rows = d->count ? y + 1 : 0, visible = min(height, total_rows),
       start = max(0, focus_row + 1 - visible), available = height - visible,
       gap = *d->message && visible && available >= 2 ? 1 : 0;

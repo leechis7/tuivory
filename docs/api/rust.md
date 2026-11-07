@@ -1,4 +1,4 @@
-# Rust API — source (0.11.1)
+# Rust API — source (0.12.0)
 
 **한국어 (기본)** · [English](rust.en.md)
 
@@ -918,6 +918,159 @@ pub fn select(
 pub fn layout(&self, width: usize, height: usize) -> Vec<ComponentLine>;
 ```
 
+
+
+### tuivory::dialog::Dialog
+
+```rust
+pub struct Dialog {
+
+    // Private fields omitted.
+}
+```
+
+
+
+#### tuivory::dialog::Dialog::new
+
+```rust
+pub fn new(
+        title: impl Into<String>,
+        message: impl Into<String>,
+        buttons: Vec<DialogButton>,
+        cancel: &str,
+    ) -> Result<Self, Error>;
+```
+
+
+
+#### tuivory::dialog::Dialog::title
+
+```rust
+pub fn title(&self) -> &str;
+```
+
+
+
+#### tuivory::dialog::Dialog::focused
+
+```rust
+pub fn focused(&self) -> &str;
+```
+
+
+
+#### tuivory::dialog::Dialog::set_text
+
+```rust
+pub fn set_text(&mut self, title: impl Into<String>, message: impl Into<String>);
+```
+
+
+
+#### tuivory::dialog::Dialog::set_buttons
+
+```rust
+pub fn set_buttons(&mut self, buttons: Vec<DialogButton>, cancel: &str) -> Result<(), Error>;
+```
+
+
+
+#### tuivory::dialog::Dialog::focus
+
+```rust
+pub fn focus(&mut self, id: &str) -> bool;
+```
+
+
+
+#### tuivory::dialog::Dialog::handle
+
+```rust
+pub fn handle(&mut self, action: &str) -> Option<DialogEvent>;
+```
+
+
+
+#### tuivory::dialog::Dialog::click
+
+```rust
+pub fn click(&mut self, layout: &DialogLayout, x: usize, y: usize) -> Option<DialogEvent>;
+```
+
+Route a click against the button rectangles returned by the last draw.
+
+#### tuivory::dialog::Dialog::layout
+
+```rust
+pub fn layout(&self, area: CellRect) -> DialogLayout;
+```
+
+Lay out body and button cells inside the provided content area.
+
+### tuivory::dialog::DialogButton
+
+```rust
+pub struct DialogButton {
+    pub id: String,
+    pub label: String,
+    pub disabled: bool,
+}
+```
+
+
+
+
+### tuivory::dialog::DialogButtonCell
+
+```rust
+pub struct DialogButtonCell {
+    pub id: String,
+    pub rect: CellRect,
+    pub text: String,
+    pub disabled: bool,
+    pub focused: bool,
+}
+```
+
+
+
+
+### tuivory::dialog::DialogEvent
+
+```rust
+pub enum DialogEvent {
+    Activate(String),
+    Cancel(String),
+    Focus(String),
+}
+```
+
+
+
+
+### tuivory::dialog::DialogLayout
+
+```rust
+pub struct DialogLayout {
+    pub body: Vec<String>,
+    pub buttons: Vec<DialogButtonCell>,
+    pub hidden_buttons: usize,
+    pub body_truncated: bool,
+}
+```
+
+
+
+
+### tuivory::dialog::popup_button_rects
+
+```rust
+pub fn popup_button_rects(width: usize, widths: impl IntoIterator<Item = usize>) -> Vec<CellRect>;
+```
+
+Wrap button widths with a one-cell gap and center each row in the content width.
+Rectangles are local to the content area and use contiguous row indices.
 
 
 ### tuivory::drag::DragAction
@@ -3207,6 +3360,27 @@ pub struct DataStateWidget<'a> {
 
 
 
+
+### tuivory::ratatui::DialogWidget
+
+```rust
+pub struct DialogWidget<'a> {
+    pub dialog: &'a Dialog,
+    pub styles: &'a Styles,
+    pub focused: bool,
+    pub ascii: bool,
+}
+```
+
+Draw a confirmation panel using the dialog's button rectangles.
+
+#### tuivory::ratatui::DialogWidget::draw
+
+```rust
+pub fn draw(self, area: Rect, buffer: &mut Buffer) -> DialogLayout;
+```
+
+Draw and return absolute hit rectangles for this frame.
 
 ### tuivory::ratatui::FormWidget
 

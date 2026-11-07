@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-documents.md) · **English**
 
-This is unreleased TVR-15/16/30/31/32 work. Each TextDocument uses its own language's Text buffer without calling another Tuivory implementation. It is not in published0.11.1. Use Text for simple input and TextDocument for wrapping, line numbers, scrolling and styled source ranges.
+This is TVR-15/16/30/31/32 work. Each TextDocument uses its own language's Text buffer without calling another Tuivory implementation. Use Text for simple input and TextDocument for wrapping, line numbers, scrolling and styled source ranges. Available in 0.12.0.
 
 | Feature | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |

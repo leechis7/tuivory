@@ -2,7 +2,9 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
-## Unreleased
+## 0.12.0
+
+- TVR-7 centers every wrapped dialog button row in Go, Rust, Python, TypeScript/JavaScript, C, C++, and Java. Rust adds a reusable Dialog model and Ratatui widget.
 
 - TVR-15/16/30/31/32: Independent grids support captured pointer range selection, Shift+Arrow, column resize and reorder, and whole-grapheme selection in the editor. The integrated examples exercise the shared interaction rules.
 

@@ -177,3 +177,62 @@ func TestModalKeyboardMouseAndInteroperability(t *testing.T) {
 		t.Fatal("clear/add callback", got)
 	}
 }
+
+func TestModalCentersPaintedButtonRows(t *testing.T) {
+	for _, labels := range [][]string{
+		{"확인", "다시 연결한 다음 계속", "설정 열기", "취소"},
+		{"OK", "Reconnect and continue", "Open settings", "Cancel"},
+	} {
+		for count := 1; count <= len(labels); count++ {
+			for _, width := range []int{40, 120} {
+				t.Run(fmt.Sprintf("%s/%d/%d", labels[0], count, width), func(t *testing.T) {
+					modal := ui.NewModal().SetText("Choose").AddButtons(labels[:count]).SetFocus(count - 1)
+					screen := ui.NewSimulationScreen("UTF-8")
+					if err := screen.Init(); err != nil {
+						t.Fatal(err)
+					}
+					defer screen.Fini()
+					screen.SetSize(width, 16)
+					app := ui.NewApplication().SetScreen(screen).SetRoot(modal, true).SetFocus(modal)
+					var form *ui.WidgetForm
+					modal.Focus(func(p ui.Primitive) { form = p.(*ui.WidgetForm) })
+					got := -1
+					modal.SetDoneFunc(func(index int, _ string) { got = index })
+					app.ForceDraw()
+					cells, screenWidth, _ := screen.GetContents()
+					left, _, innerWidth, _ := modal.GetInnerRect()
+					left++
+					innerWidth -= 2
+					rows := map[int][2]int{}
+					for i := 0; i < count; i++ {
+						x, y, w, h := form.GetButton(i).GetRect()
+						if x < left || x+w > left+innerWidth || h != 1 {
+							t.Fatalf("button %d outside content: %d,%d %dx%d", i, x, y, w, h)
+						}
+						if _, ok := rows[y]; !ok {
+							rows[y] = [2]int{x, x + w}
+						} else {
+							rows[y] = [2]int{rows[y][0], x + w}
+						}
+						var text strings.Builder
+						for column := x; column < x+w; column++ {
+							text.WriteString(string(cells[y*screenWidth+column].Runes))
+						}
+						if !strings.Contains(strings.ReplaceAll(text.String(), " ", ""), strings.ReplaceAll(labels[i], " ", "")) {
+							t.Fatalf("label %q missing in painted button: %q", labels[i], text.String())
+						}
+						modal.MouseHandler()(ui.MouseLeftClick, ui.NewEventMouse(x, y, 0, 0), func(p ui.Primitive) { app.SetFocus(p) })
+						if got != i {
+							t.Fatalf("hit for button %d: %d", i, got)
+						}
+					}
+					for _, row := range rows {
+						if row[0]-left != (innerWidth-(row[1]-row[0]))/2 {
+							t.Fatalf("row %v not centered in [%d,%d)", row, left, left+innerWidth)
+						}
+					}
+				})
+			}
+		}
+	}
+}

@@ -7,8 +7,10 @@ use std::{
     time::Duration,
 };
 use tuivory::collections::{ListItem, SearchPicker};
+use tuivory::dialog::{Dialog, DialogButton, DialogEvent, DialogLayout};
 use tuivory::feedback::{DataState, Notice, NoticeAction, NoticeEvent, NoticeQueue, Progress};
 use tuivory::grid::{Grid, GridColumn, GridRecord, GridSource};
+use tuivory::ratatui::DialogWidget;
 use tuivory::ui::terminal::{
     cursor::Show,
     event::{
@@ -223,7 +225,15 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--density" => density = args.next().ok_or("missing density")?.parse()?,
             "--mode" => {
                 mode = args.next().ok_or("missing mode")?;
-                if !["forms", "collections", "grid", "feedback", "layout"].contains(&mode.as_str())
+                if ![
+                    "forms",
+                    "collections",
+                    "grid",
+                    "feedback",
+                    "layout",
+                    "dialog",
+                ]
+                .contains(&mode.as_str())
                 {
                     return Err("unknown mode".into());
                 }
@@ -357,6 +367,46 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
         "Tab move / Enter confirm / Esc cancel / Ctrl+Q quit",
     );
     let mut body = Rect::default();
+    let mut dialog = Dialog::new(
+        text(en, "다시 연결", "Reconnect"),
+        text(
+            en,
+            "변경 사항을 처리하세요.",
+            "Choose what to do with your changes.",
+        ),
+        [
+            ("commit", "커밋 후 접속", "Commit and connect"),
+            ("rollback", "롤백 후 접속", "Roll back and connect"),
+            ("cancel", "취소", "Cancel"),
+        ]
+        .into_iter()
+        .map(|(id, ko, english)| DialogButton {
+            id: id.into(),
+            label: text(en, ko, english),
+            disabled: false,
+        })
+        .collect(),
+        "cancel",
+    )?;
+    let mut dialog_layout = DialogLayout::default();
+    let dialog_event = |event: Option<DialogEvent>| match event {
+        Some(DialogEvent::Activate(id)) => FormEvent {
+            kind: "activate".into(),
+            id,
+            ..Default::default()
+        },
+        Some(DialogEvent::Cancel(id)) => FormEvent {
+            kind: "cancel".into(),
+            id,
+            ..Default::default()
+        },
+        Some(DialogEvent::Focus(id)) => FormEvent {
+            kind: "focus".into(),
+            id,
+            ..Default::default()
+        },
+        None => FormEvent::default(),
+    };
     let draw = |f: &mut tuivory::ui::Frame<'_>,
                 form: &Form,
                 picker: &SearchPicker,
@@ -367,7 +417,9 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                 progress: &Progress,
                 now: u64,
                 status: &str,
-                body: &mut Rect| {
+                body: &mut Rect,
+                dialog: &Dialog,
+                dialog_layout: &mut DialogLayout| {
         let r = f.area();
         f.render_widget(Paragraph::new("").style(styles.role("surface").unwrap()), r);
         f.render_widget(
@@ -381,8 +433,26 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
         let panel = styles.panel(&title, true, 1, ascii).unwrap();
         let area = Rect::new(r.x, r.y + 1, r.width, r.height.saturating_sub(2));
         *body = panel.inner(area);
-        f.render_widget(panel, area);
-        if mode == "layout" {
+        if mode != "dialog" {
+            f.render_widget(panel, area);
+        }
+        if mode == "dialog" {
+            let width = area.width.min(56);
+            let height = area.height.min(12);
+            let card = Rect::new(
+                area.x + (area.width - width) / 2,
+                area.y + (area.height - height) / 2,
+                width,
+                height,
+            );
+            *dialog_layout = DialogWidget {
+                dialog,
+                styles,
+                focused: true,
+                ascii,
+            }
+            .draw(card, f.buffer_mut());
+        } else if mode == "layout" {
             let rows = layout_demo.rows(body.width.into(), body.height.into(), en);
             f.render_widget(
                 RowsWidget {
@@ -458,6 +528,8 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                 now,
                 &status,
                 &mut body,
+                &dialog,
+                &mut dialog_layout,
             )
         })?;
         snapshot::write(std::path::Path::new(&path), terminal.backend().buffer())?;
@@ -489,6 +561,8 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                 now,
                 &status,
                 &mut body,
+                &dialog,
+                &mut dialog_layout,
             )
         })?;
         if !event::poll(Duration::from_millis(100))? {
@@ -517,7 +591,17 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                     styles = Styles::new(theme, colors)?;
                     continue;
                 }
-                if mode == "layout" {
+                if mode == "dialog" {
+                    let action = match k.code {
+                        KeyCode::Tab if k.modifiers.contains(KeyModifiers::SHIFT) => "previous",
+                        KeyCode::BackTab | KeyCode::Left | KeyCode::Up => "previous",
+                        KeyCode::Tab | KeyCode::Right | KeyCode::Down => "next",
+                        KeyCode::Enter => "activate",
+                        KeyCode::Esc => "cancel",
+                        _ => "",
+                    };
+                    dialog_event(dialog.handle(action))
+                } else if mode == "layout" {
                     layout_demo.key(k.code)
                 } else if mode == "feedback" {
                     let event = if k.code == KeyCode::Char('c') {
@@ -620,6 +704,11 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                     id: format!("{} / {}", e.row_id, e.column_id),
                     ..Default::default()
                 }
+            }
+            Event::Mouse(m)
+                if mode == "dialog" && m.kind == MouseEventKind::Down(MouseButton::Left) =>
+            {
+                dialog_event(dialog.click(&dialog_layout, m.column.into(), m.row.into()))
             }
             Event::Mouse(m)
                 if mode == "grid"
@@ -749,7 +838,21 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             _ => FormEvent::default(),
         };
         if !event.kind.is_empty() {
-            status = format!("{}: {}", event.kind, event.id);
+            status = if mode == "dialog" {
+                let action = match event.kind.as_str() {
+                    "activate" => text(en, "선택 요청", "Selection requested"),
+                    "cancel" => text(en, "취소 요청", "Cancel requested"),
+                    _ => text(en, "버튼 이동", "Button focused"),
+                };
+                let label = match event.id.as_str() {
+                    "commit" => text(en, "커밋 후 접속", "Commit and connect"),
+                    "rollback" => text(en, "롤백 후 접속", "Roll back and connect"),
+                    _ => text(en, "취소", "Cancel"),
+                };
+                format!("{action} · {label}")
+            } else {
+                format!("{}: {}", event.kind, event.id)
+            };
             if event.kind == "invalid" {
                 for id in event.missing {
                     form.set_feedback(

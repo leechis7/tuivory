@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](language-terminal.en.md)
 
-Python·TypeScript/JavaScript·C·C++·Java는 공통 입력 이벤트와 선택적 터미널 세션을 각 언어로 구현한다. 기존 공개 import/include 하나로 사용한다. 모델·그리기에는 세션을 열 필요가 없다. TVR-15·16·30·31·32의 미배포 기능이며 공개 0.11.1에는 포함되지 않는다.
+Python·TypeScript/JavaScript·C·C++·Java는 공통 입력 이벤트와 선택적 터미널 세션을 각 언어로 구현한다. 기존 공개 import/include 하나로 사용한다. 모델·그리기에는 세션을 열 필요가 없다. TVR-15·16·30·31·32의 기능이며 0.12.0에서 제공합니다.
 
 | 용도 | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |

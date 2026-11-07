@@ -4496,6 +4496,8 @@ export class Dialog {
       if (b.id === this.candidate) focusRow = y;
       x += w;
     }
+    const rowWidths: number[] = [];
+    for (const { rect } of positions) rowWidths[rect.y] = rect.x + rect.width;
     const totalRows = positions.length ? y + 1 : 0,
       visible = Math.min(height, totalRows),
       start = Math.max(0, focusRow + 1 - visible),
@@ -4514,7 +4516,12 @@ export class Dialog {
             : clip(label, r.width, true);
       buttons.push({
         id: b.id,
-        rect: rect(r.x, height - visible + r.y - start, r.width, 1),
+        rect: rect(
+          r.x + Math.floor((width - rowWidths[r.y]) / 2),
+          height - visible + r.y - start,
+          r.width,
+          1,
+        ),
         text,
         disabled: b.disabled,
         focused: b.id === this.candidate,

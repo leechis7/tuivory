@@ -29,6 +29,10 @@ jobs:
           rustup target add x86_64-unknown-linux-musl
       - name: Package one executable per language on the runner
         run: python3 tools/package_release.py
+      - name: Package static C and C++ SDKs on the runner
+        run: |
+          make build-c build-cpp
+          python3 tools/package_languages.py --release --native-only
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-linux-x86_64

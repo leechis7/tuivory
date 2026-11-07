@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-surfaces.md) · **English**
 
-This unreleased TVR-15/16/30/31/32 milestone provides borderless opaque surfaces and text styles bound to actual backgrounds through five independent implementations. Published 0.11.1 stays unchanged. It follows the [shared design rules](../design/surfaces.en.md) without calling another Tuivory language.
+This TVR-15/16/30/31/32 milestone provides borderless opaque surfaces and text styles bound to actual backgrounds through five independent implementations. It follows the [shared design rules](../design/surfaces.en.md) without calling another Tuivory language. Available in 0.12.0.
 
 | Feature | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |
