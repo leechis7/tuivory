@@ -22,3 +22,5 @@ import "./surfaces.mjs";
 import "./popups.mjs";
 
 import "./dialogs.mjs";
+
+await import("./documents.mjs");

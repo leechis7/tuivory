@@ -138,3 +138,5 @@ Build C/C++/Java first as shown above. Reference capture also needs a CJK-capabl
 [Independent Surface and background API](language-surfaces.en.md)
 
 [Independent popup shadows and dialogs](language-popups.en.md)
+
+[Independent document viewing/editing API](language-documents.en.md)

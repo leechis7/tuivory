@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "offsets": "Original grapheme indices; byte spans require exact UTF-8 grapheme boundaries.",
+  "layout": [
+    {"name":"wrapped-cjk-crlf","source":"한글 é\r\nsecond line","read_only":true,"line_numbers":true,"wrap":true,"width":8,"height":6,"cursor":0,"rows":["1 한글 é","2 second","2  line"]},
+    {"name":"full-width-end-cursor","source":"abcd","read_only":false,"line_numbers":false,"wrap":true,"width":4,"height":4,"cursor":4,"rows":["abcd"," "],"screen_cursor":[0,1]},
+    {"name":"wide-leading-clip","source":"界abcd","read_only":true,"line_numbers":false,"wrap":false,"scroll_x":1,"width":4,"height":2,"cursor":0,"rows":[" abc"]},
+    {"name":"literal-markup","source":"[error]x[/]","read_only":true,"line_numbers":false,"wrap":false,"width":16,"height":2,"cursor":0,"rows":["[error]x[/]"]},
+    {"name":"empty-numbered","source":"","read_only":false,"line_numbers":true,"wrap":true,"width":8,"height":2,"cursor":0,"rows":["1  "],"screen_cursor":[2,0]},
+    {"name":"secret-breaks-masked","source":"한\r\né","secret":true,"read_only":true,"line_numbers":false,"wrap":true,"width":8,"height":2,"cursor":0,"rows":["***"]}
+  ],
+  "markup": [
+    {"source":"[warning]e[/]́ [[x [error]界[/]","plain":"é [x 界","spans":[{"start":0,"end":1,"role":"warning"},{"start":5,"end":6,"role":"error"}]},
+    {"source":"[info]A[error]B[/]C[/]","plain":"ABC","spans":[{"start":0,"end":1,"role":"info"},{"start":1,"end":2,"role":"error"},{"start":2,"end":3,"role":"info"}]}
+  ],
+  "invalid_markup": ["[error]x","x[/]","[unknown]x[/]","[error"],
+  "byte_spans": {"source":"한é界","valid":{"start":3,"end":6,"role":"warning"},"expected":{"start":1,"end":2,"role":"warning"},"invalid_starts":[1,4,5,10]}
+}

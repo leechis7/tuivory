@@ -45,3 +45,5 @@ java -jar .cache/packages/java/tuivory-0.11.1.jar --demo tree --lang ko
 [독립 언어 Surface·실제 바탕 API](../docs/language-surfaces.md)
 
 [독립 언어 팝업 그림자와 대화상자](../docs/language-popups.md)
+
+[독립 언어 문서 보기·편집 API](../docs/language-documents.md)

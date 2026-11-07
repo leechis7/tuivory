@@ -855,4 +855,5 @@ inline std::string fold(const std::string &text) {
 #include "tuivory_surfaces.hpp"
 #include "tuivory_popups.hpp"
 #include "tuivory_dialogs.hpp"
+#include "tuivory_documents.hpp"
 // clang-format on

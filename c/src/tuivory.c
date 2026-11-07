@@ -7680,3 +7680,836 @@ done:
   tui_dialog_layout_free(l);
   return result;
 }
+
+static const char *document_roles[] = {"body",
+                                       "hint",
+                                       "info",
+                                       "success",
+                                       "warning",
+                                       "error",
+                                       "header",
+                                       "field",
+                                       "selection",
+                                       "button",
+                                       "disabled",
+                                       "edited",
+                                       "syntax.keyword",
+                                       "syntax.function",
+                                       "syntax.type",
+                                       "syntax.string",
+                                       "syntax.number",
+                                       "syntax.comment",
+                                       "syntax.parameter"};
+static const char *document_role(const char *role) {
+  if (role)
+    for (size_t i = 0; i < sizeof document_roles / sizeof *document_roles; i++)
+      if (!strcmp(role, document_roles[i]))
+        return document_roles[i];
+  return NULL;
+}
+struct TuiDocumentLayout {
+  TuiDocumentLine *rows;
+  size_t count;
+};
+struct TuiDocument {
+  TuiText *buffer;
+  TuiDocumentOptions options;
+  TuiDocumentSpan *styles;
+  size_t style_count;
+  TuiDocumentRange *matches;
+  size_t match_count;
+  char *syntax_source, *search_source, *last_source;
+  size_t last_cursor, last_anchor;
+  int height, reveal;
+};
+void tui_document_spans_free(TuiDocumentSpan *s, size_t count) {
+  if (s) {
+    for (size_t i = 0; i < count; i++)
+      free((void *)s[i].role);
+    free(s);
+  }
+}
+void tui_document_free(TuiDocument *d) {
+  if (d) {
+    tui_text_free(d->buffer);
+    tui_document_spans_free(d->styles, d->style_count);
+    free(d->matches);
+    free(d->syntax_source);
+    free(d->search_source);
+    free(d->last_source);
+    free(d);
+  }
+}
+TuiDocument *tui_document_new(const char *text, int read_only) {
+  if (!dialog_text(text, 1000000))
+    return NULL;
+  TuiDocument *d = calloc(1, sizeof *d);
+  if (!d)
+    return NULL;
+  d->buffer = tui_text_new(text);
+  d->syntax_source = copy(text);
+  d->search_source = copy(text);
+  if (!d->buffer || !d->syntax_source || !d->search_source) {
+    tui_document_free(d);
+    return NULL;
+  }
+  d->buffer->state.read_only = !!read_only;
+  d->options.line_numbers = !read_only;
+  d->reveal = !read_only;
+  return d;
+}
+TuiText *tui_document_buffer(TuiDocument *d) { return d ? d->buffer : NULL; }
+TuiDocumentOptions tui_document_options(const TuiDocument *d) {
+  return d ? d->options : (TuiDocumentOptions){0};
+}
+TuiResult tui_document_configure(TuiDocument *d, TuiDocumentOptions o) {
+  if (!d || o.scroll_x < 0 || o.scroll_y < 0 || o.scroll_x > 1000000 ||
+      o.scroll_y > 1000000)
+    return TUI_INVALID;
+  o.wrap = !!o.wrap;
+  o.line_numbers = !!o.line_numbers;
+  d->options = o;
+  return TUI_OK;
+}
+TuiResult tui_document_set_text(TuiDocument *d, const char *text) {
+  if (!d || !dialog_text(text, 1000000))
+    return TUI_INVALID;
+  TuiText *t = tui_text_new(text);
+  char *s = copy(text), *q = copy(text);
+  if (!t || !s || !q) {
+    tui_text_free(t);
+    free(s);
+    free(q);
+    return TUI_NOMEM;
+  }
+  t->state = d->buffer->state;
+  t->secret = d->buffer->secret;
+  tui_text_free(d->buffer);
+  d->buffer = t;
+  tui_document_spans_free(d->styles, d->style_count);
+  d->styles = NULL;
+  d->style_count = 0;
+  free(d->matches);
+  d->matches = NULL;
+  d->match_count = 0;
+  free(d->syntax_source);
+  free(d->search_source);
+  free(d->last_source);
+  d->last_source = NULL;
+  d->syntax_source = s;
+  d->search_source = q;
+  d->options.scroll_x = d->options.scroll_y = 0;
+  d->reveal = !t->state.read_only;
+  return TUI_OK;
+}
+TuiResult tui_document_set_syntax(TuiDocument *d, const TuiDocumentSpan *spans,
+                                  size_t count) {
+  if (!d || (!spans && count) || count > 1000000)
+    return TUI_INVALID;
+  size_t *offsets = NULL, n = 0;
+  int valid = raw_offsets(d->buffer->value, &offsets, &n);
+  free(offsets);
+  if (valid != 1)
+    return valid < 0 ? TUI_NOMEM : TUI_INVALID;
+  TuiDocumentSpan *items = calloc(count + 1, sizeof *items);
+  char *source = copy(d->buffer->value);
+  if (!items || !source) {
+    free(items);
+    free(source);
+    return TUI_NOMEM;
+  }
+  TuiResult result = TUI_OK;
+  for (size_t i = 0; i < count; i++) {
+    if (spans[i].end < spans[i].start || spans[i].end > n ||
+        !document_role(spans[i].role)) {
+      result = TUI_INVALID;
+      break;
+    }
+    items[i] = spans[i];
+    items[i].role = copy(spans[i].role);
+    if (!items[i].role) {
+      result = TUI_NOMEM;
+      break;
+    }
+  }
+  if (result != TUI_OK) {
+    tui_document_spans_free(items, count);
+    free(source);
+    return result;
+  }
+  tui_document_spans_free(d->styles, d->style_count);
+  free(d->syntax_source);
+  d->styles = items;
+  d->style_count = count;
+  d->syntax_source = source;
+  return TUI_OK;
+}
+TuiResult tui_document_set_search_matches(TuiDocument *d,
+                                          const TuiDocumentRange *ranges,
+                                          size_t count) {
+  if (!d || (!ranges && count) || count > 1000000)
+    return TUI_INVALID;
+  size_t *offsets = NULL, n = 0;
+  int valid = raw_offsets(d->buffer->value, &offsets, &n);
+  free(offsets);
+  if (valid != 1)
+    return valid < 0 ? TUI_NOMEM : TUI_INVALID;
+  for (size_t i = 0; i < count; i++)
+    if (ranges[i].end < ranges[i].start || ranges[i].end > n)
+      return TUI_INVALID;
+  TuiDocumentRange *items = calloc(count + 1, sizeof *items);
+  char *source = copy(d->buffer->value);
+  if (!items || !source) {
+    free(items);
+    free(source);
+    return TUI_NOMEM;
+  }
+  if (count)
+    memcpy(items, ranges, count * sizeof *items);
+  free(d->matches);
+  free(d->search_source);
+  d->matches = items;
+  d->match_count = count;
+  d->search_source = source;
+  return TUI_OK;
+}
+static int document_byte_index(const size_t *offsets, size_t n, size_t byte,
+                               size_t *out) {
+  size_t lo = 0, hi = n + 1;
+  while (lo < hi) {
+    size_t mid = lo + (hi - lo) / 2;
+    if (offsets[mid] < byte)
+      lo = mid + 1;
+    else
+      hi = mid;
+  }
+  if (lo <= n && offsets[lo] == byte) {
+    *out = lo;
+    return 1;
+  }
+  return 0;
+}
+TuiResult tui_document_set_byte_syntax(TuiDocument *d,
+                                       const TuiDocumentSpan *spans,
+                                       size_t count) {
+  if (!d || (!spans && count) || count > 1000000)
+    return TUI_INVALID;
+  size_t *offsets = NULL, n = 0;
+  int valid = raw_offsets(d->buffer->value, &offsets, &n);
+  if (valid != 1)
+    return valid < 0 ? TUI_NOMEM : TUI_INVALID;
+  TuiDocumentSpan *items = calloc(count + 1, sizeof *items);
+  if (!items) {
+    free(offsets);
+    return TUI_NOMEM;
+  }
+  TuiResult result = TUI_OK;
+  for (size_t i = 0; i < count; i++) {
+    items[i].role = spans[i].role;
+    if (!document_byte_index(offsets, n, spans[i].start, &items[i].start) ||
+        !document_byte_index(offsets, n, spans[i].end, &items[i].end)) {
+      result = TUI_INVALID;
+      break;
+    }
+  }
+  if (result == TUI_OK)
+    result = tui_document_set_syntax(d, items, count);
+  free(items);
+  free(offsets);
+  return result;
+}
+TuiResult tui_parse_markup(const char *markup, char **source,
+                           TuiDocumentSpan **spans, size_t *count) {
+  if (!source || !spans || !count || !dialog_text(markup, 1000000))
+    return TUI_INVALID;
+  size_t n = strlen(markup), at = 0, used = 0, depth = 1, change_count = 1;
+  char *out = malloc(n + 1);
+  const char **stack = calloc(n + 2, sizeof *stack),
+             **roles = calloc(n + 2, sizeof *roles);
+  size_t *positions = calloc(n + 2, sizeof *positions);
+  if (!out || !stack || !roles || !positions) {
+    free(out);
+    free(stack);
+    free(roles);
+    free(positions);
+    return TUI_NOMEM;
+  }
+  stack[0] = roles[0] = "body";
+  TuiResult result = TUI_OK;
+  while (at < n) {
+    if (at + 1 < n && markup[at] == '[' && markup[at + 1] == '[') {
+      out[used++] = '[';
+      at += 2;
+      continue;
+    }
+    if (markup[at] == '[') {
+      const char *end = strchr(markup + at, ']');
+      if (!end) {
+        result = TUI_INVALID;
+        break;
+      }
+      size_t length = (size_t)(end - (markup + at + 1));
+      char tag[64];
+      if (length >= sizeof tag) {
+        result = TUI_INVALID;
+        break;
+      }
+      memcpy(tag, markup + at + 1, length);
+      tag[length] = 0;
+      if (!strcmp(tag, "/")) {
+        if (depth == 1) {
+          result = TUI_INVALID;
+          break;
+        }
+        depth--;
+      } else {
+        const char *role = document_role(tag);
+        if (!role) {
+          result = TUI_INVALID;
+          break;
+        }
+        stack[depth++] = role;
+      }
+      positions[change_count] = used;
+      roles[change_count++] = stack[depth - 1];
+      at = (size_t)(end - markup) + 1;
+    } else
+      out[used++] = markup[at++];
+  }
+  out[used] = 0;
+  if (depth != 1)
+    result = TUI_INVALID;
+  size_t *offsets = NULL, gcount = 0;
+  TuiDocumentSpan *items = NULL;
+  size_t span_count = 0;
+  if (result == TUI_OK) {
+    int valid = raw_offsets(out, &offsets, &gcount);
+    if (valid != 1)
+      result = valid < 0 ? TUI_NOMEM : TUI_INVALID;
+    else {
+      items = calloc(gcount + 1, sizeof *items);
+      if (!items)
+        result = TUI_NOMEM;
+      else {
+        size_t which = 0;
+        for (size_t i = 0; i < gcount; i++) {
+          while (which + 1 < change_count && positions[which + 1] <= offsets[i])
+            which++;
+          const char *role = roles[which];
+          if (strcmp(role, "body")) {
+            if (span_count && items[span_count - 1].end == i &&
+                !strcmp(items[span_count - 1].role, role))
+              items[span_count - 1].end++;
+            else {
+              items[span_count] = (TuiDocumentSpan){i, i + 1, copy(role)};
+              if (!items[span_count].role) {
+                result = TUI_NOMEM;
+                break;
+              }
+              span_count++;
+            }
+          }
+        }
+      }
+    }
+  }
+  free(stack);
+  free(roles);
+  free(positions);
+  free(offsets);
+  if (result == TUI_OK) {
+    *source = out;
+    *spans = items;
+    *count = span_count;
+  } else {
+    free(out);
+    tui_document_spans_free(items, span_count);
+  }
+  return result;
+}
+TuiResult tui_document_set_markup(TuiDocument *d, const char *markup) {
+  if (!d)
+    return TUI_INVALID;
+  char *source = NULL;
+  TuiDocumentSpan *spans = NULL;
+  size_t count = 0;
+  TuiResult result = tui_parse_markup(markup, &source, &spans, &count);
+  if (result != TUI_OK)
+    return result; /* Prepare all model state before changing the existing
+                      source. */
+  TuiDocument *next = tui_document_new(source, d->buffer->state.read_only);
+  if (!next)
+    result = TUI_NOMEM;
+  else {
+    next->buffer->state = d->buffer->state;
+    next->buffer->secret = d->buffer->secret;
+    next->options.wrap = d->options.wrap;
+    next->options.line_numbers = d->options.line_numbers;
+    result = tui_document_set_syntax(next, spans, count);
+    if (result == TUI_OK) {
+      TuiDocument old = *d;
+      *d = *next;
+      *next = old;
+    }
+    tui_document_free(next);
+  }
+  free(source);
+  tui_document_spans_free(spans, count);
+  return result;
+}
+void tui_document_reveal_cursor(TuiDocument *d) {
+  if (d)
+    d->reveal = 1;
+}
+TuiTextEvent tui_document_handle(TuiDocument *d, const char *action,
+                                 const char *text) {
+  if (!d || !action)
+    return text_event(NULL, "", TUI_INVALID);
+  TuiText *t = d->buffer;
+  if (t->state.disabled)
+    return text_event(t, "", TUI_OK);
+  int step = max(1, d->height);
+  if (!strcmp(action, "page_up"))
+    d->options.scroll_y = max(0, d->options.scroll_y - step);
+  else if (!strcmp(action, "page_down"))
+    d->options.scroll_y =
+        (int)min64(1000000, (long long)d->options.scroll_y + step);
+  else if (!strcmp(action, "scroll_up"))
+    d->options.scroll_y = max(0, d->options.scroll_y - 1);
+  else if (!strcmp(action, "scroll_down"))
+    d->options.scroll_y = min(1000000, d->options.scroll_y + 1);
+  else if (!strcmp(action, "scroll_left"))
+    d->options.scroll_x = max(0, d->options.scroll_x - 4);
+  else if (!strcmp(action, "scroll_right"))
+    d->options.scroll_x = min(1000000, d->options.scroll_x + 4);
+  else {
+    if ((!strcmp(action, "insert") || !strcmp(action, "paste") ||
+         !strcmp(action, "newline")) &&
+        tui_state_editable(t->state)) {
+      const char *raw = !strcmp(action, "newline") ? "\n" : text ? text : "";
+      if (!dialog_text(raw, 1000000))
+        return text_event(t, "", TUI_INVALID);
+      char *addition = text_clean(raw, t->multiline);
+      if (!addition)
+        return text_event(t, "", TUI_NOMEM);
+      size_t lo = 0, hi = 0;
+      TuiResult budget = tui_text_selection_bytes(t, &lo, &hi);
+      if (budget == TUI_OK &&
+          strlen(t->value) - (hi - lo) + strlen(addition) > 1000000)
+        budget = TUI_INVALID;
+      free(addition);
+      if (budget != TUI_OK)
+        return text_event(t, "", budget);
+    }
+    TuiTextEvent e = tui_text_handle(t, action, text ? text : "");
+    if (!strcmp(e.kind, "select") || !strcmp(e.kind, "change") ||
+        !strcmp(e.kind, "cut"))
+      d->reveal = 1;
+    return e;
+  }
+  d->reveal = 0;
+  return text_event(t, "scroll", TUI_OK);
+}
+static void document_line_clear(TuiDocumentLine *r) {
+  free((void *)r->prefix);
+  for (size_t i = 0; i < r->glyph_count; i++) {
+    free((void *)r->glyphs[i].text);
+    free((void *)r->glyphs[i].role);
+  }
+  free((void *)r->glyphs);
+  free((void *)r->hits);
+  memset(r, 0, sizeof *r);
+}
+void tui_document_layout_free(TuiDocumentLayout *l) {
+  if (l) {
+    for (size_t i = 0; i < l->count; i++)
+      document_line_clear(&l->rows[i]);
+    free(l->rows);
+    free(l);
+  }
+}
+size_t tui_document_line_count(const TuiDocumentLayout *l) {
+  return l ? l->count : 0;
+}
+const TuiDocumentLine *tui_document_line_at(const TuiDocumentLayout *l,
+                                            size_t i) {
+  return l && i < l->count ? &l->rows[i] : NULL;
+}
+typedef struct {
+  char *text;
+  int width, br;
+  const char *role;
+} DocumentPart;
+static void document_parts_free(DocumentPart *p, size_t n) {
+  if (p) {
+    for (size_t i = 0; i < n; i++)
+      free(p[i].text);
+    free(p);
+  }
+}
+static TuiResult document_add_row(TuiDocumentLayout *l, size_t *capacity,
+                                  int number, const char *prefix, int width,
+                                  int wrap, int scroll_x,
+                                  const DocumentPart *parts, size_t start,
+                                  size_t end, size_t logical_end,
+                                  const TuiText *t) {
+  if (l->count == *capacity) {
+    size_t cap = *capacity ? *capacity * 2 : 16;
+    TuiDocumentLine *rows = realloc(l->rows, cap * sizeof *rows);
+    if (!rows)
+      return TUI_NOMEM;
+    memset(rows + *capacity, 0, (cap - *capacity) * sizeof *rows);
+    l->rows = rows;
+    *capacity = cap;
+  }
+  TuiDocumentLine *r = &l->rows[l->count++];
+  r->number = number;
+  r->prefix = copy(prefix);
+  TuiDocumentGlyph *glyphs = calloc(end - start + 1, sizeof *glyphs);
+  TuiDocumentHit *hits = calloc(end - start + 2, sizeof *hits);
+  r->glyphs = glyphs;
+  r->hits = hits;
+  if (!r->prefix || !glyphs || !hits)
+    return TUI_NOMEM;
+  int pw = tui_cells(prefix), x = pw;
+  hits[r->hit_count++] = (TuiDocumentHit){pw, start};
+  for (size_t i = start; i < end; i++) {
+    int local = x - (wrap ? 0 : scroll_x), w = parts[i].width;
+    hits[r->hit_count++] = (TuiDocumentHit){local, i};
+    if (local >= pw && local + w <= width) {
+      TuiDocumentGlyph *g = &glyphs[r->glyph_count++];
+      *g = (TuiDocumentGlyph){local, copy(parts[i].text), i,
+                              w,     copy(parts[i].role), i == t->cursor};
+      if (!g->text || !g->role)
+        return TUI_NOMEM;
+    }
+    x += w;
+  }
+  int local = x - (wrap ? 0 : scroll_x);
+  hits[r->hit_count++] = (TuiDocumentHit){local, end};
+  if (end == t->cursor && local >= pw && local < width &&
+      (end == logical_end || t->cursor < logical_end)) {
+    TuiDocumentGlyph *g = &glyphs[r->glyph_count++];
+    *g = (TuiDocumentGlyph){
+        local, copy(" "), end, 1, copy(t->state.disabled ? "disabled" : "body"),
+        1};
+    if (!g->text || !g->role)
+      return TUI_NOMEM;
+  }
+  return TUI_OK;
+}
+TuiResult tui_document_layout(TuiDocument *d, int width, int height,
+                              TuiDocumentLayout **out) {
+  if (!d || !out || width < 0 || height < 0 || width > 1000000 ||
+      height > 1000000 || !dialog_text(d->buffer->value, 1000000))
+    return TUI_INVALID;
+  TuiDocumentLayout *l = calloc(1, sizeof *l);
+  if (!l)
+    return TUI_NOMEM;
+  d->height = height;
+  if (!width || !height) {
+    *out = l;
+    return TUI_OK;
+  }
+  TuiText *t = d->buffer;
+  size_t *offsets = NULL, n = 0;
+  int valid = raw_offsets(t->value, &offsets, &n);
+  if (valid != 1) {
+    tui_document_layout_free(l);
+    return valid < 0 ? TUI_NOMEM : TUI_INVALID;
+  }
+  t->cursor = t->cursor < n ? t->cursor : n;
+  t->anchor = t->anchor < n ? t->anchor : n;
+  DocumentPart *parts = calloc(n + 1, sizeof *parts);
+  char *last = copy(t->value);
+  if (!parts || !last) {
+    free(offsets);
+    free(parts);
+    free(last);
+    tui_document_layout_free(l);
+    return TUI_NOMEM;
+  }
+  TuiResult result = TUI_OK;
+  if (strcmp(t->value, d->syntax_source)) {
+    tui_document_spans_free(d->styles, d->style_count);
+    d->styles = NULL;
+    d->style_count = 0;
+    char *source = copy(t->value);
+    if (!source) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    free(d->syntax_source);
+    d->syntax_source = source;
+  }
+  if (strcmp(t->value, d->search_source)) {
+    free(d->matches);
+    d->matches = NULL;
+    d->match_count = 0;
+    char *source = copy(t->value);
+    if (!source) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    free(d->search_source);
+    d->search_source = source;
+  }
+  for (size_t i = 0; i < n; i++) {
+    size_t bytes = offsets[i + 1] - offsets[i];
+    char *g = malloc(bytes + 1);
+    if (!g) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    memcpy(g, t->value + offsets[i], bytes);
+    g[bytes] = 0;
+    if (t->secret) {
+      free(g);
+      g = copy("*");
+      if (!g) {
+        result = TUI_NOMEM;
+        goto done;
+      }
+    } else if (!strcmp(g, "\r") || !strcmp(g, "\n") || !strcmp(g, "\r\n"))
+      parts[i].br = 1;
+    else {
+      size_t p = 0;
+      unsigned cp;
+      int control = 0;
+      while (p < bytes) {
+        if (!decode((const unsigned char *)g, bytes, &p, &cp)) {
+          free(g);
+          result = TUI_INVALID;
+          goto done;
+        }
+        if (cp < 32 || (cp >= 127 && cp < 160))
+          control = 1;
+      }
+      if (control) {
+        free(g);
+        g = copy(" ");
+        if (!g) {
+          result = TUI_NOMEM;
+          goto done;
+        }
+      }
+    }
+    parts[i].text = g;
+    parts[i].width = tui_cells(g);
+    parts[i].role = "body";
+  }
+  if (!t->secret) {
+    for (size_t s = 0; s < d->style_count; s++)
+      for (size_t i = d->styles[s].start; i < d->styles[s].end && i < n; i++)
+        parts[i].role = d->styles[s].role;
+    for (size_t s = 0; s < d->match_count; s++)
+      for (size_t i = d->matches[s].start; i < d->matches[s].end && i < n; i++)
+        parts[i].role = "edited";
+  }
+  size_t lo = t->anchor < t->cursor ? t->anchor : t->cursor,
+         hi = t->anchor > t->cursor ? t->anchor : t->cursor;
+  for (size_t i = lo; i < hi; i++)
+    parts[i].role = "selection";
+  if (t->state.disabled)
+    for (size_t i = 0; i < n; i++)
+      parts[i].role = "disabled";
+  int reveal = d->reveal ||
+               ((!d->last_source || strcmp(d->last_source, t->value) ||
+                 d->last_cursor != t->cursor || d->last_anchor != t->anchor) &&
+                !t->state.read_only);
+  if (reveal && !d->options.wrap) {
+    size_t start = 0;
+    int number = 1;
+    for (;;) {
+      size_t end = start;
+      while (end < n && !parts[end].br)
+        end++;
+      if (start <= t->cursor && t->cursor <= end) {
+        char prefix[32];
+        snprintf(prefix, sizeof prefix, "%d ", number);
+        int pw = d->options.line_numbers ? tui_cells(prefix) : 0,
+            available = max(1, width - pw), col = 0, cw = 1;
+        for (size_t i = start; i < end; i++) {
+          if (i < t->cursor)
+            col += parts[i].width;
+          if (i == t->cursor)
+            cw = max(1, parts[i].width);
+        }
+        d->options.scroll_x = max(0, max(min(d->options.scroll_x, col),
+                                         col + min(cw, available) - available));
+        break;
+      }
+      if (end == n)
+        break;
+      start = end + 1;
+      number++;
+    }
+  }
+  int total = 0;
+  for (size_t i = 0; i < n; i++)
+    total += parts[i].width;
+  d->options.scroll_x = max(0, min(d->options.scroll_x, total));
+  size_t start = 0, capacity = 0;
+  int number = 1;
+  for (;;) {
+    size_t end = start;
+    while (end < n && !parts[end].br)
+      end++;
+    char prefix_raw[32];
+    snprintf(prefix_raw, sizeof prefix_raw, "%d ", number);
+    char *prefix =
+        d->options.line_numbers ? tui_clip(prefix_raw, width, 0) : copy("");
+    if (!prefix) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    int available = max(0, width - tui_cells(prefix)), used = 0;
+    size_t pos = start;
+    do {
+      size_t first = pos;
+      used = 0;
+      while (pos < end) {
+        if (d->options.wrap && pos > first &&
+            used + parts[pos].width > available)
+          break;
+        used += parts[pos].width;
+        pos++;
+      }
+      result =
+          document_add_row(l, &capacity, number, prefix, width, d->options.wrap,
+                           d->options.scroll_x, parts, first, pos, end, t);
+      if (result != TUI_OK)
+        break;
+    } while (pos < end);
+    if (result == TUI_OK && d->options.wrap && end > start &&
+        used >= available && end == t->cursor && !t->state.read_only)
+      result = document_add_row(l, &capacity, number, prefix, width, 1, 0,
+                                parts, end, end, end, t);
+    free(prefix);
+    if (result != TUI_OK)
+      goto done;
+    if (end == n)
+      break;
+    start = end + 1;
+    number++;
+  }
+  if (reveal)
+    for (size_t i = 0; i < l->count; i++)
+      for (size_t g = 0; g < l->rows[i].glyph_count; g++)
+        if (l->rows[i].glyphs[g].cursor)
+          d->options.scroll_y = max(
+              0, max(min(d->options.scroll_y, (int)i), (int)i - height + 1));
+  d->options.scroll_y =
+      max(0, min(d->options.scroll_y, max(0, (int)l->count - height)));
+  size_t first = (size_t)d->options.scroll_y, last_row = first + (size_t)height;
+  if (last_row > l->count)
+    last_row = l->count;
+  for (size_t i = 0; i < first; i++)
+    document_line_clear(&l->rows[i]);
+  for (size_t i = last_row; i < l->count; i++)
+    document_line_clear(&l->rows[i]);
+  size_t kept = last_row - first;
+  memmove(l->rows, l->rows + first, kept * sizeof *l->rows);
+  l->count = kept;
+  free(d->last_source);
+  d->last_source = last;
+  last = NULL;
+  d->last_cursor = t->cursor;
+  d->last_anchor = t->anchor;
+  d->reveal = 0;
+done:
+  free(offsets);
+  document_parts_free(parts, n);
+  free(last);
+  if (result == TUI_OK)
+    *out = l;
+  else
+    tui_document_layout_free(l);
+  return result;
+}
+static const char *document_family(const char *role) {
+  static const char *families[] = {"keyword", "function", "type",     "string",
+                                   "number",  "comment",  "parameter"};
+  static const char *palettes[] = {"info",   "success", "header", "warning",
+                                   "edited", "hint",    "error"};
+  for (size_t i = 0; i < 7; i++)
+    if (!strcmp(role + 7, families[i]))
+      return palettes[i];
+  return "body";
+}
+TuiResult tui_document_draw(TuiDocument *d, TuiCanvas *c, TuiRect bounds,
+                            int focused, int ascii) {
+  (void)ascii;
+  if (!d || !c || !popup_rect_valid(bounds))
+    return TUI_INVALID;
+  TuiDocumentLayout *l = NULL;
+  TuiResult result = tui_document_layout(d, bounds.width, bounds.height, &l);
+  if (result != TUI_OK)
+    return result;
+  const char *role =
+      d->buffer->state.read_only ? tui_canvas_surface_role(c) : "editor";
+  result = tui_canvas_fill(c, bounds, role);
+  int cx = -1, cy = -1, cw = 1;
+  for (size_t y = 0; y < l->count && result == TUI_OK; y++) {
+    const TuiDocumentLine *r = &l->rows[y];
+    TuiStyle style;
+    if (tui_text_on_surface(c->theme, c->profile,
+                            d->buffer->state.disabled ? "disabled" : "hint",
+                            role, 0, &style) != TUI_OK) {
+      result = TUI_INVALID;
+      break;
+    }
+    result = tui_canvas_write_style(c, bounds.x, bounds.y + (int)y, r->prefix,
+                                    &style, bounds.width);
+    for (size_t i = 0; i < r->glyph_count && result == TUI_OK; i++) {
+      const TuiDocumentGlyph *g = &r->glyphs[i];
+      if (!strncmp(g->role, "syntax.", 7))
+        result = tui_text_on_surface(c->theme, c->profile,
+                                     document_family(g->role), role, 0, &style);
+      else if (!strcmp(g->role, "selection") || !strcmp(g->role, "edited") ||
+               !strcmp(g->role, "field") || !strcmp(g->role, "button") ||
+               !strcmp(g->role, "header"))
+        result = tui_style(c->theme, c->profile, g->role, 0, &style);
+      else
+        result =
+            tui_text_on_surface(c->theme, c->profile, g->role, role, 0, &style);
+      if (result == TUI_OK)
+        result = tui_canvas_write_style(c, bounds.x + g->x, bounds.y + (int)y,
+                                        g->text, &style, g->width);
+      if (g->cursor) {
+        cx = bounds.x + g->x;
+        cy = bounds.y + (int)y;
+        cw = g->width;
+      }
+    }
+  }
+  if (result == TUI_OK && focused && !d->buffer->state.read_only &&
+      !d->buffer->state.disabled && cx >= 0)
+    tui_canvas_cursor(c, cx, cy, cw);
+  tui_document_layout_free(l);
+  return result;
+}
+TuiTextEvent tui_document_click(TuiDocument *d, int x, int y, int width,
+                                int height, int extend) {
+  if (!d)
+    return text_event(NULL, "", TUI_INVALID);
+  if (d->buffer->state.disabled || x < 0 || y < 0 || x >= width || y >= height)
+    return text_event(d->buffer, "", TUI_OK);
+  TuiDocumentLayout *l = NULL;
+  TuiResult result = tui_document_layout(d, width, height, &l);
+  if (result != TUI_OK)
+    return text_event(d->buffer, "", result);
+  if (!l->count) {
+    tui_document_layout_free(l);
+    return text_event(d->buffer, "", TUI_OK);
+  }
+  const TuiDocumentLine *r = &l->rows[min(y, (int)l->count - 1)];
+  size_t at = r->hits[0].index;
+  for (size_t i = 0; i < r->hit_count; i++)
+    if (r->hits[i].x <= x)
+      at = r->hits[i].index;
+  tui_text_select(d->buffer, extend ? d->buffer->anchor : at, at);
+  d->reveal = 1;
+  tui_document_layout_free(l);
+  return text_event(d->buffer, "select", TUI_OK);
+}
