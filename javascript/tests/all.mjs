@@ -26,3 +26,5 @@ import "./dialogs.mjs";
 await import("./documents.mjs");
 
 await import("./syntax.mjs");
+
+await import("./grid.mjs");

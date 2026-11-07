@@ -4697,4 +4697,1442 @@ public final class Tuivory {
       return new SyntaxAnalysis(text, language, dialect, tokens);
     }
   }
+  public static final class GridColumn {
+    public String id, label, pin = "";
+    public int width = 12;
+    public boolean editable, hidden;
+    public GridColumn(String id) {
+      this(id, id, 12, false);
+    }
+    public GridColumn(String id, String label, int width, boolean editable) {
+      this.id = id;
+      this.label = label;
+      this.width = width;
+      this.editable = editable;
+    }
+    private GridColumn copy() {
+      var c = new GridColumn(id, label, width, editable);
+      c.hidden = hidden;
+      c.pin = pin;
+      return c;
+    }
+  }
+  public static final class GridRecord {
+    public final String id;
+    public final Map<String, String> cells = new LinkedHashMap<>();
+    public State state = new State();
+    public final Map<String, State> cellStates = new HashMap<>();
+    public GridRecord(String id) {
+      this.id = Objects.requireNonNull(id);
+    }
+    public GridRecord(String id, Map<String, String> cells) {
+      this(id);
+      this.cells.putAll(cells);
+    }
+    private GridRecord copy() {
+      var r = new GridRecord(id, cells);
+      r.state = copyState(state);
+      cellStates.forEach((k, v) -> r.cellStates.put(k, copyState(v)));
+      return r;
+    }
+  }
+  public record GridValue(String text, boolean isNull) {
+    public GridValue {
+      Objects.requireNonNull(text);
+    }
+  }
+  public interface GridSource {
+    int size();
+    GridRecord row(int index);
+    OptionalInt indexOf(String id);
+  }
+  public static final class MemoryRows implements GridSource {
+    private final List<GridRecord> items = new ArrayList<>();
+    private final Map<String, Integer> indices = new HashMap<>();
+    public MemoryRows(List<GridRecord> rows) {
+      for (var r : rows) {
+        dialogText(r.id, 1000000);
+        if (r.cells.size() > 65536)
+          throw new IllegalArgumentException("too many grid cells");
+        if (r.id.isEmpty() || indices.put(r.id, items.size()) != null)
+          throw new IllegalArgumentException("nonempty unique row IDs required");
+        for (var v : r.cells.values())
+          if (v != null)
+            dialogText(v, 16 * 1024 * 1024);
+        items.add(r.copy());
+      }
+    }
+    public int size() {
+      return items.size();
+    }
+    public GridRecord row(int i) {
+      return items.get(i).copy();
+    }
+    public OptionalInt indexOf(String id) {
+      var i = indices.get(id);
+      return i == null ? OptionalInt.empty() : OptionalInt.of(i);
+    }
+  }
+  public static final class GridOptions {
+    public boolean rowNumbers, verticalLines, horizontalLines, striped, useSurface, hideHeader,
+        statusBar, ascii;
+    public boolean highlightCell = true, highlightRow, preserveEdited = true, showCellMarkers;
+    public boolean disableKeyboard, disableMouse, disableEditing, disableCopy, disableResize,
+        disableHeaderSort;
+    public int padding, rowSpacing, gutterWidth, maxCopyCells = 10000;
+    public String selection = "cell";
+    public List<String> statusFields = new ArrayList<>(List.of(
+        "position", "column", "selection", "sort", "filter", "loading", "more", "meta", "error"));
+    public GridOptions copy() {
+      var o = new GridOptions();
+      o.rowNumbers = rowNumbers;
+      o.verticalLines = verticalLines;
+      o.horizontalLines = horizontalLines;
+      o.striped = striped;
+      o.useSurface = useSurface;
+      o.hideHeader = hideHeader;
+      o.statusBar = statusBar;
+      o.ascii = ascii;
+      o.highlightCell = highlightCell;
+      o.highlightRow = highlightRow;
+      o.preserveEdited = preserveEdited;
+      o.showCellMarkers = showCellMarkers;
+      o.disableKeyboard = disableKeyboard;
+      o.disableMouse = disableMouse;
+      o.disableEditing = disableEditing;
+      o.disableCopy = disableCopy;
+      o.disableResize = disableResize;
+      o.disableHeaderSort = disableHeaderSort;
+      o.padding = padding;
+      o.rowSpacing = rowSpacing;
+      o.gutterWidth = gutterWidth;
+      o.maxCopyCells = maxCopyCells;
+      o.selection = selection;
+      o.statusFields = new ArrayList<>(statusFields);
+      return o;
+    }
+    public GridOptions withDensity(String density) {
+      if (!List.of("compact", "normal", "comfortable").contains(density))
+        throw new IllegalArgumentException("invalid grid density");
+      var o = copy();
+      o.padding = density.equals("compact") ? 0 : 1;
+      o.rowSpacing = density.equals("comfortable") ? 1 : 0;
+      return o;
+    }
+  }
+  public static GridOptions gridPreset(String name) {
+    var o = new GridOptions();
+    if (name.isEmpty() || name.equals("simple"))
+      return o;
+    if (!name.equals("data"))
+      throw new IllegalArgumentException("unknown grid preset");
+    o.rowNumbers = o.verticalLines = o.useSurface = o.statusBar = o.highlightRow =
+        o.showCellMarkers = true;
+    o.padding = 1;
+    return o;
+  }
+  public static final class GridColumnOptions {
+    public String align = "left", overflow = "ellipsis";
+    public int minWidth = 1, maxWidth = 4096, expand;
+    public boolean autoFit;
+    public GridColumnOptions copy() {
+      var o = new GridColumnOptions();
+      o.align = align;
+      o.overflow = overflow;
+      o.minWidth = minWidth;
+      o.maxWidth = maxWidth;
+      o.expand = expand;
+      o.autoFit = autoFit;
+      return o;
+    }
+  }
+  public static final class GridCellInfo {
+    public String display = "", metadata = "";
+    public boolean hasDisplay, isNull, numeric;
+    public State state = new State();
+    public GridCellInfo copy() {
+      var o = new GridCellInfo();
+      o.display = display;
+      o.metadata = metadata;
+      o.hasDisplay = hasDisplay;
+      o.isNull = isNull;
+      o.numeric = numeric;
+      o.state = copyState(state);
+      return o;
+    }
+  }
+  public record GridRange(String anchorRow, String anchorColumn, String endRow, String endColumn) {}
+  public static final class GridLabels {
+    public String nullText = "NULL", loading = "loading", empty = "empty", range = "range",
+                  more = "more";
+    public GridLabels copy() {
+      var v = new GridLabels();
+      v.nullText = nullText;
+      v.loading = loading;
+      v.empty = empty;
+      v.range = range;
+      v.more = more;
+      return v;
+    }
+  }
+  public static final class GridDataStatus {
+    public int totalRows;
+    public String metadata = "", filter = "", error = "";
+    public boolean loading, hasMore;
+  }
+  public record GridSpan(String id, int x, int width) {}
+  public record GridGeometry(int top, int left, int gutter, int headerRows, int footerRows,
+      int bodyRows, int stride, List<GridSpan> columns) {
+    public GridGeometry {
+      columns = List.copyOf(columns);
+    }
+  }
+  @FunctionalInterface
+  public interface GridPrepare {
+    GridValue prepare(GridRecord row, GridColumn column);
+  }
+  @FunctionalInterface
+  public interface GridCellProvider {
+    GridCellInfo info(GridRecord row, GridColumn column);
+  }
+  public static final class GridEditOptions {
+    public boolean enabled, startTyping, allowNull;
+    public GridPrepare prepare;
+    private GridEditOptions copy() {
+      var o = new GridEditOptions();
+      o.enabled = enabled;
+      o.startTyping = startTyping;
+      o.allowNull = allowNull;
+      o.prepare = prepare;
+      return o;
+    }
+  }
+  public record GridChange(String rowId, String columnId, GridValue value) {}
+  public record GridPasteRequest(long id, long revision, List<GridChange> changes) {
+    public GridPasteRequest {
+      changes = List.copyOf(changes);
+    }
+  }
+  public record GridEvent(String kind, String rowId, String columnId, String text, long id,
+      long revision, GridValue value) {
+    public GridEvent() {
+      this("", "", "", "", 0, 0, null);
+    }
+    public GridEvent(String kind, String rowId, String columnId) {
+      this(kind, rowId, columnId, "", 0, 0, null);
+    }
+  }
+  public static final class GridEditSession {
+    public long id, revision;
+    public String rowId, columnId, error = "", move = "";
+    public GridValue original;
+    public Text buffer;
+    public boolean isNull, pending;
+  }
+  public static final class GridViewState {
+    public List<GridColumn> columns = new ArrayList<>();
+    public Map<String, GridColumnOptions> columnOptions = new HashMap<>();
+    public String rowId = "", columnId = "", topRowId = "", leftColumnId = "", sortColumn = "",
+                  sortDirection = "", mode = "cell", filter = "";
+    public GridRange selection;
+  }
+  private static int gridNumber(int n, int lo, int hi, String name) {
+    if (n < lo || n > hi)
+      throw new IllegalArgumentException("invalid " + name);
+    return n;
+  }
+  private static State gridCombine(State a, State b) {
+    var s = new State();
+    s.disabled = a.disabled || b.disabled;
+    s.readOnly = a.readOnly || b.readOnly;
+    s.busy = a.busy || b.busy;
+    s.selected = a.selected || b.selected;
+    s.edited = a.edited || b.edited;
+    s.invalid = a.invalid || b.invalid;
+    return s;
+  }
+  private static String gridRaw(GridRecord r, String id) {
+    var v = r.cells.get(id);
+    return v == null ? "" : v;
+  }
+  private static String gridFit(String value, int width, String align, boolean ellipsis) {
+    var text = clip(value, width, ellipsis);
+    int space = Math.max(0, width - cells(text));
+    return align.equals("right") ? " ".repeat(space) + text
+        : align.equals("center") ? " ".repeat(space / 2) + text + " ".repeat(space - space / 2)
+                                 : text + " ".repeat(space);
+  }
+  public static List<List<String>> parseGridTSV(String text, int maxCells) {
+    gridNumber(maxCells, 1, 1000000, "cell limit");
+    dialogText(text, 16 * 1024 * 1024);
+    var rows = new ArrayList<List<String>>();
+    var row = new ArrayList<String>();
+    var value = new StringBuilder();
+    boolean quoted = false, closed = false, started = false;
+    int count = 0;
+    for (int i = 0; i < text.length(); i++) {
+      char c = text.charAt(i);
+      if (quoted) {
+        if (c == '"') {
+          if (i + 1 < text.length() && text.charAt(i + 1) == '"') {
+            value.append('"');
+            i++;
+            continue;
+          }
+          quoted = false;
+          closed = true;
+        } else
+          value.append(c);
+        continue;
+      }
+      boolean nl = c == '\n' || c == '\r' && i + 1 < text.length() && text.charAt(i + 1) == '\n';
+      if (c == '\t' || nl) {
+        if (c == '\t' || !row.isEmpty() || started || closed || !value.isEmpty()) {
+          if (++count > maxCells)
+            throw new IllegalArgumentException("paste exceeds cell limit");
+          row.add(value.toString());
+          value.setLength(0);
+          closed = started = false;
+        }
+        if (nl) {
+          if (!row.isEmpty()) {
+            rows.add(List.copyOf(row));
+            row.clear();
+          }
+          if (c == '\r')
+            i++;
+        }
+      } else if (closed)
+        throw new IllegalArgumentException("characters after closing quote");
+      else if (c == '"') {
+        if (started || !value.isEmpty())
+          throw new IllegalArgumentException("quote inside unquoted field");
+        quoted = started = true;
+      } else {
+        value.append(c);
+        started = true;
+      }
+    }
+    if (quoted)
+      throw new IllegalArgumentException("unterminated quoted field");
+    if (!row.isEmpty() || started || closed || !value.isEmpty()) {
+      if (++count > maxCells)
+        throw new IllegalArgumentException("paste exceeds cell limit");
+      row.add(value.toString());
+      rows.add(List.copyOf(row));
+    }
+    if (rows.isEmpty() || rows.stream().anyMatch(r -> r.size() != rows.get(0).size()))
+      throw new IllegalArgumentException("empty or ragged paste");
+    return List.copyOf(rows);
+  }
+  public static List<List<String>> parseGridTSV(String text) {
+    return parseGridTSV(text, 10000);
+  }
+  public static String formatGridTSV(List<List<String>> rows) {
+    var out = new ArrayList<String>();
+    for (var r : rows) {
+      var line = new ArrayList<String>();
+      for (var s : r)
+        line.add(
+            s.isEmpty() || s.chars().anyMatch(c -> c == '\t' || c == '\n' || c == '\r' || c == '"')
+                ? "\"" + s.replace("\"", "\"\"") + "\""
+                : s);
+      out.add(String.join("\t", line));
+    }
+    return String.join("\n", out);
+  }
+  public static final class Grid {
+    private GridSource source;
+    public List<GridColumn> columns;
+    public int row, column, top, left;
+    private GridOptions config = new GridOptions();
+    private GridLabels labels = new GridLabels();
+    private GridEditOptions editOptions = new GridEditOptions();
+    private final Map<String, GridColumnOptions> columnConfig = new HashMap<>();
+    private final Map<String, Integer> cellPan = new HashMap<>();
+    private GridCellProvider cellProvider;
+    public GridEditSession edit;
+    public GridRange selected;
+    private GridPasteRequest paste;
+    private long serial, revision, appliedRevision;
+    private boolean callback;
+    public boolean caseSensitive, useDisplay;
+    public String query = "", sortColumn = "", sortDirection = "";
+    public GridDataStatus status = new GridDataStatus();
+    private record Hits(int width, int height, GridGeometry geometry, Map<Integer, String> rows,
+        List<String> signature) {}
+    private Hits hits;
+    private record Current(GridRecord row, GridColumn column) {}
+    public Grid(List<GridColumn> columns, List<GridRecord> rows) {
+      this(columns, new MemoryRows(rows));
+    }
+    public Grid(List<GridColumn> columns, GridSource source) {
+      if (columns.size() > 65536)
+        throw new IllegalArgumentException("too many grid columns");
+      this.columns = new ArrayList<>();
+      var ids = new HashSet<String>();
+      for (var c : columns) {
+        if (c.id.isEmpty() || !ids.add(c.id) || !List.of("", "left", "right").contains(c.pin))
+          throw new IllegalArgumentException("invalid grid column");
+        dialogText(c.id, 1000000);
+        dialogText(c.label, 1000000);
+        gridNumber(c.width, 1, 4096, "column width");
+        this.columns.add(c.copy());
+      }
+      gridNumber(invoke(() -> source.size()), 0, 1000000000, "row count");
+      this.source = source;
+    }
+    private void mutation() {
+      if (callback)
+        throw new IllegalArgumentException("grid mutation inside callback");
+    }
+    private <T> T invoke(java.util.function.Supplier<T> fn) {
+      if (callback)
+        throw new IllegalArgumentException("recursive grid callback");
+      callback = true;
+      try {
+        return fn.get();
+      } finally {
+        callback = false;
+      }
+    }
+    private int sourceSize() {
+      return gridNumber(invoke(() -> source.size()), 0, 1000000000, "row count");
+    }
+    private OptionalInt sourceIndex(String id) {
+      var i = invoke(() -> source.indexOf(id));
+      if (i.isPresent())
+        gridNumber(i.getAsInt(), 0, sourceSize() - 1, "source index");
+      return i;
+    }
+    private GridRecord record(int i) {
+      gridNumber(i, 0, sourceSize() - 1, "row index");
+      var r = invoke(() -> source.row(i).copy());
+      if (r.id.isEmpty() || sourceIndex(r.id).orElse(-1) != i)
+        throw new IllegalArgumentException("inconsistent grid source IDs");
+      return r;
+    }
+    public List<GridColumn> visibleColumns() {
+      var cs = new ArrayList<GridColumn>();
+      for (var c : columns)
+        if (!c.hidden)
+          cs.add(c.copy());
+      cs.sort(Comparator.comparingInt(c
+          -> c.pin.equals("left")     ? 0
+              : c.pin.equals("right") ? 2
+                                      : 1));
+      return cs;
+    }
+    private Current current() {
+      var cs = visibleColumns();
+      int n = sourceSize();
+      if (cs.isEmpty() || n == 0)
+        return null;
+      row = Math.max(0, Math.min(n - 1, row));
+      column = Math.max(0, Math.min(cs.size() - 1, column));
+      var r = record(row);
+      if (r.state.disabled) {
+        boolean found = false;
+        int scanned = 0;
+        for (int i = row + 1; i < n && scanned < 100000; i++, scanned++) {
+          r = record(i);
+          if (!r.state.disabled) {
+            row = i;
+            found = true;
+            break;
+          }
+        }
+        if (!found)
+          for (int i = row - 1; i >= 0 && scanned < 100000; i--, scanned++) {
+            r = record(i);
+            if (!r.state.disabled) {
+              row = i;
+              found = true;
+              break;
+            }
+          }
+        if (!found)
+          return null;
+      }
+      return new Current(r, cs.get(column));
+    }
+    private GridCellInfo info(GridRecord r, GridColumn c) {
+      var i = cellProvider == null ? new GridCellInfo()
+                                   : invoke(() -> cellProvider.info(r.copy(), c.copy())).copy();
+      i.state =
+          gridCombine(gridCombine(i.state, r.state), r.cellStates.getOrDefault(c.id, new State()));
+      i.isNull = i.isNull || r.cells.containsKey(c.id) && r.cells.get(c.id) == null;
+      return i;
+    }
+    private GridValue prepared(GridRecord r, GridColumn c) {
+      var v = editOptions.prepare == null
+          ? new GridValue(gridRaw(r, c.id), info(r, c).isNull)
+          : invoke(() -> editOptions.prepare.prepare(r.copy(), c.copy()));
+      if (v != null)
+        dialogText(v.text(), 16 * 1024 * 1024);
+      return v;
+    }
+    private boolean editable(GridRecord r, GridColumn c) {
+      return !config.disableEditing && !c.hidden && c.editable && info(r, c).state.editable()
+          && prepared(r, c) != null;
+    }
+    private void invalidate() {
+      mutation();
+      revision++;
+      edit = null;
+      paste = null;
+      hits = null;
+    }
+    public String rowId() {
+      var p = current();
+      return p == null ? "" : p.row.id;
+    }
+    public String columnId() {
+      var p = current();
+      return p == null ? "" : p.column.id;
+    }
+    public long revision() {
+      return revision;
+    }
+    public GridLabels labels() {
+      return labels.copy();
+    }
+    public void setLabels(GridLabels value) {
+      mutation();
+      var v = value.copy();
+      for (var text : List.of(v.nullText, v.loading, v.empty, v.range, v.more))
+        dialogText(text, 1000000);
+      labels = v;
+    }
+    public GridOptions options() {
+      return config.copy();
+    }
+    public GridPasteRequest pendingPaste() {
+      return paste;
+    }
+    public void setRows(List<GridRecord> rows) {
+      setSource(new MemoryRows(rows));
+    }
+    private record PreparedSource(GridSource source, int row, GridRange selected) {}
+    private PreparedSource prepareSource(GridSource source) {
+      mutation();
+      String id = rowId();
+      GridRange range = selected;
+      return invoke(() -> {
+        var probe = new Grid(columns, source);
+        int at = probe.sourceIndex(id).orElse(-1);
+        if (at >= 0 && !probe.record(at).id.equals(id))
+          throw new IllegalArgumentException("inconsistent grid source IDs");
+        boolean valid = true;
+        if (range != null) {
+          var cs = probe.visibleColumns();
+          for (var pair : List.of(List.of(range.anchorRow(), range.anchorColumn()),
+                   List.of(range.endRow(), range.endColumn()))) {
+            int i = probe.sourceIndex(pair.get(0)).orElse(-1);
+            if (i < 0 || cs.stream().noneMatch(c -> c.id.equals(pair.get(1))))
+              valid = false;
+            else if (!probe.record(i).id.equals(pair.get(0)))
+              throw new IllegalArgumentException("inconsistent grid source IDs");
+          }
+        }
+        return new PreparedSource(source, Math.max(0, at), valid ? range : null);
+      });
+    }
+    private void installSource(PreparedSource p) {
+      source = p.source();
+      row = p.row();
+      selected = p.selected();
+      invalidate();
+    }
+    public void setSource(GridSource source) {
+      installSource(prepareSource(source));
+    }
+    public boolean focus(String rowId, String columnId) {
+      mutation();
+      int i = sourceIndex(rowId).orElse(-1), j = -1;
+      var cs = visibleColumns();
+      for (int k = 0; k < cs.size(); k++)
+        if (cs.get(k).id.equals(columnId))
+          j = k;
+      if (i < 0 || i >= sourceSize() || j < 0)
+        return false;
+      var r = record(i);
+      if (!r.id.equals(rowId) || r.state.disabled)
+        return false;
+      if (edit != null && (!edit.rowId.equals(rowId) || !edit.columnId.equals(columnId)))
+        edit = null;
+      row = i;
+      column = j;
+      return true;
+    }
+    public void setOptions(GridOptions options) {
+      var o = options.copy();
+      gridNumber(o.padding, 0, 8, "padding");
+      gridNumber(o.rowSpacing, 0, 4, "row spacing");
+      gridNumber(o.gutterWidth, 0, 128, "gutter width");
+      gridNumber(o.maxCopyCells, 1, 1000000, "copy limit");
+      var allowed = Set.of(
+          "position", "column", "selection", "sort", "filter", "loading", "more", "meta", "error");
+      if (!List.of("cell", "row", "range").contains(o.selection)
+          || new HashSet<>(o.statusFields).size() != o.statusFields.size()
+          || !allowed.containsAll(o.statusFields))
+        throw new IllegalArgumentException("invalid grid options");
+      invalidate();
+      config = o;
+    }
+    public void setEditOptions(GridEditOptions options) {
+      invalidate();
+      editOptions = options.copy();
+    }
+    public void setCellInfo(GridCellProvider fn) {
+      invalidate();
+      cellProvider = fn;
+    }
+    public void setColumnOptions(String id, GridColumnOptions options) {
+      var c = columns.stream()
+                  .filter(x -> x.id.equals(id))
+                  .findFirst()
+                  .orElseThrow(() -> new IllegalArgumentException("unknown column"));
+      var o = options.copy();
+      gridNumber(o.minWidth, 1, 4096, "minimum width");
+      gridNumber(o.maxWidth, o.minWidth, 4096, "maximum width");
+      gridNumber(o.expand, 0, 4096, "expansion");
+      if (!List.of("left", "right", "center", "auto").contains(o.align)
+          || !List.of("clip", "ellipsis", "scroll").contains(o.overflow))
+        throw new IllegalArgumentException("invalid column options");
+      invalidate();
+      columnConfig.put(id, o);
+      c.width = Math.max(o.minWidth, Math.min(o.maxWidth, c.width));
+    }
+    public void setColumnLayout(List<GridColumn> layout) {
+      if (layout.size() != columns.size())
+        throw new IllegalArgumentException("incompatible column layout");
+      var next = new ArrayList<GridColumn>();
+      var ids = new HashSet<String>();
+      for (var item : layout) {
+        var c = columns.stream()
+                    .filter(x -> x.id.equals(item.id))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("unknown column"))
+                    .copy();
+        if (!ids.add(c.id) || !List.of("", "left", "right").contains(item.pin))
+          throw new IllegalArgumentException("invalid column layout");
+        c.hidden = item.hidden;
+        c.pin = item.pin;
+        next.add(c);
+      }
+      var p = current();
+      invalidate();
+      columns = next;
+      if (p != null)
+        focus(p.row.id, p.column.id);
+    }
+    private boolean workValid(String rid, String cid, long revision) {
+      if (revision != this.revision)
+        return false;
+      int i = sourceIndex(rid).orElse(-1);
+      var c = visibleColumns().stream().filter(x -> x.id.equals(cid)).findFirst().orElse(null);
+      if (i < 0 || i >= sourceSize() || c == null)
+        return false;
+      var r = record(i);
+      return r.id.equals(rid) && editable(r, c);
+    }
+    public boolean beginEdit() {
+      return beginEdit(null);
+    }
+    public boolean beginEdit(String first) {
+      mutation();
+      var p = current();
+      if (p == null || edit != null || paste != null || !editOptions.enabled
+          || !editable(p.row, p.column))
+        return false;
+      var v = prepared(p.row, p.column);
+      if (v == null)
+        return false;
+      var e = new GridEditSession();
+      e.id = ++serial;
+      e.revision = revision;
+      e.rowId = p.row.id;
+      e.columnId = p.column.id;
+      e.original = v;
+      e.isNull = first == null && v.isNull();
+      e.buffer = new Text(first == null ? v.text() : first);
+      e.buffer.multiline = false;
+      edit = e;
+      hits = null;
+      return true;
+    }
+    public boolean resolveEdit(long id, String error, GridSource source) {
+      mutation();
+      var e = edit;
+      if (e == null || !e.pending || e.id != id || e.revision != revision)
+        return false;
+      if (!workValid(e.rowId, e.columnId, e.revision)) {
+        edit = null;
+        return false;
+      }
+      if (!error.isEmpty()) {
+        e.pending = false;
+        e.error = error;
+        return true;
+      }
+      var prepared = source == null ? null : prepareSource(source);
+      edit = null;
+      if (prepared != null)
+        installSource(prepared);
+      focus(e.rowId, e.columnId);
+      if (!e.move.isEmpty() && moveEditable(e.move.equals("previous")))
+        beginEdit();
+      return true;
+    }
+    public boolean resolveEdit(long id) {
+      return resolveEdit(id, "", null);
+    }
+    public boolean resolveEdit(long id, String error) {
+      return resolveEdit(id, error, null);
+    }
+    private boolean moveEditable(boolean previous) {
+      var cs = visibleColumns();
+      if (cs.isEmpty())
+        return false;
+      long step = previous ? -1 : 1, start = (long) row * cs.size() + column,
+           n = (long) sourceSize() * cs.size();
+      for (long at = start + step, scanned = 0; at >= 0 && at < n && scanned < 100000;
+          at += step, scanned++) {
+        int i = (int) (at / cs.size()), j = (int) (at % cs.size());
+        var r = record(i);
+        if (editable(r, cs.get(j)))
+          return focus(r.id, cs.get(j).id);
+      }
+      return false;
+    }
+    public GridEvent handle(String action) {
+      return handle(action, 10, "");
+    }
+    public GridEvent handle(String action, int height, String text) {
+      mutation();
+      gridNumber(height, 0, 4096, "height");
+      if (config.disableKeyboard)
+        return new GridEvent();
+      var e = edit;
+      if (e != null) {
+        if (action.equals("cancel")) {
+          edit = null;
+          return new GridEvent("edit_cancel", e.rowId, e.columnId);
+        }
+        if (!workValid(e.rowId, e.columnId, e.revision)) {
+          edit = null;
+          return new GridEvent("edit_stale", "", "");
+        }
+        if (e.pending)
+          return new GridEvent();
+        if (action.equals("null")) {
+          if (!editOptions.allowNull)
+            return new GridEvent();
+          e.isNull = !e.isNull;
+          e.error = "";
+        } else if (List.of("submit", "activate", "next", "previous").contains(action)) {
+          e.id = ++serial;
+          e.pending = true;
+          e.error = "";
+          e.move = List.of("next", "previous").contains(action) ? action : "";
+          return new GridEvent("edit_submit", e.rowId, e.columnId, "", e.id, e.revision,
+              new GridValue(e.buffer.value(), e.isNull));
+        } else {
+          if (List.of("insert", "paste", "backspace", "delete").contains(action)) {
+            e.isNull = false;
+            e.error = "";
+          }
+          var out = e.isNull ? new Event() : e.buffer.handle(action, text);
+          if (List.of("copy", "cut").contains(out.kind()))
+            return new GridEvent(out.kind(), e.rowId, e.columnId, out.text(), 0, 0, null);
+        }
+        return new GridEvent("edit_change", e.rowId, e.columnId);
+      }
+      var p = current();
+      if (p == null)
+        return new GridEvent();
+      if (List.of("activate", "edit").contains(action))
+        return new GridEvent(beginEdit() ? "edit_begin" : "edit_denied", p.row.id, p.column.id);
+      if (action.equals("insert") && !text.isEmpty() && editOptions.startTyping)
+        return new GridEvent(beginEdit(text) ? "edit_begin" : "edit_denied", p.row.id, p.column.id);
+      if (action.equals("copy"))
+        return copySelection(false, "NULL");
+      if (action.equals("details"))
+        return info(p.row, p.column).state.disabled
+            ? new GridEvent()
+            : new GridEvent(
+                  "details", p.row.id, p.column.id, gridRaw(p.row, p.column.id), 0, 0, null);
+      if (List.of("sort", "filter", "search", "page_next", "page_previous").contains(action))
+        return request(action.startsWith("page_") ? action.substring(5) : action, text);
+      int target = switch (action) {
+        case "up" -> row - 1;
+        case "down" -> row + 1;
+        case "home" -> 0;
+        case "end" -> sourceSize() - 1;
+        case "page_up" -> row - Math.max(1, height - 1);
+        case "page_down" -> row + Math.max(1, height - 1);
+        default -> -1;
+      };
+      if (List.of("up", "down", "home", "end", "page_up", "page_down").contains(action)) {
+        int direction = List.of("up", "home", "page_up").contains(action) ? -1 : 1;
+        target = Math.max(0, Math.min(sourceSize() - 1, target));
+        while (target >= 0 && target < sourceSize()) {
+          if (!record(target).state.disabled) {
+            row = target;
+            break;
+          }
+          target += direction;
+        }
+      } else if (List.of("left", "right").contains(action))
+        column = Math.max(
+            0, Math.min(visibleColumns().size() - 1, column + (action.equals("left") ? -1 : 1)));
+      else if (!action.equals("select"))
+        return new GridEvent();
+      p = current();
+      return p == null ? new GridEvent() : new GridEvent("select", p.row.id, p.column.id);
+    }
+    public Optional<GridPasteRequest> requestPaste(String text) {
+      return requestPaste(text, 10000, null);
+    }
+    public Optional<GridPasteRequest> requestPaste(String text, int maxCells, String nullText) {
+      mutation();
+      if (edit != null || paste != null)
+        return Optional.empty();
+      List<List<String>> values;
+      try {
+        values = parseGridTSV(text, maxCells);
+      } catch (IllegalArgumentException e) {
+        return Optional.empty();
+      }
+      var cs = visibleColumns();
+      if (cs.isEmpty() || (long) row + values.size() > sourceSize()
+          || (long) column + values.get(0).size() > cs.size())
+        return Optional.empty();
+      var changes = new ArrayList<GridChange>();
+      for (int dy = 0; dy < values.size(); dy++) {
+        var r = record(row + dy);
+        for (int dx = 0; dx < values.get(dy).size(); dx++) {
+          var c = cs.get(column + dx);
+          String v = values.get(dy).get(dx);
+          if (!editable(r, c))
+            return Optional.empty();
+          changes.add(
+              new GridChange(r.id, c.id, new GridValue(v, nullText != null && v.equals(nullText))));
+        }
+      }
+      paste = new GridPasteRequest(++serial, revision, changes);
+      return Optional.of(paste);
+    }
+    public boolean resolvePaste(long id, GridSource source) {
+      mutation();
+      if (paste == null || paste.id() != id || paste.revision() != revision)
+        return false;
+      for (var c : paste.changes())
+        if (!workValid(c.rowId(), c.columnId(), paste.revision())) {
+          paste = null;
+          return false;
+        }
+      var prepared = source == null ? null : prepareSource(source);
+      paste = null;
+      if (prepared != null)
+        installSource(prepared);
+      return true;
+    }
+    public boolean resolvePaste(long id) {
+      return resolvePaste(id, null);
+    }
+    public void cancelPaste() {
+      mutation();
+      paste = null;
+    }
+    public boolean find(String query, boolean previous, int maxCells) {
+      mutation();
+      gridNumber(maxCells, 1, 1000000, "find limit");
+      var cs = visibleColumns();
+      long total = (long) sourceSize() * cs.size();
+      if (query.isEmpty() || total == 0 || edit != null || paste != null)
+        return false;
+      this.query = query;
+      String needle = caseSensitive ? query : fold(query);
+      long start = (long) row * cs.size() + column;
+      for (long step = 1; step <= Math.min(total, maxCells); step++) {
+        long at = (start + (previous ? -step : step) + total) % total;
+        int i = (int) (at / cs.size()), j = (int) (at % cs.size());
+        var r = record(i);
+        var c = cs.get(j);
+        var info = info(r, c);
+        if (info.state.disabled)
+          continue;
+        String value = useDisplay && info.hasDisplay ? info.display
+            : useDisplay && info.isNull              ? labels.nullText
+                                                     : gridRaw(r, c.id);
+        if ((caseSensitive ? value : fold(value)).contains(needle)) {
+          row = i;
+          column = j;
+          return true;
+        }
+      }
+      return false;
+    }
+    public boolean find(String query) {
+      return find(query, false, 100000);
+    }
+    public GridEvent request(String kind, String text) {
+      mutation();
+      if (!List.of("sort", "filter", "search", "next", "previous").contains(kind))
+        throw new IllegalArgumentException("unknown grid request");
+      if (kind.equals("sort") && config.disableHeaderSort)
+        return new GridEvent();
+      var p = current();
+      invalidate();
+      return new GridEvent(kind + "_request", p == null ? "" : p.row.id,
+          p == null ? "" : p.column.id, text, 0, revision, null);
+    }
+    public boolean applySource(long revision, GridSource source) {
+      if (revision != this.revision || revision <= appliedRevision)
+        return false;
+      setSource(source);
+      appliedRevision = revision;
+      return true;
+    }
+    public void setSelection(GridRange selection) {
+      mutation();
+      if (selection == null) {
+        selected = null;
+        return;
+      }
+      var cs = visibleColumns();
+      for (var pair : List.of(List.of(selection.anchorRow(), selection.anchorColumn()),
+               List.of(selection.endRow(), selection.endColumn()))) {
+        int i = sourceIndex(pair.get(0)).orElse(-1);
+        if (i < 0 || i >= sourceSize() || !record(i).id.equals(pair.get(0))
+            || cs.stream().noneMatch(c -> c.id.equals(pair.get(1))))
+          throw new IllegalArgumentException("unknown range ID");
+      }
+      selected = selection;
+    }
+    private int[] selectionBounds() {
+      var cs = visibleColumns();
+      if (cs.isEmpty() || sourceSize() == 0)
+        return null;
+      if (selected == null)
+        return new int[] {row, config.selection.equals("row") ? 0 : column, row,
+            config.selection.equals("row") ? cs.size() - 1 : column};
+      int a = sourceIndex(selected.anchorRow()).orElse(-1),
+          b = sourceIndex(selected.endRow()).orElse(-1), c = -1, d = -1;
+      for (int i = 0; i < cs.size(); i++) {
+        if (cs.get(i).id.equals(selected.anchorColumn()))
+          c = i;
+        if (cs.get(i).id.equals(selected.endColumn()))
+          d = i;
+      }
+      if (a < 0 || b < 0 || c < 0 || d < 0)
+        return null;
+      return new int[] {Math.min(a, b), Math.min(c, d), Math.max(a, b), Math.max(c, d)};
+    }
+    public GridEvent copySelection() {
+      return copySelection(false, "NULL");
+    }
+    public GridEvent copySelection(boolean display, String nullText) {
+      if (config.disableCopy)
+        return new GridEvent();
+      var bounds = selectionBounds();
+      if (bounds == null)
+        return new GridEvent();
+      int a = bounds[0], b = bounds[1], c = bounds[2], d = bounds[3];
+      var cs = visibleColumns();
+      if (a < 0 || b < 0 || c >= sourceSize() || d >= cs.size()
+          || (long) (c - a + 1) * (d - b + 1) > config.maxCopyCells)
+        return new GridEvent("copy_rejected", "", "");
+      var values = new ArrayList<List<String>>();
+      long bytes = 0;
+      for (int i = a; i <= c; i++) {
+        var r = record(i);
+        var line = new ArrayList<String>();
+        for (int j = b; j <= d; j++) {
+          var col = cs.get(j);
+          var info = info(r, col);
+          if (info.state.disabled)
+            return new GridEvent("copy_rejected", "", "");
+          String value = display && info.hasDisplay ? info.display
+              : info.isNull                         ? nullText
+                                                    : gridRaw(r, col.id);
+          bytes += value.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+          if (bytes > 16 * 1024 * 1024)
+            return new GridEvent("copy_rejected", "", "");
+          line.add(value);
+        }
+        values.add(line);
+      }
+      return new GridEvent("copy", "", "", formatGridTSV(values), 0, 0, null);
+    }
+    public boolean resizeColumn(String id, int width) {
+      if (config.disableResize)
+        return false;
+      var c = columns.stream().filter(x -> x.id.equals(id)).findFirst().orElse(null);
+      if (c == null)
+        return false;
+      gridNumber(width, 1, 4096, "column width");
+      var o = columnConfig.getOrDefault(id, new GridColumnOptions());
+      invalidate();
+      c.width = Math.max(o.minWidth, Math.min(o.maxWidth, width));
+      return true;
+    }
+    public boolean autoFitColumn(String id, int height) {
+      gridNumber(height, 0, 4096, "height");
+      var c = columns.stream().filter(x -> x.id.equals(id)).findFirst().orElse(null);
+      if (c == null || config.disableResize)
+        return false;
+      int w = cells(c.label.isEmpty() ? c.id : c.label);
+      for (int i = top; i < Math.min(sourceSize(), top + height); i++) {
+        var r = record(i);
+        var info = info(r, c);
+        w = Math.max(w,
+            cells(info.hasDisplay ? info.display
+                    : info.isNull ? labels.nullText
+                                  : gridRaw(r, id))
+                + (info.state.edited && config.showCellMarkers ? 2 : 0));
+      }
+      return resizeColumn(id, Math.max(1, Math.min(4096, w + 2 * config.padding)));
+    }
+    public void panCell(String id, int offset) {
+      mutation();
+      gridNumber(offset, 0, 1000000, "cell pan");
+      if (columns.stream().noneMatch(c -> c.id.equals(id)))
+        throw new IllegalArgumentException("unknown column");
+      cellPan.put(id, offset);
+    }
+    public GridGeometry geometry(int width, int height) {
+      gridNumber(width, 0, 65535, "width");
+      gridNumber(height, 0, 4096, "height");
+      gridNumber(top, 0, 1000000000, "top row");
+      gridNumber(left, 0, 1000000, "left column");
+      int header = !config.hideHeader && height > 0 ? 1 : 0,
+          footer = config.statusBar && height > header ? 1 : 0,
+          stride = 1 + config.rowSpacing + (config.horizontalLines ? 1 : 0),
+          body = (Math.max(0, height - header - footer) + stride - 1) / stride;
+      var p = current();
+      if (p != null && body > 0) {
+        top = Math.min(top, row);
+        if (row >= top + body)
+          top = row - body + 1;
+      }
+      int gutter = Math.min(width,
+              Math.max(config.gutterWidth,
+                  config.rowNumbers ? String.valueOf(Math.max(1, sourceSize())).length() + 1 : 0)),
+          sep = config.verticalLines ? 1 : 0;
+      var cs = visibleColumns();
+      var automatic =
+          cs.stream()
+              .filter(c -> columnConfig.containsKey(c.id) && columnConfig.get(c.id).autoFit)
+              .toList();
+      if (!automatic.isEmpty()) {
+        var records = new ArrayList<GridRecord>();
+        for (int i = top; i < Math.min(sourceSize(), top + Math.min(body, 256)); i++)
+          records.add(record(i));
+        int sampled = 0;
+        for (var c : automatic) {
+          var co = columnConfig.get(c.id);
+          int w = cells(c.label.isEmpty() ? c.id : c.label) + 2 * config.padding;
+          for (var r : records) {
+            if (sampled >= 100000)
+              break;
+            sampled++;
+            var info = info(r, c);
+            String value = info.hasDisplay ? info.display
+                : info.isNull              ? labels.nullText
+                                           : gridRaw(r, c.id);
+            w = Math.max(w,
+                cells(value) + 2 * config.padding
+                    + (info.state.edited && config.showCellMarkers ? 2 : 0));
+          }
+          c.width = Math.max(co.minWidth, Math.min(co.maxWidth, w));
+        }
+      }
+
+      var pinsLeft = new ArrayList<GridColumn>();
+      var pinsRight = new ArrayList<GridColumn>();
+      var normal = new ArrayList<GridColumn>();
+      for (var c : cs)
+        (c.pin.equals("left") ? pinsLeft : c.pin.equals("right") ? pinsRight : normal).add(c);
+      left = Math.min(left, Math.max(0, normal.size() - 1));
+      int rightWidth = pinsRight.stream().mapToInt(c -> c.width + sep).sum();
+      if (p != null) {
+        int at = -1;
+        for (int i = 0; i < normal.size(); i++)
+          if (normal.get(i).id.equals(p.column.id))
+            at = i;
+        if (at >= 0) {
+          left = Math.min(left, at);
+          int capacity = Math.max(0,
+              width - gutter - rightWidth - pinsLeft.stream().mapToInt(c -> c.width + sep).sum());
+          while (left < at) {
+            int need = 0;
+            for (int i = left; i <= at; i++) need += normal.get(i).width + sep;
+            if (need <= capacity)
+              break;
+            left++;
+          }
+        }
+      }
+      int end = width - Math.min(Math.max(0, width - gutter), rightWidth), x = gutter;
+      var spans = new ArrayList<GridSpan>();
+      var scrolling = new ArrayList<>(pinsLeft);
+      scrolling.addAll(normal.subList(left, normal.size()));
+      for (var c : scrolling) {
+        int w = Math.min(c.width, Math.max(0, end - x));
+        if (w > 0)
+          spans.add(new GridSpan(c.id, x, w));
+        x += w + sep;
+        if (x >= end)
+          break;
+      }
+      x = Math.max(gutter, end);
+      for (var c : pinsRight) {
+        int w = Math.min(c.width, Math.max(0, width - x));
+        if (w > 0)
+          spans.add(new GridSpan(c.id, x, w));
+        x += w + sep;
+        if (x >= width)
+          break;
+      }
+      int used = gutter, total = 0;
+      for (var s : spans)
+        if (s.x() < end) {
+          used = Math.max(used, s.x() + s.width() + sep);
+          total += columnConfig.getOrDefault(s.id(), new GridColumnOptions()).expand;
+        }
+      int room = Math.max(0, end - used), remaining = room, shift = 0;
+      if (room > 0 && total > 0)
+        for (int i = 0; i < spans.size(); i++) {
+          var s = spans.get(i);
+          if (s.x() >= end)
+            continue;
+          var co = columnConfig.getOrDefault(s.id(), new GridColumnOptions());
+          int extra =
+              Math.min(remaining, Math.min(co.maxWidth - s.width(), room * co.expand / total));
+          spans.set(i, new GridSpan(s.id(), s.x() + shift, s.width() + extra));
+          shift += extra;
+          remaining -= extra;
+        }
+      return new GridGeometry(top, left, gutter, header, footer, body, stride, spans);
+    }
+    private record EditorWindow(String text, int x, int glyph) {}
+    private EditorWindow editorWindow(String value, int cursor, int width) {
+      var gs = graphemes(value);
+      int at = Math.max(0, Math.min(gs.size(), cursor)), start = at, x = 0,
+          reserve = Math.min(width, Math.max(1, at < gs.size() ? cells(clean(gs.get(at))) : 1));
+      while (start > 0) {
+        int w = cells(clean(gs.get(start - 1)));
+        if (x + w > width - reserve)
+          break;
+        start--;
+        x += w;
+      }
+      var text = new StringBuilder();
+      int used = 0;
+      for (int i = start; i < gs.size(); i++) {
+        String g = clean(gs.get(i));
+        int w = cells(g);
+        if (used + w > width)
+          break;
+        text.append(g);
+        used += w;
+      }
+      int glyph = Math.max(1, at < gs.size() ? cells(clean(gs.get(at))) : 1);
+      return new EditorWindow(text.toString(), x, glyph > width ? 1 : glyph);
+    }
+    public Optional<int[]> editCursor(int width, int height) {
+      var e = edit;
+      if (e == null || e.pending || e.isNull || !workValid(e.rowId, e.columnId, e.revision))
+        return Optional.empty();
+      var geo = geometry(width, height);
+      int i = sourceIndex(e.rowId).orElse(-1);
+      var span =
+          geo.columns().stream().filter(s -> s.id().equals(e.columnId)).findFirst().orElse(null);
+      if (i < geo.top() || i >= geo.top() + geo.bodyRows() || span == null)
+        return Optional.empty();
+      var col = columns.stream().filter(c -> c.id.equals(span.id())).findFirst().orElseThrow();
+      var info = info(record(i), col);
+      int extra = info.state.edited && config.showCellMarkers ? 2 : 0,
+          room = span.width() - 2 * config.padding - extra,
+          y = geo.headerRows() + (i - geo.top()) * geo.stride();
+      if (room <= 0 || y >= height - geo.footerRows())
+        return Optional.empty();
+      var window = editorWindow(e.buffer.value(), e.buffer.cursor, room);
+      return Optional.of(
+          new int[] {span.x() + config.padding + extra + window.x(), y, window.glyph()});
+    }
+    public Optional<TextDocument> details() {
+      var p = current();
+      return p == null || info(p.row, p.column).state.disabled
+          ? Optional.empty()
+          : Optional.of(TextDocument.viewer(gridRaw(p.row, p.column.id)));
+    }
+    public String statusText() {
+      var p = current();
+      gridNumber(status.totalRows, 0, 1000000000, "total rows");
+      var f = new HashMap<String, String>();
+      f.put("position",
+          (p == null ? 0 : row + 1) + "/"
+              + (status.totalRows == 0 ? sourceSize() : status.totalRows));
+      f.put("column", p == null ? "" : p.column.label.isEmpty() ? p.column.id : p.column.label);
+      f.put("selection", selected == null ? "" : labels.range);
+      f.put("sort", (sortColumn + " " + sortDirection).strip());
+      f.put("filter", status.filter);
+      f.put("loading", status.loading ? labels.loading : "");
+      f.put("more", status.hasMore ? labels.more : "");
+      f.put("meta", status.metadata);
+      f.put("error", edit != null && !edit.error.isEmpty() ? edit.error : status.error);
+      if (!f.get("error").isEmpty())
+        return f.get("error");
+      var parts = new ArrayList<String>();
+      for (var key : config.statusFields)
+        if (!f.get(key).isEmpty())
+          parts.add(f.get(key));
+      return String.join(" | ", parts);
+    }
+    private List<String> columnSignature() {
+      var out = new ArrayList<String>();
+      for (var c : columns) {
+        out.add(c.id);
+        out.add(String.valueOf(c.width));
+        out.add(c.pin);
+        out.add(String.valueOf(c.hidden));
+        out.add(String.valueOf(c.editable));
+      }
+      return out;
+    }
+    public void draw(Canvas canvas, Rect r) {
+      draw(canvas, r, true, false);
+    }
+    public void draw(Canvas canvas, Rect r, boolean focused, boolean ascii) {
+      gridNumber(r.x(), 0, 1000000000, "x");
+      gridNumber(r.y(), 0, 1000000000, "y");
+      var geo = geometry(r.width(), r.height());
+      var hitRows = new HashMap<Integer, String>();
+      var signature = columnSignature();
+      var o = config;
+      var child = new Canvas(
+          r.width(), r.height(), canvas.palette, o.useSurface ? "surface" : canvas.surfaceRole);
+      String currentId = columnId(), sep = ascii || o.ascii ? "|" : "│",
+             horizontal = ascii || o.ascii ? "-" : "─";
+      var byId = new HashMap<String, GridColumn>();
+      for (var c : columns) byId.put(c.id, c);
+      var bounds = selectionBounds();
+      var visible = visibleColumns();
+      if (geo.headerRows() > 0)
+        for (var span : geo.columns()) {
+          var c = byId.get(span.id());
+          String title = c.label.isEmpty() ? c.id : c.label;
+          if (sortColumn.equals(c.id))
+            title += sortDirection.equals("desc") ? " v" : " ^";
+          child.write(span.x(), 0, gridFit(title, span.width(), "left", true), "header", false,
+              span.width());
+        }
+      for (int dy = 0; dy < geo.bodyRows(); dy++) {
+        int i = geo.top() + dy, y = geo.headerRows() + dy * geo.stride();
+        if (y >= r.height() - geo.footerRows() || i >= sourceSize())
+          break;
+        var record = record(i);
+        hitRows.put(i, record.id);
+        if (geo.gutter() > 0)
+          child.write(0, y,
+              gridFit(o.rowNumbers ? String.valueOf(i + 1) : "", Math.max(0, geo.gutter() - 1),
+                  "right", false)
+                  + " ",
+              record.state.disabled ? "disabled" : "hint", false, geo.gutter());
+        for (var span : geo.columns()) {
+          var c = byId.get(span.id());
+          var info = info(record, c);
+          var state = info.state;
+          boolean active = i == row && c.id.equals(currentId);
+          int j = 0;
+          while (j < visible.size() && !visible.get(j).id.equals(c.id)) j++;
+          boolean inRange = bounds != null && bounds[0] <= i && i <= bounds[2] && bounds[1] <= j
+              && j <= bounds[3],
+                  editing = edit != null && record.id.equals(edit.rowId)
+              && c.id.equals(edit.columnId) && workValid(edit.rowId, edit.columnId, edit.revision);
+          String role = state.disabled           ? "disabled"
+              : state.invalid                    ? "error"
+              : state.edited && o.preserveEdited ? "edited"
+              : active && o.highlightCell || o.highlightRow && i == row
+                  || inRange && selected != null
+              ? "selection"
+              : o.striped && i % 2 == 1 ? "surface"
+                                        : "body";
+          if (editing)
+            role = edit.pending ? "hint" : !edit.error.isEmpty() ? "error" : "field";
+          int pad = Math.min(o.padding, span.width() / 2);
+          String marker = state.edited && o.showCellMarkers ? "* " : "";
+          int room = Math.max(0, span.width() - 2 * pad - marker.length());
+          String text;
+          if (editing)
+            text = edit.isNull ? labels.nullText
+                               : editorWindow(edit.buffer.value(), edit.buffer.cursor, room).text();
+          else {
+            String value = info.hasDisplay ? info.display
+                : info.isNull              ? labels.nullText
+                                           : gridRaw(record, c.id);
+            var co = columnConfig.getOrDefault(c.id, new GridColumnOptions());
+            if (co.overflow.equals("scroll")) {
+              int offset = cellPan.getOrDefault(c.id, 0), used = 0;
+              var out = new StringBuilder();
+              for (var g : graphemes(value)) {
+                int n = cells(g);
+                if (used >= offset)
+                  out.append(g);
+                else if (used + n > offset)
+                  out.append(" ".repeat(used + n - offset));
+                used += n;
+              }
+              value = out.toString();
+            }
+            text =
+                gridFit(value, room, co.align.equals("auto") && info.numeric ? "right" : co.align,
+                    !co.overflow.equals("clip"));
+          }
+          String value = " ".repeat(pad) + marker + text;
+          value += " ".repeat(Math.max(0, span.width() - cells(value)));
+          child.write(span.x(), y, value, role, focused && active && !state.disabled, span.width());
+        }
+        if (o.horizontalLines) {
+          int yy = y + 1 + o.rowSpacing;
+          if (yy < r.height() - geo.footerRows())
+            child.write(geo.gutter(), yy, horizontal.repeat(Math.max(0, r.width() - geo.gutter())),
+                "hint", false, r.width() - geo.gutter());
+        }
+      }
+      if (sourceSize() == 0 && geo.headerRows() < r.height() - geo.footerRows())
+        child.write(geo.gutter(), geo.headerRows(),
+            clip(!status.error.isEmpty() ? status.error
+                    : status.loading     ? labels.loading
+                                         : labels.empty,
+                Math.max(0, r.width() - geo.gutter()), false),
+            !status.error.isEmpty() ? "error" : "hint", false, r.width() - geo.gutter());
+      if (o.verticalLines)
+        for (var span : geo.columns()) {
+          int x = span.x() + span.width();
+          if (x < r.width())
+            for (int y = 0; y < r.height() - geo.footerRows(); y++)
+              child.write(x, y, sep, "hint", false, 1);
+        }
+      if (geo.footerRows() > 0)
+        child.write(0, r.height() - 1, clip(statusText(), r.width(), true),
+            !status.error.isEmpty() || edit != null && !edit.error.isEmpty() ? "error" : "hint",
+            false, r.width());
+      if (focused) {
+        var cursor = editCursor(r.width(), r.height());
+        if (cursor.isPresent()) {
+          int[] c = cursor.get();
+          child.setCursor(c[0], c[1], c[2]);
+        }
+      }
+      canvas.blit(child, new Rect(0, 0, r.width(), r.height()), r.x(), r.y());
+      hits = new Hits(r.width(), r.height(), geo, Map.copyOf(hitRows), List.copyOf(signature));
+    }
+    public GridEvent click(int x, int y, int width, int height) {
+      mutation();
+      if (config.disableMouse || edit != null || paste != null || hits == null
+          || hits.width() != width || hits.height() != height
+          || !hits.signature().equals(columnSignature()) || x < 0 || x >= width || y < 0
+          || y >= height)
+        return new GridEvent();
+      var geo = hits.geometry();
+      var span = geo.columns()
+                     .stream()
+                     .filter(s -> s.x() <= x && x < s.x() + s.width())
+                     .findFirst()
+                     .orElse(null);
+      if (span == null)
+        return new GridEvent();
+      if (y < geo.headerRows()) {
+        if (config.disableHeaderSort)
+          return new GridEvent();
+        var cs = visibleColumns();
+        for (int i = 0; i < cs.size(); i++)
+          if (cs.get(i).id.equals(span.id()))
+            column = i;
+        return request("sort", "");
+      }
+      int dy = y - geo.headerRows();
+      if (dy % geo.stride() != 0 || y >= height - geo.footerRows())
+        return new GridEvent();
+      int i = geo.top() + dy / geo.stride();
+      if (i >= sourceSize())
+        return new GridEvent();
+      var r = record(i);
+      if (!r.id.equals(hits.rows().get(i)))
+        return new GridEvent();
+      var c = columns.stream().filter(v -> v.id.equals(span.id())).findFirst().orElseThrow();
+      if (info(r, c).state.disabled || !focus(r.id, c.id))
+        return new GridEvent();
+      return new GridEvent("select", r.id, c.id);
+    }
+    public GridViewState saveView() {
+      var p = current();
+      var s = new GridViewState();
+      for (var c : columns) s.columns.add(c.copy());
+      columnConfig.forEach((k, v) -> s.columnOptions.put(k, v.copy()));
+      s.rowId = p == null ? "" : p.row.id;
+      s.columnId = p == null ? "" : p.column.id;
+      s.topRowId = top < sourceSize() ? record(top).id : "";
+      var normal = visibleColumns().stream().filter(c -> c.pin.isEmpty()).toList();
+      s.leftColumnId = left < normal.size() ? normal.get(left).id : "";
+      s.sortColumn = sortColumn;
+      s.sortDirection = sortDirection;
+      s.selection = selected;
+      s.mode = config.selection;
+      s.filter = status.filter;
+      return s;
+    }
+    public void restoreView(GridViewState state) {
+      mutation();
+      var temp = new Grid(columns, List.<GridRecord>of());
+      temp.setColumnLayout(state.columns);
+      for (var item : state.columns) {
+        gridNumber(item.width, 1, 4096, "column width");
+        temp.columns.stream().filter(c -> c.id.equals(item.id)).findFirst().orElseThrow().width =
+            item.width;
+      }
+      state.columnOptions.forEach(temp::setColumnOptions);
+      if (!List.of("cell", "row", "range").contains(state.mode)
+          || !List.of("", "asc", "desc").contains(state.sortDirection)
+          || !state.sortColumn.isEmpty()
+              && columns.stream().noneMatch(c -> c.id.equals(state.sortColumn)))
+        throw new IllegalArgumentException("invalid grid view state");
+      int at = sourceIndex(state.topRowId).orElse(-1);
+      if (at >= 0)
+        record
+      (at);
+      if (state.selection != null) {
+        var cs = temp.visibleColumns();
+        for (var pair :
+            List.of(List.of(state.selection.anchorRow(), state.selection.anchorColumn()),
+                List.of(state.selection.endRow(), state.selection.endColumn()))) {
+          int i = sourceIndex(pair.get(0)).orElse(-1);
+          if (i < 0 || !record(i).id.equals(pair.get(0))
+              || cs.stream().noneMatch(c -> c.id.equals(pair.get(1))))
+            throw new IllegalArgumentException("unknown view range ID");
+        }
+      }
+      invalidate();
+      columns = temp.columns;
+      columnConfig.clear();
+      columnConfig.putAll(temp.columnConfig);
+      config.selection = state.mode;
+      top = Math.max(0, at);
+      left = 0;
+      var normal = visibleColumns().stream().filter(c -> c.pin.isEmpty()).toList();
+      for (int i = 0; i < normal.size(); i++)
+        if (normal.get(i).id.equals(state.leftColumnId))
+          left = i;
+      sortColumn = state.sortColumn;
+      sortDirection = state.sortDirection;
+      status.filter = state.filter;
+      selected = state.selection;
+      focus(state.rowId, state.columnId);
+    }
+  }
 }

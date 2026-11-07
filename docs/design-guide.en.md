@@ -41,3 +41,5 @@ The editor buffer contains no synthetic caret character. Share grapheme viewport
 [Independent containers and cell-copy API](language-containers.en.md)
 
 [Independent Surface and background API](language-surfaces.en.md)
+
+[Independent data grid: virtual sources, approval, raw/display values and real cursors](language-grid.en.md)

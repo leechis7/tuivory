@@ -117,6 +117,8 @@ def main():
     models['surface'] = SurfaceDemo(not ko)
     from ._dialog_example import DialogDemo
     models['dialog'] = DialogDemo(not ko)
+    from ._grid_example import GridDemo
+    models['grid'] = GridDemo(not ko,args.ascii)
     from ._document_example import DocumentDemo
     models['document'] = DocumentDemo(not ko,args.ascii)
     models['syntax'] = DocumentDemo(not ko,args.ascii,True)
@@ -154,7 +156,7 @@ def main():
                 theme = themes[(themes.index(theme) + 1) % len(themes)]
             elif event.key == 'f2':
                 colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
-            elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo)):
+            elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo)):
                 model.pointer(event.x, event.y, event.button)
             elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
                 if isinstance(model, (Grid, Text)):
@@ -165,7 +167,7 @@ def main():
                     model.click(event.x - area.x, event.y - area.y, area.height)
             else:
                 action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
-                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo)):
+                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo)):
                     model.handle(action, area.height, event.text)
                 elif isinstance(model, SearchPicker):
                     model.handle(action,event.text,area.height)

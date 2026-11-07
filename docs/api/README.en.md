@@ -9,9 +9,9 @@
 
 **0.10.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../ui-facade.en.md).
 
-This reference follows 0.10.2 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
+This reference follows 0.11.1 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
 
-Reference version: **0.10.2**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
+Reference version: **0.11.1**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
 
 - [Go public declarations](go.en.md)
 - [Rust public declarations](rust.en.md)
@@ -89,3 +89,5 @@ TVR-7 in 0.11.1: [real grid cursor and backend integration](../grid-workspace.en
 [Independent document viewing/editing API](../language-documents.en.md)
 
 [Independent syntax highlighting/SQL classification API](../language-syntax.en.md)
+
+[Independent data grid: virtual sources, approval, raw/display values and real cursors](../language-grid.en.md)

@@ -41,3 +41,5 @@
 [독립 언어 컨테이너·셀 복사 API](language-containers.md)
 
 [독립 언어 Surface·실제 바탕 API](language-surfaces.md)
+
+[독립 언어 데이터 그리드: 가상 데이터·앱 승인·원문/표시·실제 커서](language-grid.md)

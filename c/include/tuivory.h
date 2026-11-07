@@ -792,6 +792,197 @@ TuiResult tui_document_set_syntax_analyzer(TuiDocument *document,
                                            const TuiSyntaxRequest *request);
 TuiResult tui_document_refresh_syntax(TuiDocument *document);
 const char *tui_document_syntax_error(const TuiDocument *document);
+/* Independent data grid. Handles own their copied inputs. Source callback
+ * context remains caller-owned until set_source/set_rows/free. Callbacks may
+ * not mutate or free the grid. A returned row is borrowed until the next
+ * source callback; the grid copies it before calling index_of. */
+typedef struct TuiGrid TuiGrid;
+typedef struct TuiGridGeometry TuiGridGeometry;
+typedef struct TuiGridViewState TuiGridViewState;
+typedef struct TuiGridTSV TuiGridTSV;
+typedef struct {
+  const char *id, *label;
+  int width, editable, hidden;
+  const char *pin;
+} TuiGridColumn;
+typedef struct {
+  const char *column_id, *text;
+  int is_null;
+  TuiState state;
+} TuiGridCell;
+typedef struct {
+  const char *id;
+  const TuiGridCell *cells;
+  size_t cell_count;
+  TuiState state;
+} TuiGridRecord;
+typedef struct {
+  void *context;
+  size_t count;
+  TuiResult (*row)(void *context, size_t index, TuiGridRecord *out);
+  TuiResult (*index_of)(void *context, const char *id, size_t *out);
+} TuiGridSource;
+typedef struct {
+  const char *text;
+  int is_null;
+} TuiGridValue;
+/* Return TUI_INVALID to deny preparation. out->text is borrowed until the
+ * callback returns to the grid and is copied immediately. */
+typedef TuiResult (*TuiGridPrepare)(void *context, const TuiGridRecord *row,
+                                    const TuiGridColumn *column,
+                                    TuiGridValue *out);
+typedef struct {
+  int enabled, start_typing, allow_null;
+  TuiGridPrepare prepare;
+  void *context;
+} TuiGridEditOptions;
+typedef struct {
+  const char *display, *metadata;
+  int has_display, is_null, numeric;
+  TuiState state;
+} TuiGridCellInfo;
+typedef TuiResult (*TuiGridCellProvider)(void *context,
+                                         const TuiGridRecord *row,
+                                         const TuiGridColumn *column,
+                                         TuiGridCellInfo *out);
+typedef struct {
+  int row_numbers, vertical_lines, horizontal_lines, striped, use_surface;
+  int hide_header, status_bar, ascii, highlight_cell, highlight_row;
+  int preserve_edited, show_cell_markers;
+  int disable_keyboard, disable_mouse, disable_editing, disable_copy;
+  int disable_resize, disable_header_sort;
+  int padding, row_spacing, gutter_width, max_copy_cells;
+  const char *selection;
+  const char *const *status_fields;
+  size_t status_field_count;
+} TuiGridOptions;
+typedef struct {
+  const char *align;
+  int min_width, max_width, auto_fit, expand;
+  const char *overflow;
+} TuiGridColumnOptions;
+typedef struct {
+  const char *anchor_row, *anchor_column, *end_row, *end_column;
+} TuiGridRange;
+typedef struct {
+  const char *null_text, *loading, *empty, *range, *more;
+} TuiGridLabels;
+TuiResult tui_grid_set_labels(TuiGrid *grid, TuiGridLabels labels);
+const TuiGridLabels *tui_grid_labels(const TuiGrid *grid);
+typedef struct {
+  size_t total_rows;
+  const char *metadata, *filter, *error;
+  int loading, has_more;
+} TuiGridDataStatus;
+typedef struct {
+  const char *id;
+  int x, width;
+} TuiGridSpan;
+typedef struct {
+  size_t top;
+  int left, gutter, header_rows, footer_rows, body_rows, stride;
+} TuiGridGeometryInfo;
+typedef struct {
+  unsigned long long id, revision;
+  const char *row_id, *column_id;
+  TuiGridValue original, value;
+  int pending;
+  const char *error;
+} TuiGridEditSession;
+typedef struct {
+  const char *row_id, *column_id;
+  TuiGridValue value;
+} TuiGridChange;
+typedef struct {
+  unsigned long long id, revision;
+  const TuiGridChange *changes;
+  size_t change_count;
+} TuiGridPasteRequest;
+/* Event strings and pending getters are borrowed until the next grid mutation.
+ * Copy IDs/values before resolving, replacing inputs or freeing the grid. */
+typedef struct {
+  TuiResult result;
+  const char *kind, *row_id, *column_id, *text;
+  unsigned long long id, revision;
+  TuiGridValue value;
+} TuiGridEvent;
+TuiGrid *tui_grid_new(const TuiGridColumn *columns, size_t column_count,
+                      const TuiGridRecord *rows, size_t row_count);
+void tui_grid_free(TuiGrid *grid);
+TuiResult tui_grid_set_rows(TuiGrid *grid, const TuiGridRecord *rows,
+                            size_t row_count);
+TuiResult tui_grid_set_source(TuiGrid *grid, TuiGridSource source);
+const char *tui_grid_row_id(TuiGrid *grid);
+const char *tui_grid_column_id(TuiGrid *grid);
+unsigned long long tui_grid_revision(const TuiGrid *grid);
+int tui_grid_focus(TuiGrid *grid, const char *row_id, const char *column_id);
+TuiResult tui_grid_preset(const char *name, TuiGridOptions *out);
+TuiResult tui_grid_density(TuiGridOptions *options, const char *density);
+TuiResult tui_grid_configure(TuiGrid *grid, const TuiGridOptions *options);
+/* Options are borrowed until the next configure/free. Copy the struct before
+ * editing. */
+const TuiGridOptions *tui_grid_options(const TuiGrid *grid);
+TuiResult tui_grid_set_sort(TuiGrid *grid, const char *column_id,
+                            const char *direction);
+TuiResult tui_grid_set_column_options(TuiGrid *grid, const char *id,
+                                      TuiGridColumnOptions options);
+TuiResult tui_grid_set_column_layout(TuiGrid *grid, const TuiGridColumn *layout,
+                                     size_t count);
+TuiResult tui_grid_set_edit_options(TuiGrid *grid, TuiGridEditOptions options);
+TuiResult tui_grid_set_cell_info(TuiGrid *grid, TuiGridCellProvider provider,
+                                 void *context);
+TuiResult tui_grid_set_status(TuiGrid *grid, TuiGridDataStatus status);
+TuiResult tui_grid_set_selection(TuiGrid *grid, const TuiGridRange *range);
+/* begin_edit first=NULL retains the prepared value. first="" replaces it with
+ * a non-NULL empty value. Approval never updates application records itself. */
+int tui_grid_begin_edit(TuiGrid *grid, const char *first);
+const TuiGridEditSession *tui_grid_edit_session(TuiGrid *grid);
+TuiText *tui_grid_edit_buffer(TuiGrid *grid);
+TuiGridEvent tui_grid_handle(TuiGrid *grid, const char *action, int height,
+                             const char *text);
+int tui_grid_resolve_edit(TuiGrid *grid, unsigned long long id,
+                          const char *error, const TuiGridSource *source);
+TuiResult tui_grid_request_paste(TuiGrid *grid, const char *text, int max_cells,
+                                 const char *null_text);
+const TuiGridPasteRequest *tui_grid_pending_paste(const TuiGrid *grid);
+int tui_grid_resolve_paste(TuiGrid *grid, unsigned long long id,
+                           const TuiGridSource *source);
+void tui_grid_cancel_paste(TuiGrid *grid);
+int tui_grid_find(TuiGrid *grid, const char *query, int previous,
+                  int case_sensitive, int use_display, int max_cells);
+/* Caller owns copy text and details document; normal matching free applies. */
+TuiResult tui_grid_copy(TuiGrid *grid, int display, const char *null_text,
+                        char **out);
+TuiDocument *tui_grid_details(TuiGrid *grid);
+TuiGridEvent tui_grid_request(TuiGrid *grid, const char *kind,
+                              const char *text);
+int tui_grid_apply_source(TuiGrid *grid, unsigned long long revision,
+                          TuiGridSource source);
+int tui_grid_resize_column(TuiGrid *grid, const char *id, int width);
+int tui_grid_auto_fit_column(TuiGrid *grid, const char *id, int height);
+TuiResult tui_grid_pan_cell(TuiGrid *grid, const char *id, int offset);
+/* Geometry and saved view are independent owned snapshots. */
+TuiResult tui_grid_geometry(TuiGrid *grid, int width, int height,
+                            TuiGridGeometry **out);
+TuiGridGeometryInfo tui_grid_geometry_info(const TuiGridGeometry *geometry);
+size_t tui_grid_span_count(const TuiGridGeometry *geometry);
+const TuiGridSpan *tui_grid_span_at(const TuiGridGeometry *geometry,
+                                    size_t index);
+void tui_grid_geometry_free(TuiGridGeometry *geometry);
+TuiResult tui_grid_edit_cursor(TuiGrid *grid, int width, int height, int *x,
+                               int *y, int *glyph_width);
+TuiResult tui_grid_draw(TuiGrid *grid, TuiCanvas *canvas, TuiRect bounds,
+                        int focused, int ascii);
+TuiGridEvent tui_grid_click(TuiGrid *grid, int x, int y, int width, int height);
+TuiGridViewState *tui_grid_save_view(TuiGrid *grid);
+TuiResult tui_grid_restore_view(TuiGrid *grid, const TuiGridViewState *view);
+void tui_grid_view_free(TuiGridViewState *view);
+TuiResult tui_grid_parse_tsv(const char *text, int max_cells, TuiGridTSV **out);
+size_t tui_grid_tsv_rows(const TuiGridTSV *table);
+size_t tui_grid_tsv_columns(const TuiGridTSV *table);
+const char *tui_grid_tsv_at(const TuiGridTSV *table, size_t row, size_t column);
+TuiResult tui_grid_format_tsv(const TuiGridTSV *table, char **out);
+void tui_grid_tsv_free(TuiGridTSV *table);
 #ifdef __cplusplus
 }
 #endif

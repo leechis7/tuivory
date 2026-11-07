@@ -2,6 +2,7 @@
 #include "dialog_host.hpp"
 #include "document_host.hpp"
 #include "feedback_host.hpp"
+#include "grid_host.hpp"
 #include "layout_host.hpp"
 #include "menu_host.hpp"
 #include "surface_host.hpp"
@@ -97,7 +98,7 @@ int main(int argc, char **argv) {
          menu_demo = false, context_demo = false, feedback_demo = false,
          layout_demo = false, container_demo = false, surface_demo = false,
          shadow_demo = false, dialog_demo = false, document_demo = false,
-         syntax_demo = false;
+         syntax_demo = false, grid_demo = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -127,6 +128,7 @@ int main(int argc, char **argv) {
         surface_demo = demo == "surface";
         shadow_demo = demo == "shadow";
         dialog_demo = demo == "dialog";
+        grid_demo = demo == "grid";
         syntax_demo = demo == "syntax";
         document_demo = demo == "document" || syntax_demo;
         if (shadow_demo)
@@ -135,16 +137,16 @@ int main(int argc, char **argv) {
         if (demo != "tree" && !workspace && !text_demo && !form_demo &&
             !list_demo && !picker_demo && !menu_demo && !feedback_demo &&
             !layout_demo && !container_demo && !surface_demo && !dialog_demo &&
-            !document_demo)
+            !document_demo && !grid_demo)
           throw std::invalid_argument("Supported demos: tree, workspace, text, "
                                       "form, list, picker, menu, context-menu, "
                                       "feedback, layout, container, surface, "
-                                      "shadow, dialog, document, syntax");
+                                      "shadow, dialog, document, syntax, grid");
       } else {
         std::cout << "--demo "
                      "tree|workspace|text|form|list|picker|menu|context-menu|"
                      "feedback|layout|container|surface|shadow|dialog|document|"
-                     "syntax "
+                     "syntax|grid "
                      "--lang ko|en "
                      "--theme "
                      "dark|light|blackwhite "
@@ -156,6 +158,7 @@ int main(int argc, char **argv) {
     FeedbackDemo feedback_host(en);
     LayoutDemo layout_host(en);
     ContainerDemo container_host(en, ascii);
+    GridDemo grid_host(en, ascii);
     DocumentDemo document_host(en, ascii, syntax_demo);
     DialogDemo dialog_host(en);
     SurfaceDemo surface_host(en);
@@ -246,7 +249,7 @@ int main(int argc, char **argv) {
     if (!snapshot)
       session.emplace(menu_demo || feedback_demo || layout_demo ||
                       container_demo || surface_demo || dialog_demo ||
-                      document_demo);
+                      document_demo || grid_demo);
     while (!stopped) {
       int width = 72, height = 18;
       winsize size{};
@@ -259,7 +262,9 @@ int main(int argc, char **argv) {
       auto area = canvas.panel({0, 0, width, std::max(0, height - 1)},
                                en ? "Tuivory C++ example" : "Tuivory C++ 예제",
                                true, ascii);
-      if (document_demo)
+      if (grid_demo)
+        grid_host.draw(canvas, area, ascii);
+      else if (document_demo)
         document_host.draw(canvas, area, ascii);
       else if (dialog_demo)
         dialog_host.draw(canvas, area, ascii);
@@ -311,6 +316,9 @@ int main(int argc, char **argv) {
           : list_demo
               ? (en ? "Ctrl+Q quit | arrows | Enter activate | Space select"
                     : "Ctrl+Q 종료 | 방향키 | Enter 실행 | Space 선택")
+          : grid_demo
+              ? (en ? "Ctrl+Q quit | arrows navigate | F1 theme | F2 colors"
+                    : "Ctrl+Q 종료 | 방향키 탐색 | F1 테마 | F2 색상")
           : en ? "Ctrl+Q quit | w/s/a/d navigate | Enter activate"
                : "Ctrl+Q 종료 | w/s/a/d 탐색 | Enter 선택";
       canvas.write(0, height - 1, hint, "hint", false, width);
@@ -337,7 +345,7 @@ int main(int argc, char **argv) {
                                                        : "";
       if (text_demo || form_demo || list_demo || picker_demo || menu_demo ||
           feedback_demo || layout_demo || container_demo || surface_demo ||
-          dialog_demo || document_demo) {
+          dialog_demo || document_demo || grid_demo) {
         std::string input, edit_action;
         if (key == 27) {
           std::string seq;
@@ -357,11 +365,13 @@ int main(int argc, char **argv) {
           int button = 0, x = 0, y = 0;
           char ending = 0;
           if ((menu_demo || feedback_demo || layout_demo || container_demo ||
-               surface_demo || dialog_demo || document_demo) &&
+               surface_demo || dialog_demo || document_demo || grid_demo) &&
               std::sscanf(seq.c_str(), "[<%d;%d;%d%c", &button, &x, &y,
                           &ending) == 4) {
             if (ending == 'M' && x > 0 && y > 0) {
-              if (document_demo)
+              if (grid_demo)
+                grid_host.pointer(x - 1, y - 1, button);
+              else if (document_demo)
                 document_host.pointer(x - 1, y - 1, button);
               else if (dialog_demo)
                 dialog_host.pointer(x - 1, y - 1, button);
@@ -387,6 +397,9 @@ int main(int argc, char **argv) {
                         : seq == "[H"     ? "home"
                         : seq == "[F"     ? "end"
                         : seq == "[3~"    ? "delete"
+                        : seq == "[Z"     ? "previous"
+                        : seq == "[5~"    ? "page_up"
+                        : seq == "[6~"    ? "page_down"
                         : seq.empty()     ? "cancel"
                                           : "";
         } else if (key == 127 || key == 8)
@@ -399,6 +412,8 @@ int main(int argc, char **argv) {
           edit_action = "undo";
         else if (key == 25)
           edit_action = "redo";
+        else if (key == 14)
+          edit_action = "null";
         else if (key >= 32) {
           input += static_cast<char>(key);
           int n = key < 128 ? 1 : key < 224 ? 2 : key < 240 ? 3 : 4;
@@ -410,7 +425,12 @@ int main(int argc, char **argv) {
           }
           edit_action = "insert";
         }
-        if (document_demo)
+        if (grid_demo)
+          grid_host.handle(key == 9                   ? "next"
+                           : edit_action == "newline" ? "activate"
+                                                      : edit_action,
+                           input);
+        else if (document_demo)
           document_host.handle(
               edit_action == "newline" ? "activate" : edit_action, input);
         else if (dialog_demo)
