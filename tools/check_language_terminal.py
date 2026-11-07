@@ -7,6 +7,10 @@ from pathlib import Path
 from check_languages import ROOT,quote,run
 F=json.loads((ROOT/'design/terminal-input-cases.json').read_text())
 
+def native_quote(value):
+    # Fixed-width octal escapes are valid for control bytes in C and C++.
+    return '"' + ''.join(f"\\{byte:03o}" for byte in value.encode("utf-8")) + '"'
+
 def cpp_source():
     lines=['#include "tuivory.hpp"','#include <cassert>','int main(){using namespace tuivory;']
     for case in F['cases']:
@@ -17,7 +21,7 @@ def cpp_source():
         if case.get('flush_escape'):lines.append('while(auto e=d.next(true))events.push_back(*e);')
         lines.append('assert(events.size()=='+str(len(case['events']))+');')
         for i,e in enumerate(case['events']):
-            lines.append('assert(events['+str(i)+'].key=='+quote(e['key'])+'&&events['+str(i)+'].text=='+quote(e['text'])+'&&events['+str(i)+'].x=='+str(e['x'])+'&&events['+str(i)+'].y=='+str(e['y'])+'&&events['+str(i)+'].button=='+str(e['button'])+');')
+            lines.append('assert(events['+str(i)+'].key=='+native_quote(e['key'])+'&&events['+str(i)+'].text=='+native_quote(e['text'])+'&&events['+str(i)+'].x=='+str(e['x'])+'&&events['+str(i)+'].y=='+str(e['y'])+'&&events['+str(i)+'].button=='+str(e['button'])+');')
         lines.append('}')
     lines.append('return 0;}');return '\n'.join(lines)
 
@@ -44,7 +48,7 @@ def c_source():
         if case.get('flush_escape'):out.append('for(;;){assert(tui_input_next(d,1,&e)==TUI_OK);if(!e)break;assert(count<100);events[count++]=e;}')
         out.append('assert(count=='+str(len(case['events']))+');')
         for i,e in enumerate(case['events']):
-            out.append('assert(!strcmp(events['+str(i)+']->key,'+quote(e['key'])+')&&!strcmp(events['+str(i)+']->text,'+quote(e['text'])+')&&events['+str(i)+']->text_length=='+str(len(e['text'].encode()))+'&&events['+str(i)+']->x=='+str(e['x'])+'&&events['+str(i)+']->y=='+str(e['y'])+'&&events['+str(i)+']->button=='+str(e['button'])+');')
+            out.append('assert(!strcmp(events['+str(i)+']->key,'+native_quote(e['key'])+')&&!strcmp(events['+str(i)+']->text,'+native_quote(e['text'])+')&&events['+str(i)+']->text_length=='+str(len(e['text'].encode()))+'&&events['+str(i)+']->x=='+str(e['x'])+'&&events['+str(i)+']->y=='+str(e['y'])+'&&events['+str(i)+']->button=='+str(e['button'])+');')
         out.append('for(size_t i=0;i<count;i++){tui_input_event_free(events[i]);}tui_input_decoder_free(d);}')
     out.append('return 0;}');return '\n'.join(out)
 
