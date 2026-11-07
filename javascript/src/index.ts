@@ -1,3 +1,5 @@
+import syntaxUnicode from "./syntax-unicode.json" with { type: "json" };
+import sqlWords from "./sql-syntax-words.json" with { type: "json" };
 import foldData from "./casefold.json" with { type: "json" };
 type Dict<K extends PropertyKey, V> = { [P in K]: V };
 /** Independent TypeScript implementation. No native or other-language runtime. */
@@ -128,6 +130,7 @@ export interface Style {
   bold: boolean;
   dim: boolean;
   underline: boolean;
+  italic?: boolean;
 }
 const plainRoles = [
   "body",
@@ -263,7 +266,7 @@ export function sgr(style: Style): string {
         ? String((bg ? 100 : 90) + n - 8)
         : `${base};5;${n}`;
   };
-  return `\x1b[0;${color(style.foreground, false)};${color(style.background, true)}${style.bold ? ";1" : ""}${style.dim ? ";2" : ""}${style.underline ? ";4" : ""}m`;
+  return `\x1b[0;${color(style.foreground, false)};${color(style.background, true)}${style.bold ? ";1" : ""}${style.dim ? ";2" : ""}${style.italic ? ";3" : ""}${style.underline ? ";4" : ""}m`;
 }
 export class Canvas {
   readonly data: Cell[][];
@@ -5011,6 +5014,7 @@ export class TextDocument {
   lineNumbers: boolean;
   scrollX = 0;
   scrollY = 0;
+  private syntaxBinding?: SyntaxBinding;
   private syntaxSource: string;
   private searchSource: string;
   private styles: DocumentSpan[] = [];
@@ -5066,6 +5070,7 @@ export class TextDocument {
     this.hits = [];
     this.last = undefined;
     this.reveal = !previous.readOnly;
+    this.refreshSyntaxSafe();
   }
   private ranges<T extends DocumentRange>(ranges: T[], syntax = false): T[] {
     if (ranges.length > 1000000) throw new Error("too many document ranges");
@@ -5115,8 +5120,104 @@ export class TextDocument {
   }
   setMarkup(markup: string): void {
     const parsed = parseMarkup(markup);
+    this.setSyntaxAnalyzer(null);
     this.setText(parsed.source);
     this.setSyntax(parsed.spans);
+  }
+  private applySyntax(analysis: SyntaxAnalysis): void {
+    if (this.buffer.secret)
+      throw new Error("syntax analysis unavailable for secret buffers");
+    validateSyntaxAnalysis(analysis, this.buffer.value);
+    this.setByteSyntax(
+      analysis.tokens.map((t) => ({
+        start: t.start,
+        end: t.end,
+        role: syntaxRoleStyle(t.role),
+      })),
+    );
+  }
+  setSyntaxAnalysis(analysis: SyntaxAnalysis): void {
+    if (this.syntaxBinding?.refreshing)
+      throw new Error("recursive syntax analysis");
+    this.applySyntax(analysis);
+    this.syntaxBinding = {
+      request: {},
+      source: this.buffer.value,
+      dirty: false,
+    };
+  }
+  setSyntaxAnalyzer(
+    analyzer: SyntaxAnalyzer | null,
+    request: SyntaxRequest = {},
+  ): void {
+    if (this.syntaxBinding?.refreshing)
+      throw new Error("recursive syntax analysis");
+    if (!analyzer) {
+      this.syntaxBinding = undefined;
+      this.styles = [];
+      this.syntaxSource = this.buffer.value;
+      return;
+    }
+    if (this.buffer.secret)
+      throw new Error("syntax analysis unavailable for secret buffers");
+    dialogText(request.language ?? "", 128);
+    dialogText(request.dialect ?? "", 128);
+    const copied = { ...request },
+      analysis = invokeSyntax(analyzer, this.buffer.value, copied);
+    this.applySyntax(analysis);
+    this.syntaxBinding = {
+      analyzer,
+      request: copied,
+      source: this.buffer.value,
+      dirty: false,
+    };
+  }
+  get syntaxError(): string | undefined {
+    return this.buffer.secret ? undefined : this.syntaxBinding?.error;
+  }
+  private refreshSyntaxSafe(): void {
+    try {
+      this.refreshSyntax();
+    } catch {}
+  }
+  refreshSyntax(): void {
+    const binding = this.syntaxBinding;
+    if (this.buffer.secret) {
+      if (binding) {
+        binding.source = "";
+        binding.dirty = true;
+      }
+      this.styles = [];
+      return;
+    }
+    if (!binding) return;
+    if (binding.refreshing) throw new Error("recursive syntax analysis");
+    if (binding.source === this.buffer.value && !binding.dirty) {
+      if (binding.error) throw new Error(binding.error);
+      return;
+    }
+    const source = this.buffer.value;
+    binding.refreshing = true;
+    try {
+      if (binding.analyzer)
+        this.applySyntax(
+          invokeSyntax(binding.analyzer, source, binding.request),
+        );
+      else {
+        this.styles = [];
+        this.syntaxSource = source;
+      }
+      binding.error = undefined;
+    } catch (error) {
+      this.styles = [];
+      this.syntaxSource = this.buffer.value;
+      binding.error = error instanceof Error ? error.message : String(error);
+      throw error;
+    } finally {
+      binding.source = source;
+      binding.dirty = false;
+      binding.refreshing = false;
+    }
   }
   revealCursor(): void {
     this.reveal = true;
@@ -5176,6 +5277,7 @@ export class TextDocument {
     }
     const e = this.buffer.handle(action, text);
     if (["select", "change", "cut"].includes(e.kind)) this.reveal = true;
+    this.refreshSyntaxSafe();
     return e;
   }
   layout(width: number, height: number): DocumentLine[] {
@@ -5184,6 +5286,7 @@ export class TextDocument {
       if (!Number.isSafeInteger(v) || v < 0 || v > 1000000)
         throw new Error("invalid document dimensions");
     documentText(this.buffer.value);
+    this.refreshSyntaxSafe();
     this.height = height;
     this.hits = [];
     if (!width || !height) return [];
@@ -5378,10 +5481,7 @@ export class TextDocument {
       );
       for (const g of row.glyphs) {
         const style = g.role.startsWith("syntax.")
-          ? canvas.palette.textOnSurface(
-              documentSyntaxPalette[g.role.slice(7)] ?? "body",
-              role,
-            )
+          ? syntaxStyle(canvas.palette, g.role, role)
           : ["selection", "edited", "field", "button", "header"].includes(
                 g.role,
               )
@@ -5419,5 +5519,338 @@ export class TextDocument {
     this.buffer.select(extend ? this.buffer.anchor : at, at);
     this.reveal = true;
     return event("select");
+  }
+}
+
+export interface SyntaxToken {
+  start: number;
+  end: number;
+  role: string;
+}
+export interface SyntaxRequest {
+  language?: string;
+  dialect?: string;
+}
+export interface SyntaxAnalysis {
+  source: string;
+  language: string;
+  dialect: string;
+  tokens: SyntaxToken[];
+}
+export type SyntaxAnalyzer =
+  | { analyzeSyntax(text: string, request: SyntaxRequest): SyntaxAnalysis }
+  | ((text: string, request: SyntaxRequest) => SyntaxAnalysis);
+interface SyntaxBinding {
+  analyzer?: SyntaxAnalyzer;
+  request: SyntaxRequest;
+  source: string;
+  dirty: boolean;
+  error?: string;
+  refreshing?: boolean;
+}
+const syntaxFamilies: { [key: string]: string } = {
+  keyword: "keyword",
+  function: "function",
+  macro: "function",
+  attribute: "function",
+  type: "type",
+  string: "string",
+  character: "string",
+  number: "number",
+  constant: "number",
+  comment: "comment",
+  directive: "comment",
+  parameter: "parameter",
+  lifetime: "parameter",
+};
+export function syntaxRoleStyle(role: string): string {
+  const family = syntaxFamilies[role];
+  return family ? "syntax." + family : "body";
+}
+export function syntaxPaletteRole(role: string): string {
+  return documentSyntaxPalette[role.replace(/^syntax\./, "")] ?? "body";
+}
+function syntaxBytes(text: string): number {
+  return [...text].reduce((n, c) => {
+    const cp = c.codePointAt(0)!;
+    return n + (cp < 128 ? 1 : cp < 2048 ? 2 : cp < 65536 ? 3 : 4);
+  }, 0);
+}
+export function validateSyntaxAnalysis(
+  analysis: SyntaxAnalysis,
+  text: string,
+): void {
+  documentText(analysis.source);
+  dialogText(analysis.language, 128);
+  dialogText(analysis.dialect, 128);
+  if (analysis.source !== text) throw new Error("stale syntax source");
+  if (!Array.isArray(analysis.tokens) || analysis.tokens.length > 1000000)
+    throw new Error("invalid syntax tokens");
+  const boundaries = new Set([0]);
+  let offset = 0;
+  for (const c of text) {
+    offset += syntaxBytes(c);
+    boundaries.add(offset);
+  }
+  let end = 0;
+  for (const t of analysis.tokens) {
+    dialogText(t.role, 128);
+    if (
+      !Number.isSafeInteger(t.start) ||
+      !Number.isSafeInteger(t.end) ||
+      t.start < end ||
+      t.end <= t.start ||
+      !boundaries.has(t.start) ||
+      !boundaries.has(t.end)
+    )
+      throw new Error("unordered, overlapping or invalid UTF-8 syntax range");
+    end = t.end;
+  }
+}
+export function syntaxStyle(
+  palette: Palette,
+  role: string,
+  surface = "editor",
+): Style {
+  const kind = role.replace(/^syntax\./, ""),
+    base = palette.textOnSurface(syntaxPaletteRole(kind), surface);
+  if (!documentSyntaxPalette[kind]) return base;
+  if (palette.theme === "blackwhite")
+    return {
+      ...base,
+      bold: false,
+      dim: false,
+      underline: ["keyword", "parameter"].includes(kind),
+      italic: kind === "comment",
+    };
+  const colors = Object.values(palette.roles).flatMap((v) => [
+      v.foreground,
+      v.background,
+    ]),
+    darkEight =
+      palette.style("surface").background === "0" &&
+      palette.style("warning").foreground === "3" &&
+      colors.every(
+        (c) => !c.startsWith("#") && Number(c) >= 0 && Number(c) <= 7,
+      );
+  if (darkEight) {
+    let foreground = ["keyword", "function", "string", "parameter"].includes(
+      kind,
+    )
+      ? "3"
+      : "7";
+    if (
+      colorContrast(foreground, base.background) < 4.5 &&
+      colorContrast(base.foreground, base.background) >
+        colorContrast(foreground, base.background)
+    )
+      foreground = base.foreground;
+    return {
+      ...base,
+      foreground,
+      bold: ["keyword", "number"].includes(kind),
+      dim: false,
+      underline: ["keyword", "type", "parameter"].includes(kind),
+      italic: ["string", "comment"].includes(kind),
+    };
+  }
+  return base;
+}
+function invokeSyntax(
+  analyzer: SyntaxAnalyzer,
+  text: string,
+  request: SyntaxRequest,
+): SyntaxAnalysis {
+  return typeof analyzer === "function"
+    ? analyzer(text, { ...request })
+    : analyzer.analyzeSyntax(text, { ...request });
+}
+const sqlVocabulary = {
+  types: new Set(sqlWords.types),
+  functions: new Set(sqlWords.functions),
+  keywords: new Set(sqlWords.keywords),
+};
+function sqlIdentStart(c: string): boolean {
+  return c === "_" || inRanges(c.codePointAt(0)!, syntaxUnicode.alphabetic);
+}
+function sqlIdentPart(c: string): boolean {
+  const cp = c.codePointAt(0)!;
+  return (
+    sqlIdentStart(c) ||
+    inRanges(cp, syntaxUnicode.number) ||
+    c === "$" ||
+    c === "#" ||
+    [
+      [0x300, 0x36f],
+      [0x1ab0, 0x1aff],
+      [0x1dc0, 0x1dff],
+      [0x20d0, 0x20ff],
+      [0xfe20, 0xfe2f],
+    ].some(([a, b]) => a <= cp && cp <= b)
+  );
+}
+/** Optional SQL/PLSQL highlighting classification; never executes SQL. */
+export class SQLAnalyzer {
+  analyzeSyntax(text: string, request: SyntaxRequest = {}): SyntaxAnalysis {
+    documentText(text);
+    const language =
+        dialogText(request.language ?? "", 128).toLowerCase() || "sql",
+      dialect =
+        dialogText(request.dialect ?? "", 128).toLowerCase() || "oracle";
+    if (!["sql", "plsql"].includes(language) || dialect !== "oracle")
+      throw new Error("unsupported syntax language/dialect");
+    const n = text.length,
+      raw: { start: number; end: number; role: string }[] = [];
+    let i = 0;
+    const at = (p: number) => String.fromCodePoint(text.codePointAt(p)!);
+    const digit = (c: string) => c >= "0" && c <= "9";
+    const quoted = (p: number, quote: string) => {
+      p++;
+      while (p < n) {
+        if (text[p] === quote) {
+          p++;
+          if (p < n && text[p] === quote) {
+            p++;
+            continue;
+          }
+          return p;
+        }
+        p++;
+      }
+      return p;
+    };
+    while (i < n) {
+      const start = i,
+        c = at(i);
+      if (inRanges(c.codePointAt(0)!, syntaxUnicode.whitespace)) {
+        i += c.length;
+        continue;
+      }
+      let role = "punctuation";
+      const prefix =
+        i + 2 < n && text.slice(i, i + 2).toLowerCase() === "q'"
+          ? 2
+          : i + 3 < n && text.slice(i, i + 3).toLowerCase() === "nq'"
+            ? 3
+            : 0;
+      if (text.startsWith("--", i)) {
+        role = "comment";
+        i += 2;
+        while (i < n && !["\r", "\n"].includes(text[i])) i++;
+      } else if (text.startsWith("/*", i)) {
+        role = "comment";
+        const end = text.indexOf("*/", i + 2);
+        i = end < 0 ? n : end + 2;
+      } else if (prefix) {
+        role = "string";
+        i += prefix;
+        if (i < n) {
+          const open = at(i);
+          if (!inRanges(open.codePointAt(0)!, syntaxUnicode.whitespace)) {
+            const close =
+              (
+                { "[": "]", "{": "}", "(": ")", "<": ">" } as {
+                  [key: string]: string;
+                }
+              )[open] ?? open;
+            const end = text.indexOf(close + "'", i + open.length);
+            i = end < 0 ? n : end + close.length + 1;
+          } else {
+            i = start + c.length;
+            role = "identifier";
+          }
+        }
+      } else if (
+        c === "'" ||
+        (["n", "N"].includes(c) && i + 1 < n && text[i + 1] === "'")
+      ) {
+        role = "string";
+        i = quoted(i + (c === "'" ? 0 : 1), "'");
+      } else if (c === '"') {
+        role = "identifier";
+        i = quoted(i, '"');
+      } else if (
+        c === ":" &&
+        i + 1 < n &&
+        (sqlIdentStart(at(i + 1)) || digit(text[i + 1]) || text[i + 1] === '"')
+      ) {
+        role = "parameter";
+        i++;
+        if (text[i] === '"') i = quoted(i, '"');
+        else while (i < n && sqlIdentPart(at(i))) i += at(i).length;
+      } else if (text.startsWith("..", i)) {
+        role = "operator";
+        i += 2;
+      } else if (digit(c) || (c === "." && i + 1 < n && digit(text[i + 1]))) {
+        role = "number";
+        while (i < n && digit(text[i])) i++;
+        if (i < n && text[i] === "." && !text.startsWith("..", i)) {
+          i++;
+          while (i < n && digit(text[i])) i++;
+        }
+        if (i < n && ["e", "E"].includes(text[i])) {
+          let end = i + 1;
+          if (end < n && ["+", "-"].includes(text[end])) end++;
+          const first = end;
+          while (end < n && digit(text[end])) end++;
+          if (end > first) i = end;
+        }
+        if (i < n && ["f", "F", "d", "D"].includes(text[i])) i++;
+      } else if (sqlIdentStart(c)) {
+        i += c.length;
+        while (i < n && sqlIdentPart(at(i))) i += at(i).length;
+        const word = text
+          .slice(start, i)
+          .replace(/[a-z]/g, (c) => c.toUpperCase());
+        role = "identifier";
+        for (const [group, kind] of [
+          ["types", "type"],
+          ["functions", "function"],
+          ["keywords", "keyword"],
+        ] as const)
+          if (sqlVocabulary[group].has(word)) {
+            role = kind;
+            break;
+          }
+      } else {
+        i += c.length;
+        if ("+-*/%=<>!|:^~".includes(c)) {
+          role = "operator";
+          if (
+            i < n &&
+            [":=", "=>", "<=", ">=", "!=", "<>", "||", "**"].includes(
+              text.slice(start, i + 1),
+            )
+          )
+            i++;
+        }
+      }
+      raw.push({ start, end: i, role });
+    }
+    const tokens: SyntaxToken[] = [];
+    let which = 0,
+      previous = -1,
+      offset = 0,
+      byte = 0;
+    for (const g of graphemes(text)) {
+      const end = offset + g.length,
+        bytes = syntaxBytes(g);
+      while (which < raw.length && raw[which].end <= offset) which++;
+      if (which < raw.length && raw[which].start < end) {
+        const last = tokens.at(-1);
+        if (previous === which && last && last.end === byte)
+          last.end = byte + bytes;
+        else
+          tokens.push({
+            start: byte,
+            end: byte + bytes,
+            role: raw[which].role,
+          });
+        previous = which;
+      } else previous = -1;
+      offset = end;
+      byte += bytes;
+    }
+    return { source: text, language, dialect, tokens };
   }
 }

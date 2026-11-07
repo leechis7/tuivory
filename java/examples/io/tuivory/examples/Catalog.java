@@ -45,7 +45,7 @@ public final class Catalog {
             tabFocus = false, textDemo = false, formDemo = false, listDemo = false,
             pickerDemo = false, menuDemo = false, contextDemo = false, feedbackDemo = false,
             layoutDemo = false, containerDemo = false, surfaceDemo = false, shadowDemo = false,
-            dialogDemo = false, documentDemo = false;
+            dialogDemo = false, documentDemo = false, syntaxDemo = false;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--lang" -> {
@@ -84,7 +84,8 @@ public final class Catalog {
           surfaceDemo = args[i].equals("surface");
           shadowDemo = args[i].equals("shadow");
           dialogDemo = args[i].equals("dialog");
-          documentDemo = args[i].equals("document");
+          syntaxDemo = args[i].equals("syntax");
+          documentDemo = args[i].equals("document") || syntaxDemo;
           if (shadowDemo)
             menuDemo = contextDemo = true;
           menuDemo = contextDemo || args[i].equals("menu");
@@ -97,7 +98,7 @@ public final class Catalog {
         case "--help" -> {
           System.out.println("--demo "
               + "tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|"
-              + "surface|shadow|dialog|document "
+              + "surface|shadow|dialog|document|syntax "
               + "--lang ko|en "
               + "--theme "
               + "dark|light|blackwhite --colors "
@@ -111,7 +112,7 @@ public final class Catalog {
     var feedbackHost = new FeedbackHost(en);
     var layoutHost = new LayoutHost(en);
     var containerHost = new ContainerHost(en, ascii);
-    var documentHost = new DocumentHost(en, ascii);
+    var documentHost = new DocumentHost(en, ascii, syntaxDemo);
     var dialogHost = new DialogHost(en);
     var surfaceHost = new SurfaceHost(en);
     var tree = new Tree(List.of(new Node("root", en ? "Workspace" : "작업 공간"),

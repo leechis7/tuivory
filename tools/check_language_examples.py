@@ -46,7 +46,10 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
             if process.poll()is not None:break
         raise AssertionError((language,lang,theme,colors,ascii,'row',row,selected,bytes(captured[-1000:])))
     try:
-        if demo=='document':
+        if demo=='syntax':
+            from check_syntax_example import check_syntax_example
+            check_syntax_example(language,lang,theme,colors,ascii,master,slave,process,captured,screen,drain)
+        elif demo=='document':
             from check_document_example import check_document_example
             check_document_example(language,lang,theme,colors,ascii,master,slave,process,captured,screen,drain)
         elif demo in ('shadow','dialog'):
@@ -319,7 +322,7 @@ def main():
     p.add_argument('--python',default=sys.executable)
     p.add_argument('--language',choices=['python','javascript','c','cpp','java'])
     p.add_argument('--matrix',action='store_true')
-    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout','container','surface','shadow','dialog','document'],default='tree')
+    p.add_argument('--demo',choices=['tree','workspace','text','form','list','picker','menu','context-menu','feedback','layout','container','surface','shadow','dialog','document','syntax'],default='tree')
     args=p.parse_args()
     arch={'aarch64':'arm64','x86_64':'x86_64'}[platform.machine()]
     commands={'python':[args.python,'-m','tuivory'],'javascript':['node',ROOT/'javascript/examples/catalog.mjs'],'c':[ROOT/'bin/c'/f'tuivory-linux-{arch}'],'cpp':[ROOT/'bin/cpp'/f'tuivory-linux-{arch}'],'java':['java','-jar',ROOT/'.cache/packages/java'/f'tuivory-{(ROOT/"VERSION").read_text().strip()}.jar']}

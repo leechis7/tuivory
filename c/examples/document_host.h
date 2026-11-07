@@ -4,13 +4,46 @@
 #include <stdio.h>
 #include <string.h>
 typedef struct {
-  int en, read_only, disabled, search;
+  int en, read_only, disabled, search, syntax_demo, syntax_enabled,
+      syntax_failed, syntax_calls;
   TuiRect area;
   TuiDocument *document;
 } DocumentDemo;
 static const char *document_word(DocumentDemo *h, const char *ko,
                                  const char *en) {
   return h->en ? en : ko;
+}
+static TuiResult document_demo_analyze(void *context, const char *text,
+                                       const TuiSyntaxRequest *request,
+                                       TuiSyntaxAnalysis **out) {
+  DocumentDemo *h = context;
+  h->syntax_calls++;
+  if (h->syntax_failed)
+    return TUI_INVALID;
+  return tui_sql_analyze(text, request, out);
+}
+static int document_demo_enable_syntax(DocumentDemo *h) {
+  h->syntax_failed = 0;
+  if (tui_document_set_syntax_analyzer(h->document, document_demo_analyze, h,
+                                       NULL) != TUI_OK)
+    return 0;
+  h->syntax_enabled = 1;
+  return 1;
+}
+static int document_demo_use_syntax(DocumentDemo *h, int ascii) {
+  char source[512];
+  snprintf(source, sizeof source,
+           "SELECT COUNT(*) AS total,\n       CAST(:id AS NUMBER), NVL(:name, "
+           "'%s')\nFROM sample_table\nWHERE id >= 1.2e-3D; -- %s",
+           h->en && ascii ? "sample"
+           : h->en        ? "é 界"
+                          : "한글 é 界",
+           document_word(h, "실행하지 않는 견본", "Example only"));
+  if (tui_document_set_text(h->document, source) != TUI_OK)
+    return 0;
+  tui_text_select(tui_document_buffer(h->document), 0, 0);
+  h->syntax_demo = 1;
+  return document_demo_enable_syntax(h);
 }
 static int document_demo_init(DocumentDemo *h, int en, int ascii) {
   memset(h, 0, sizeof *h);
@@ -49,14 +82,28 @@ static void document_demo_draw(DocumentDemo *h, TuiCanvas *c, TuiRect a,
       document_word(h, "줄바꿈 ", "Wrap "), o.wrap ? "on" : "off",
       document_word(h, "줄 번호 ", "Numbers "), o.line_numbers ? "on" : "off",
       document_word(h, "비활성 ", "Disabled "), h->disabled ? "on" : "off");
+  char full_status[1024];
+  if (h->syntax_demo)
+    snprintf(full_status, sizeof full_status, "%s%s | %s%d | %s",
+             document_word(h, "구문 ", "Syntax "),
+             *tui_document_syntax_error(h->document) ? "error"
+             : h->syntax_enabled                     ? "on"
+                                                     : "off",
+             document_word(h, "분석 ", "Calls "), h->syntax_calls, status);
   if (a.height >= 2)
-    tui_canvas_write(c, a.x, a.y + a.height - 2, status, "hint", 0, a.width);
+    tui_canvas_write(c, a.x, a.y + a.height - 2,
+                     h->syntax_demo ? full_status : status, "hint", 0, a.width);
   if (a.height)
     tui_canvas_write(
         c, a.x, a.y + a.height - 1,
-        document_word(
-            h, "w 줄바꿈 | n 번호 | v 보기 | s 검색 | x 비활성 | m 마크업",
-            "w wrap | n numbers | v viewer | s search | x disabled | m markup"),
+        h->syntax_demo
+            ? document_word(h, "a 구문 전환 | f 실패 | w 줄바꿈 | x 비활성",
+                            "a analyzer | f failure | w wrap | x disabled")
+            : document_word(
+                  h,
+                  "w 줄바꿈 | n 번호 | v 보기 | s 검색 | x 비활성 | m 마크업",
+                  "w wrap | n numbers | v viewer | s search | x disabled | m "
+                  "markup"),
         "hint", 0, a.width);
 }
 static void document_demo_handle(DocumentDemo *h, const char *action,
@@ -64,6 +111,25 @@ static void document_demo_handle(DocumentDemo *h, const char *action,
   const char *cmd = !strcmp(action, "insert") ? text : action;
   TuiDocument *d = h->document;
   TuiDocumentOptions o = tui_document_options(d);
+  if (h->syntax_demo && !strcmp(cmd, "a")) {
+    if (h->syntax_enabled) {
+      tui_document_set_syntax_analyzer(d, NULL, NULL, NULL);
+      h->syntax_enabled = 0;
+    } else
+      document_demo_enable_syntax(h);
+    return;
+  }
+  if (h->syntax_demo && !strcmp(cmd, "f")) {
+    if (h->read_only || h->disabled)
+      return;
+    if (h->syntax_failed)
+      document_demo_enable_syntax(h);
+    else if (h->syntax_enabled) {
+      h->syntax_failed = 1;
+      tui_document_handle(d, "insert", " ");
+    }
+    return;
+  }
   if (!strcmp(cmd, "w")) {
     o.wrap = !o.wrap;
     tui_document_configure(d, o);
@@ -101,6 +167,7 @@ static void document_demo_handle(DocumentDemo *h, const char *action,
         TUI_OK) {
       tui_text_select(tui_document_buffer(d), 0, 0);
       h->search = 0;
+      h->syntax_enabled = 0;
     }
   } else {
     TuiTextEvent e = tui_document_handle(

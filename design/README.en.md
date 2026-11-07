@@ -75,3 +75,5 @@ TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/soli
 [Independent popup shadows and dialogs](../docs/language-popups.en.md)
 
 [Independent document viewing/editing API](../docs/language-documents.en.md)
+
+[Independent syntax highlighting/SQL classification API](../docs/language-syntax.en.md)

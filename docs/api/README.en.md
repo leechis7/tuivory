@@ -87,3 +87,5 @@ TVR-7 in 0.11.1: [real grid cursor and backend integration](../grid-workspace.en
 [Independent popup shadows and dialogs](../language-popups.en.md)
 
 [Independent document viewing/editing API](../language-documents.en.md)
+
+[Independent syntax highlighting/SQL classification API](../language-syntax.en.md)

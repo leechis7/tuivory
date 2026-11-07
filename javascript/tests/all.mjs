@@ -24,3 +24,5 @@ import "./popups.mjs";
 import "./dialogs.mjs";
 
 await import("./documents.mjs");
+
+await import("./syntax.mjs");

@@ -51,3 +51,6 @@ from .dialogs import DialogButton, DialogButtonCell, DialogLayout, Dialog
 __all__ += ["DialogButton","DialogButtonCell","DialogLayout","Dialog"]
 from .documents import DocumentRange,DocumentSpan,DocumentGlyph,DocumentLine,TextDocument,parse_markup
 __all__ += ['DocumentRange','DocumentSpan','DocumentGlyph','DocumentLine','TextDocument','parse_markup']
+
+from .syntax import SyntaxToken,SyntaxRequest,SyntaxAnalysis,SQLAnalyzer,syntax_role_style,syntax_palette_role,syntax_style
+__all__ += ["SyntaxToken","SyntaxRequest","SyntaxAnalysis","SQLAnalyzer","syntax_role_style","syntax_palette_role","syntax_style"]

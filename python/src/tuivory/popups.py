@@ -68,7 +68,7 @@ def _paint_shadow(canvas,region,layout,options,ascii,has_rgb,has_256):
         for x in range(left,right):
             old=canvas.data[y][x]
             if options.mode=='dim':
-                s=old.style;old.style=Style(s.foreground,s.background,s.bold,True,s.underline)
+                s=old.style;old.style=Style(s.foreground,s.background,s.bold,True,s.underline,s.italic)
                 continue
             bg=backgrounds[x-left];shade='0'if options.mode=='solid'else _shade(bg,has_rgb,has_256);symbol=' ';style=Style(shade,shade)
             if ascii:symbol='.';style=Style(shade,bg)

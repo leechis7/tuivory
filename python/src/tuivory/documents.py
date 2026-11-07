@@ -3,6 +3,7 @@ from dataclasses import dataclass,field
 from .drawing import Rect,Style,graphemes,cells,clean,clip
 from .editing import Text
 from .models import Event
+from . import syntax as _syntax
 
 TEXT_ROLES=frozenset(('body','hint','info','success','warning','error','header','field','selection','button','disabled','edited','syntax.keyword','syntax.function','syntax.type','syntax.string','syntax.number','syntax.comment','syntax.parameter'))
 SYNTAX_PALETTE={'keyword':'info','function':'success','type':'header','string':'warning','number':'edited','comment':'hint','parameter':'error'}
@@ -67,7 +68,7 @@ class TextDocument:
     def __init__(self,text='',*,read_only=False):
         self.buffer=Text(_valid_text(text),read_only=read_only);self.wrap=False;self.line_numbers=not read_only
         self.scroll_x=self.scroll_y=0;self._syntax=[];self._search=[];self._syntax_source=self._search_source=text
-        self._hits=[];self._last=None;self._height=0;self._reveal=not read_only
+        self._hits=[];self._last=None;self._height=0;self._reveal=not read_only;self._binding=None
     @classmethod
     def editor(cls,text=''):return cls(text)
     @classmethod
@@ -81,6 +82,7 @@ class TextDocument:
         text=_valid_text(text);readonly=self.buffer.read_only;secret=self.buffer.secret;disabled=self.buffer.disabled
         self.buffer=Text(text,read_only=readonly,secret=secret);self.buffer.disabled=disabled
         self._syntax=[];self._search=[];self._syntax_source=self._search_source=text;self.scroll_x=self.scroll_y=0;self._hits=[];self._last=None;self._reveal=not readonly
+        self._refresh_syntax_safe()
     def _ranges(self,ranges,syntax=False):
         n=len(graphemes(_valid_text(self.buffer.value)));out=[]
         for r in ranges:
@@ -100,7 +102,15 @@ class TextDocument:
             converted.append(DocumentSpan(offsets[s.start],offsets[s.end],s.role))
         self.set_syntax(converted)
     def set_markup(self,markup):
-        source,spans=parse_markup(markup);self.set_text(source);self.set_syntax(spans)
+        source,spans=parse_markup(markup);self.set_syntax_analyzer(None);self.set_text(source);self.set_syntax(spans)
+    def set_syntax_analysis(self,analysis):_syntax.set_analysis(self,analysis)
+    def set_syntax_analyzer(self,analyzer,request=None):_syntax.set_analyzer(self,analyzer,request)
+    def refresh_syntax(self):_syntax.refresh(self)
+    @property
+    def syntax_error(self):return self._binding.error if self._binding and not self.buffer.secret else None
+    def _refresh_syntax_safe(self):
+        try:self.refresh_syntax()
+        except Exception:pass
     def reveal_cursor(self):self._reveal=True
     def _scroll_valid(self):
         if any(type(v)is not int or not 0<=v<=1_000_000 for v in (self.scroll_x,self.scroll_y)):raise ValueError('invalid document scroll position')
@@ -123,11 +133,12 @@ class TextDocument:
             if len(self.buffer.value.encode())-(hi-lo)+len(addition.encode())>1_000_000:raise ValueError('document source exceeds limit')
         e=self.buffer.handle(action,text)
         if e.kind in ('select','change','cut'):self._reveal=True
+        self._refresh_syntax_safe()
         return e
     def layout(self,width,height):
         self._scroll_valid()
         if any(type(v)is not int or not 0<=v<=1_000_000 for v in (width,height)):raise ValueError('invalid document dimensions')
-        _valid_text(self.buffer.value);self._height=height;self._hits=[]
+        _valid_text(self.buffer.value);self._refresh_syntax_safe();self._height=height;self._hits=[]
         if not width or not height:return []
         self.buffer.select(self.buffer.anchor,self.buffer.cursor)
         source=self.buffer.value
@@ -191,7 +202,7 @@ class TextDocument:
             canvas.write_style(bounds.x,bounds.y+y,row.prefix,canvas.palette.text_on_surface('disabled'if self.buffer.disabled else'hint',role),width=bounds.width)
             for g in row.glyphs:
                 if g.role.startswith('syntax.'):
-                    family=SYNTAX_PALETTE.get(g.role[7:],'body');s=canvas.palette.text_on_surface(family,role)
+                    s=_syntax.syntax_style(canvas.palette,g.role,role)
                 elif g.role in ('selection','edited','field','button','header'):s=canvas.palette.style(g.role)
                 else:s=canvas.palette.text_on_surface(g.role,role)
                 canvas.write_style(bounds.x+g.x,bounds.y+y,g.text,s,width=g.width)

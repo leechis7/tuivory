@@ -1,0 +1,2280 @@
+{
+  "checked_at_utc": "2026-11-07T01:53:06.808994+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source_base": "3a50b9323b13c11fae69ff380182c1bffac94426",
+  "source_uncommitted": true,
+  "scope": "Independent optional SQL/PLSQL highlighting classification, source-tagged UTF-8 analyses, cached custom bindings, stale/atomic/failure/secret protection and actual-background syntax styling. Full catalog work remains in progress.",
+  "sha256": {
+    "c/examples/catalog.c": "e207104198154a54db6f76870611f6064a9472723b197480b764e464d5a6f682",
+    "c/examples/document_host.h": "367c1f648c5e1b66e81e295fb77036c7cf7016bf044671584ae0c89570abcfe9",
+    "c/include/tuivory.h": "d1389e0b8dd110b0b8db86ac6465456d75e86ff0aef27e58c4a0dd00cd33c163",
+    "c/include/tuivory_sql_words.h": "0d62b36100562d480f7bc6113eeae0f29c2f959288b4838fc3ddf2eb2c6449d1",
+    "c/include/tuivory_syntax_unicode.h": "c11b4df05ecf433cb8c95934d40f67152e137735d141b4768613c320bf37c795",
+    "c/src/tuivory.c": "7637ad02c51a565ae8cd70bec598bb9759f239a8dfce98af1c680b67a41c80b5",
+    "cpp/examples/document_host.hpp": "fff40a2e833b8e11419cb33ff8dab56379507c7c9001236cb7f76e446fefd845",
+    "cpp/include/tuivory.hpp": "f5d0e46243849bc32bdf326e0e740ac5608b85f8bd3d63fe49bb3a706a5978c3",
+    "cpp/include/tuivory_documents.hpp": "8b418c4e517b0edeba128cf4aa766649f6836ad107aba096e4500d459eaad321",
+    "cpp/include/tuivory_sql_words.h": "0d62b36100562d480f7bc6113eeae0f29c2f959288b4838fc3ddf2eb2c6449d1",
+    "cpp/include/tuivory_syntax.hpp": "6e8aa050c90f5e806fee188e215086c9cc09da30e9d38c7c61f7ae47e37198e6",
+    "cpp/include/tuivory_syntax_unicode.h": "c11b4df05ecf433cb8c95934d40f67152e137735d141b4768613c320bf37c795",
+    "design/syntax-extra-cases.json": "bb0644882ea41a480aae0fdede5cfa8b4d84b8dcb81397a9cbe612413e9695bd",
+    "design/syntax-unicode.json": "64273ea5dd955ea6325915e7a7184a5c0f0567b81e2a334a88150bdd900fb90e",
+    "java/examples/io/tuivory/examples/Catalog.java": "a5d6c37f57df17db763e7691ca950d7eb1236989222f54778e31232637d4e356",
+    "java/examples/io/tuivory/examples/DocumentHost.java": "16c8bcb2521239dc79093eb5b2bdb70923ed3105960f29583a31863ff99292f2",
+    "java/src/main/java/io/tuivory/SqlWordsData.java": "2eaa9ea35aabff01dedaf09715f04e6cf0a7041e2ca9d0372f18bd75ee693bb0",
+    "java/src/main/java/io/tuivory/SyntaxUnicodeData.java": "e0eac2290566e5fb4944d8baebbfad997955fc956ef7655279bca8a629623477",
+    "java/src/main/java/io/tuivory/Tuivory.java": "48037cfd6b82bae90fe07fa8f463b50762d9b79e0daf458228cef58f7f722143",
+    "javascript/examples/catalog.mjs": "5d874066d972094408f41ae5d3e3b02e7afc957891270b46f0298ccfd757cb4b",
+    "javascript/examples/document-host.mjs": "bc7ef72b62bf62f0cb7bd61c2714047cdac39453b0e30c7dd2d65f7830983675",
+    "javascript/src/index.ts": "83dfe96a4a323ec85d32a287ee3a22d07b81a346267e0d15da24c2ba43518ffe",
+    "javascript/src/sql-syntax-words.json": "81512f144360efceec1adf709589a243fbdd6e3480d6bed599bcc8114cdcea17",
+    "javascript/src/syntax-unicode.json": "64273ea5dd955ea6325915e7a7184a5c0f0567b81e2a334a88150bdd900fb90e",
+    "javascript/tests/all.mjs": "a207835ffa965d9e4b43065222b7e05642a02ff48aacabb2dd1092f9e302e5fe",
+    "javascript/tests/syntax.mjs": "336673ab823485f7256fa0ac3636103d037084808ea7f3a0a100688f0a95b69a",
+    "python/src/tuivory/__init__.py": "d098397eb84b09176789ae6215db42ab90ceeb6f3cca532125654abd054dc7d2",
+    "python/src/tuivory/__main__.py": "a1b2785c2ff6118160cdfc35a4948d992333fcc8f84a23527fe51d3af739a4f1",
+    "python/src/tuivory/_document_example.py": "28dc1dc13032a85a73c67b0b4fd86cdb79e711fe525cdaa0a4b248b41dc9722c",
+    "python/src/tuivory/documents.py": "068512f761716e2cf249f23d3632993f0a09c9030007bd2126ad7610300a9e3f",
+    "python/src/tuivory/drawing.py": "09463cee38aec1b4a8b9365d4a7f32e637c69c2c7ee8d19c7c080455ddbf78dc",
+    "python/src/tuivory/popups.py": "9eae4c71be70c39542c8946ff9da932ca6e7a5b1a8c3aa733151b1097bcfdee8",
+    "python/src/tuivory/sql-syntax-words.json": "81512f144360efceec1adf709589a243fbdd6e3480d6bed599bcc8114cdcea17",
+    "python/src/tuivory/syntax-unicode.json": "64273ea5dd955ea6325915e7a7184a5c0f0567b81e2a334a88150bdd900fb90e",
+    "python/src/tuivory/syntax.py": "4326f66ca05c4208c59304560cf76337d64b19b3fd812f6d800236a0b69d1e6d",
+    "python/tests/test_syntax.py": "31032d902234f888897a422cb9f5df01df71de4aeb8219de9f2d9d3d1ff7a158",
+    "tools/ansi_cells.py": "43fd83b76dde8b676bf0880b0d8fe1eb7eeeb96c7d47fe24d97d591cc7e444fd",
+    "tools/capture_language_trees.py": "fde8cbb1e85f87d164d6e2b1201453fa492dec371d666e7de3b049541299f469",
+    "tools/check_language_archives.py": "3dd51a173fa76e49a348fa4a94b57f51691485ca4639507696f0f06ddbe6cd53",
+    "tools/check_language_examples.py": "7d91b4747cbdb7ba7c7abb884184d15d652450dd8fd89f48b145210f39d791ea",
+    "tools/check_language_syntax.py": "5e2e5c7a95f87287dee8e44c31083d63f47ec54a3135490fe8828558f4cb79f0",
+    "tools/check_runtime_languages.py": "8f1e98b0c077bec6a9ac38774d4342fbd3f79edd56a38fcbfe29ddd8fe6f8364",
+    "tools/check_syntax_example.py": "81267e8772727826c34d8a769fd0786110a42fc83c06eb4adaa99a555fe4a731",
+    "tools/export_language_data.py": "b60c078d17a82d75624da9c087c086895e451581ae2223ac56e6866afd123021",
+    "tools/generate_syntax_unicode.py": "d412d7040dccf8441ef961356864f8693f370ea12f18629ca16ab58da32175b3"
+  },
+  "local": {
+    "python_unittest_passed": 61,
+    "javascript_all": "passed including31 classification cases, custom/cached/atomic/secret bindings and all-palette italic/copy/Dim checks",
+    "native_external": "C/C++ ASan/UBSan plus isolated static copied SDK consumers; Java17 pure JVM external JAR passed",
+    "per_native_language": {
+      "sql_baseline_cases": 19,
+      "additional_fixed_unicode_edge_cases": 12,
+      "actual_ansi_style_doc_copy_dim_frames": 36,
+      "binding_tests": "cached callbacks, source changes, failed refresh/undo, stale results, UTF-8/grapheme boundaries, unknown roles and secret protection; invalid initial attachment tested in archive consumers"
+    },
+    "pty": [
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "syntax",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      }
+    ],
+    "captures": {
+      "count": 20,
+      "languages": 5,
+      "locales": [
+        "ko",
+        "en"
+      ],
+      "profiles": [
+        "dark truecolor",
+        "dark ANSI8"
+      ],
+      "source": "Actual localized syntax example ANSI rendered to PNG with italic support; C++ dark ANSI8 English screenshot visually inspected."
+    },
+    "packages": "Fresh wheel/npm isolated install/one import/strict external TS declarations/direct SQL+binding+style API/packaged example and all six actual static SDK/pure JAR preview archives passed. Java NOTICE resources match current bilingual sources.",
+    "native_elf": "Local Linux ARM64 machine183, static, no PT_INTERP/DT_NEEDED",
+    "centos": "not run per user instruction",
+    "java_terminal": "Fixed-size line input, simulated click; narrow layouts are model/API checks, not Java terminal resize.",
+    "unicode_sources": {
+      "DerivedCoreProperties.txt": {
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/DerivedCoreProperties.txt",
+        "sha256": "24c7fed1195c482faaefd5c1e7eb821c5ee1fb6de07ecdbaa64b56a99da22c08"
+      },
+      "UnicodeData.txt": {
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt",
+        "sha256": "2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c"
+      },
+      "PropList.txt": {
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/PropList.txt",
+        "sha256": "130dcddcaadaf071008bdfce1e7743e04fdfbc910886f017d9f9ac931d8c64dd"
+      }
+    }
+  },
+  "github_ci": {
+    "state": "not run at evidence capture; final result recorded in PR/Jira"
+  },
+  "publication": {
+    "state": "not committed/pushed at evidence capture; approved dev integration follows verification",
+    "published_version": "0.11.1 unchanged",
+    "main_tags_registries_release": "not performed"
+  },
+  "notes": [
+    "Each language owns its lexer/binding/runtime; only Unicode/vocabulary data and fixtures are shared. No cross-language Tuivory FFI/JNI/process engine.",
+    "TypeScript/JavaScript shares one TypeScript implementation and emitted JS/types.",
+    "Analysis runs on changed source, not redraw/theme/scroll. Failure clears stale highlighting without replacing edit history.",
+    "Style italic defaults false, survives cell copying/Dim and uses SGR3; existing Java five-argument constructor remains available.",
+    "Fixed Unicode17 Alphabetic/Number/White_Space classifications differ from runtime-dependent grapheme/width backends; no physical terminal font certification.",
+    "Initial matrix incorrectly expected string italic in monochrome; the harness was corrected to require comment italic there, matching the documented style rules, and all240 cases reran successfully."
+  ]
+}

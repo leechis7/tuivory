@@ -1,8 +1,8 @@
 """Small ANSI cell reader for ASCII/border component regression output (no graphics dependency)."""
 import re,unicodedata
 
-def read_cells(text):
-    x=y=0;pos=0;cells={};fg='7';bg='0';bold=dim=underline=False
+def read_cells(text,*,include_italic=False):
+    x=y=0;pos=0;cells={};fg='7';bg='0';bold=dim=underline=italic=False
     while pos<len(text):
         if text.startswith('\x1b[',pos):
             m=re.match(r'\x1b\[([0-?]*)([ -/]*)([@-~])',text[pos:])
@@ -15,9 +15,11 @@ def read_cells(text):
                 i=0
                 while i<len(args):
                     c=args[i]
-                    if c==0:fg='7';bg='0';bold=dim=underline=False
+                    if c==0:fg='7';bg='0';bold=dim=underline=italic=False
                     elif c==1:bold=True
                     elif c==2:dim=True
+                    elif c==3:italic=True
+                    elif c==23:italic=False
                     elif c==4:underline=True
                     elif c==22:bold=dim=False
                     elif c==24:underline=False
@@ -39,8 +41,8 @@ def read_cells(text):
         if unicodedata.combining(ch):continue
         if ord(ch)<32:continue
         width=2 if unicodedata.east_asian_width(ch)in('W','F')else 1
-        cells[x,y]=(ch,fg,bg,bold,dim,underline)
-        if width==2:cells[x+1,y]=('',fg,bg,bold,dim,underline)
+        cells[x,y]=(ch,fg,bg,bold,dim,underline)+((italic,)if include_italic else())
+        if width==2:cells[x+1,y]=('',fg,bg,bold,dim,underline)+((italic,)if include_italic else())
         x+=width
     return cells
 

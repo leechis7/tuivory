@@ -1,0 +1,197 @@
+{
+  "format": 1,
+  "scope": "Additional fixed Unicode17 classification and malformed-prefix cases for the five independent language implementations; existing Go/Rust baseline fixtures stay unchanged.",
+  "cases": [
+    {
+      "name": "q-without-delimiter",
+      "source": "q'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 1,
+          "role": "identifier"
+        },
+        {
+          "start": 1,
+          "end": 2,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "nq-without-delimiter",
+      "source": "NQ'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 2,
+          "role": "identifier"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "unicode17-alphabetic",
+      "source": "𑶰name",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 8,
+          "role": "identifier"
+        }
+      ]
+    },
+    {
+      "name": "emoji-grapheme",
+      "source": "👩‍💻",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 11,
+          "role": "punctuation"
+        }
+      ]
+    },
+    {
+      "name": "other-alphabetic",
+      "source": "ͅx",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 3,
+          "role": "identifier"
+        }
+      ]
+    },
+    {
+      "name": "not-whitespace-control",
+      "source": "A\u001cB",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 1,
+          "role": "identifier"
+        },
+        {
+          "start": 1,
+          "end": 2,
+          "role": "punctuation"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "role": "identifier"
+        }
+      ]
+    },
+    {
+      "name": "not-whitespace-feff",
+      "source": "A﻿B",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 1,
+          "role": "identifier"
+        },
+        {
+          "start": 1,
+          "end": 4,
+          "role": "punctuation"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "role": "identifier"
+        }
+      ]
+    },
+    {
+      "name": "unicode-whitespace-bind",
+      "source": "select  :이름",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 6,
+          "role": "keyword"
+        },
+        {
+          "start": 9,
+          "end": 16,
+          "role": "parameter"
+        }
+      ]
+    },
+    {
+      "name": "astral-q-delimiter",
+      "source": "q'😀abc😀'",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 14,
+          "role": "string"
+        }
+      ]
+    },
+    {
+      "name": "unicode-nel",
+      "source": "SELECT",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 2,
+          "end": 8,
+          "role": "keyword"
+        }
+      ]
+    },
+    {
+      "name": "numeric-identifier-part",
+      "source": "a²",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 3,
+          "role": "identifier"
+        }
+      ]
+    },
+    {
+      "name": "numeric-not-identifier-start",
+      "source": "²",
+      "language": "sql",
+      "dialect": "oracle",
+      "tokens": [
+        {
+          "start": 0,
+          "end": 2,
+          "role": "punctuation"
+        }
+      ]
+    }
+  ]
+}
