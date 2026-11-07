@@ -5108,6 +5108,8 @@ public final class Tuivory {
     private record Hits(int width, int height, GridGeometry geometry, Map<Integer, String> rows,
         List<String> signature) {}
     private Hits hits;
+    private GridCapture capture;
+    private String paintKey = "";
     private record Current(GridRecord row, GridColumn column) {}
     public Grid(List<GridColumn> columns, List<GridRecord> rows) {
       this(columns, new MemoryRows(rows));
@@ -5228,6 +5230,7 @@ public final class Tuivory {
       edit = null;
       paste = null;
       hits = null;
+      capture = null;
     }
     public String rowId() {
       var p = current();
@@ -5460,6 +5463,12 @@ public final class Tuivory {
       gridNumber(height, 0, 4096, "height");
       if (config.disableKeyboard)
         return new GridEvent();
+      capture = null;
+      if (edit == null && List.of("select_up", "select_down", "select_left",
+                                  "select_right", "select_home", "select_end",
+                                  "select_page_up", "select_page_down")
+                              .contains(action))
+        return extendNavigation(action.substring(7), height);
       var e = edit;
       if (e != null) {
         if (action.equals("cancel")) {
@@ -5864,7 +5873,7 @@ public final class Tuivory {
         }
       return new GridGeometry(top, left, gutter, header, footer, body, stride, spans);
     }
-    private record EditorWindow(String text, int x, int glyph) {}
+    private record EditorWindow(String text, int x, int glyph, int start) {}
     private EditorWindow editorWindow(String value, int cursor, int width) {
       var gs = graphemes(value);
       int at = Math.max(0, Math.min(gs.size(), cursor)), start = at, x = 0,
@@ -5887,7 +5896,8 @@ public final class Tuivory {
         used += w;
       }
       int glyph = Math.max(1, at < gs.size() ? cells(clean(gs.get(at))) : 1);
-      return new EditorWindow(text.toString(), x, glyph > width ? 1 : glyph);
+      return new EditorWindow(text.toString(), x, glyph > width ? 1 : glyph,
+                              start);
     }
     public Optional<int[]> editCursor(int width, int height) {
       var e = edit;
@@ -6042,6 +6052,26 @@ public final class Tuivory {
           String value = " ".repeat(pad) + marker + text;
           value += " ".repeat(Math.max(0, span.width() - cells(value)));
           child.write(span.x(), y, value, role, focused && active && !state.disabled, span.width());
+          if (editing && edit != null && !edit.pending && !edit.isNull) {
+            var buf = edit.buffer;
+            int lo = Math.min(buf.anchor, buf.cursor),
+                hi = Math.max(buf.anchor, buf.cursor);
+            if (lo < hi) {
+              int start = editorWindow(buf.value(), buf.cursor, room).start(),
+                  x = 0;
+              var gs = graphemes(buf.value());
+              for (int index = start; index < gs.size(); index++) {
+                String glyph = clean(gs.get(index));
+                int w = cells(glyph);
+                if (x + w > room)
+                  break;
+                if (lo <= index && index < hi)
+                  child.write(span.x() + pad + marker.length() + x, y, glyph,
+                              "selection", false, w);
+                x += w;
+              }
+            }
+          }
         }
         if (o.horizontalLines) {
           int yy = y + 1 + o.rowSpacing;
@@ -6076,6 +6106,12 @@ public final class Tuivory {
         }
       }
       canvas.blit(child, new Rect(0, 0, r.width(), r.height()), r.x(), r.y());
+      String key = r.x() + "|" + r.y() + "|" + r.width() + "|" + r.height() +
+                   "|" + canvas.palette.theme + "|" + canvas.palette.profile +
+                   "|" + canvas.surfaceRole + "|" + ascii + "|" + focused;
+      if (!focused || !paintKey.isEmpty() && !paintKey.equals(key))
+        capture = null;
+      paintKey = key;
       hits = new Hits(r.width(), r.height(), geo, Map.copyOf(hitRows), List.copyOf(signature));
     }
     public GridEvent click(int x, int y, int width, int height) {
@@ -6115,6 +6151,296 @@ public final class Tuivory {
       if (info(r, c).state.disabled || !focus(r.id, c.id))
         return new GridEvent();
       return new GridEvent("select", r.id, c.id);
+    }
+    private static final class GridCapture {
+      String kind, column = "", anchorRow = "", anchorColumn = "";
+      int width, height, startX, startWidth, anchorIndex = -1;
+      long revision, editId;
+      List<String> signature;
+      boolean moved, whole;
+      GridCapture(String kind) { this.kind = kind; }
+    }
+    private void armGrid(GridCapture c, int width, int height) {
+      c.width = width;
+      c.height = height;
+      c.revision = revision;
+      c.signature = columnSignature();
+      capture = c;
+    }
+    private String[] rangeAnchor(Current p) {
+      return selected != null && selectionBounds() != null
+          ? new String[] {selected.anchorRow(), selected.anchorColumn()}
+          : new String[] {p.row.id, p.column.id};
+    }
+    private GridEvent extendNavigation(String action, int height) {
+      var before = current();
+      if (before == null)
+        return new GridEvent();
+      String[] anchor = rangeAnchor(before);
+      int oldRow = row, oldColumn = column;
+      var result = handle(action, height, "");
+      var after = current();
+      if (!result.kind().equals("select") || after == null)
+        return result;
+      if (info(after.row, after.column).state.disabled) {
+        row = oldRow;
+        column = oldColumn;
+        return new GridEvent();
+      }
+      setSelection(
+          new GridRange(anchor[0], anchor[1], after.row.id, after.column.id));
+      return result;
+    }
+    private record GridHit(GridGeometry geo, GridSpan span, GridRecord row,
+                           boolean gutter) {}
+    private GridHit gridHit(int x, int y, int width, int height) {
+      if (hits == null || hits.width() != width || hits.height() != height ||
+          !hits.signature().equals(columnSignature()) || x < 0 || y < 0 ||
+          x >= width || y >= height)
+        return null;
+      var geo = hits.geometry();
+      var span = geo.columns()
+                     .stream()
+                     .filter(s -> s.x() <= x && x < s.x() + s.width())
+                     .findFirst()
+                     .orElse(null);
+      if (y < geo.headerRows())
+        return new GridHit(geo, span, null, false);
+      int dy = y - geo.headerRows();
+      if (dy % geo.stride() != 0 || y >= height - geo.footerRows())
+        return null;
+      int index = geo.top() + dy / geo.stride();
+      var seen = hits.rows().get(index);
+      if (seen == null)
+        return null;
+      var r = index < sourceSize() ? record(index) : null;
+      if (r == null || !r.id.equals(seen)) {
+        if (capture != null &&
+            (capture.kind.equals("range") || capture.kind.equals("edit")))
+          capture = null;
+        return null;
+      }
+      boolean gutter = span == null && x < geo.gutter() && config.rowNumbers;
+      return span == null && !gutter ? null : new GridHit(geo, span, r, gutter);
+    }
+    private GridEvent editPointer(String action, int x, int y, int width,
+                                  int height, boolean extend) {
+      var e = edit;
+      if (e == null || e.pending || e.isNull ||
+          !workValid(e.rowId, e.columnId, e.revision)) {
+        capture = null;
+        return new GridEvent();
+      }
+      if (action.equals("move") &&
+          (capture == null || !capture.kind.equals("edit")))
+        return new GridEvent();
+      if (!List.of("down", "move", "click", "double").contains(action))
+        return new GridEvent();
+      var hit = gridHit(x, y, width, height);
+      if (hit == null || hit.span() == null || hit.row() == null ||
+          !hit.row().id.equals(e.rowId) || !hit.span().id().equals(e.columnId))
+        return action.equals("move") ? new GridEvent()
+                                     : new GridEvent("edit_blocked", "", "");
+      var col = columns.stream()
+                    .filter(c -> c.id.equals(hit.span().id()))
+                    .findFirst()
+                    .orElseThrow();
+      int extra = config.showCellMarkers && info(hit.row(), col).state.edited
+                      ? 2
+                      : 0,
+          pad = config.padding + extra,
+          room = hit.span().width() - 2 * config.padding - extra;
+      if (room <= 0)
+        return new GridEvent();
+      var buf = e.buffer;
+      int start = editorWindow(buf.value(), buf.cursor, room).start(),
+          offset = Math.max(0, Math.min(room, x - hit.span().x() - pad)),
+          used = 0, pos = start;
+      var gs = graphemes(buf.value());
+      for (int i = start; i < gs.size(); i++) {
+        int w = cells(clean(gs.get(i)));
+        if (used + w > offset)
+          break;
+        used += w;
+        pos++;
+      }
+      buf.select(extend || action.equals("move") ? buf.anchor : pos, pos);
+      if (action.equals("down")) {
+        var next = new GridCapture("edit");
+        next.editId = e.id;
+        armGrid(next, width, height);
+      }
+      return new GridEvent("edit_select", e.rowId, e.columnId);
+    }
+    public boolean pointerCaptured() { return capture != null; }
+    public GridEvent pointer(String action, int x, int y, int width,
+                             int height) {
+      return pointer(action, x, y, width, height, false);
+    }
+    /**
+     * Local grid coordinates. Route captured moves/releases outside the grid.
+     */
+    public GridEvent pointer(String action, int x, int y, int width, int height,
+                             boolean extend) {
+      mutation();
+      if (action == null ||
+          !List.of("down", "move", "up", "cancel", "click", "double",
+                   "wheel_up", "wheel_down", "wheel_left", "wheel_right")
+               .contains(action))
+        return new GridEvent();
+      gridNumber(x, -1000000000, 1000000000, "pointer x");
+      gridNumber(y, -1000000000, 1000000000, "pointer y");
+      gridNumber(width, 0, 65535, "width");
+      gridNumber(height, 0, 4096, "height");
+      var c = capture;
+      if (c != null &&
+          (c.width != width || c.height != height || c.revision != revision ||
+           !c.signature.equals(columnSignature())))
+        c = capture = null;
+      if (config.disableMouse || paste != null || action.equals("cancel")) {
+        capture = null;
+        return new GridEvent();
+      }
+      if (action.equals("up")) {
+        capture = null;
+        if (c != null && c.kind.equals("column") && !c.moved) {
+          var hit = gridHit(x, y, width, height);
+          if (hit != null && hit.row() == null && hit.span() != null &&
+              hit.span().id().equals(c.column))
+            return click(x, y, width, height);
+        }
+        return new GridEvent();
+      }
+      if (action.equals("down"))
+        c = capture = null;
+      if (edit != null) {
+        if (c != null && c.kind.equals("edit") && c.editId != edit.id)
+          capture = null;
+        return editPointer(action, x, y, width, height, extend);
+      }
+      if (action.startsWith("wheel_")) {
+        capture = null;
+        return handle(action.substring(6), height, "");
+      }
+      if (action.equals("move") && c == null)
+        return new GridEvent();
+      if (action.equals("move") && c.kind.equals("resize")) {
+        String id = c.column;
+        var col = columns.stream()
+                      .filter(v -> v.id.equals(id))
+                      .findFirst()
+                      .orElseThrow();
+        var o = columnConfig.getOrDefault(id, new GridColumnOptions());
+        int value = Math.max(o.minWidth,
+                             Math.min(o.maxWidth, c.startWidth + x - c.startX));
+        if (value != col.width && resizeColumn(id, value)) {
+          armGrid(c, width, height);
+          return new GridEvent("resize", "", id);
+        }
+        return new GridEvent();
+      }
+      if (action.equals("move") && c.kind.equals("column")) {
+        String id = c.column;
+        var span = geometry(width, height)
+                       .columns()
+                       .stream()
+                       .filter(s -> s.x() <= x && x < s.x() + s.width())
+                       .findFirst()
+                       .orElse(null);
+        if (span != null && !span.id().equals(id)) {
+          int source = -1, target = -1;
+          for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).id.equals(id))
+              source = i;
+            if (columns.get(i).id.equals(span.id()))
+              target = i;
+          }
+          if (source >= 0 && target >= 0 &&
+              columns.get(source).pin.equals(columns.get(target).pin)) {
+            var order = new ArrayList<>(columns);
+            var value = order.remove(source);
+            order.add(target, value);
+            setColumnLayout(order);
+            c.moved = true;
+            armGrid(c, width, height);
+            return new GridEvent("columns", "", id);
+          }
+        }
+        return new GridEvent();
+      }
+      var hit = gridHit(x, y, width, height);
+      if (hit == null)
+        return new GridEvent();
+      if (hit.row() == null) {
+        if (action.equals("down")) {
+          if (config.verticalLines && !config.disableResize)
+            for (var s : hit.geo().columns())
+              if (s.x() + s.width() == x) {
+                var col = columns.stream()
+                              .filter(v -> v.id.equals(s.id()))
+                              .findFirst()
+                              .orElseThrow();
+                var next = new GridCapture("resize");
+                next.column = s.id();
+                next.startX = x;
+                next.startWidth = col.width;
+                armGrid(next, width, height);
+                return new GridEvent("resize_start", "", s.id());
+              }
+          if (hit.span() != null) {
+            var next = new GridCapture("column");
+            next.column = hit.span().id();
+            armGrid(next, width, height);
+          }
+          return new GridEvent();
+        }
+        return action.equals("click") || action.equals("double")
+            ? click(x, y, width, height)
+            : new GridEvent();
+      }
+      if (action.equals("move") && !c.kind.equals("range"))
+        return new GridEvent();
+      var p = current();
+      var cs = visibleColumns();
+      String id = hit.span() != null ? hit.span().id()
+                  : p != null        ? p.column.id
+                                     : "";
+      var col =
+          cs.stream().filter(v -> v.id.equals(id)).findFirst().orElse(null);
+      if (col == null || info(hit.row(), col).state.disabled)
+        return new GridEvent();
+      String[] anchor = extend && p != null ? rangeAnchor(p)
+                                            : new String[] {hit.row().id, id};
+      boolean whole = hit.gutter() || config.selection.equals("row");
+      if (action.equals("move")) {
+        int index = sourceIndex(c.anchorRow).orElse(-1);
+        if (index < 0 || index != c.anchorIndex ||
+            !record(index).id.equals(c.anchorRow)) {
+          capture = null;
+          return new GridEvent();
+        }
+        anchor = new String[] {c.anchorRow, c.anchorColumn};
+        whole = c.whole;
+      }
+      if (!focus(hit.row().id, id))
+        return new GridEvent();
+      if (action.equals("double"))
+        return handle("activate", height, "");
+      if (whole || extend || action.equals("move"))
+        setSelection(new GridRange(anchor[0], whole ? cs.get(0).id : anchor[1],
+                                   hit.row().id,
+                                   whole ? cs.get(cs.size() - 1).id : id));
+      else if (action.equals("down") || action.equals("click"))
+        selected = null;
+      if (action.equals("down")) {
+        var next = new GridCapture("range");
+        next.anchorRow = anchor[0];
+        next.anchorColumn = anchor[1];
+        next.anchorIndex = sourceIndex(anchor[0]).orElse(-1);
+        next.whole = whole;
+        armGrid(next, width, height);
+      }
+      return new GridEvent("select", hit.row().id, id);
     }
     public GridViewState saveView() {
       var p = current();

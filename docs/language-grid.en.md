@@ -27,6 +27,16 @@ Source, display and preparation callbacks are synchronous and may run repeatedly
 
 The host owns sorting, filtering, server search, paging, database writes, clipboard transport and application-wide focus order. The library provides requests, internal navigation/drawing and search over loaded cells. A click on an old virtual-source frame is rejected if the row ID now differs from the ID actually drawn there.
 
+## Pointer and range selection
+
+Use `pointer(action, x, y, width, height, extend)` in Python, TS/JS, C++ and Java, or `tui_grid_pointer` in C. Coordinates are relative to the top left of the last drawn grid. Forward `down`, `move`, `up` and `cancel`. While `pointer_captured` / `pointerCaptured` / `tui_grid_pointer_captured` is true, keep forwarding movement and release outside the grid. Send `cancel` when the host opens a modal or switches the input target. Stale positions or data cannot trigger an action.
+
+- Drag cells to select a rectangle, or drag the row number gutter to select whole rows. `extend` and `select_up/down/left/right/home/end/page_up/page_down` keep the existing selection anchor.
+- Drag a visible header divider to resize a column within its configured limits. Drag a header label to reorder within the same pinned region. Releasing an unmoved header emits one `sort_request`. Do not send a separate `click` after `down` and `up`.
+- Direct `click`, `double` and `wheel_up/down/left/right` are also supported. The editor selects whole wide or combining graphemes and keeps its hardware cursor. Disabled cells and editors awaiting approval do not respond.
+
+The C grid owns the values returned by `tui_grid_selection` and `tui_grid_columns`. Copy any data you need before mutating the grid. Existing `click` methods remain available.
+
 ## Host-approved editing
 
     import tuivory as ui
@@ -81,7 +91,13 @@ Choose --demo grid in each language's single integrated example. Enter edits, / 
 
 Verification covers 14 shared TSV cases, 11 cursor cases, approval/permission checks, callback reentry, stale clicks/responses, virtual sources and view state. External C/C++ SDKs pass ASan/UBSan and static linking; the external Java17 JAR checks 23 actual ANSI frames. Theme/color/glyph PTY checks and package results are recorded in [evidence](evidence/) and [examples](examples.en.md). Local checks are distinguished from GitHub CI and publication.
 
+Drag cells or the row number gutter to select a range; Shift+Arrow extends it. Try dragging a header divider or label. In the Java line example use `pointer down|move|up X Y [extend]` with zero-based grid coordinates, or `select_down` and the other selection commands. The PTY check exercises range selection, release outside the grid, header resize and reorder, and the sort request. The SDK checks also verify stale captures and actual ANSI highlighting and caret placement.
+
+The [local Grid pointer results](evidence/language-grid-pointer-results.json) record 240 terminal combinations and the isolated package checks.
+
 ## Actual example screens
+
+![Range selected by dragging in the Python example](images/language-python-grid-range-en.png)
 
 ![Python grid](images/language-python-grid-en.png)
 

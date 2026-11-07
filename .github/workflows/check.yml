@@ -382,6 +382,11 @@ jobs:
         env:
           ASAN_OPTIONS: detect_leaks=1
         run: python tools/check_language_terminal.py --language "${{ matrix.language }}" --use-built
+      - name: Verify Grid pointer behavior in the native SDK or JAR
+        if: contains(fromJSON('["c","cpp","java"]'), matrix.language)
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+        run: python tools/check_language_grid_pointer.py --language "${{ matrix.language }}" --use-built
       - name: Validate all locale/theme/profile/glyph combinations
         shell: bash
         run: |

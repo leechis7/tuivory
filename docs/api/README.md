@@ -62,3 +62,5 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 TVR-7 0.11.1: [실제 그리드 커서·backend 연결](../grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.
 
 [Python·TypeScript/JavaScript·C·C++·Java 독립 지원](../languages.md): 미배포 독립 컴포넌트 구현 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.
+
+[미배포 독립 그리드 API](../language-grid.md): 다섯 패키지의 범위 선택, 포인터 캡처, 편집기 선택과 열 조작을 설명합니다.

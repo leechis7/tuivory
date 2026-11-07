@@ -31,7 +31,12 @@ def check_grid_example(language,lang,theme,colors,ascii,master,slave,process,cap
     def approve():
         key('y');wait_text('Host approved'if lang=='en'else'앱이 요청을 승인');wait(lambda:not shown(),'approved editor closes cursor')
     def select_all():send('select_all',b'\x01')
-    def click(x,y):send(f'click {x-1} {y-1}',f'\x1b[<0;{x+1};{y+1}M'.encode())
+    def pointer(action,x,y,extend=False):
+        button=(32 if action=='move'else 0)+(4 if extend else 0)
+        send(f'pointer {action} {x-1} {y-1}'+(' extend'if extend else''),
+             f'\x1b[<{button};{x+1};{y+1}{"m" if action=="up" else "M"}'.encode())
+    def click(x,y):
+        pointer('down',x,y);pointer('up',x,y)
     def status(number):wait_text(f'{number}/8')
     wait_text('Name'if lang=='en'else'이름');wait_text('1,234');status(1);frame()
     assert not shown(),(language,'non-editing grid cursor')
@@ -59,6 +64,29 @@ def check_grid_example(language,lang,theme,colors,ascii,master,slave,process,cap
     assert not shown();wait_text('raw');wait_text('value');cancel();status(2)
     key('b');wait_text('View saved'if lang=='en'else'보기 저장됨');send('down',b'\x1b[B');status(4)
     key('b');wait_text('View restored'if lang=='en'else'보기 복원됨');status(2)
+    range_label='range'if lang=='en'else'범위'
+    pointer('down',12,2);pointer('move',31,3);status(2);wait_text(range_label)
+    pointer('up',79,23)
+    pointer('move',31,7);status(2)
+    send('select_down',b'\x1b[1;2B');status(4);wait_text(range_label)
+    click(12,2);status(1)
+    key('b');wait_text('View saved'if lang=='en'else'보기 저장됨')
+    def column(label):
+        cells=frame()
+        chars=[(x,cells.get((x,1),(' ',))[0])for x in range(72)]
+        chars=[(x,ch)for x,ch in chars if ch]
+        row=''.join(ch for _,ch in chars)
+        return chars[row.index(label)][0]
+    name='Name'if lang=='en'else'이름';value='Value'if lang=='en'else'값'
+    name_x,value_x=column(name),column(value)
+    pointer('down',value_x-1,1);pointer('move',value_x+2,1);pointer('up',value_x+2,1)
+    wait(lambda:column(value)==value_x+3,'header divider resizes the actual column')
+    pointer('down',name_x,1);pointer('move',value_x+4,1);pointer('up',value_x+4,1)
+    wait(lambda:column(value)<column(name),'header drag changes column order')
+    click(column(name),1)
+    wait_text('Sort requested'if lang=='en'else'정렬 요청')
+    key('b');wait_text('View restored'if lang=='en'else'보기 복원됨');status(1)
+    send('right',b'\x1b[C')
     key('v')
     if language!='java':
         fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',18,40,0,0));key('v')

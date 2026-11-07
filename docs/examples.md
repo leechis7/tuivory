@@ -62,8 +62,11 @@ Go를 예제 기준으로 사용합니다. 기본 playground의 탐색·테마/�
 | --- | --- | --- |
 | Go | [시작 템플릿](../go/examples/starter/main.go), [토큰 읽기](../go/examples/tokens/main.go) | 동작하는 Go 스타일 API·실행형 견본 |
 | Rust | [토큰 읽기](../rust/examples/tokens.rs), [대화형 견본](rust-playground.md) | JSON 검증·색상/스타일 코어·Ratatui 어댑터·한영 실행 예제 |
-| Python | [토큰 읽기](../python/examples/read_tokens.py) | 데이터 읽기 예제. UI 패키지 미구현 |
-| JavaScript | [토큰 읽기](../javascript/examples/read-tokens.mjs) | 데이터 읽기 예제. UI 패키지 미구현 |
+| Python | [통합 예제](../python/src/tuivory/__main__.py) | 로컬 설치 후 `python -m tuivory --demo grid` |
+| TypeScript/JavaScript | [통합 예제](../javascript/examples/catalog.mjs) | TS 빌드 후 `node javascript/examples/catalog.mjs --demo grid` |
+| C | [통합 예제](../c/examples/catalog.c) | `make build-c` 후 `bin/c/`의 호스트 예제 실행 |
+| C++ | [통합 예제](../cpp/examples/catalog.cpp) | `make build-cpp` 후 `bin/cpp/`의 호스트 예제 실행 |
+| Java | [통합 예제](../java/examples/io/tuivory/examples/Catalog.java) | `make build-java` 후 `.cache/packages/java/`의 로컬 JAR 실행 |
 | Shell | [ANSI 견본](../shell/examples/terminal-colors.sh) | 참조 출력. 스타일 함수 패키지 미구현 |
 
 [공통 컴포넌트 정적 배치](examples-components.txt)는 언어와 무관한 참고 예시입니다.
@@ -114,4 +117,4 @@ Go 팝업·외부 카드의 적용 코드는 [오버레이 그리기](overlay-dr
 
 TVR-7 0.11.1: [실제 그리드 커서·backend 연결](grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.
 
-[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](languages.md): 미배포 패키지·Tree 검증 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.
+[Python·TypeScript/JavaScript·C·C++·Java 독립 지원](languages.md): 미배포 패키지와 통합 예제입니다. [그리드 조작과 키](language-grid.md)를 참고합니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.

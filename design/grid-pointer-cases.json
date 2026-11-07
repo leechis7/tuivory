@@ -1,0 +1,54 @@
+{
+  "width": 64,
+  "height": 10,
+  "columns": [{"id":"a","width":10},{"id":"b","width":8},{"id":"c","width":7}],
+  "rows": [{"id":"r1","a":"한글X"},{"id":"r2","a":"Disabled","disabled":true},{"id":"r3","a":"Third"},{"id":"r4","a":"Read only","read_only":true}],
+  "cases": [
+    {"name":"hover, disabled targets and range capture", "steps":[
+      {"action":"move","at":["cell","r3","b"],"event":"","row":"r1","column":"a","captured":false},
+      {"action":"down","at":["cell","r1","a"],"event":"select","captured":true},
+      {"action":"move","at":["cell","r2","b"],"event":"","row":"r1","captured":true},
+      {"action":"move","at":["cell","r3","b"],"event":"select","row":"r3","column":"b","range":["r1","a","r3","b"],"captured":true},
+      {"action":"up","at":["outside"],"event":"","range":["r1","a","r3","b"],"captured":false},
+      {"action":"down","at":["cell","r4","a"],"event":"select","row":"r4","range":null,"captured":true},
+      {"action":"cancel","at":["outside"],"event":"","captured":false}
+    ]},
+    {"name":"gutter selects rows", "steps":[
+      {"action":"down","at":["gutter","r1"],"event":"select","range":["r1","a","r1","c"],"captured":true},
+      {"action":"move","at":["gutter","r3"],"event":"select","range":["r1","a","r3","c"]},
+      {"action":"up","at":["outside"],"event":"","captured":false}
+    ]},
+    {"name":"shift click and keyboard extend stable anchor", "steps":[
+      {"action":"click","at":["cell","r3","a"],"extend":true,"event":"select","range":["r1","a","r3","a"]},
+      {"key":"select_right","event":"select","range":["r1","a","r3","b"]},
+      {"key":"select_up","event":"select","range":["r1","a","r1","b"]},
+      {"action":"wheel_down","at":["cell","r1","a"],"event":"select","row":"r3"}
+    ]},
+    {"name":"resize preserves capture and clamps width", "steps":[
+      {"action":"down","at":["divider","a"],"event":"resize_start","captured":true},
+      {"action":"move","at":["delta",3,0],"event":"resize","width":["a",13],"captured":true},
+      {"action":"move","at":["delta",999,0],"event":"resize","width":["a",14],"captured":true},
+      {"action":"up","at":["outside"],"event":"","captured":false},
+      {"action":"move","at":["delta",-4,0],"event":"","width":["a",14]}
+    ]},
+    {"name":"column move and ordinary header sort are separate", "steps":[
+      {"action":"down","at":["header","b"],"event":"","captured":true},
+      {"action":"move","at":["header","c"],"event":"columns","order":["a","c","b"],"captured":true},
+      {"action":"up","at":["header","b"],"event":"","captured":false},
+      {"action":"down","at":["header","a"],"event":"","captured":true},
+      {"action":"up","at":["header","a"],"event":"sort_request","captured":false}
+    ]},
+    {"name":"editor graphemes and pending guard", "steps":[
+      {"action":"double","at":["cell","r1","a"],"event":"edit_begin"},
+      {"action":"down","at":["editor","r1","a",1],"event":"edit_select","caret":[0,0],"captured":true},
+      {"action":"move","at":["editor","r1","a",3],"event":"edit_select","caret":[0,1],"captured":true},
+      {"action":"up","at":["outside"],"event":"","caret":[0,1],"captured":false},
+      {"key":"submit","event":"edit_submit"},
+      {"action":"down","at":["cell","r1","a"],"event":"","captured":false}
+    ]},
+    {"name":"viewport change expires capture", "steps":[
+      {"action":"down","at":["cell","r1","a"],"event":"select","captured":true},
+      {"action":"move","at":["outside"],"viewport":[40,8],"event":"","captured":false,"range":null}
+    ]}
+  ]
+}

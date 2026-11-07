@@ -345,6 +345,29 @@ export interface GridViewState {
   mode: "cell" | "row" | "range";
   filter: string;
 }
+type GridCaptureMode =
+  | { kind: "resize"; column: string; startWidth: number; startX: number }
+  | { kind: "column"; column: string; moved: boolean }
+  | {
+      kind: "range";
+      anchorRow: string;
+      anchorColumn: string;
+      anchorIndex: number | undefined;
+      whole: boolean;
+    }
+  | { kind: "edit"; editId: number };
+type GridCapture = GridCaptureMode & {
+  width: number;
+  height: number;
+  revision: number;
+  signature: string;
+};
+type GridHit = {
+  geo: GridGeometry;
+  span: GridSpan | undefined;
+  row: Record | null;
+  gutter: boolean;
+};
 export class Grid {
   columns: Column[];
   private source: GridSource;
@@ -381,6 +404,8 @@ export class Grid {
     rows: Map<number, string>;
     signature: string;
   } | null = null;
+  private capture: GridCapture | null = null;
+  private paintKey = "";
   private callback = false;
   constructor(columns: Column[], rows: Record[] | GridSource) {
     if (columns.length > 65536) throw new Error("too many grid columns");
@@ -574,7 +599,7 @@ export class Grid {
   private invalidate(): void {
     if (this.callback) throw new Error("grid mutation inside callback");
     this.currentRevision++;
-    this.edit = this.pasteRequest = this.hits = null;
+    this.edit = this.pasteRequest = this.hits = this.capture = null;
   }
   setRows(rows: Record[]): void {
     this.setSource(new MemoryRows(rows));
@@ -772,6 +797,21 @@ export class Grid {
     this.guard();
     integer(height, 0, 4096, "height");
     if (this.config.disableKeyboard) return event();
+    this.capture = null;
+    if (
+      !this.edit &&
+      [
+        "select_up",
+        "select_down",
+        "select_left",
+        "select_right",
+        "select_home",
+        "select_end",
+        "select_page_up",
+        "select_page_down",
+      ].includes(action)
+    )
+      return this.extendNavigation(action.slice(7), height);
     const e = this.edit;
     if (e) {
       if (action === "cancel") {
@@ -1240,7 +1280,7 @@ export class Grid {
     value: string,
     cursor: number,
     width: number,
-  ): [string, number, number] {
+  ): [string, number, number, number] {
     const gs = graphemes(value),
       at = Math.max(0, Math.min(gs.length, cursor)),
       reserve = Math.min(
@@ -1265,7 +1305,7 @@ export class Grid {
       used += w;
     }
     const glyph = Math.max(1, at < gs.length ? cells(gs[at]) : 1);
-    return [text, x, glyph > width ? 1 : glyph];
+    return [text, x, glyph > width ? 1 : glyph, start];
   }
   editCursor(width: number, height: number): [number, number, number] | null {
     const e = this.edit;
@@ -1473,6 +1513,37 @@ export class Grid {
           focused && selected && !state.disabled,
           span.width,
         );
+        const edit = this.edit;
+        if (editing && edit && !edit.pending && !edit.null) {
+          const buf = edit.buffer,
+            lo = Math.min(buf.anchor, buf.cursor),
+            hi = Math.max(buf.anchor, buf.cursor);
+          if (lo < hi) {
+            const [, , , start] = this.editorWindow(
+              buf.value,
+              buf.cursor,
+              room,
+            );
+            let x = 0,
+              index = start;
+            for (const raw of graphemes(buf.value).slice(start)) {
+              const glyph = clean(raw),
+                w = cells(glyph);
+              if (x + w > room) break;
+              if (lo <= index && index < hi)
+                child.write(
+                  span.x + pad + marker.length + x,
+                  y,
+                  glyph,
+                  "selection",
+                  false,
+                  w,
+                );
+              x += w;
+              index++;
+            }
+          }
+        }
       }
       if (o.horizontalLines) {
         const yy = y + 1 + o.rowSpacing;
@@ -1521,6 +1592,20 @@ export class Grid {
     const cursor = focused ? this.editCursor(r.width, r.height) : null;
     if (cursor) child.setCursor(...cursor);
     canvas.blit(child, rect(0, 0, r.width, r.height), r.x, r.y);
+    const key = JSON.stringify([
+      r.x,
+      r.y,
+      r.width,
+      r.height,
+      canvas.palette.theme,
+      canvas.palette.colors,
+      canvas.surfaceRole,
+      ascii,
+      focused,
+    ]);
+    if (!focused || (this.paintKey && this.paintKey !== key))
+      this.capture = null;
+    this.paintKey = key;
     this.hits = {
       width: r.width,
       height: r.height,
@@ -1563,6 +1648,309 @@ export class Grid {
     if (this.info(r, c).state.disabled || !this.focus(r.id, c.id))
       return event();
     return event("select", r.id, "", { column_id: c.id });
+  }
+  get pointerCaptured(): boolean {
+    return this.capture !== null;
+  }
+  private armGrid(width: number, height: number, mode: GridCaptureMode): void {
+    this.capture = {
+      width,
+      height,
+      revision: this.currentRevision,
+      signature: this.columnSignature(),
+      ...mode,
+    };
+  }
+  private rangeAnchor(current: [Record, Column]): [string, string] {
+    const selection = this.selected;
+    return selection && this.selectionBounds()
+      ? [selection.anchorRow, selection.anchorColumn]
+      : [current[0].id, current[1].id];
+  }
+  private extendNavigation(action: string, height: number): Event {
+    const current = this.current();
+    if (!current) return event();
+    const [anchorRow, anchorColumn] = this.rangeAnchor(current),
+      row = this.row,
+      column = this.column;
+    const result = this.handle(action, height),
+      after = this.current();
+    if (result.kind !== "select" || !after) return result;
+    if (this.info(...after).state.disabled) {
+      this.row = row;
+      this.column = column;
+      return event();
+    }
+    this.setSelection({
+      anchorRow,
+      anchorColumn,
+      endRow: after[0].id,
+      endColumn: after[1].id,
+    });
+    return result;
+  }
+  private gridHit(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): GridHit | null {
+    const hits = this.hits;
+    if (
+      !hits ||
+      hits.width !== width ||
+      hits.height !== height ||
+      hits.signature !== this.columnSignature() ||
+      x < 0 ||
+      y < 0 ||
+      x >= width ||
+      y >= height
+    )
+      return null;
+    const geo = hits.geometry,
+      span = geo.columns.find((s) => s.x <= x && x < s.x + s.width);
+    if (y < geo.headerRows) return { geo, span, row: null, gutter: false };
+    const dy = y - geo.headerRows;
+    if (dy % geo.stride || y >= height - geo.footerRows) return null;
+    const index = geo.top + Math.floor(dy / geo.stride),
+      seen = hits.rows.get(index);
+    if (!seen) return null;
+    const row = index < this.sourceSize() ? this.record(index) : null;
+    if (!row || row.id !== seen) {
+      if (this.capture?.kind === "range" || this.capture?.kind === "edit")
+        this.capture = null;
+      return null;
+    }
+    const gutter = !span && x < geo.gutter && this.config.rowNumbers;
+    return span || gutter ? { geo, span, row, gutter } : null;
+  }
+  private editPointer(
+    action: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    extend: boolean,
+  ): Event {
+    const e = this.edit;
+    if (!e || e.pending || e.null || !this.workValid(e)) {
+      this.capture = null;
+      return event();
+    }
+    if (action === "move" && this.capture?.kind !== "edit") return event();
+    if (!["down", "move", "click", "double"].includes(action)) return event();
+    const hit = this.gridHit(x, y, width, height);
+    if (
+      !hit?.span ||
+      !hit.row ||
+      hit.row.id !== e.rowId ||
+      hit.span.id !== e.columnId
+    )
+      return action === "move" ? event() : event("edit_blocked");
+    const col = this.columns.find((c) => c.id === hit.span!.id)!;
+    const extra =
+      this.config.showCellMarkers && this.info(hit.row, col).state.edited
+        ? 2
+        : 0;
+    const pad = this.config.padding + extra,
+      room = hit.span.width - 2 * this.config.padding - extra;
+    if (room <= 0) return event();
+    const buf = e.buffer,
+      [, , , start] = this.editorWindow(buf.value, buf.cursor, room);
+    const offset = Math.max(0, Math.min(room, x - hit.span.x - pad));
+    let used = 0,
+      pos = start;
+    for (const g of graphemes(buf.value).slice(start)) {
+      const w = cells(clean(g));
+      if (used + w > offset) break;
+      used += w;
+      pos++;
+    }
+    buf.select(extend || action === "move" ? buf.anchor : pos, pos);
+    if (action === "down")
+      this.armGrid(width, height, { kind: "edit", editId: e.id });
+    return event("edit_select", e.rowId, "", { column_id: hit.span.id });
+  }
+  /** Local coordinates. Route captured moves and releases even outside the grid. */
+  pointer(
+    action: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    extend = false,
+  ): Event {
+    this.guard();
+    if (
+      ![
+        "down",
+        "move",
+        "up",
+        "cancel",
+        "click",
+        "double",
+        "wheel_up",
+        "wheel_down",
+        "wheel_left",
+        "wheel_right",
+      ].includes(action)
+    )
+      return event();
+    integer(x, -1000000000, 1000000000, "pointer x");
+    integer(y, -1000000000, 1000000000, "pointer y");
+    integer(width, 0, 65535, "width");
+    integer(height, 0, 4096, "height");
+    let capture = this.capture;
+    if (
+      capture &&
+      (capture.width !== width ||
+        capture.height !== height ||
+        capture.revision !== this.currentRevision ||
+        capture.signature !== this.columnSignature())
+    )
+      capture = this.capture = null;
+    if (this.config.disableMouse || this.pasteRequest || action === "cancel") {
+      this.capture = null;
+      return event();
+    }
+    if (action === "up") {
+      this.capture = null;
+      if (capture?.kind === "column" && !capture.moved) {
+        const hit = this.gridHit(x, y, width, height);
+        if (hit && !hit.row && hit.span?.id === capture.column)
+          return this.click(x, y, width, height);
+      }
+      return event();
+    }
+    if (action === "down") capture = this.capture = null;
+    if (this.edit) {
+      if (capture?.kind === "edit" && capture.editId !== this.edit.id)
+        this.capture = null;
+      return this.editPointer(action, x, y, width, height, extend);
+    }
+    if (action.startsWith("wheel_")) {
+      this.capture = null;
+      return this.handle(action.slice(6), height);
+    }
+    if (action === "move" && !capture) return event();
+    if (action === "move" && capture?.kind === "resize") {
+      const id = capture.column,
+        col = this.columns.find((v) => v.id === id)!,
+        o = this.columnConfig[id] ?? new GridColumnOptions();
+      const value = Math.max(
+        o.minWidth,
+        Math.min(o.maxWidth, capture.startWidth + x - capture.startX),
+      );
+      if (value !== (col.width ?? 12) && this.resizeColumn(id, value)) {
+        this.armGrid(width, height, {
+          kind: "resize",
+          column: id,
+          startWidth: capture.startWidth,
+          startX: capture.startX,
+        });
+        return event("resize", "", "", { column_id: id, width: value });
+      }
+      return event();
+    }
+    if (action === "move" && capture?.kind === "column") {
+      const id = capture.column,
+        span = this.geometry(width, height).columns.find(
+          (s) => s.x <= x && x < s.x + s.width,
+        );
+      if (span && span.id !== id) {
+        const source = this.columns.findIndex((v) => v.id === id),
+          target = this.columns.findIndex((v) => v.id === span.id);
+        if (
+          (this.columns[source].pin ?? "") === (this.columns[target].pin ?? "")
+        ) {
+          const order = [...this.columns];
+          order.splice(target, 0, order.splice(source, 1)[0]);
+          this.setColumnLayout(order);
+          this.armGrid(width, height, {
+            kind: "column",
+            column: id,
+            moved: true,
+          });
+          return event("columns", "", "", { column_id: id });
+        }
+      }
+      return event();
+    }
+    const hit = this.gridHit(x, y, width, height);
+    if (!hit) return event();
+    const { geo, span, row, gutter } = hit;
+    if (!row) {
+      if (action === "down") {
+        const divider =
+          this.config.verticalLines && !this.config.disableResize
+            ? geo.columns.find((s) => s.x + s.width === x)
+            : undefined;
+        if (divider) {
+          const id = divider.id,
+            col = this.columns.find((v) => v.id === id)!;
+          this.armGrid(width, height, {
+            kind: "resize",
+            column: id,
+            startX: x,
+            startWidth: col.width ?? 12,
+          });
+          return event("resize_start", "", "", { column_id: id });
+        }
+        if (span)
+          this.armGrid(width, height, {
+            kind: "column",
+            column: span.id,
+            moved: false,
+          });
+        return event();
+      }
+      return ["click", "double"].includes(action)
+        ? this.click(x, y, width, height)
+        : event();
+    }
+    if (action === "move" && capture?.kind !== "range") return event();
+    const current = this.current(),
+      cols = this.visibleColumns(),
+      column = span?.id ?? current?.[1].id ?? "",
+      col = cols.find((v) => v.id === column);
+    if (!col || this.info(row, col).state.disabled) return event();
+    let [anchorRow, anchorColumn] =
+        extend && current ? this.rangeAnchor(current) : [row.id, column],
+      whole = gutter || this.config.selection === "row";
+    if (action === "move" && capture?.kind === "range") {
+      const at = this.sourceIndex(capture.anchorRow);
+      if (
+        at === undefined ||
+        at !== capture.anchorIndex ||
+        at >= this.sourceSize() ||
+        this.record(at).id !== capture.anchorRow
+      ) {
+        this.capture = null;
+        return event();
+      }
+      anchorRow = capture.anchorRow;
+      anchorColumn = capture.anchorColumn;
+      whole = capture.whole;
+    }
+    if (!this.focus(row.id, column)) return event();
+    if (action === "double") return this.handle("activate", height);
+    if (whole || extend || action === "move")
+      this.setSelection({
+        anchorRow,
+        anchorColumn: whole ? cols[0].id : anchorColumn,
+        endRow: row.id,
+        endColumn: whole ? cols.at(-1)!.id : column,
+      });
+    else if (action === "down" || action === "click") this.selected = null;
+    if (action === "down")
+      this.armGrid(width, height, {
+        kind: "range",
+        anchorRow,
+        anchorColumn,
+        anchorIndex: this.sourceIndex(anchorRow),
+        whole,
+      });
+    return event("select", row.id, "", { column_id: column });
   }
   saveView(): GridViewState {
     const p = this.current(),

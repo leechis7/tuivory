@@ -81,6 +81,8 @@ class InputDecoder:
         keys = {b'\x1b[A': 'up', b'\x1b[B': 'down', b'\x1b[C': 'right', b'\x1b[D': 'left',
                 b'\x1b[H': 'home', b'\x1b[F': 'end', b'\x1b[5~': 'page_up', b'\x1b[6~': 'page_down',
                 b'\x1b[3~': 'delete', b'\x1b[Z': 'shift_tab', b'\x1bOP': 'f1', b'\x1bOQ': 'f2',
+                b'\x1b[1;2A': 'select_up', b'\x1b[1;2B': 'select_down',
+                b'\x1b[1;2C': 'select_right', b'\x1b[1;2D': 'select_left',
                 b'\x1b[21~': 'f10', b'\x1b[21;2~': 'shift_f10'}
         for seq, key in keys.items():
             if b.startswith(seq):

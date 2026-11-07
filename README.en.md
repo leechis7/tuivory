@@ -64,4 +64,4 @@ Korean is the default UI; add `--lang en` for English.
 
 TVR-7 in 0.11.1: [real grid cursor and backend integration](docs/grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.
 
-[Independent Python·TypeScript/JavaScript·C·C++·Java support](docs/languages.en.md): unreleased independent-component implementation work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
+[Independent Python·TypeScript/JavaScript·C·C++·Java support](docs/languages.en.md): unreleased component packages, [API catalog](docs/languages.en.md#component-apis) and bilingual examples. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.

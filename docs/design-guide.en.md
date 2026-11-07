@@ -23,3 +23,5 @@ The editor buffer contains no synthetic caret character. Share grapheme viewport
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](languages.en.md): unreleased independent-component implementation work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
 
 Drag previews preserve source data, selection and expansion. Feedback keeps the actual background and uses bold/underline; ! identifies rejection. Theme/layout/focus changes cancel capture, and final moves require host approval.
+
+Grid drag capture is local to the component. Cells and the row gutter select ranges; header dividers resize and header labels reorder within a pinned region. A stationary header release requests sort once. The host forwards captured release outside the grid and cancels when it changes the input target. [Independent Grid API](language-grid.en.md).

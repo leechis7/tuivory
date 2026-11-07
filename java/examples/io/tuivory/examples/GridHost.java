@@ -218,6 +218,17 @@ public final class GridHost {
         message = word("보기 복원됨", "View restored");
       }
       return;
+    } else if (command.equals("pointer")) {
+      String[] parts = text.strip().split("\\s+");
+      if (parts.length == 3 || parts.length == 4) {
+        try {
+          pointer(area.x() + Integer.parseInt(parts[1]),
+                  area.y() + Integer.parseInt(parts[2]),
+                  parts.length == 4 && parts[3].equals("extend"), parts[0]);
+        } catch (NumberFormatException ignored) {
+        }
+      }
+      return;
     } else if (command.equals("click")) {
       String[] point = text.strip().split("\\s+");
       if (point.length == 2)
@@ -234,10 +245,18 @@ public final class GridHost {
       message = word("편집할 수 없는 셀입니다.", "This cell cannot be edited.");
   }
   public void pointer(int x, int y, int button) {
-    if (button != 0 || detail != null || search != null || pending != null || paste != null
-        || !area.contains(x, y))
+    if (button == 0)
+      pointer(x, y, false, "click");
+  }
+  private void pointer(int x, int y, boolean extend, String action) {
+    if (detail != null || search != null || pending != null || paste != null) {
+      grid.pointer("cancel", 0, 0, area.width(), area.height());
       return;
-    var event = grid.click(x - area.x(), y - area.y(), area.width(), area.height());
+    }
+    if (!area.contains(x, y) && !grid.pointerCaptured())
+      return;
+    var event = grid.pointer(action, x - area.x(), y - area.y(), area.width(),
+                             area.height(), extend);
     if (event.kind().equals("sort_request"))
       message = word("정렬 요청: 앱이 처리합니다.", "Sort requested: handled by the host.");
   }

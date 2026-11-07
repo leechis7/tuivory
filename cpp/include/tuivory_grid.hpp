@@ -193,8 +193,8 @@ inline std::string fit(const std::string &s, int width,
                                    std::string(space - space / 2, ' ')
                              : t + std::string(space, ' ');
 }
-inline std::tuple<std::string, int, int> window(const std::string &value,
-                                                std::size_t cursor, int width) {
+inline std::tuple<std::string, int, int, std::size_t>
+window(const std::string &value, std::size_t cursor, int width) {
   auto gs = graphemes(value);
   auto at = std::min(cursor, gs.size()), start = at;
   int x = 0,
@@ -218,7 +218,7 @@ inline std::tuple<std::string, int, int> window(const std::string &value,
     used += w;
   }
   int glyph = std::max(1, at < gs.size() ? cells(clean(gs[at].text)) : 1);
-  return {text, x, glyph > width ? 1 : glyph};
+  return {text, x, glyph > width ? 1 : glyph, start};
 }
 } // namespace grid_detail
 inline std::vector<std::vector<std::string>>
@@ -332,6 +332,17 @@ class Grid {
     std::vector<std::string> signature;
   };
   std::optional<Hits> hits_;
+  struct GridCapture {
+    std::string kind, column, anchor_row, anchor_column;
+    int width = 0, height = 0, start_x = 0, start_width = 0;
+    std::uint64_t revision = 0, edit_id = 0;
+    std::optional<std::size_t> anchor_index;
+    std::vector<std::string> signature;
+    bool moved = false, whole = false;
+  };
+  std::optional<GridCapture> capture_;
+  std::string paint_key_;
+
   void mutation() const {
     if (callback_)
       throw std::invalid_argument("grid mutation inside callback");
@@ -390,6 +401,7 @@ class Grid {
     edit.reset();
     paste_.reset();
     hits_.reset();
+    capture_.reset();
   }
   std::optional<std::pair<GridRecord, GridColumn>> current() {
     auto cs = visible_columns();
@@ -750,6 +762,12 @@ public:
     grid_detail::number(height, 0, 4096, "invalid height");
     if (options_.disable_keyboard)
       return {};
+    capture_.reset();
+    if (!edit && (action == "select_up" || action == "select_down" ||
+                  action == "select_left" || action == "select_right" ||
+                  action == "select_home" || action == "select_end" ||
+                  action == "select_page_up" || action == "select_page_down"))
+      return extend_navigation(action.substr(7), height);
     if (edit) {
       auto &e = *edit;
       if (action == "cancel") {
@@ -1200,9 +1218,10 @@ public:
         y = g.header_rows + int(*i - g.top) * g.stride;
     if (room <= 0 || y >= height - g.footer_rows)
       return std::nullopt;
-    auto [text, x, glyph] =
+    auto [text, x, glyph, start] =
         grid_detail::window(edit->buffer.value, edit->buffer.cursor, room);
     (void)text;
+    (void)start;
     return std::array<int, 3>{span->x + options_.padding + extra + x, y, glyph};
   }
   std::optional<TextDocument> details() {
@@ -1356,6 +1375,27 @@ public:
         value += std::string(std::max(0, span.width - cells(value)), ' ');
         child.write(span.x, y, value, role,
                     focused && active && !state.disabled, span.width);
+        if (editing && edit && !edit->pending && !edit->null) {
+          const auto &buf = edit->buffer;
+          auto lo = std::min(buf.anchor, buf.cursor),
+               hi = std::max(buf.anchor, buf.cursor);
+          if (lo < hi) {
+            auto start =
+                std::get<3>(grid_detail::window(buf.value, buf.cursor, room));
+            auto gs = graphemes(buf.value);
+            int x = 0;
+            for (auto i = start; i < gs.size(); i++) {
+              auto glyph = clean(gs[i].text);
+              int w = cells(glyph);
+              if (x + w > room)
+                break;
+              if (lo <= i && i < hi)
+                child.write(span.x + pad + int(marker.size()) + x, y, glyph,
+                            "selection", false, w);
+              x += w;
+            }
+          }
+        }
       }
       if (o.horizontal_lines) {
         int yy = y + 1 + o.row_spacing;
@@ -1394,6 +1434,14 @@ public:
         child.set_cursor((*cursor)[0], (*cursor)[1], (*cursor)[2]);
     }
     canvas.blit(child, {0, 0, r.width, r.height}, r.x, r.y);
+    auto key = std::to_string(r.x) + "|" + std::to_string(r.y) + "|" +
+               std::to_string(r.width) + "|" + std::to_string(r.height) + "|" +
+               canvas.palette.theme() + "|" + canvas.palette.colors() + "|" +
+               canvas.surface_role + "|" + (ascii ? "1" : "0") + "|" +
+               (focused ? "1" : "0");
+    if (!focused || (!paint_key_.empty() && paint_key_ != key))
+      capture_.reset();
+    paint_key_ = std::move(key);
     hits_ = Hits{r.width, r.height, g, hit_rows, signature};
   }
   GridEvent click(int x, int y, int width, int height) {
@@ -1433,6 +1481,290 @@ public:
     if (info(r, *c).state.disabled || !focus(r.id, c->id))
       return {};
     return {"select", r.id, c->id};
+  }
+
+private:
+  void arm_grid(GridCapture capture, int width, int height) {
+    capture.width = width;
+    capture.height = height;
+    capture.revision = revision_;
+    capture.signature = column_signature();
+    capture_ = std::move(capture);
+  }
+  std::pair<std::string, std::string>
+  range_anchor(const std::pair<GridRecord, GridColumn> &p) {
+    return selected && selection_bounds()
+               ? std::make_pair(selected->anchor_row, selected->anchor_column)
+               : std::make_pair(p.first.id, p.second.id);
+  }
+  GridEvent extend_navigation(const std::string &action, int height) {
+    auto p = current();
+    if (!p)
+      return {};
+    auto anchor = range_anchor(*p);
+    auto previous_row = row, previous_column = column;
+    auto result = handle(action, height);
+    auto after = current();
+    if (result.kind != "select" || !after)
+      return result;
+    if (info(after->first, after->second).state.disabled) {
+      row = previous_row;
+      column = previous_column;
+      return {};
+    }
+    set_selection(GridRange{anchor.first, anchor.second, after->first.id,
+                            after->second.id});
+    return result;
+  }
+  struct GridHit {
+    const GridGeometry *geo;
+    std::optional<GridSpan> span;
+    std::optional<GridRecord> row;
+    bool gutter = false;
+  };
+  std::optional<GridHit> grid_hit(int x, int y, int width, int height) {
+    if (!hits_ || hits_->width != width || hits_->height != height ||
+        hits_->signature != column_signature() || x < 0 || x >= width ||
+        y < 0 || y >= height)
+      return std::nullopt;
+    const auto &geo = hits_->geometry;
+    auto item = std::find_if(
+        geo.columns.begin(), geo.columns.end(),
+        [&](const auto &s) { return s.x <= x && x < s.x + s.width; });
+    std::optional<GridSpan> span;
+    if (item != geo.columns.end())
+      span = *item;
+    if (y < geo.header_rows)
+      return GridHit{&geo, span, std::nullopt, false};
+    int dy = y - geo.header_rows;
+    if (dy % geo.stride || y >= height - geo.footer_rows)
+      return std::nullopt;
+    auto index = geo.top + dy / geo.stride;
+    auto seen = hits_->rows.find(index);
+    if (seen == hits_->rows.end())
+      return std::nullopt;
+    std::optional<GridRecord> r;
+    if (index < source_size())
+      r = record(index);
+    if (!r || r->id != seen->second) {
+      if (capture_ && (capture_->kind == "range" || capture_->kind == "edit"))
+        capture_.reset();
+      return std::nullopt;
+    }
+    bool gutter = !span && x < geo.gutter && options_.row_numbers;
+    if (!span && !gutter)
+      return std::nullopt;
+    return GridHit{&geo, span, std::move(r), gutter};
+  }
+  GridEvent edit_pointer(const std::string &action, int x, int y, int width,
+                         int height, bool extend) {
+    if (!edit || edit->pending || edit->null ||
+        !work_valid(edit->row_id, edit->column_id, edit->revision)) {
+      capture_.reset();
+      return {};
+    }
+    if (action == "move" && (!capture_ || capture_->kind != "edit"))
+      return {};
+    if (action != "down" && action != "move" && action != "click" &&
+        action != "double")
+      return {};
+    auto hit = grid_hit(x, y, width, height);
+    if (!hit || !hit->span || !hit->row || hit->row->id != edit->row_id ||
+        hit->span->id != edit->column_id)
+      return action == "move" ? GridEvent{} : GridEvent{"edit_blocked"};
+    auto col = std::find_if(columns.begin(), columns.end(),
+                            [&](auto &c) { return c.id == hit->span->id; });
+    int extra = options_.show_cell_markers && info(*hit->row, *col).state.edited
+                    ? 2
+                    : 0;
+    int pad = options_.padding + extra,
+        room = hit->span->width - 2 * options_.padding - extra;
+    if (room <= 0)
+      return {};
+    auto &buf = edit->buffer;
+    auto start = std::get<3>(grid_detail::window(buf.value, buf.cursor, room));
+    int offset = std::clamp(x - hit->span->x - pad, 0, room), used = 0;
+    auto pos = start;
+    auto gs = graphemes(buf.value);
+    for (auto i = start; i < gs.size(); i++) {
+      int w = cells(clean(gs[i].text));
+      if (used + w > offset)
+        break;
+      used += w;
+      pos++;
+    }
+    buf.select(extend || action == "move" ? buf.anchor : pos, pos);
+    if (action == "down") {
+      GridCapture next;
+      next.kind = "edit";
+      next.edit_id = edit->id;
+      arm_grid(std::move(next), width, height);
+    }
+    return {"edit_select", edit->row_id, edit->column_id};
+  }
+
+public:
+  bool pointer_captured() const { return capture_.has_value(); }
+  GridEvent pointer(const std::string &action, int x, int y, int width,
+                    int height, bool extend = false) {
+    mutation();
+    if (action != "down" && action != "move" && action != "up" &&
+        action != "cancel" && action != "click" && action != "double" &&
+        action != "wheel_up" && action != "wheel_down" &&
+        action != "wheel_left" && action != "wheel_right")
+      return {};
+    grid_detail::number(x, -1000000000, 1000000000, "pointer x");
+    grid_detail::number(y, -1000000000, 1000000000, "pointer y");
+    grid_detail::number(width, 0, 65535, "width");
+    grid_detail::number(height, 0, 4096, "height");
+    if (capture_ && (capture_->width != width || capture_->height != height ||
+                     capture_->revision != revision_ ||
+                     capture_->signature != column_signature()))
+      capture_.reset();
+    if (options_.disable_mouse || paste_ || action == "cancel") {
+      capture_.reset();
+      return {};
+    }
+    if (action == "up") {
+      auto previous = std::move(capture_);
+      capture_.reset();
+      if (previous && previous->kind == "column" && !previous->moved) {
+        auto hit = grid_hit(x, y, width, height);
+        if (hit && !hit->row && hit->span && hit->span->id == previous->column)
+          return click(x, y, width, height);
+      }
+      return {};
+    }
+    if (action == "down")
+      capture_.reset();
+    if (edit) {
+      if (capture_ && capture_->kind == "edit" && capture_->edit_id != edit->id)
+        capture_.reset();
+      return edit_pointer(action, x, y, width, height, extend);
+    }
+    if (action.rfind("wheel_", 0) == 0) {
+      capture_.reset();
+      return handle(action.substr(6), height);
+    }
+    if (action == "move" && !capture_)
+      return {};
+    if (action == "move" && capture_->kind == "resize") {
+      const auto id = capture_->column;
+      auto col = std::find_if(columns.begin(), columns.end(),
+                              [&](auto &c) { return c.id == id; });
+      auto o = column_options_.count(id) ? column_options_.at(id)
+                                         : GridColumnOptions{};
+      int value = std::clamp(capture_->start_width + x - capture_->start_x,
+                             o.min_width, o.max_width);
+      if (col != columns.end() && value != col->width) {
+        auto next = *capture_;
+        if (resize_column(id, value)) {
+          arm_grid(std::move(next), width, height);
+          return {"resize", "", id};
+        }
+      }
+      return {};
+    }
+    if (action == "move" && capture_->kind == "column") {
+      auto geo = geometry(width, height);
+      const auto id = capture_->column;
+      auto span =
+          std::find_if(geo.columns.begin(), geo.columns.end(),
+                       [&](auto &s) { return s.x <= x && x < s.x + s.width; });
+      if (span != geo.columns.end() && span->id != id) {
+        auto source = std::find_if(columns.begin(), columns.end(),
+                                   [&](auto &c) { return c.id == id; }),
+             target = std::find_if(columns.begin(), columns.end(),
+                                   [&](auto &c) { return c.id == span->id; });
+        if (source != columns.end() && target != columns.end() &&
+            source->pin == target->pin) {
+          auto order = columns;
+          auto item = *source;
+          auto at = target - columns.begin();
+          order.erase(order.begin() + (source - columns.begin()));
+          order.insert(order.begin() + at, std::move(item));
+          auto next = *capture_;
+          next.moved = true;
+          set_column_layout(order);
+          arm_grid(std::move(next), width, height);
+          return {"columns", "", id};
+        }
+      }
+      return {};
+    }
+    auto hit = grid_hit(x, y, width, height);
+    if (!hit)
+      return {};
+    if (!hit->row) {
+      if (action == "down") {
+        if (options_.vertical_lines && !options_.disable_resize) {
+          for (const auto &s : hit->geo->columns)
+            if (s.x + s.width == x) {
+              auto col = std::find_if(columns.begin(), columns.end(),
+                                      [&](auto &c) { return c.id == s.id; });
+              GridCapture next;
+              next.kind = "resize";
+              next.column = s.id;
+              next.start_x = x;
+              next.start_width = col->width;
+              arm_grid(std::move(next), width, height);
+              return {"resize_start", "", s.id};
+            }
+        }
+        if (hit->span) {
+          GridCapture next;
+          next.kind = "column";
+          next.column = hit->span->id;
+          arm_grid(std::move(next), width, height);
+        }
+        return {};
+      }
+      return action == "click" || action == "double"
+                 ? click(x, y, width, height)
+                 : GridEvent{};
+    }
+    if (action == "move" && (!capture_ || capture_->kind != "range"))
+      return {};
+    auto p = current();
+    auto cs = visible_columns();
+    auto id = hit->span ? hit->span->id : p ? p->second.id : "";
+    auto col =
+        std::find_if(cs.begin(), cs.end(), [&](auto &c) { return c.id == id; });
+    if (col == cs.end() || info(*hit->row, *col).state.disabled)
+      return {};
+    auto anchor =
+        extend && p ? range_anchor(*p) : std::make_pair(hit->row->id, id);
+    bool whole = hit->gutter || options_.selection == "row";
+    if (action == "move") {
+      auto index = source_index(capture_->anchor_row);
+      if (!index || index != capture_->anchor_index ||
+          record(*index).id != capture_->anchor_row) {
+        capture_.reset();
+        return {};
+      }
+      anchor = {capture_->anchor_row, capture_->anchor_column};
+      whole = capture_->whole;
+    }
+    if (!focus(hit->row->id, id))
+      return {};
+    if (action == "double")
+      return handle("activate", height);
+    if (whole || extend || action == "move")
+      set_selection(GridRange{anchor.first,
+                              whole ? cs.front().id : anchor.second,
+                              hit->row->id, whole ? cs.back().id : id});
+    else if (action == "down" || action == "click")
+      selected.reset();
+    if (action == "down") {
+      GridCapture next;
+      next.kind = "range";
+      next.anchor_row = anchor.first;
+      next.anchor_column = anchor.second;
+      next.anchor_index = source_index(anchor.first);
+      next.whole = whole;
+      arm_grid(std::move(next), width, height);
+    }
+    return {"select", hit->row->id, id};
   }
   GridViewState save_view() {
     auto p = current();

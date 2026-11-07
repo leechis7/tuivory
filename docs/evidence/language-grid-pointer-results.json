@@ -1,0 +1,71 @@
+{
+  "checked_at_utc": "2026-11-07T06:13:43.076998+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source_base": "b78184ae0f1465c71da98714d943c3112cfd5664",
+  "source_uncommitted": true,
+  "host": "Linux aarch64",
+  "scope": "Independent Grid range, editor selection, pointer capture and column gestures; bilingual examples and API audit.",
+  "sha256": {
+    "design/grid-pointer-cases.json": "d942281404625a4cec5b3e2aad68b710ca8eac598a3ee5052792c85c912cac4b",
+    "c/include/tuivory.h": "e269516569f9f82d7a2ff07b0e5a0bd4225b96814a286f0220c5338ccaf08cd3",
+    "c/src/tuivory.c": "2d40ec5fcdc86c5f2c0aafd685b3376f5d15da7214b055cb11f7a8dd6a2cf85f",
+    "cpp/include/tuivory_grid.hpp": "32240c7a73450218e6d5ebf287176ce996f988d61a24e40b01a67661118439ad",
+    "java/src/main/java/io/tuivory/Tuivory.java": "5d540dc2a0a1d0817491855718455edd24b27cadf9e4f524c21c5ca86187056e",
+    "javascript/src/grid.ts": "169ce3e490baa0097a1cf8ebf87c5fe49f478af95562f1452f0077b8bae2f44b",
+    "python/src/tuivory/grid.py": "ab313b2dce58ee7f54ce33c9155a805de8e290886b7ac5ec0da41259d6569cc1",
+    "tools/check_language_grid_pointer.py": "1f88fa354f767cf5442d86b45f240d201cea9fea77ee80365d70a13a9bc2869c",
+    "tools/check_grid_example.py": "763ae593850682c6946aaf53955d6d4e3bb6924bf9a41c17d1dbd167384466b5"
+  },
+  "local": {
+    "shared_model_scenarios_per_language": 7,
+    "actual_ansi_editor_frames_per_native_or_jvm_sdk": {
+      "c": 24,
+      "cpp": 24,
+      "java": 24
+    },
+    "pty_grid_matrix": {
+      "by_language": {
+        "python": 48,
+        "javascript": 48,
+        "c": 48,
+        "cpp": 48,
+        "java": 48
+      },
+      "total": 240,
+      "dimensions": "two locales, three themes, four color profiles, Unicode and ASCII"
+    },
+    "pty_outside_release_and_inert_next_move": 10,
+    "python_unittest": 92,
+    "javascript_node_test_groups": 8,
+    "typescript_strict": true,
+    "external_runtime_packages": [
+      "Python wheel",
+      "npm JavaScript/TypeScript"
+    ],
+    "external_static_sdks": [
+      "C",
+      "C++"
+    ],
+    "external_java_jar": {
+      "compiled_with_release": 17,
+      "local_jvm": "27"
+    },
+    "preview_archives": {
+      "tuivory-c-0.11.1-linux-arm64.tar.gz": "1f9cf50643b85dd38729aa647c39d34d7e72d83d8c499f4600b1aeda43c8bdcd",
+      "tuivory-cpp-0.11.1-linux-arm64.tar.gz": "bee601937077cc489bb8f4da7d46e7283a7ef388200105e6a69641251f8893f3",
+      "tuivory-0.11.1-py3-none-any.whl": "ea56d5fa1a1fb32dab4303b9eb71ead533f60c9311ab95f2fd2c72056b6dccc6",
+      "tuivory-0.11.1.tar.gz": "643b4868f6663c95fb0c1ec54f6e44e318477b5402067258aeb2dbbe21564dbf",
+      "tuivory-0.11.1.tgz": "5405f7fff321aa6a685c2d5af845c0a8cb82d658e07032d46ab8d268e9b99437",
+      "tuivory-0.11.1.jar": "d01290bd2f21fc99bd37ce35a5f71076c11b07b8e42ffab5b8f8d9a2e30d6005"
+    },
+    "centos": "not run"
+  },
+  "github_ci": "not yet run for this Grid pointer milestone at capture time",
+  "publication": "unreleased; public 0.11.1 unchanged"
+}

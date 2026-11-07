@@ -319,13 +319,23 @@ fail:
   snprintf(h->message, sizeof h->message, "%s",
            grid_demo_word(h, "메모리 부족", "Out of memory"));
 }
-static void grid_demo_pointer(GridDemo *h, int x, int y, int button) {
-  if (button || h->search || h->detail || h->pending_id || x < h->area.x ||
-      x >= h->area.x + h->area.width || y < h->area.y ||
-      y >= h->area.y + h->area.height)
+static void grid_demo_pointer(GridDemo *h, int x, int y, int button,
+                              const char *kind) {
+  if (h->search || h->detail || h->pending_id) {
+    tui_grid_pointer(h->grid, "cancel", 0, 0, h->area.width, h->area.height, 0);
     return;
-  TuiGridEvent e = tui_grid_click(h->grid, x - h->area.x, y - h->area.y,
-                                  h->area.width, h->area.height);
+  }
+  const char *wheel[] = {"wheel_up", "wheel_down", "wheel_left", "wheel_right"};
+  if (button & 64)
+    kind = wheel[button & 3];
+  else if ((button & 3) && strcmp(kind, "up"))
+    return;
+  if (!tui_grid_pointer_captured(h->grid) &&
+      (x < h->area.x || x >= h->area.x + h->area.width || y < h->area.y ||
+       y >= h->area.y + h->area.height))
+    return;
+  TuiGridEvent e = tui_grid_pointer(h->grid, kind, x - h->area.x, y - h->area.y,
+                                    h->area.width, h->area.height, button & 4);
   if (!strcmp(e.kind, "sort_request"))
     snprintf(h->message, sizeof h->message, "%s",
              grid_demo_word(h, "정렬 요청: 앱이 처리합니다.",

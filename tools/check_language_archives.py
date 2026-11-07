@@ -19,6 +19,7 @@ from check_language_documents import source as document_source,validate_output a
 from check_language_syntax import source as syntax_source,validate_output as validate_syntax_output
 from check_language_grid import source as grid_source,validate_output as validate_grid_output
 from check_language_drag import source as drag_source,validate_output as validate_drag_output
+from check_language_grid_pointer import source as pointer_source, validate as validate_pointer_output
 from check_language_terminal import source as terminal_source
 
 def main():
@@ -45,7 +46,7 @@ def main():
    src.write_text(copy_source(lang));run(args,base);run([base/'consumer'],base)
    src.write_text(container_source(lang));run(args,base);run([base/'consumer'],base)
    src.write_text(surface_source(lang));run(args,base);validate_surface_output(subprocess.check_output([base/'consumer'],cwd=base,text=True))
-   for make,validate in [(popup_source,validate_popup_output),(dialog_source,validate_dialog_output),(document_source,validate_document_output),(syntax_source,validate_syntax_output),(grid_source,validate_grid_output),(drag_source,validate_drag_output)]:
+   for make,validate in [(popup_source,validate_popup_output),(dialog_source,validate_dialog_output),(document_source,validate_document_output),(syntax_source,validate_syntax_output),(grid_source,validate_grid_output),(drag_source,validate_drag_output),(pointer_source,validate_pointer_output)]:
     src.write_text(make(lang));run(args,base);validate(subprocess.check_output([base/'consumer'],cwd=base,text=True))
    src.write_text(terminal_source(lang));run(args,base);run([base/'consumer'],base)
    for demo,label in [('shadow',b'Context menu'),('dialog',b'Reconnect'),('document',b'Document viewer/editor'),('syntax',b'SELECT COUNT'),('grid',b'1,234'),('drag',b'Dragging: ON')]:
@@ -83,6 +84,8 @@ def main():
    src=base/(name+'.java');src.write_text(make('java'));run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);validate(subprocess.check_output(['java','-cp',str(jar)+os.pathsep+str(base),name],cwd=base,text=True))
   src=base/'DragCases.java';src.write_text(drag_source('java'))
   run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);validate_drag_output(subprocess.check_output(['java','-ea','-cp',str(jar)+os.pathsep+str(base),'DragCases'],cwd=base,text=True))
+  src=base/'GridPointerCases.java';src.write_text(pointer_source('java'))
+  run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);validate_pointer_output(subprocess.check_output(['java','-ea','-cp',str(jar)+os.pathsep+str(base),'GridPointerCases'],cwd=base,text=True))
   src=base/'TerminalCases.java';src.write_text(terminal_source('java'))
   run(['javac','--release','17','-encoding','UTF-8','-Xlint:all','-Werror','-cp',jar,src],base);run(['java','-ea','-cp',str(jar)+os.pathsep+str(base),'TerminalCases'],base)
   for demo,label in [('shadow',b'Context menu'),('dialog',b'Reconnect'),('document',b'Document viewer/editor'),('syntax',b'SELECT COUNT'),('grid',b'1,234'),('drag',b'Dragging: ON')]:

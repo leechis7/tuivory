@@ -326,17 +326,29 @@ export class GridDemo {
         "This cell cannot be edited.",
       );
   }
-  pointer(x, y, button) {
-    if (
-      button !== 0 ||
-      this.detail !== null ||
-      this.search !== null ||
-      this.pending !== null
-    )
-      return;
+  pointer(x, y, button, kind = "down") {
     const a = this.area;
-    if (x >= a.x && x < a.x + a.width && y >= a.y && y < a.y + a.height) {
-      const e = this.grid.click(x - a.x, y - a.y, a.width, a.height);
+    if (this.detail !== null || this.search !== null || this.pending !== null) {
+      this.grid.pointer("cancel", 0, 0, a.width, a.height);
+      return;
+    }
+    if (button & 64)
+      kind = ["wheel_up", "wheel_down", "wheel_left", "wheel_right"][
+        button & 3
+      ];
+    else if (button & 3 && kind !== "up") return;
+    if (
+      this.grid.pointerCaptured ||
+      (x >= a.x && x < a.x + a.width && y >= a.y && y < a.y + a.height)
+    ) {
+      const e = this.grid.pointer(
+        kind,
+        x - a.x,
+        y - a.y,
+        a.width,
+        a.height,
+        Boolean(button & 4),
+      );
       if (e.kind === "sort_request")
         this.message = this.word(
           "정렬 요청: 앱이 처리합니다.",

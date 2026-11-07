@@ -313,7 +313,8 @@ int main(int argc, char **argv) {
     fputs("\033[?1049h", stdout);
     if (menu_demo || feedback_demo || layout_demo || container_demo ||
         surface_demo || dialog_demo || document_demo || grid_demo || drag_demo)
-      fputs(drag_demo ? "\033[?1002h\033[?1006h" : "\033[?1000h\033[?1006h",
+      fputs((drag_demo || grid_demo) ? "\033[?1002h\033[?1006h"
+                                     : "\033[?1000h\033[?1006h",
             stdout);
     signal(SIGTERM, stop_signal);
     signal(SIGINT, stop_signal);
@@ -496,10 +497,14 @@ int main(int argc, char **argv) {
                               ending == 'm' ? "up"
                               : button & 32 ? "move"
                                             : "down");
+          } else if (grid_demo && (ending == 'M' || ending == 'm') && x > 0 &&
+                     y > 0) {
+            grid_demo_pointer(&grid_host, x - 1, y - 1, button,
+                              ending == 'm' ? "up"
+                              : button & 32 ? "move"
+                                            : "down");
           } else if (ending == 'M' && x > 0 && y > 0) {
-            if (grid_demo)
-              grid_demo_pointer(&grid_host, x - 1, y - 1, button);
-            else if (document_demo)
+            if (document_demo)
               document_demo_pointer(&document_host, x - 1, y - 1, button);
             else if (dialog_demo)
               dialog_demo_pointer(&dialog_host, x - 1, y - 1, button);
@@ -518,6 +523,10 @@ int main(int argc, char **argv) {
         }
         edit_action = !strcmp(seq, "[21~")     ? "f10"
                       : !strcmp(seq, "[21;2~") ? "shift_f10"
+                      : !strcmp(seq, "[1;2A")  ? "select_up"
+                      : !strcmp(seq, "[1;2B")  ? "select_down"
+                      : !strcmp(seq, "[1;2C")  ? "select_right"
+                      : !strcmp(seq, "[1;2D")  ? "select_left"
                       : !strcmp(seq, "[A")     ? "up"
                       : !strcmp(seq, "[B")     ? "down"
                       : !strcmp(seq, "[C")     ? "right"

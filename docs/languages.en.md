@@ -35,11 +35,17 @@ The first verification unit covers installation/import/include, 12 embedded pale
 | Popups and dialogs | Shadow, Dialog | [API](language-popups.en.md) |
 | Documents | TextDocument, markup, highlight ranges | [API](language-documents.en.md) |
 | Syntax | SQLAnalyzer, optional analyzer binding | [API](language-syntax.en.md) |
-| Data grids | Virtual data, edits, paste, ranges, views | [API](language-grid.en.md) |
+| Data grids | Virtual data, edits, paste, pointer ranges, views | [API](language-grid.en.md) |
 | Drag and drop | DragState, move requests, host approval | [API](language-drag.en.md) |
 | Input and terminals | InputDecoder, optional Terminal | [API](language-terminal.en.md) |
 
-Each specification states concrete APIs, ownership, host responsibilities and verification. Additional grid pointer behavior and the final catalog audit remain in progress; the epic is not marked complete.
+Each specification states concrete APIs, ownership, host responsibilities and verification. The catalog includes Grid pointer interactions. The language epics remain open.
+
+## How this relates to Go and Rust
+
+The common design covers the component areas above. API names, ownership, rendering adapters and terminal sessions follow each language. The independent packages return component events and draw to their own Canvas; Go tview views and Rust Ratatui widgets are specific to those implementations.
+
+The independent Grid offers on-demand `find`, per-cell edited state and in-memory view snapshots. The Go/Rust persistent search match layer and separate callback for edited row markers are outside this milestone. See the [Grid specification](language-grid.en.md) for the behavior available now.
 
 ## API use
 
@@ -99,7 +105,7 @@ C/C++ examples build only for the current Linux host at `bin/c/tuivory-linux-<ar
 
 Local checks cover shared Tree/state scenarios, 12 palettes, CJK/emoji/wide-glyph edges and isolated installation/linking. Actual results, unexecuted checks, remote CI and publication status are distinguished in the [evidence](evidence/language-foundation-results.json).
 
-[Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) → [TS/JS TVR-16](https://leechis7.atlassian.net/browse/TVR-16) → [C TVR-30](https://leechis7.atlassian.net/browse/TVR-30) → [C++ TVR-31](https://leechis7.atlassian.net/browse/TVR-31) → [Java TVR-32](https://leechis7.atlassian.net/browse/TVR-32). Continue the remaining components within each epic.
+[Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) → [TS/JS TVR-16](https://leechis7.atlassian.net/browse/TVR-16) → [C TVR-30](https://leechis7.atlassian.net/browse/TVR-30) → [C++ TVR-31](https://leechis7.atlassian.net/browse/TVR-31) → [Java TVR-32](https://leechis7.atlassian.net/browse/TVR-32).
 
 ## Tree references
 

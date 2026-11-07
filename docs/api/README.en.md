@@ -62,3 +62,5 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 TVR-7 in 0.11.1: [real grid cursor and backend integration](../grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.
 
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](../languages.en.md): unreleased independent-component implementation work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
+
+[Unreleased independent Grid API](../language-grid.en.md): range selection, pointer capture, editor selection and column manipulation across the five packages.
