@@ -45,3 +45,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Independent containers and cell-copy API](../docs/language-containers.en.md)
 
 [Independent Surface and background API](../docs/language-surfaces.en.md)
+
+[Independent popup shadows and dialogs](../docs/language-popups.en.md)

@@ -150,7 +150,8 @@ class HostBoundary(unittest.TestCase):
             rect = ui.Rect(0, 0, width, 8)
             a, divider, b = ui.split(rect, 20, 10, 10)
             self.assertEqual(a.width + divider.width + b.width, width)
-            card, bounds = ui.popup_placement(ui.Rect(width, 7, 1, 1), rect, 20, 6, shadow=True)
+            popup = ui.popup_placement(ui.Rect(width, 7, 1, 1), rect, 20, 6, ui.ShadowOptions("auto"))
+            card, bounds = popup.card,popup.bounds
             self.assertLessEqual(bounds.x + bounds.width, width)
             self.assertLessEqual(bounds.y + bounds.height, 8)
             self.assertLessEqual(card.width, bounds.width)

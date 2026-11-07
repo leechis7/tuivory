@@ -18,3 +18,7 @@ import "./canvas-copy.mjs";
 import "./containers.mjs";
 
 import "./surfaces.mjs";
+
+import "./popups.mjs";
+
+import "./dialogs.mjs";

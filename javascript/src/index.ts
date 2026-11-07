@@ -3498,34 +3498,6 @@ export class DataState {
   }
 }
 
-export function popupPlacement(
-  anchor: Rect,
-  viewport: Rect,
-  width: number,
-  height: number,
-  shadow = false,
-): { card: Rect; bounds: Rect } {
-  if (Math.min(width, height, viewport.width, viewport.height) < 0)
-    throw new Error("negative popup size");
-  const w = Math.min(viewport.width, width + Number(shadow)),
-    h = Math.min(viewport.height, height + Number(shadow)),
-    x = Math.max(
-      viewport.x,
-      Math.min(viewport.x + viewport.width - w, anchor.x),
-    );
-  let y = anchor.y + anchor.height;
-  if (y + h > viewport.y + viewport.height) y = anchor.y - h;
-  y = Math.max(viewport.y, Math.min(viewport.y + viewport.height - h, y));
-  return {
-    card: rect(
-      x,
-      y,
-      Math.max(0, w - Number(shadow && w > 0)),
-      Math.max(0, h - Number(shadow && h > 0)),
-    ),
-    bounds: rect(x, y, w, h),
-  };
-}
 export class Drag {
   source = "";
   target = "";
@@ -4355,5 +4327,569 @@ export class Surface {
       bounds.x,
       bounds.y,
     );
+  }
+}
+
+function popupNumber(value: number, limit = 1e6): void {
+  if (!Number.isInteger(value) || value < 0 || value > limit)
+    throw new Error("invalid popup bounds/options");
+}
+function popupRect(r: Rect): void {
+  popupNumber(r.x, 1e9);
+  popupNumber(r.y, 1e9);
+  popupNumber(r.width);
+  popupNumber(r.height);
+}
+export class PopupLayout {
+  readonly bounds: Rect;
+  readonly card: Rect;
+  readonly shadow: Rect;
+  constructor(bounds = rect(), card = rect(), shadow = rect()) {
+    this.bounds = { ...bounds };
+    this.card = { ...card };
+    this.shadow = { ...shadow };
+  }
+  shadowRegions(): Rect[] {
+    const s = this.shadow,
+      c = this.card,
+      sr = s.x + s.width,
+      sb = s.y + s.height,
+      cr = c.x + c.width,
+      cb = c.y + c.height,
+      x = Math.max(s.x, cr),
+      y = Math.max(s.y, cb);
+    return [
+      rect(x, s.y, Math.max(0, sr - x), Math.max(0, Math.min(sb, cb) - s.y)),
+      rect(s.x, y, s.width, Math.max(0, sb - y)),
+    ];
+  }
+  hit(x: number, y: number): boolean {
+    return (
+      x >= this.card.x &&
+      y >= this.card.y &&
+      x < this.card.x + this.card.width &&
+      y < this.card.y + this.card.height
+    );
+  }
+}
+export class ShadowOptions {
+  constructor(
+    readonly mode = "off",
+    readonly offsetX = 0,
+    readonly offsetY = 0,
+  ) {
+    shadowOffsets(this);
+    Object.freeze(this);
+  }
+  layout(bounds: Rect): PopupLayout {
+    popupRect(bounds);
+    return shadowLayout(this, bounds);
+  }
+}
+function shadowOffsets(o: ShadowOptions): [number, number] {
+  if (!["off", "auto", "solid", "dim"].includes(o.mode))
+    throw new Error("invalid shadow mode");
+  popupNumber(o.offsetX);
+  popupNumber(o.offsetY);
+  return o.mode === "off"
+    ? [0, 0]
+    : !o.offsetX && !o.offsetY
+      ? [1, 1]
+      : [o.offsetX, o.offsetY];
+}
+function shadowLayout(o: ShadowOptions, bounds: Rect): PopupLayout {
+  let [dx, dy] = shadowOffsets(o);
+  if (!bounds.width || !bounds.height) return new PopupLayout(bounds, bounds);
+  dx = Math.min(dx, bounds.width - 1);
+  dy = Math.min(dy, bounds.height - 1);
+  const card = rect(bounds.x, bounds.y, bounds.width - dx, bounds.height - dy);
+  let shadow = rect();
+  if (dx || dy) {
+    const caps = (o.mode === "auto" || o.mode === "solid") && dy > 0;
+    shadow = rect(
+      bounds.x + dx,
+      bounds.y + dy - Number(caps),
+      card.width,
+      card.height + Number(caps),
+    );
+  }
+  return new PopupLayout(bounds, card, shadow);
+}
+export function popupPlacement(
+  anchor: Rect,
+  viewport: Rect,
+  width: number,
+  height: number,
+  options = new ShadowOptions(),
+): PopupLayout {
+  popupRect(anchor);
+  popupRect(viewport);
+  popupNumber(width);
+  popupNumber(height);
+  const [dx, dy] = shadowOffsets(options),
+    w = width && height ? Math.min(width + dx, viewport.width) : 0,
+    h = width && height ? Math.min(height + dy, viewport.height) : 0,
+    mx = viewport.x + viewport.width - w,
+    my = viewport.y + viewport.height - h,
+    x = Math.max(viewport.x, Math.min(anchor.x, mx));
+  let y = anchor.y + anchor.height;
+  if (y > my) y = Math.max(0, anchor.y - h);
+  return shadowLayout(
+    options,
+    rect(x, Math.max(viewport.y, Math.min(y, my)), w, h),
+  );
+}
+function shadowShade(
+  backdrop: string,
+  hasRGB: boolean,
+  has256: boolean,
+): string {
+  const [r, g, b] = colorRGB(backdrop),
+    maximum = Math.max(r, g, b);
+  if (maximum <= 16) return hasRGB ? "#404040" : has256 ? "238" : "7";
+  const factor = maximum <= 96 ? 2 : 4;
+  if (hasRGB)
+    return (
+      "#" +
+      [r, g, b]
+        .map((n) =>
+          Math.floor((n * factor) / 5)
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")
+    );
+  if (has256)
+    return String(
+      232 +
+        Math.max(
+          0,
+          Math.min(
+            23,
+            Math.floor((Math.floor(((r + g + b) * factor) / 15) - 3) / 10),
+          ),
+        ),
+    );
+  return "0";
+}
+function paintShadow(
+  canvas: Canvas,
+  region: Rect,
+  layout: PopupLayout,
+  options: ShadowOptions,
+  ascii: boolean,
+  hasRGB: boolean,
+  has256: boolean,
+): void {
+  const left = Math.max(0, region.x),
+    right = Math.min(canvas.width, region.x + region.width),
+    top = Math.max(0, region.y),
+    bottom = Math.min(canvas.height, region.y + region.height);
+  if (left >= right || top >= bottom) return;
+  canvas.clearCursor(rect(left, top, right - left, bottom - top));
+  for (let y = top; y < bottom; y++) {
+    const backgrounds: string[] = [];
+    for (let x = left; x < right; x++) {
+      const c = canvas.data[y][x];
+      backgrounds.push(
+        c.owner >= 0
+          ? canvas.data[y][c.owner].style.background
+          : c.style.background,
+      );
+    }
+    if (canvas.data[y][left].owner >= 0)
+      canvas.writeStyle(left, y, " ", canvas.data[y][left].style, 1);
+    const end = right - 1,
+      cell = canvas.data[y][end],
+      start = cell.owner >= 0 ? cell.owner : end;
+    if (end + 1 < canvas.width && canvas.data[y][end + 1].owner === start)
+      canvas.writeStyle(end, y, " ", cell.style, 1);
+    for (let x = left; x < right; x++) {
+      const old = canvas.data[y][x];
+      if (options.mode === "dim") {
+        old.style = { ...old.style, dim: true };
+        continue;
+      }
+      const bg = backgrounds[x - left],
+        shade =
+          options.mode === "solid" ? "0" : shadowShade(bg, hasRGB, has256);
+      let symbol = " ",
+        background = shade;
+      if (ascii) {
+        symbol = ".";
+        background = bg;
+      } else if (layout.shadow.height > layout.card.height) {
+        if (y === layout.shadow.y) {
+          symbol = "▄";
+          background = bg;
+        } else if (y === layout.shadow.y + layout.shadow.height - 1) {
+          symbol = "▀";
+          background = bg;
+        }
+      }
+      canvas.writeStyle(
+        x,
+        y,
+        symbol,
+        {
+          foreground: shade,
+          background,
+          bold: false,
+          dim: false,
+          underline: false,
+        },
+        1,
+      );
+    }
+  }
+}
+export class Shadow {
+  constructor(readonly options = new ShadowOptions()) {}
+  draw(
+    canvas: Canvas,
+    bounds: Rect,
+    painter: (child: Canvas) => void,
+    ascii = false,
+  ): PopupLayout {
+    popupRect(bounds);
+    shadowOffsets(this.options);
+    const x = Math.min(bounds.x, canvas.width),
+      y = Math.min(bounds.y, canvas.height),
+      right = Math.min(canvas.width, bounds.x + bounds.width),
+      bottom = Math.min(canvas.height, bounds.y + bounds.height),
+      layout = shadowLayout(
+        this.options,
+        rect(x, y, Math.max(0, right - x), Math.max(0, bottom - y)),
+      ),
+      working = new Canvas(
+        canvas.width,
+        canvas.height,
+        canvas.palette,
+        canvas.surfaceRole,
+      );
+    working.blit(canvas, rect(0, 0, canvas.width, canvas.height), 0, 0);
+    const colors = Object.values(canvas.palette.roles).flatMap((v) => [
+        v.foreground,
+        v.background,
+      ]),
+      hasRGB = colors.some((c) => c.startsWith("#")),
+      has256 = colors.some((c) => !c.startsWith("#") && Number(c) >= 16);
+    if (this.options.mode !== "off")
+      for (const region of layout.shadowRegions())
+        paintShadow(
+          working,
+          region,
+          layout,
+          this.options,
+          ascii,
+          hasRGB,
+          has256,
+        );
+    const card = layout.card,
+      child = new Canvas(
+        card.width,
+        card.height,
+        canvas.palette,
+        canvas.surfaceRole,
+      );
+    child.blit(working, card, 0, 0);
+    child.clearCursor();
+    painter(child);
+    working.blit(child, rect(0, 0, card.width, card.height), card.x, card.y);
+    canvas.blit(working, rect(0, 0, canvas.width, canvas.height), 0, 0);
+    return layout;
+  }
+}
+
+function dialogText(value: string, limit: number): string {
+  if (typeof value !== "string") throw new Error("invalid dialog text/ID");
+  let size = 0;
+  for (const c of value) {
+    const cp = c.codePointAt(0)!;
+    if (cp >= 0xd800 && cp <= 0xdfff) throw new Error("invalid dialog Unicode");
+    size += cp < 128 ? 1 : cp < 2048 ? 2 : cp < 65536 ? 3 : 4;
+  }
+  if (size > limit) throw new Error("dialog text/ID exceeds limit");
+  return value;
+}
+function dialogWrap(
+  text: string,
+  width: number,
+  limit: number,
+): [string[], boolean] {
+  if (!text) return [[], false];
+  if (width <= 0 || limit <= 0) return [[], true];
+  const rows: string[] = [];
+  let line = "",
+    used = 0,
+    lastBreak = false,
+    truncated = false;
+  for (let g of graphemes(text)) {
+    if (g === "\r" || g === "\n" || g === "\r\n") {
+      if (rows.length >= limit) {
+        truncated = true;
+        break;
+      }
+      rows.push(line);
+      line = "";
+      used = 0;
+      lastBreak = true;
+      continue;
+    }
+    lastBreak = false;
+    g = clean(g);
+    let n = cells(g);
+    if (n > width) {
+      g = clip(g, width, true);
+      n = cells(g);
+    }
+    if (used + n > width && line) {
+      if (rows.length >= limit) {
+        truncated = true;
+        break;
+      }
+      rows.push(line);
+      line = "";
+      used = 0;
+    }
+    if (rows.length >= limit) {
+      truncated = true;
+      break;
+    }
+    line += g;
+    used += n;
+  }
+  if (!truncated && (line || !rows.length || lastBreak)) {
+    if (rows.length < limit) rows.push(line);
+    else truncated = true;
+  }
+  if (truncated && rows.length)
+    rows[rows.length - 1] =
+      clip(rows[rows.length - 1], Math.max(0, width - 1)) + "~";
+  return [rows, truncated];
+}
+export interface DialogButton {
+  id: string;
+  label?: string;
+  disabled?: boolean;
+}
+export interface DialogButtonCell {
+  id: string;
+  rect: Rect;
+  text: string;
+  disabled: boolean;
+  focused: boolean;
+}
+export interface DialogLayout {
+  body: string[];
+  buttons: DialogButtonCell[];
+  hiddenButtons: number;
+  bodyTruncated: boolean;
+}
+export class Dialog {
+  private heading = "";
+  private content = "";
+  private source: Required<DialogButton>[] = [];
+  private cancel = "";
+  private candidate = "";
+  private hits: { rect: Rect; id: string; disabled: boolean }[] = [];
+  constructor(
+    title = "",
+    message = "",
+    buttons: DialogButton[] = [],
+    cancelId = "",
+  ) {
+    this.setText(title, message);
+    this.setButtons(buttons, cancelId);
+  }
+  get title(): string {
+    return this.heading;
+  }
+  get message(): string {
+    return this.content;
+  }
+  get buttons(): DialogButton[] {
+    return this.source.map((b) => ({ ...b }));
+  }
+  get cancelId(): string {
+    return this.cancel;
+  }
+  get focused(): string {
+    return this.candidate;
+  }
+  setText(title = this.heading, message = this.content): void {
+    const heading = dialogText(title, 4096),
+      content = dialogText(message, 1e6);
+    this.heading = heading;
+    this.content = content;
+    this.hits = [];
+  }
+  setButtons(buttons: DialogButton[], cancelId = this.cancel): void {
+    if (!Array.isArray(buttons) || buttons.length > 1024)
+      throw new Error("invalid dialog button count");
+    const source = buttons.map((b) => ({
+      id: dialogText(b.id, 1024),
+      label: dialogText(b.label ?? "", 4096),
+      disabled: Boolean(b.disabled),
+    }));
+    unique(source);
+    const cancel = dialogText(cancelId, 1024);
+    if (cancel && !source.some((b) => b.id === cancel))
+      throw new Error("unknown dialog cancel ID");
+    const eligible = source.filter((b) => !b.disabled).map((b) => b.id),
+      focus = eligible.includes(this.candidate)
+        ? this.candidate
+        : eligible.includes(cancel)
+          ? cancel
+          : (eligible[0] ?? "");
+    this.source = source;
+    this.cancel = cancel;
+    this.candidate = focus;
+    this.hits = [];
+  }
+  focus(id: string): boolean {
+    if (!this.source.some((b) => b.id === id && !b.disabled)) return false;
+    if (this.candidate !== id) {
+      this.candidate = id;
+      this.hits = [];
+    }
+    return true;
+  }
+  handle(action: string): Event {
+    const eligible = this.source.filter((b) => !b.disabled).map((b) => b.id);
+    if (action === "cancel")
+      return this.cancel
+        ? eligible.includes(this.cancel)
+          ? event("cancel", this.cancel)
+          : event()
+        : event("cancel");
+    if (action === "activate")
+      return eligible.includes(this.candidate)
+        ? event("activate", this.candidate)
+        : event();
+    if (!eligible.length) return event();
+    let at = Math.max(0, eligible.indexOf(this.candidate));
+    if (["next", "right", "down"].includes(action))
+      at = (at + 1) % eligible.length;
+    else if (["previous", "left", "up"].includes(action))
+      at = (at + eligible.length - 1) % eligible.length;
+    else if (action === "home") at = 0;
+    else if (action === "end") at = eligible.length - 1;
+    else return event();
+    const id = eligible[at];
+    if (id === this.candidate) return event();
+    this.focus(id);
+    return event("focus", id);
+  }
+  layout(width: number, height: number): DialogLayout {
+    popupNumber(width);
+    popupNumber(height);
+    if (!width || !height)
+      return {
+        body: [],
+        buttons: [],
+        hiddenButtons: this.source.length,
+        bodyTruncated: Boolean(this.content),
+      };
+    const positions: { button: Required<DialogButton>; rect: Rect }[] = [];
+    let x = 0,
+      y = 0,
+      focusRow = 0;
+    for (const b of this.source) {
+      const label = clean(b.label || b.id),
+        w = Math.min(width, Math.max(1, cells(label) + 4));
+      if (x && x + 1 + w > width) {
+        x = 0;
+        y++;
+      }
+      if (x) x++;
+      positions.push({ button: b, rect: rect(x, y, w, 1) });
+      if (b.id === this.candidate) focusRow = y;
+      x += w;
+    }
+    const totalRows = positions.length ? y + 1 : 0,
+      visible = Math.min(height, totalRows),
+      start = Math.max(0, focusRow + 1 - visible),
+      available = height - visible,
+      gap = this.content && visible && available >= 2 ? 1 : 0,
+      [body, truncated] = dialogWrap(this.content, width, available - gap),
+      buttons: DialogButtonCell[] = [];
+    for (const position of positions) {
+      const b = position.button,
+        r = position.rect;
+      if (r.y < start || r.y >= start + visible) continue;
+      const label = clean(b.label || b.id),
+        text =
+          r.width >= 6
+            ? "[ " + clip(label, Math.max(0, r.width - 4), true) + " ]"
+            : clip(label, r.width, true);
+      buttons.push({
+        id: b.id,
+        rect: rect(r.x, height - visible + r.y - start, r.width, 1),
+        text,
+        disabled: b.disabled,
+        focused: b.id === this.candidate,
+      });
+    }
+    return {
+      body,
+      buttons,
+      hiddenButtons: this.source.length - buttons.length,
+      bodyTruncated: truncated,
+    };
+  }
+  draw(
+    canvas: Canvas,
+    bounds: Rect,
+    focused = true,
+    ascii = false,
+  ): DialogLayout {
+    popupRect(bounds);
+    this.hits = [];
+    const x = Math.min(bounds.x, canvas.width),
+      y = Math.min(bounds.y, canvas.height),
+      r = rect(
+        x,
+        y,
+        Math.max(0, Math.min(canvas.width, bounds.x + bounds.width) - x),
+        Math.max(0, Math.min(canvas.height, bounds.y + bounds.height) - y),
+      ),
+      inner = insetRect(canvas.panel(r, this.heading, focused, ascii), 1),
+      layout = this.layout(inner.width, inner.height);
+    layout.body.forEach((text, row) =>
+      canvas.write(inner.x, inner.y + row, text, "body", false, inner.width),
+    );
+    for (const b of layout.buttons) {
+      const r = rect(inner.x + b.rect.x, inner.y + b.rect.y, b.rect.width, 1),
+        role = b.disabled
+          ? "disabled"
+          : focused && b.focused
+            ? "button.focus"
+            : "button";
+      canvas.fill(r, role);
+      canvas.write(
+        r.x + Math.max(0, Math.floor((r.width - cells(b.text)) / 2)),
+        r.y,
+        b.text,
+        role,
+        false,
+        r.width,
+      );
+      this.hits.push({ rect: r, id: b.id, disabled: b.disabled });
+    }
+    return layout;
+  }
+  click(x: number, y: number): Event {
+    if (!Number.isInteger(x) || !Number.isInteger(y)) return event();
+    const hit = this.hits.find(
+      (h) =>
+        x >= h.rect.x &&
+        y >= h.rect.y &&
+        x < h.rect.x + h.rect.width &&
+        y < h.rect.y + h.rect.height,
+    );
+    if (!hit || hit.disabled) return event();
+    this.focus(hit.id);
+    return event("activate", hit.id);
   }
 }

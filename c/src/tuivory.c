@@ -6880,3 +6880,803 @@ TuiResult tui_surface_draw(const TuiSurface *s, TuiCanvas *c, TuiRect bounds,
   tui_canvas_free(child);
   return result;
 }
+
+static int popup_rect_valid(TuiRect r) {
+  return container_number(r.x, 1000000000) &&
+         container_number(r.y, 1000000000) &&
+         container_number(r.width, 1000000) &&
+         container_number(r.height, 1000000);
+}
+static TuiResult shadow_offsets(TuiShadowOptions o, int *dx, int *dy) {
+  const char *mode = o.mode ? o.mode : "off";
+  if (!container_number(o.offset_x, 1000000) ||
+      !container_number(o.offset_y, 1000000) ||
+      (strcmp(mode, "off") && strcmp(mode, "auto") && strcmp(mode, "solid") &&
+       strcmp(mode, "dim")))
+    return TUI_INVALID;
+  *dx = !strcmp(mode, "off") ? 0 : !o.offset_x && !o.offset_y ? 1 : o.offset_x;
+  *dy = !strcmp(mode, "off") ? 0 : !o.offset_x && !o.offset_y ? 1 : o.offset_y;
+  return TUI_OK;
+}
+static TuiPopupLayout shadow_layout_unchecked(TuiShadowOptions o,
+                                              TuiRect bounds) {
+  int dx = 0, dy = 0;
+  TuiPopupLayout l = {.bounds = bounds, .card = bounds};
+  shadow_offsets(o, &dx, &dy);
+  if (!bounds.width || !bounds.height)
+    return l;
+  dx = min(dx, bounds.width - 1);
+  dy = min(dy, bounds.height - 1);
+  l.card.width -= dx;
+  l.card.height -= dy;
+  if (dx || dy) {
+    int caps = (!strcmp(o.mode ? o.mode : "off", "auto") ||
+                !strcmp(o.mode ? o.mode : "off", "solid")) &&
+               dy > 0;
+    l.shadow = (TuiRect){bounds.x + dx, bounds.y + dy - caps, l.card.width,
+                         l.card.height + caps};
+  }
+  return l;
+}
+TuiResult tui_shadow_layout(const TuiShadowOptions *options, TuiRect bounds,
+                            TuiPopupLayout *out) {
+  TuiShadowOptions o = options ? *options : (TuiShadowOptions){0};
+  int dx, dy;
+  if (!out || !popup_rect_valid(bounds) ||
+      shadow_offsets(o, &dx, &dy) != TUI_OK)
+    return TUI_INVALID;
+  *out = shadow_layout_unchecked(o, bounds);
+  return TUI_OK;
+}
+TuiResult tui_popup_placement(TuiRect anchor, TuiRect viewport, int width,
+                              int height, const TuiShadowOptions *options,
+                              TuiPopupLayout *out) {
+  TuiShadowOptions o = options ? *options : (TuiShadowOptions){0};
+  int dx, dy, w, h, mx, my, x, y;
+  if (!out || !popup_rect_valid(anchor) || !popup_rect_valid(viewport) ||
+      !container_number(width, 1000000) || !container_number(height, 1000000) ||
+      shadow_offsets(o, &dx, &dy) != TUI_OK)
+    return TUI_INVALID;
+  w = width && height ? min(width + dx, viewport.width) : 0;
+  h = width && height ? min(height + dy, viewport.height) : 0;
+  mx = viewport.x + viewport.width - w;
+  my = viewport.y + viewport.height - h;
+  x = max(viewport.x, min(anchor.x, mx));
+  y = anchor.y + anchor.height;
+  if (y > my)
+    y = max(0, anchor.y - h);
+  *out = shadow_layout_unchecked(
+      o, (TuiRect){x, max(viewport.y, min(y, my)), w, h});
+  return TUI_OK;
+}
+TuiResult tui_popup_shadow_regions(TuiPopupLayout l, TuiRect out[2]) {
+  TuiRect values[] = {l.bounds, l.card, l.shadow};
+  if (!out)
+    return TUI_INVALID;
+  for (int n = 0; n < 3; n++)
+    if (!container_number(values[n].x, 2000000000) ||
+        !container_number(values[n].y, 2000000000) ||
+        !container_number(values[n].width, 1000000) ||
+        !container_number(values[n].height, 1000001))
+      return TUI_INVALID;
+  TuiRect s = l.shadow, c = l.card;
+  int sr = s.x + s.width, sb = s.y + s.height, cr = c.x + c.width,
+      cb = c.y + c.height, x = max(s.x, cr), y = max(s.y, cb);
+  out[0] = (TuiRect){x, s.y, max(0, sr - x), max(0, min(sb, cb) - s.y)};
+  out[1] = (TuiRect){s.x, y, s.width, max(0, sb - y)};
+  return TUI_OK;
+}
+int tui_popup_hit(const TuiPopupLayout *l, int x, int y) {
+  return l && x >= l->card.x && y >= l->card.y &&
+         (long long)x < (long long)l->card.x + l->card.width &&
+         (long long)y < (long long)l->card.y + l->card.height;
+}
+static unsigned shadow_shade(unsigned backdrop, int has_rgb, int has_256) {
+  int rgb[3] = {0};
+  style_rgb(backdrop, rgb);
+  int r = rgb[0], g = rgb[1], b = rgb[2], maximum = max(r, max(g, b));
+  if (maximum <= 16)
+    return has_rgb ? 0x1404040 : has_256 ? 238 : 7;
+  int factor = maximum <= 96 ? 2 : 4;
+  if (has_rgb)
+    return 0x1000000 | ((r * factor / 5) << 16) | ((g * factor / 5) << 8) |
+           (b * factor / 5);
+  if (has_256)
+    return (unsigned)(232 +
+                      max(0, min(23, ((r + g + b) * factor / 15 - 3) / 10)));
+  return 0;
+}
+static TuiResult shadow_paint(TuiCanvas *c, TuiRect region,
+                              TuiPopupLayout layout, TuiShadowOptions options,
+                              int ascii, int has_rgb, int has_256) {
+  int left = max(0, region.x), right = min(c->width, region.x + region.width),
+      top = max(0, region.y), bottom = min(c->height, region.y + region.height);
+  if (left >= right || top >= bottom)
+    return TUI_OK;
+  unsigned *backgrounds = malloc((size_t)(right - left) * sizeof *backgrounds);
+  if (!backgrounds)
+    return TUI_NOMEM;
+  TuiRect covered = {left, top, right - left, bottom - top};
+  tui_canvas_clear_cursor(c, &covered);
+  TuiResult result = TUI_OK;
+  const char *mode = options.mode ? options.mode : "off";
+  for (int y = top; y < bottom; y++) {
+    Cell *row = c->cells + (size_t)y * c->width;
+    for (int x = left; x < right; x++)
+      backgrounds[x - left] = row[x].owner >= 0
+                                  ? row[row[x].owner].style.background
+                                  : row[x].style.background;
+    if (row[left].owner >= 0) {
+      TuiStyle style = row[left].style;
+      result = tui_canvas_write_style(c, left, y, " ", &style, 1);
+      if (result != TUI_OK)
+        goto done;
+    }
+    int end = right - 1, start = row[end].owner >= 0 ? row[end].owner : end;
+    if (end + 1 < c->width && row[end + 1].owner == start) {
+      TuiStyle style = row[end].style;
+      result = tui_canvas_write_style(c, end, y, " ", &style, 1);
+      if (result != TUI_OK)
+        goto done;
+    }
+    for (int x = left; x < right; x++) {
+      if (!strcmp(mode, "dim")) {
+        row[x].style.dim = 1;
+        continue;
+      }
+      unsigned bg = backgrounds[x - left],
+               shade = !strcmp(mode, "solid")
+                           ? 0
+                           : shadow_shade(bg, has_rgb, has_256);
+      const char *symbol = " ";
+      TuiStyle style = {.foreground = shade, .background = shade};
+      if (ascii) {
+        symbol = ".";
+        style.background = bg;
+      } else if (layout.shadow.height > layout.card.height) {
+        if (y == layout.shadow.y) {
+          symbol = "▄";
+          style.background = bg;
+        } else if (y == layout.shadow.y + layout.shadow.height - 1) {
+          symbol = "▀";
+          style.background = bg;
+        }
+      }
+      result = tui_canvas_write_style(c, x, y, symbol, &style, 1);
+      if (result != TUI_OK)
+        goto done;
+    }
+  }
+done:
+  free(backgrounds);
+  return result;
+}
+TuiResult tui_shadow_draw(const TuiShadowOptions *options, TuiCanvas *canvas,
+                          TuiRect bounds, TuiSurfacePainter painter,
+                          void *context, int ascii, TuiPopupLayout *out) {
+  TuiShadowOptions o = options ? *options : (TuiShadowOptions){0};
+  int dx, dy, x, y, right, bottom, has_rgb = 0, has_256 = 0;
+  TuiCanvas *working = NULL, *child = NULL;
+  TuiResult result;
+  TuiPopupLayout layout;
+  TuiRect regions[2];
+  if (!canvas || !painter || !popup_rect_valid(bounds) ||
+      shadow_offsets(o, &dx, &dy) != TUI_OK)
+    return TUI_INVALID;
+  x = min(bounds.x, canvas->width);
+  y = min(bounds.y, canvas->height);
+  right = min(canvas->width, bounds.x + bounds.width);
+  bottom = min(canvas->height, bounds.y + bounds.height);
+  layout = shadow_layout_unchecked(
+      o, (TuiRect){x, y, max(0, right - x), max(0, bottom - y)});
+  working = tui_canvas_new(canvas->width, canvas->height, canvas->theme,
+                           canvas->profile);
+  if (!working)
+    return TUI_NOMEM;
+  tui_canvas_surface(working, canvas->surface);
+  result = tui_canvas_blit(working, canvas, tui_canvas_bounds(canvas), 0, 0);
+  if (result != TUI_OK)
+    goto done;
+  for (size_t n = 0; n < sizeof tui_roles / sizeof tui_roles[0]; n++) {
+    TuiStyle s;
+    tui_style(canvas->theme, canvas->profile, tui_roles[n], 0, &s);
+    unsigned colors[] = {s.foreground, s.background};
+    for (int k = 0; k < 2; k++) {
+      has_rgb = has_rgb || !!(colors[k] & 0x1000000);
+      has_256 = has_256 || (!(colors[k] & 0x1000000) && colors[k] >= 16 &&
+                            colors[k] <= 255);
+    }
+  }
+  if (strcmp(o.mode ? o.mode : "off", "off")) {
+    result = tui_popup_shadow_regions(layout, regions);
+    if (result != TUI_OK)
+      goto done;
+    for (int n = 0; n < 2; n++) {
+      result =
+          shadow_paint(working, regions[n], layout, o, ascii, has_rgb, has_256);
+      if (result != TUI_OK)
+        goto done;
+    }
+  }
+  child = tui_canvas_new(layout.card.width, layout.card.height, canvas->theme,
+                         canvas->profile);
+  if (!child) {
+    result = TUI_NOMEM;
+    goto done;
+  }
+  tui_canvas_surface(child, canvas->surface);
+  result = tui_canvas_blit(child, working, layout.card, 0, 0);
+  if (result != TUI_OK)
+    goto done;
+  tui_canvas_clear_cursor(child, NULL);
+  result = painter(context, child);
+  if (result != TUI_OK)
+    goto done;
+  result = tui_canvas_blit(working, child, tui_canvas_bounds(child),
+                           layout.card.x, layout.card.y);
+  if (result != TUI_OK)
+    goto done;
+  result = tui_canvas_blit(canvas, working, tui_canvas_bounds(canvas), 0, 0);
+  if (result == TUI_OK && out)
+    *out = layout;
+done:
+  tui_canvas_free(child);
+  tui_canvas_free(working);
+  return result;
+}
+
+struct DialogHit {
+  TuiRect rect;
+  size_t index;
+};
+struct TuiDialog {
+  char *title, *message, *cancel;
+  TuiDialogButton *buttons;
+  size_t count, focused;
+  struct DialogHit *hits;
+  size_t hit_count;
+};
+struct TuiDialogLayout {
+  char **body;
+  size_t body_count;
+  TuiDialogButtonCell *buttons;
+  size_t *indices;
+  size_t count, hidden;
+  int truncated;
+};
+static const char *dialog_string(const char *s) { return s ? s : ""; }
+static int dialog_text(const char *s, size_t limit) {
+  return s && strlen(s) <= limit && tui_cells(s) >= 0;
+}
+static void dialog_clear_hits(TuiDialog *d) {
+  free(d->hits);
+  d->hits = NULL;
+  d->hit_count = 0;
+}
+static void dialog_clear_buttons(TuiDialogButton *items, size_t count) {
+  for (size_t n = 0; n < count; n++) {
+    free((void *)items[n].id);
+    free((void *)items[n].label);
+  }
+  free(items);
+}
+void tui_dialog_free(TuiDialog *d) {
+  if (d) {
+    free(d->title);
+    free(d->message);
+    free(d->cancel);
+    dialog_clear_buttons(d->buttons, d->count);
+    dialog_clear_hits(d);
+    free(d);
+  }
+}
+const char *tui_dialog_title(const TuiDialog *d) {
+  return d ? dialog_string(d->title) : "";
+}
+const char *tui_dialog_message(const TuiDialog *d) {
+  return d ? dialog_string(d->message) : "";
+}
+const char *tui_dialog_cancel_id(const TuiDialog *d) {
+  return d ? dialog_string(d->cancel) : "";
+}
+const char *tui_dialog_focused(const TuiDialog *d) {
+  return d && d->focused < d->count ? d->buttons[d->focused].id : "";
+}
+size_t tui_dialog_button_count(const TuiDialog *d) { return d ? d->count : 0; }
+const TuiDialogButton *tui_dialog_button_at(const TuiDialog *d, size_t index) {
+  return d && index < d->count ? &d->buttons[index] : NULL;
+}
+TuiResult tui_dialog_set_text(TuiDialog *d, const char *title,
+                              const char *message) {
+  if (!d)
+    return TUI_INVALID;
+  title = title ? title : dialog_string(d->title);
+  message = message ? message : dialog_string(d->message);
+  if (!dialog_text(title, 4096) || !dialog_text(message, 1000000))
+    return TUI_INVALID;
+  char *heading = copy(title), *content = copy(message);
+  if (!heading || !content) {
+    free(heading);
+    free(content);
+    return TUI_NOMEM;
+  }
+  free(d->title);
+  free(d->message);
+  d->title = heading;
+  d->message = content;
+  dialog_clear_hits(d);
+  return TUI_OK;
+}
+TuiResult tui_dialog_set_buttons(TuiDialog *d, const TuiDialogButton *buttons,
+                                 size_t count, const char *cancel_id) {
+  if (!d || count > 1024 || (!buttons && count))
+    return TUI_INVALID;
+  cancel_id = cancel_id ? cancel_id : dialog_string(d->cancel);
+  if (!dialog_text(cancel_id, 1024))
+    return TUI_INVALID;
+  for (size_t n = 0; n < count; n++) {
+    if (!buttons[n].id || !*buttons[n].id ||
+        !dialog_text(buttons[n].id, 1024) ||
+        !dialog_text(dialog_string(buttons[n].label), 4096))
+      return TUI_INVALID;
+    for (size_t k = 0; k < n; k++)
+      if (!strcmp(buttons[n].id, buttons[k].id))
+        return TUI_INVALID;
+  }
+  size_t cancel_index = (size_t)-1, focused = (size_t)-1, first = (size_t)-1;
+  const char *old = tui_dialog_focused(d);
+  for (size_t n = 0; n < count; n++) {
+    if (!strcmp(buttons[n].id, cancel_id))
+      cancel_index = n;
+    if (!buttons[n].disabled) {
+      if (first == (size_t)-1)
+        first = n;
+      if (!strcmp(buttons[n].id, old))
+        focused = n;
+    }
+  }
+  if (*cancel_id && cancel_index == (size_t)-1)
+    return TUI_INVALID;
+  if (focused == (size_t)-1)
+    focused = cancel_index < count && !buttons[cancel_index].disabled
+                  ? cancel_index
+                  : first;
+  TuiDialogButton *owned = calloc(count + 1, sizeof *owned);
+  char *cancel = copy(cancel_id);
+  if (!owned || !cancel) {
+    free(owned);
+    free(cancel);
+    return TUI_NOMEM;
+  }
+  for (size_t n = 0; n < count; n++) {
+    owned[n].id = copy(buttons[n].id);
+    owned[n].label = copy(buttons[n].label);
+    owned[n].disabled = !!buttons[n].disabled;
+    if (!owned[n].id || !owned[n].label) {
+      dialog_clear_buttons(owned, count);
+      free(cancel);
+      return TUI_NOMEM;
+    }
+  }
+  dialog_clear_buttons(d->buttons, d->count);
+  free(d->cancel);
+  d->buttons = owned;
+  d->count = count;
+  d->cancel = cancel;
+  d->focused = focused;
+  dialog_clear_hits(d);
+  return TUI_OK;
+}
+TuiDialog *tui_dialog_new(const char *title, const char *message,
+                          const TuiDialogButton *buttons, size_t count,
+                          const char *cancel_id) {
+  TuiDialog *d = calloc(1, sizeof *d);
+  if (!d)
+    return NULL;
+  d->focused = (size_t)-1;
+  if (tui_dialog_set_text(d, title, message) != TUI_OK ||
+      tui_dialog_set_buttons(d, buttons, count, cancel_id) != TUI_OK) {
+    tui_dialog_free(d);
+    return NULL;
+  }
+  return d;
+}
+int tui_dialog_focus(TuiDialog *d, const char *id) {
+  if (!d || !id)
+    return 0;
+  for (size_t n = 0; n < d->count; n++)
+    if (!strcmp(d->buttons[n].id, id) && !d->buttons[n].disabled) {
+      if (d->focused != n) {
+        d->focused = n;
+        dialog_clear_hits(d);
+      }
+      return 1;
+    }
+  return 0;
+}
+TuiEvent tui_dialog_handle(TuiDialog *d, const char *action) {
+  TuiEvent none = {"", ""};
+  size_t eligible[1024], count = 0, at = 0;
+  if (!d || !action)
+    return none;
+  for (size_t n = 0; n < d->count; n++)
+    if (!d->buttons[n].disabled) {
+      if (n == d->focused)
+        at = count;
+      eligible[count++] = n;
+    }
+  if (!strcmp(action, "cancel")) {
+    if (!*dialog_string(d->cancel))
+      return (TuiEvent){"cancel", ""};
+    for (size_t n = 0; n < count; n++)
+      if (!strcmp(d->buttons[eligible[n]].id, d->cancel))
+        return (TuiEvent){"cancel", d->buttons[eligible[n]].id};
+    return none;
+  }
+  if (!strcmp(action, "activate"))
+    return d->focused < d->count && !d->buttons[d->focused].disabled
+               ? (TuiEvent){"activate", d->buttons[d->focused].id}
+               : none;
+  if (!count)
+    return none;
+  if (!strcmp(action, "next") || !strcmp(action, "right") ||
+      !strcmp(action, "down"))
+    at = (at + 1) % count;
+  else if (!strcmp(action, "previous") || !strcmp(action, "left") ||
+           !strcmp(action, "up"))
+    at = (at + count - 1) % count;
+  else if (!strcmp(action, "home"))
+    at = 0;
+  else if (!strcmp(action, "end"))
+    at = count - 1;
+  else
+    return none;
+  size_t target = eligible[at];
+  if (d->focused == target)
+    return none;
+  d->focused = target;
+  dialog_clear_hits(d);
+  return (TuiEvent){"focus", d->buttons[target].id};
+}
+TuiEvent tui_dialog_click(TuiDialog *d, int x, int y) {
+  if (!d)
+    return (TuiEvent){"", ""};
+  for (size_t n = 0; n < d->hit_count; n++) {
+    TuiRect r = d->hits[n].rect;
+    size_t index = d->hits[n].index;
+    if (x >= r.x && y >= r.y && x < r.x + r.width && y < r.y + r.height) {
+      if (index >= d->count || d->buttons[index].disabled)
+        return (TuiEvent){"", ""};
+      if (d->focused != index) {
+        d->focused = index;
+        dialog_clear_hits(d);
+      }
+      return (TuiEvent){"activate", d->buttons[index].id};
+    }
+  }
+  return (TuiEvent){"", ""};
+}
+void tui_dialog_layout_free(TuiDialogLayout *l) {
+  if (l) {
+    for (size_t n = 0; n < l->body_count; n++)
+      free(l->body[n]);
+    for (size_t n = 0; n < l->count; n++) {
+      free((void *)l->buttons[n].id);
+      free((void *)l->buttons[n].text);
+    }
+    free(l->body);
+    free(l->buttons);
+    free(l->indices);
+    free(l);
+  }
+}
+size_t tui_dialog_body_count(const TuiDialogLayout *l) {
+  return l ? l->body_count : 0;
+}
+const char *tui_dialog_body_at(const TuiDialogLayout *l, size_t n) {
+  return l && n < l->body_count ? l->body[n] : NULL;
+}
+size_t tui_dialog_cell_count(const TuiDialogLayout *l) {
+  return l ? l->count : 0;
+}
+const TuiDialogButtonCell *tui_dialog_cell_at(const TuiDialogLayout *l,
+                                              size_t n) {
+  return l && n < l->count ? &l->buttons[n] : NULL;
+}
+size_t tui_dialog_hidden_buttons(const TuiDialogLayout *l) {
+  return l ? l->hidden : 0;
+}
+int tui_dialog_body_truncated(const TuiDialogLayout *l) {
+  return l ? l->truncated : 0;
+}
+static int dialog_push_line(TuiDialogLayout *l, Buffer *line, int limit) {
+  if (line->failed)
+    return -1;
+  if (l->body_count >= (size_t)limit)
+    return 0;
+  char *s = line->s ? line->s : copy("");
+  if (!s)
+    return -1;
+  l->body[l->body_count++] = s;
+  *line = (Buffer){0};
+  return 1;
+}
+static TuiResult dialog_wrap(const char *message, int width, int limit,
+                             TuiDialogLayout *l) {
+  if (!*message)
+    return TUI_OK;
+  if (width <= 0 || limit <= 0) {
+    l->truncated = 1;
+    return TUI_OK;
+  }
+  size_t length = strlen(message),
+         cap = (size_t)limit < length + 1 ? (size_t)limit : length + 1;
+  l->body = calloc(cap, sizeof *l->body);
+  if (!l->body)
+    return TUI_NOMEM;
+  Buffer line = {0};
+  int used = 0, last_break = 0;
+  size_t p = 0;
+  TuiResult result = TUI_OK;
+  while (p < length) {
+    size_t end;
+    int glyph_width;
+    if (!cluster_mode(message, length, p, &end, &glyph_width, 1)) {
+      result = TUI_INVALID;
+      goto done;
+    }
+    size_t bytes = end - p;
+    if ((bytes == 1 && (message[p] == '\r' || message[p] == '\n')) ||
+        (bytes == 2 && !memcmp(message + p, "\r\n", 2))) {
+      int pushed = dialog_push_line(l, &line, limit);
+      if (pushed < 0) {
+        result = TUI_NOMEM;
+        goto done;
+      }
+      if (!pushed) {
+        l->truncated = 1;
+        break;
+      }
+      used = 0;
+      last_break = 1;
+      p = end;
+      continue;
+    }
+    last_break = 0;
+    char *raw = malloc(bytes + 1);
+    if (!raw) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    memcpy(raw, message + p, bytes);
+    raw[bytes] = 0;
+    char *g = clean_copy(raw);
+    free(raw);
+    if (!g) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    int n = tui_cells(g);
+    if (n > width) {
+      char *clipped = tui_clip(g, width, 1);
+      free(g);
+      g = clipped;
+      if (!g) {
+        result = TUI_NOMEM;
+        goto done;
+      }
+      n = tui_cells(g);
+    }
+    if (used + n > width && line.len) {
+      int pushed = dialog_push_line(l, &line, limit);
+      if (pushed < 0) {
+        free(g);
+        result = TUI_NOMEM;
+        goto done;
+      }
+      if (!pushed) {
+        free(g);
+        l->truncated = 1;
+        break;
+      }
+      used = 0;
+    }
+    if (l->body_count >= (size_t)limit) {
+      free(g);
+      l->truncated = 1;
+      break;
+    }
+    append(&line, g);
+    free(g);
+    if (line.failed) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    used += n;
+    p = end;
+  }
+  if (!l->truncated && (line.len || !l->body_count || last_break)) {
+    int pushed = dialog_push_line(l, &line, limit);
+    if (pushed < 0) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    if (!pushed)
+      l->truncated = 1;
+  }
+  if (l->truncated && l->body_count) {
+    char *clipped = tui_clip(l->body[l->body_count - 1], max(0, width - 1), 0);
+    if (!clipped) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    Buffer text = {0};
+    append(&text, clipped);
+    append(&text, "~");
+    free(clipped);
+    if (text.failed) {
+      free(text.s);
+      result = TUI_NOMEM;
+      goto done;
+    }
+    free(l->body[l->body_count - 1]);
+    l->body[l->body_count - 1] = text.s;
+  }
+done:
+  free(line.s);
+  return result;
+}
+TuiResult tui_dialog_layout(const TuiDialog *d, int width, int height,
+                            TuiDialogLayout **out) {
+  if (!out)
+    return TUI_INVALID;
+  *out = NULL;
+  if (!d || !container_number(width, 1000000) ||
+      !container_number(height, 1000000))
+    return TUI_INVALID;
+  TuiDialogLayout *l = calloc(1, sizeof *l);
+  if (!l)
+    return TUI_NOMEM;
+  l->hidden = d->count;
+  if (!width || !height) {
+    l->truncated = !!*d->message;
+    *out = l;
+    return TUI_OK;
+  }
+  TuiRect *positions = calloc(d->count + 1, sizeof *positions);
+  l->buttons = calloc(d->count + 1, sizeof *l->buttons);
+  l->indices = calloc(d->count + 1, sizeof *l->indices);
+  TuiResult result = TUI_OK;
+  int x = 0, y = 0, focus_row = 0;
+  if (!positions || !l->buttons || !l->indices) {
+    result = TUI_NOMEM;
+    goto done;
+  }
+  for (size_t n = 0; n < d->count; n++) {
+    const TuiDialogButton *b = d->buttons + n;
+    int w = min(width, max(1, tui_cells(*b->label ? b->label : b->id) + 4));
+    if (x && x + 1 + w > width) {
+      x = 0;
+      y++;
+    }
+    if (x)
+      x++;
+    positions[n] = (TuiRect){x, y, w, 1};
+    if (n == d->focused)
+      focus_row = y;
+    x += w;
+  }
+  int total_rows = d->count ? y + 1 : 0, visible = min(height, total_rows),
+      start = max(0, focus_row + 1 - visible), available = height - visible,
+      gap = *d->message && visible && available >= 2 ? 1 : 0;
+  result = dialog_wrap(d->message, width, available - gap, l);
+  if (result != TUI_OK)
+    goto done;
+  for (size_t n = 0; n < d->count; n++) {
+    TuiRect r = positions[n];
+    const TuiDialogButton *b = d->buttons + n;
+    if (r.y < start || r.y >= start + visible)
+      continue;
+    char *label = clean_copy(*b->label ? b->label : b->id);
+    if (!label) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    char *part =
+        tui_clip(label, r.width >= 6 ? max(0, r.width - 4) : r.width, 1);
+    free(label);
+    if (!part) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+    Buffer text = {0};
+    if (r.width >= 6)
+      append(&text, "[ ");
+    append(&text, part);
+    if (r.width >= 6)
+      append(&text, " ]");
+    free(part);
+    if (text.failed) {
+      free(text.s);
+      result = TUI_NOMEM;
+      goto done;
+    }
+    size_t at = l->count++;
+    l->buttons[at] = (TuiDialogButtonCell){
+        .id = copy(b->id),
+        .text = text.s,
+        .rect = {r.x, height - visible + r.y - start, r.width, 1},
+        .disabled = b->disabled,
+        .focused = n == d->focused};
+    l->indices[at] = n;
+    if (!l->buttons[at].id) {
+      result = TUI_NOMEM;
+      goto done;
+    }
+  }
+  l->hidden = d->count - l->count;
+  *out = l;
+  l = NULL;
+done:
+  free(positions);
+  tui_dialog_layout_free(l);
+  return result;
+}
+TuiResult tui_dialog_draw(TuiDialog *d, TuiCanvas *c, TuiRect bounds,
+                          int focused, int ascii, TuiDialogLayout **out) {
+  if (out)
+    *out = NULL;
+  if (!d || !c || !popup_rect_valid(bounds))
+    return TUI_INVALID;
+  dialog_clear_hits(d);
+  int x = min(bounds.x, c->width), y = min(bounds.y, c->height);
+  TuiRect r = {x, y, max(0, min(c->width, bounds.x + bounds.width) - x),
+               max(0, min(c->height, bounds.y + bounds.height) - y)};
+  TuiRect panel = tui_canvas_panel(c, r, d->title, focused, ascii), inner;
+  TuiResult result = tui_rect_inset(panel, 1, &inner);
+  if (result != TUI_OK)
+    return result;
+  TuiDialogLayout *l = NULL;
+  struct DialogHit *hits = NULL;
+  result = tui_dialog_layout(d, inner.width, inner.height, &l);
+  if (result != TUI_OK)
+    return result;
+  hits = calloc(l->count + 1, sizeof *hits);
+  if (!hits) {
+    result = TUI_NOMEM;
+    goto done;
+  }
+  for (size_t row = 0; row < l->body_count; row++) {
+    result = tui_canvas_write(c, inner.x, inner.y + (int)row, l->body[row],
+                              "body", 0, inner.width);
+    if (result != TUI_OK)
+      goto done;
+  }
+  for (size_t n = 0; n < l->count; n++) {
+    const TuiDialogButtonCell *b = l->buttons + n;
+    TuiRect box = {inner.x + b->rect.x, inner.y + b->rect.y, b->rect.width, 1};
+    const char *role = b->disabled             ? "disabled"
+                       : focused && b->focused ? "button.focus"
+                                               : "button";
+    result = tui_canvas_fill(c, box, role);
+    if (result != TUI_OK)
+      goto done;
+    result = tui_canvas_write(
+        c, box.x + max(0, (box.width - tui_cells(b->text)) / 2), box.y, b->text,
+        role, 0, box.width);
+    if (result != TUI_OK)
+      goto done;
+    hits[n] = (struct DialogHit){box, l->indices[n]};
+  }
+  d->hits = hits;
+  d->hit_count = l->count;
+  hits = NULL;
+  if (out) {
+    *out = l;
+    l = NULL;
+  }
+done:
+  free(hits);
+  tui_dialog_layout_free(l);
+  return result;
+}

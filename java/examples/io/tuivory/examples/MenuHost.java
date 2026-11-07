@@ -5,7 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 /** Example host owns screen composition, global shortcuts, callbacks and scopes. */
 final class MenuHost {
-  private final boolean en, context;
+  private final boolean en, context, shadowDemo;
+  private int shadowIndex;
+  private String shadowMode() {
+    return shadowDemo ? new String[] {"auto", "solid", "off", "dim"}[shadowIndex] : "off";
+  }
   private final Menu menu;
   private final Focus focus = new Focus("root", List.of(new FocusTarget("editor")));
   private final Text editor;
@@ -13,6 +17,10 @@ final class MenuHost {
                anchor = null;
   private String status;
   MenuHost(boolean en, boolean context) {
+    this(en, context, false);
+  }
+  MenuHost(boolean en, boolean context, boolean shadow) {
+    this.shadowDemo = shadow;
     this.en = en;
     this.context = context;
     var items = new ArrayList<MenuItem>();
@@ -65,7 +73,7 @@ final class MenuHost {
     editorArea = new Rect(area.x(), area.y() + bar.height(), area.width(),
         Math.min(2, Math.max(0, area.height() - bar.height())));
     editor.draw(c, editorArea, !menu.opened());
-    String underlay = (ascii ? "." : en ? "界" : "가").repeat(area.width());
+    String underlay = (ascii ? (shadowDemo ? ":" : ".") : en ? "界" : "가").repeat(area.width());
     for (int y = editorArea.y() + editorArea.height();
         y < area.y() + Math.max(0, area.height() - 2); y++)
       c.write(area.x(), y, underlay, "hint", false, area.width());
@@ -73,9 +81,13 @@ final class MenuHost {
       menu.drawBar(c, bar);
     c.write(
         area.x(), area.y() + Math.max(0, area.height() - 2), status, "hint", false, area.width());
-    c.write(area.x(), area.y() + Math.max(0, area.height() - 1),
-        en ? "f10 menu | context x y | cancel" : "f10 메뉴 | context x y | cancel", "hint", false,
-        area.width());
+    String footer = shadowDemo
+        ? (en ? "Shadow: " + shadowMode() + " | s cycle | d Dim"
+              : "그림자: " + new String[] {"자동", "검정", "끄기", "Dim(호환)"}[shadowIndex]
+                      + " | s 변경 | d Dim")
+        : (en ? "f10 menu | context x y | cancel" : "f10 메뉴 | context x y | cancel");
+    c.write(
+        area.x(), area.y() + Math.max(0, area.height() - 1), footer, "hint", false, area.width());
     Rect at = anchor != null
         ? anchor
         : new Rect(area.x() + (context ? area.width() / 2 : 1), area.y() + (context ? 5 : 0), 1, 1);
@@ -83,14 +95,40 @@ final class MenuHost {
       c.write(at.x(), at.y(), "+", "warning", false, 1);
     if (menu.opened()) {
       int[] size = menu.contentSize();
-      var popup = menuPlacement(at, area, Math.min(48, ((size[0] + 5) / 2) * 2), size[1] + 4);
-      String title = menu.title();
-      content = menu.drawPopup(
-          c, popup, title.isEmpty() ? (en ? "Context menu" : "문맥 메뉴") : title, 1, ascii);
+      var options = new ShadowOptions(shadowMode());
+      var place =
+          popupPlacement(at, area, Math.min(48, ((size[0] + 5) / 2) * 2), size[1] + 4, options);
+      String title = menu.title(),
+             caption = title.isEmpty() ? (en ? "Context menu" : "문맥 메뉴") : title;
+      Rect[] local = {new Rect(0, 0, 0, 0)};
+      var layout = new Shadow(options).draw(c, place.bounds(),
+          child
+          -> local[0] = menu.drawPopup(
+                 child, new Rect(0, 0, child.width, child.height), caption, 1, ascii),
+          ascii);
+      content = new Rect(layout.card().x() + local[0].x(), layout.card().y() + local[0].y(),
+          local[0].width(), local[0].height());
+
     } else
       content = new Rect(0, 0, 0, 0);
   }
   void handle(String action, String text) {
+    String command = action.equals("insert") ? text : action;
+    if (shadowDemo && (command.equals("s") || command.equals("d"))) {
+      shadowIndex = command.equals("d") ? 3 : shadowIndex < 3 ? (shadowIndex + 1) % 3 : 0;
+      content = new Rect(0, 0, 0, 0);
+      return;
+    }
+    if (action.equals("click")) {
+      String[] xy = text.split(" +");
+      if (xy.length == 2)
+        try {
+          pointer(Integer.parseInt(xy[0]), Integer.parseInt(xy[1]), 0);
+        } catch (NumberFormatException ignored) {
+        }
+      return;
+    }
+
     if (action.equals("f10")) {
       if (menu.opened())
         sync(menu.close());
@@ -115,6 +153,24 @@ final class MenuHost {
       sync(menu.handle(action.equals("insert") ? "mnemonic" : action, text, content.height()));
     } else if (!focus.route("root").blocked())
       editor.handle(action.equals("activate") ? "newline" : action, text);
+  }
+  void pointer(int x, int y, int button) {
+    if (button == 2 && contains(area, x, y)) {
+      anchor = new Rect(x, y, 1, 1);
+      open("");
+    } else if (button == 0) {
+      if (menu.opened() && contains(content, x, y))
+        sync(menu.click(x - content.x(), y - content.y(), content.height()));
+      else if (contains(bar, x, y)) {
+        var e = menu.barClick(x - bar.x(), bar.width());
+        if (e.kind().equals("open_request")) {
+          anchor = null;
+          open(e.id());
+        }
+      } else if (!menu.opened() && !focus.route("root").blocked() && contains(editorArea, x, y))
+        editor.click(
+            x - editorArea.x(), y - editorArea.y(), editorArea.width(), editorArea.height(), false);
+    }
   }
   private static boolean contains(Rect r, int x, int y) {
     return x >= r.x() && x < r.x() + r.width() && y >= r.y() && y < r.y() + r.height();

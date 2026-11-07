@@ -593,20 +593,6 @@ def status_line(items: list[StatusItem], width: int) -> LineLayout:
     return out
 
 
-def popup_placement(anchor: Rect, viewport: Rect, width: int, height: int, *, shadow: bool = False) -> tuple[Rect, Rect]:
-    if min(width, height, viewport.width, viewport.height) < 0:
-        raise ValueError("negative popup size")
-    w = min(viewport.width, width + int(shadow))
-    h = min(viewport.height, height + int(shadow))
-    x = max(viewport.x, min(viewport.x + viewport.width - w, anchor.x))
-    y = anchor.y + anchor.height
-    if y + h > viewport.y + viewport.height:
-        y = anchor.y - h
-    y = max(viewport.y, min(viewport.y + viewport.height - h, y))
-    card = Rect(x, y, max(0, w - int(shadow and w > 0)), max(0, h - int(shadow and h > 0)))
-    return card, Rect(x, y, w, h)
-
-
 class Drag:
     """Opt-in request state; host validates/applies immutable model replacement."""
     def __init__(self, enabled: bool = False):

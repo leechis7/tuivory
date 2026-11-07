@@ -1,10 +1,11 @@
 """Example host composition: global keys, screen, callbacks and focus ownership."""
-from . import Canvas, Rect, Menu, MenuItem, Focus, FocusTarget, Text, menu_placement
+from . import Canvas, Rect, Menu, MenuItem, Focus, FocusTarget, Text, Shadow, ShadowOptions, popup_placement
 
 
 class MenuDemo:
-    def __init__(self, en=False, context=False):
+    def __init__(self, en=False, context=False, shadow=False):
         self.en, self.context = en, context
+        self.shadow_demo=shadow;self.shadow_index=0
         word = lambda ko, eng: eng if en else ko
         self.menu = Menu([
             MenuItem('file', word('파일', 'File'), mnemonic='f'),
@@ -47,22 +48,36 @@ class MenuDemo:
         self.editor.draw(c, self.editor_area, focused=not self.menu.opened)
         start = self.editor_area.y + self.editor_area.height
         for y in range(start, area.y + max(0, area.height - 2)):
-            c.write(area.x, y, ('.' if ascii else '界' if self.en else '가') * area.width, 'hint', width=area.width)
+            c.write(area.x, y, ((':'if self.shadow_demo else'.')if ascii else'界'if self.en else'가') * area.width, 'hint', width=area.width)
         if self.bar.height:
             self.menu.draw_bar(c, self.bar)
         c.write(area.x, area.y + max(0, area.height - 2), self.status, 'hint', width=area.width)
-        c.write(area.x, area.y + max(0, area.height - 1), 'F10 menu | Shift+F10 / right click' if self.en else 'F10 메뉴 | Shift+F10 / 오른쪽 클릭', 'hint', width=area.width)
+        mode=['auto','solid','off','dim'][self.shadow_index]if self.shadow_demo else'off'
+        footer=('Shadow: '+mode+' | s cycle | d Dim'if self.en else'그림자: '+['자동','검정','끄기','Dim'][self.shadow_index]+' | s 변경 | d Dim')if self.shadow_demo else('F10 menu | Shift+F10 / right click'if self.en else'F10 메뉴 | Shift+F10 / 오른쪽 클릭')
+        c.write(area.x,area.y+max(0,area.height-1),footer,'hint',width=area.width)
         anchor = self.anchor or Rect(area.x + (area.width // 2 if self.context else 1), area.y + (5 if self.context else 0), 1, 1)
         if self.context or self.anchor:
             c.write(anchor.x, anchor.y, '+', 'warning', width=1)
         if self.menu.opened:
             width, height = self.menu.content_size()
-            popup = menu_placement(anchor, area, min(48, ((width + 5) // 2) * 2), height + 4)
-            self.content = self.menu.draw_popup(c, popup, self.menu.title() or ('Context menu' if self.en else '문맥 메뉴'), ascii=ascii)
+            options=ShadowOptions(mode)
+            placement=popup_placement(anchor,area,min(48,((width+5)//2)*2),height+4,options)
+            local=Rect()
+            def paint(child):
+                nonlocal local
+                local=self.menu.draw_popup(child,Rect(0,0,child.width,child.height),self.menu.title()or('Context menu'if self.en else'문맥 메뉴'),ascii=ascii)
+            layout=Shadow(options).draw(c,placement.bounds,paint,ascii=ascii)
+            self.popup=layout.card;self.shadow_layout=layout
+            self.content=Rect(layout.card.x+local.x,layout.card.y+local.y,local.width,local.height)
         else:
             self.content = Rect()
 
     def handle(self, action, height=10, text=''):
+        command=text if action=='insert'else action
+        if self.shadow_demo and command in ('s','d'):
+            self.shadow_index=(self.shadow_index+1)%3 if command=='s'and self.shadow_index<3 else 0 if command=='s'else 3
+            self.content=Rect()
+            return
         if action == 'f10':
             if self.menu.opened:
                 self.sync(self.menu.close())

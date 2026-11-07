@@ -83,3 +83,5 @@ TVR-7 0.11.1: [실제 그리드 커서·backend 연결](../grid-workspace.md). 0
 [독립 언어 컨테이너·셀 복사 API](../language-containers.md)
 
 [독립 언어 Surface·실제 바탕 API](../language-surfaces.md)
+
+[독립 언어 팝업 그림자와 대화상자](../language-popups.md)
