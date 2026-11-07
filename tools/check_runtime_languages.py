@@ -7,13 +7,15 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--python',default=sys.executable)
 parser.add_argument('--typescript-compiler',type=Path,default=r/'javascript/node_modules/typescript/bin/tsc')
 args=parser.parse_args()
-python=str(Path(args.python).resolve()) if "/" in args.python else (shutil.which(args.python) or args.python)
+python=os.path.abspath(args.python) if "/" in args.python else (shutil.which(args.python) or args.python)
 version=(r/'VERSION').read_text().strip()
 def run(cmd,cwd,env=None):subprocess.run(list(map(str,cmd)),cwd=cwd,env=env,check=True)
 with tempfile.TemporaryDirectory(prefix='tuivory-python-')as directory:
  b=Path(directory);run([python,'-m','venv',b/'venv'],b);p=b/'venv/bin/python'
  run([p,'-m','pip','install','--no-index','--find-links',r/'.cache/packages/python/deps',r/'.cache/packages/python'/f'tuivory-{version}-py3-none-any.whl'],b)
  (b/'consumer.py').write_text('''import tuivory as ui
+decoder=ui.InputDecoder();decoder.feed(bytes.fromhex("ed95"));assert decoder.next()is None;decoder.feed(bytes.fromhex("9c"));assert decoder.next().text=="한"
+assert ui.Terminal().read(0).key=="eof"
 p=ui.Palette("light","8")
 t=ui.Tree([ui.Node("root","Workspace"),ui.Node("child","한글 👩‍💻",parent="root")])
 assert t.handle("right",3).kind=="expand"
@@ -64,6 +66,8 @@ with tempfile.TemporaryDirectory(prefix='tuivory-javascript-')as directory:
  env=dict(os.environ,NPM_CONFIG_CACHE=str(r/'.cache/npm'))
  run(['npm','install','--offline','--ignore-scripts','--no-audit','--no-fund',r/'.cache/packages/javascript'/f'tuivory-{version}.tgz'],b,env)
  source='''import * as ui from "tuivory";
+const decoder=new ui.InputDecoder();decoder.feed(new Uint8Array([0xed,0x95]));if(decoder.next()!==null)throw new Error("incomplete terminal UTF-8");decoder.feed(new Uint8Array([0x9c]));if(decoder.next()?.text!=="한")throw new Error("terminal Unicode");
+const terminal=new ui.Terminal({mouseMotion:true});if((await terminal.read(0))?.key!=="eof")throw new Error("closed terminal");
 const p=new ui.Palette("light","8");const t=new ui.Tree([{id:"root",name:"Workspace"},{id:"child",parent:"root",name:"한글 👩‍💻"}]);
 if(t.handle("right",3).kind!=="expand"||t.handle("down",3).id!=="child")throw new Error("tree");
 const c=new ui.Canvas(30,4,p);t.draw(c,ui.rect(0,0,30,4));if(!c.lines().join("").includes("한글"))throw new Error("render");

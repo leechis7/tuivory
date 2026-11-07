@@ -9,7 +9,6 @@
 0.10.0 TVR-7: [Go 반응형 Modal](modals.md)은 좁은 단말 안에서 긴 버튼을 여러 행으로 배치합니다. Modal은 backend를 내장한 SDK 어댑터이며 원시 별칭 정체성의 예외입니다. 0.10.0에 포함합니다.
 0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.
 
-
 **0.9.1 TVR-27:** [통합 예제 실행파일](examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
 
 **0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다.

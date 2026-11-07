@@ -92,4 +92,3 @@ Verification covers 14 shared TSV cases, 11 cursor cases, approval/permission ch
 ![C++ grid](images/language-cpp-grid-en.png)
 
 ![Java grid](images/language-java-grid-en.png)
-

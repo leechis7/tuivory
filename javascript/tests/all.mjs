@@ -30,4 +30,5 @@ test("document, syntax, grid and drag shared regressions", async () => {
   await import("./syntax.mjs");
   await import("./grid.mjs");
   await import("./drag.mjs");
+  await import("./terminal.mjs");
 });

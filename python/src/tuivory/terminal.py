@@ -1,6 +1,7 @@
 """Opt-in POSIX terminal context. The host chooses lifecycle and routes events."""
 from __future__ import annotations
 import os
+import math
 import re
 import select
 import shutil
@@ -18,49 +19,29 @@ class InputEvent:
     button: int = 0
 
 
-class Terminal:
-    def __init__(self, *, mouse: bool = True, mouse_motion: bool = False):
-        self.mouse = mouse
-        self.mouse_motion = mouse_motion
-        self._saved = None
+class InputDecoder:
+    """Incremental UTF-8/escape parser; no terminal or OS access."""
+    def __init__(self):
         self._buffer = b""
-        self._paste: bytearray | None = None
-        self._escape_at = 0.0
-        self._size = (0, 0)
+        self._paste = None
+        self._rejected = False
 
-    @property
-    def size(self) -> tuple[int, int]:
-        size = shutil.get_terminal_size((80, 24))
-        return size.columns, size.lines
+    def feed(self, chunk: bytes) -> None:
+        if not isinstance(chunk, (bytes, bytearray, memoryview)):
+            raise TypeError("input requires bytes")
+        self._buffer += bytes(chunk)
+        if len(self._buffer) > 16 * 1024 * 1024 + 64:
+            self._buffer = b""; self._paste = None; self._rejected = True
 
-    def __enter__(self):
-        if os.name != 'posix' or not sys.stdin.isatty() or not sys.stdout.isatty():
-            raise RuntimeError("interactive Terminal requires a POSIX TTY")
-        import termios
-        import tty
-        self._saved = termios.tcgetattr(sys.stdin.fileno())
-        try:
-            tty.setraw(sys.stdin.fileno())
-            self.write("\x1b[?1049h\x1b[?2004h" + (("\x1b[?1002h" if self.mouse_motion else "\x1b[?1000h") + "\x1b[?1006h" if self.mouse else ""))
-        except BaseException:
-            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self._saved)
-            self._saved = None
-            raise
-        self._size = self.size
-        return self
-
-    def __exit__(self, *_):
-        if self._saved is not None:
-            import termios
-            try:
-                self.write("\x1b[0m\x1b[?1000l\x1b[?1002l\x1b[?1006l\x1b[?2004l\x1b[?25h\x1b[?1049l")
-            finally:
-                termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self._saved)
-                self._saved = None
-
-    def write(self, data: str) -> None:
-        sys.stdout.write(data)
-        sys.stdout.flush()
+    def next(self, flush_escape: bool = False) -> InputEvent | None:
+        if self._rejected:
+            self._rejected = False
+            return InputEvent('paste_rejected')
+        event = self._parse()
+        if event is None and flush_escape and self._paste is None and self._buffer.startswith(b'\x1b'):
+            self._buffer = self._buffer[1:]
+            return InputEvent('escape')
+        return event
 
     def _parse(self) -> InputEvent | None:
         b = self._buffer
@@ -69,6 +50,9 @@ class Terminal:
         if self._paste is not None:
             end = b.find(b'\x1b[201~')
             if end >= 0:
+                if len(self._paste)+end > 16*1024*1024:
+                    self._paste=None;self._buffer=b[end+6:]
+                    return InputEvent('paste_rejected')
                 self._paste.extend(b[:end])
                 text = self._paste.decode('utf-8', 'replace')
                 self._paste = None
@@ -91,6 +75,8 @@ class Terminal:
         if mouse:
             self._buffer = b[mouse.end():]
             button, x, y = map(int, mouse.groups()[:3])
+            if any(v<0 or v>1000000000 for v in (button,x-1,y-1)):
+                return InputEvent('unknown')
             return InputEvent('mouse_release' if mouse[4] == b'm' else 'wheel' if button & 64 else 'mouse_move' if button & 32 else 'mouse', x=x - 1, y=y - 1, button=button)
         keys = {b'\x1b[A': 'up', b'\x1b[B': 'down', b'\x1b[C': 'right', b'\x1b[D': 'left',
                 b'\x1b[H': 'home', b'\x1b[F': 'end', b'\x1b[5~': 'page_up', b'\x1b[6~': 'page_down',
@@ -113,18 +99,76 @@ class Terminal:
         if b[0] < 32 or b[0] == 127:
             self._buffer = b[1:]
             return InputEvent(controls.get(b[0], 'ctrl_' + chr(b[0] + 96)))
-        n = 1 if b[0] < 128 else 2 if b[0] < 224 else 3 if b[0] < 240 else 4
-        if len(b) < n:
-            return None
-        self._buffer = b[n:]
-        return InputEvent('text', b[:n].decode('utf-8', 'replace'))
+        first=b[0]
+        n=1 if first<128 else 2 if 0xc2<=first<=0xdf else 3 if 0xe0<=first<=0xef else 4 if 0xf0<=first<=0xf4 else 0
+        if not n:
+            self._buffer=b[1:]
+            return InputEvent('text','\ufffd')
+        if len(b)<n:return None
+        try:text=b[:n].decode('utf-8','strict')
+        except UnicodeDecodeError:
+            self._buffer=b[1:]
+            return InputEvent('text','\ufffd')
+        self._buffer=b[n:]
+        return InputEvent('text',text)
+
+class Terminal(InputDecoder):
+    def __init__(self, *, mouse: bool = True, mouse_motion: bool = False):
+        super().__init__()
+        self.mouse = mouse
+        self.mouse_motion = mouse_motion
+        self._saved = None
+        self._escape_at = 0.0
+        self._size = (0, 0)
+
+    @property
+    def size(self) -> tuple[int, int]:
+        size = shutil.get_terminal_size((80, 24))
+        return size.columns, size.lines
+
+    def __enter__(self):
+        if self._saved is not None:
+            raise RuntimeError("Terminal session is already active")
+        self._buffer=b"";self._paste=None;self._rejected=False
+        if os.name != 'posix' or not sys.stdin.isatty() or not sys.stdout.isatty():
+            raise RuntimeError("interactive Terminal requires a POSIX TTY")
+        import termios
+        import tty
+        self._saved = termios.tcgetattr(sys.stdin.fileno())
+        try:
+            tty.setraw(sys.stdin.fileno())
+            self.write("\x1b[?1049h\x1b[?2004h" + (("\x1b[?1002h" if self.mouse_motion else "\x1b[?1000h") + "\x1b[?1006h" if self.mouse else ""))
+        except BaseException:
+            try:
+                self.__exit__(None,None,None)
+            except BaseException:
+                pass
+            raise
+        self._size = self.size
+        return self
+
+    def __exit__(self, *_):
+        if self._saved is not None:
+            import termios
+            try:
+                self.write("\x1b[0m\x1b[?1000l\x1b[?1002l\x1b[?1006l\x1b[?2004l\x1b[?25h\x1b[?1049l")
+            finally:
+                termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self._saved)
+                self._saved = None
+
+    def write(self, data: str) -> None:
+        sys.stdout.write(data)
+        sys.stdout.flush()
 
     def read(self, timeout: float = 0.1) -> InputEvent | None:
+        if not isinstance(timeout,(int,float)) or not math.isfinite(timeout) or not 0<=timeout<=3600:
+            raise ValueError("invalid terminal timeout")
+        if self._saved is None:return InputEvent("eof")
         size = self.size
         if size != self._size:
             self._size = size
             return InputEvent('resize', x=size[0], y=size[1])
-        event = self._parse()
+        event = self.next()
         if event:
             self._escape_at = 0
             return event
@@ -135,8 +179,8 @@ class Terminal:
                 return InputEvent('eof')
             if not self._buffer:
                 self._escape_at = time.monotonic()
-            self._buffer += incoming
-            return self._parse()
+            self.feed(incoming)
+            return self.next()
         if self._paste is None and self._buffer.startswith(b'\x1b') and time.monotonic() - self._escape_at >= 0.1:
             self._buffer = self._buffer[1:]
             return InputEvent('escape')

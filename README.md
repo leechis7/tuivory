@@ -12,7 +12,6 @@
 
 0.10.0 TVR-18: [Go/Rust 탭·트리 드래그 앤 드롭](docs/drag-drop.md)은 기본 끄기이며 앱 승인 후 불변 모델 적용, 영역 밖 캡처·취소·키보드 대안을 제공합니다. 0.10.0부터 제공합니다.
 
-
 **0.9.1 TVR-27:** [통합 예제 실행파일](docs/examples.md)은 언어별 하나이며 현재 Linux 서버 아키텍처만 빌드합니다. `--demo tree`, `--demo menu`, `--demo syntax` 등으로 선택합니다.
 
 **0.9.0 TVR-24:** [선택적 Oracle SQL/PLSQL 분석·공통 토큰·편집기 전환](docs/syntax.md)을 제공합니다. Go는 루트 한 번만 import하고 Rust는 syntax-sql 기능으로 선택합니다.
@@ -66,13 +65,3 @@ make run-menu-rust ARGS="--shadow auto"
 TVR-7 0.11.1: [실제 그리드 커서·backend 연결](docs/grid-workspace.md). 0.11.1에서 실제 커서를 사용하려면 Go NewCursorScreen/NewGridView, Rust GridWidget::render_frame을 사용합니다.
 
 [Python·TypeScript/JavaScript·C·C++·Java 독립 지원](docs/languages.md): 미배포 독립 컴포넌트 구현 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.
-
-[독립 언어 팝업 그림자와 대화상자](docs/language-popups.md)
-
-[독립 언어 문서 보기·편집 API](docs/language-documents.md)
-
-[독립 언어 구문 강조·SQL 분류 API](docs/language-syntax.md)
-
-[독립 언어 데이터 그리드: 가상 데이터·앱 승인·원문/표시·실제 커서](docs/language-grid.md)
-
-[독립 언어 드래그앤드롭: 캡처·미리보기·앱 승인](docs/language-drag.md)

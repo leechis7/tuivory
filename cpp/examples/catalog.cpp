@@ -17,6 +17,15 @@
 #include <unistd.h>
 namespace {
 volatile std::sig_atomic_t stopped = 0;
+bool example_read_byte(void *output) {
+  pollfd input{STDIN_FILENO, POLLIN, 0};
+  while (!stopped) {
+    int ready = poll(&input, 1, 100);
+    if (ready > 0)
+      return read(STDIN_FILENO, output, 1) == 1;
+  }
+  return false;
+}
 void stop(int) { stopped = 1; }
 class Session {
   termios saved{};
@@ -340,7 +349,23 @@ int main(int argc, char **argv) {
       }
       std::cout << canvas.ansi() << std::flush;
       unsigned char key;
-      if (read(STDIN_FILENO, &key, 1) != 1)
+      pollfd input_fd{STDIN_FILENO, POLLIN, 0};
+      int ready = 0;
+      while (!stopped) {
+        ready = poll(&input_fd, 1, 100);
+        if (ready > 0)
+          break;
+        winsize current{};
+        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &current) == 0 && current.ws_col &&
+            current.ws_row &&
+            ((int)current.ws_col != width || (int)current.ws_row != height))
+          break;
+      }
+      if (stopped)
+        break;
+      if (ready <= 0)
+        continue;
+      if (!example_read_byte(&key))
         break;
       if (key == 17 || key == 3)
         break;
@@ -434,12 +459,16 @@ int main(int argc, char **argv) {
           int n = key < 128 ? 1 : key < 224 ? 2 : key < 240 ? 3 : 4;
           for (int i = 1; i < n; i++) {
             char next;
-            if (read(STDIN_FILENO, &next, 1) != 1)
+            if (!example_read_byte(&next)) {
+              input.clear();
               break;
+            }
             input += next;
           }
           edit_action = "insert";
         }
+        if (stopped)
+          break;
         if (drag_demo)
           drag_host.handle(key == 9                   ? "next"
                            : edit_action == "newline" ? "activate"

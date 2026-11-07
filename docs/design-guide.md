@@ -22,28 +22,4 @@
 
 [Python·TypeScript/JavaScript·C·C++·Java 독립 지원](languages.md): 미배포 독립 컴포넌트 구현 작업입니다. 구현과 런타임은 언어별로 독립적이며 기존 공개 0.11.1은 유지합니다.
 
-[독립 언어 workspace API·예제](language-workspace.md): 탭·패널·분할·경로·상태줄을 다섯 구현에서 검증했습니다. 나머지 카탈로그 이식은 진행 중입니다.
-
-[독립 언어 입력·편집 API](language-text.md)
-
-[독립 언어 폼·컨트롤 API](language-forms.md)
-
-[독립 언어 포커스 범위 API](language-focus.md)
-
-[독립 언어 목록·검색 선택기 API](language-collections.md)
-
-[독립 언어 메뉴·문맥 메뉴 API](language-menu.md)
-
-[독립 언어 알림·진행·데이터 상태 API](language-feedback.md)
-
-[독립 언어 간격·스택·배지·칩·단축키 안내 API](language-layout.md)
-
-[독립 언어 컨테이너·셀 복사 API](language-containers.md)
-
-[독립 언어 Surface·실제 바탕 API](language-surfaces.md)
-
-[독립 언어 데이터 그리드: 가상 데이터·앱 승인·원문/표시·실제 커서](language-grid.md)
-
-[독립 언어 드래그앤드롭: 캡처·미리보기·앱 승인](language-drag.md)
-
 드래그 미리보기는 원본 데이터·선택·펼침을 바꾸지 않습니다. 이동 표식은 실제 바탕색을 유지한 굵은 글씨·밑줄로 표시하고, 거부는 !로 구분합니다. 테마·배치·포커스 변경은 진행 중 캡처를 취소하며, 확정 이동은 앱 승인을 거칩니다.

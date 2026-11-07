@@ -13,12 +13,33 @@
 | 언어 | 하나의 공개 진입점 | 배포 형태 | 현재 어댑터 범위 |
 | --- | --- | --- | --- |
 | [Python](../python/README.md) | `import tuivory` | 일반 wheel/sdist, Python 3.11+, regex/wcwidth | 독립 캔버스·선택적 POSIX 세션·한영 소스 실행 |
-| [TypeScript/JavaScript](../javascript/README.md) | `import * as ui from 'tuivory'` | ESM npm 패키지·JS·타입 선언, Node.js 22+ | 독립 캔버스·Node TTY 예제 |
-| [C](../c/README.md) | `#include "tuivory.h"` | C11 정적 라이브러리·헤더 | 독립 캔버스·POSIX 예제 |
-| [C++](../cpp/README.md) | `#include "tuivory.hpp"` | 독립 C++17 헤더 패키지 | 독립 캔버스·POSIX RAII 예제 |
-| [Java](../java/README.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, JNI 없음 | 독립 캔버스·줄 입력 예제. raw 터미널 어댑터 없음 |
+| [TypeScript/JavaScript](../javascript/README.md) | `import * as ui from 'tuivory'` | ESM npm 패키지·JS·타입 선언, Node.js 22+ | 독립 캔버스·Node TerminalIO·TTY 예제 |
+| [C](../c/README.md) | `#include "tuivory.h"` | C11 정적 라이브러리·헤더 | 독립 캔버스·선택적 POSIX Terminal·예제 |
+| [C++](../cpp/README.md) | `#include "tuivory.hpp"` | 독립 C++17 헤더 패키지 | 독립 캔버스·선택적 POSIX Terminal·RAII 예제 |
+| [Java](../java/README.md) | `import static io.tuivory.Tuivory.*;` | Java 17 JAR, JNI 없음 | 독립 캔버스·줄 입력 예제, 선택적 POSIX Terminal(stty) |
 
-다섯 언어의 [작업 영역](language-workspace.md)과 [입력·편집](language-text.md)은 공유 사례와 외부 적용 앱으로 검증합니다. [폼·컨트롤](language-forms.md)도 다섯 언어에서 검증합니다. [목록·검색 선택기](language-collections.md)도 다섯 언어에서 검증합니다. [메뉴·문맥 메뉴](language-menu.md)도 다섯 언어에서 검증합니다. [알림·진행·데이터 상태](language-feedback.md)도 다섯 언어에서 검증합니다. [간격·스택과 보조 컴포넌트](language-layout.md)도 다섯 언어에서 검증합니다. [설정 가능한 컨테이너·잘린 셀 복사](language-containers.md)도 다섯 언어에서 검증합니다. [데이터 그리드](language-grid.md)도 다섯 언어에서 독립 구현합니다. [드래그앤드롭](language-drag.md)도 다섯 언어에서 검증합니다. 전체 카탈로그 이식을 마쳤다는 뜻은 아니며 터미널 API와 나머지 항목은 각 에픽에서 검증을 이어갑니다.
+## 컴포넌트 API
+
+| 영역 | 제공 API | 규격·사용법 |
+| --- | --- | --- |
+| 작업 영역 | Tree·Tabs·패널·분할·경로·상태줄 | [API](language-workspace.md) |
+| 텍스트 | Text·실제 커서·원문 범위 | [API](language-text.md) |
+| 폼·컨트롤 | Form·Field·선택·비활성 상태 | [API](language-forms.md) |
+| 포커스 범위 | Focus·팝업 입력 차단·복귀 | [API](language-focus.md) |
+| 목록·검색 선택기 | List·SearchPicker | [API](language-collections.md) |
+| 메뉴 | 계층·메뉴바·문맥 메뉴 | [API](language-menu.md) |
+| 알림·진행 | NoticeQueue·Progress·DataState | [API](language-feedback.md) |
+| 배치·보조 컴포넌트 | 간격·스택·Badge·Chip·Help | [API](language-layout.md) |
+| 컨테이너·셀 복사 | Container·가상 자식·Canvas 복사 | [API](language-containers.md) |
+| 바탕·스타일 | Surface·실제 바탕의 의미별 스타일 | [API](language-surfaces.md) |
+| 팝업·대화상자 | Shadow·Dialog | [API](language-popups.md) |
+| 문서 | TextDocument·마크업·강조 범위 | [API](language-documents.md) |
+| 구문 강조 | SQLAnalyzer·선택적 분석 연결 | [API](language-syntax.md) |
+| 데이터 그리드 | 가상 데이터·편집·붙여넣기·범위·보기 | [API](language-grid.md) |
+| 드래그앤드롭 | DragState·이동 요청·앱 승인 | [API](language-drag.md) |
+| 입력·터미널 | InputDecoder·선택적 Terminal | [API](language-terminal.md) |
+
+각 규격은 실제 API·소유권·앱 책임·검증 범위를 설명합니다. 그리드의 추가 포인터 동작과 전체 카탈로그 점검은 진행 중이며 에픽을 완료 처리하지 않습니다.
 
 ## API 사용
 
@@ -94,7 +115,6 @@ C/C++ 기본 예제는 현재 Linux 호스트 하나만 `bin/c/tuivory-linux-<ar
 
 ![java Tree](images/language-java-tree.png)
 
-
 C/C++/Java 스타일 색상은 `0x1000000 | RRGGBB`로 RGB를, 그 밖의 값은 ANSI 0–255 인덱스로 나타냅니다. Python/TS는 `#RRGGBB` 또는 인덱스의 십진 문자열을 사용하며 캔버스가 변환합니다. Unicode 공통 검사는 피부색 이모지·국기·결합 문자·한글 자모·표현 선택자를 포함합니다.
 
 ## 로컬 패키지 검사 재현
@@ -116,33 +136,3 @@ python tools/capture_language_trees.py
 ```
 
 C/C++/Java는 위의 명령으로 먼저 빌드합니다. 참조 화면 캡처에는 한글을 지원하는 D2Coding 폰트와 Cairo도 필요하며 개발 도구 조건입니다. 실제 로컬 검증은 Python 3.14.4, Node 26.13.0, TypeScript 7.0.2, JDK 27로 수행했습니다. Java는 `--release 17`로 컴파일했고 JVM 17 실행은 로컬에서 수행하지 않았습니다. `python tools/package_languages.py`는 `.cache/packages/languages/`에 미배포 로컬 미리보기 6개와 체크섬을 모으며 레지스트리 게시 명령은 실행하지 않습니다.
-
-[독립 언어 workspace API·예제](language-workspace.md): 탭·패널·분할·경로·상태줄을 다섯 구현에서 검증했습니다. 나머지 카탈로그 이식은 진행 중입니다.
-
-[독립 언어 입력·편집 API](language-text.md)
-
-[독립 언어 폼·컨트롤 API](language-forms.md)
-
-[독립 언어 포커스 범위 API](language-focus.md)
-
-[독립 언어 목록·검색 선택기 API](language-collections.md)
-
-[독립 언어 메뉴·문맥 메뉴 API](language-menu.md)
-
-[독립 언어 알림·진행·데이터 상태 API](language-feedback.md)
-
-[독립 언어 간격·스택·배지·칩·단축키 안내 API](language-layout.md)
-
-[독립 언어 컨테이너·셀 복사 API](language-containers.md)
-
-[독립 언어 Surface·실제 바탕 API](language-surfaces.md)
-
-[독립 언어 팝업 그림자와 대화상자](language-popups.md)
-
-[독립 언어 문서 보기·편집 API](language-documents.md)
-
-[독립 언어 구문 강조·SQL 분류 API](language-syntax.md)
-
-[독립 언어 데이터 그리드: 가상 데이터·앱 승인·원문/표시·실제 커서](language-grid.md)
-
-[독립 언어 드래그앤드롭: 캡처·미리보기·앱 승인](language-drag.md)

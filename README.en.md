@@ -12,7 +12,6 @@ TVR-7 in 0.11.0: [grid in-cell editing, column pinning/visibility/order, paste, 
 
 0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](docs/drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
 
-
 **0.9.1 TVR-27:** [Unified example executables](docs/examples.en.md) provide one file per language, built only for the current Linux host architecture. Select examples with `--demo tree`, `--demo menu`, `--demo syntax`, etc.
 
 **0.9.0 TVR-24:** [optional Oracle SQL/PLSQL analysis, common tokens and editor migration](docs/syntax.en.md). Go uses one root import; Rust opts in with syntax-sql.
@@ -66,13 +65,3 @@ Korean is the default UI; add `--lang en` for English.
 TVR-7 in 0.11.1: [real grid cursor and backend integration](docs/grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.
 
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](docs/languages.en.md): unreleased independent-component implementation work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
-
-[Independent popup shadows and dialogs](docs/language-popups.en.md)
-
-[Independent document viewing/editing API](docs/language-documents.en.md)
-
-[Independent syntax highlighting/SQL classification API](docs/language-syntax.en.md)
-
-[Independent data grid: virtual sources, approval, raw/display values and real cursors](docs/language-grid.en.md)
-
-[Independent-language drag and drop: captured previews and host-approved moves](docs/language-drag.en.md)

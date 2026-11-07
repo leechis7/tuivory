@@ -4,7 +4,6 @@
 
 0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](../docs/drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
 
-
 **0.9.0 TVR-24:** [optional Oracle SQL/PLSQL analysis, common tokens and editor migration](../docs/syntax.en.md). Go uses one root import; Rust opts in with syntax-sql.
 
 **0.8.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../docs/ui-facade.en.md).
@@ -71,9 +70,3 @@ TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/soli
 0.10.2 TVR-29 unifies auto/solid as one cell right and half a row down, with backdrop-aware dark contrast, half-block caps and ASCII dots. Reserve a full row; shadow cells replace backdrop text and never receive input. Keep Dim as whole-cell compatibility only. Tags through 0.10.0 retain the previous appearance.
 
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](../docs/languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
-
-[Independent popup shadows and dialogs](../docs/language-popups.en.md)
-
-[Independent document viewing/editing API](../docs/language-documents.en.md)
-
-[Independent syntax highlighting/SQL classification API](../docs/language-syntax.en.md)

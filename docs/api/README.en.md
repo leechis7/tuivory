@@ -4,7 +4,6 @@
 
 0.10.0 TVR-18: [opt-in Go/Rust tab/tree drag and drop](../drag-drop.en.md), immutable host-approved movement requests, captured outside input, cancellation and keyboard alternatives. Available starting with 0.10.0.
 
-
 **Includes 0.9.0 TVR-24 APIs:** [optional syntax analysis and new editing APIs](../syntax.en.md) are available since 0.9.0.
 
 **0.10.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../ui-facade.en.md).
@@ -63,33 +62,3 @@ cargo doc --manifest-path rust/Cargo.toml --locked --all-features --no-deps --op
 TVR-7 in 0.11.1: [real grid cursor and backend integration](../grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.
 
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](../languages.en.md): unreleased independent-component implementation work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
-
-[Independent-language workspace APIs and examples](../language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.
-
-[Independent text editing API](../language-text.en.md)
-
-[Independent forms and controls API](../language-forms.en.md)
-
-[Independent focus scope API](../language-focus.en.md)
-
-[Independent lists and search pickers API](../language-collections.en.md)
-
-[Independent menu/context-menu API](../language-menu.en.md)
-
-[Independent notices/progress/data-state API](../language-feedback.en.md)
-
-[Independent spacing/stack and badge/chip/hint API](../language-layout.en.md)
-
-[Independent containers and cell-copy API](../language-containers.en.md)
-
-[Independent Surface and background API](../language-surfaces.en.md)
-
-[Independent popup shadows and dialogs](../language-popups.en.md)
-
-[Independent document viewing/editing API](../language-documents.en.md)
-
-[Independent syntax highlighting/SQL classification API](../language-syntax.en.md)
-
-[Independent data grid: virtual sources, approval, raw/display values and real cursors](../language-grid.en.md)
-
-[Independent-language drag and drop: captured previews and host-approved moves](../language-drag.en.md)

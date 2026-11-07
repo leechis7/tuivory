@@ -44,7 +44,7 @@ C의 요청·적용 모델·미리보기에는 각각 tui_drop_request_free, tui
 
 Python의 선택적 POSIX Terminal(mouse_motion=True)은 버튼을 누른 이동 이벤트를 켜고 종료 시 복원한다. 다른 모델은 이 옵션을 요구하지 않는다.
 
-각 언어의 통합 예제에서 --demo drag를 선택한다. Tab은 대상 전환, [ / ]는 이전/다음 이동 요청, i/o는 안/밖 이동, d는 드래그 활성 전환, Esc는 취소다. 마우스로 끈 뒤 y는 앱 승인, r은 거절이다. Java의 현재 휴대용 줄 입력은 next, ], y 또는 pointer down/move/up x y 명령 뒤 Enter를 사용한다. 좌표는 화면 기준 0부터 시작한다. 터미널 어댑터 확장은 별도 후속 작업이다.
+각 언어의 통합 예제에서 --demo drag를 선택한다. Tab은 대상 전환, [ / ]는 이전/다음 이동 요청, i/o는 안/밖 이동, d는 드래그 활성 전환, Esc는 취소다. 마우스로 끈 뒤 y는 앱 승인, r은 거절이다. Java의 현재 휴대용 줄 입력은 next, ], y 또는 pointer down/move/up x y 명령 뒤 Enter를 사용한다. 좌표는 화면 기준 0부터 시작한다. [선택적 raw 세션](language-terminal.md)은 별도로 제공하며 예제의 줄 입력과 구분한다.
 
 공통 이동 사례 22개와 정확한 revision, 키보드·캡처·정책 재검사·이전 상태·미리보기 독립성을 검사한다. C/C++는 외부 SDK의 ASan/UBSan·정적 링크, Java는 외부 Java17 JAR에서 각 24개 실제 ANSI 프레임을 검사한다. 한영·테마·색상·문자 표시별 PTY와 설치한 패키지 검증 결과는 [검증 자료](evidence/)에서 로컬·CI·게시 상태를 구분한다.
 

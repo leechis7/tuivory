@@ -1,0 +1,163 @@
+{
+  "checked_at_utc": "2026-11-07T05:33:48.788143+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source_base": "0c242268de579cbe613e966e4b768b30f001b9e2",
+  "source_uncommitted": true,
+  "scope": "Independent input decoders and optional terminal sessions, bounded reads, resize, literal paste and exact POSIX lifecycle restoration; bilingual catalog navigation. Additional Grid pointer work and final catalog audit remain in progress.",
+  "sha256": {
+    "design/terminal-input-cases.json": "c72806052325f1c8680fcfdbbd8cdf7a4853a9a7dca84c501735cbfec49dbcd1",
+    "python/src/tuivory/terminal.py": "108838660e4285ac9215dd0d7859dab848afe2d2366a3166b552477a79c81017",
+    "python/src/tuivory/__main__.py": "2bdfaebbc4ea8d5b7c5b4a45a9e53b04a4c10dbcb0d221ddca86eb3027febb96",
+    "javascript/src/terminal.ts": "d1c832ab86b377a535335dc5ea520bfdea7bba071c8065e0a329229c2d344a37",
+    "c/include/tuivory.h": "f2588beb6b12f51f198316f69ebed1b2dd2c6da9088804943668040e8203d2ff",
+    "c/src/tuivory.c": "5484cfff5e3c200e2d88a4c0806bd28f53e29bf00d944f6ca9d97a9f35fa6e6e",
+    "c/examples/catalog.c": "bf35eeb7bc6e12f1b01966fb963204ce3aaf82050529505ae7e98801315af1fd",
+    "cpp/include/tuivory.hpp": "08c5009e500be8ce0df206fca2969ab9c0b9fd62639c64e23dcbb7710a297f10",
+    "cpp/include/tuivory_terminal.hpp": "7a8d312f53eb9cd5ab2d6fcad3d549f7d0f2371d6589c8bf57fdfc148140a411",
+    "cpp/examples/catalog.cpp": "1705e79ba1dd0f42bac352fab6cdbce5c3393b7ca0d57fb44cd3cab4fbab875d",
+    "java/src/main/java/io/tuivory/Tuivory.java": "10a92983e1d677724de55bf964ed690b8ac0129335e0fe722c7679c86641cdfd",
+    "tools/check_language_terminal.py": "8de612a9d8cede7ad968d89e64297bf811e373ce8e335fb6d8420208622651f0",
+    "tools/terminal_sessions.py": "955db686e758597a6b341a128be37025f6e33322595acba3101021c5b233ac3c",
+    "tools/check_language_examples.py": "f01944381987ae6daed80489d69f94632425cb8b693f4d032fe7a4ad9601a8d5",
+    "tools/check_runtime_languages.py": "fd73bb5fef93bcaca85c99639ce63665ec540674b1da8eebbdbd100bd9421154",
+    "tools/check_language_archives.py": "021c2eee05cf9cd4bc92b14718400a1265d7ef0d3807c67fd7325e5b00990c28"
+  },
+  "local": {
+    "shared_input_cases_per_language": 40,
+    "sessions": [
+      {
+        "language": "python",
+        "signal": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "signal": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "example": "text",
+        "partial_utf8": false,
+        "resize_without_key": true,
+        "signal_restored": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "example": "text",
+        "partial_utf8": true,
+        "resize_without_key": true,
+        "signal_restored": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "signal": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "signal": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "example": "text",
+        "partial_utf8": false,
+        "resize_without_key": true,
+        "signal_restored": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "example": "text",
+        "partial_utf8": true,
+        "resize_without_key": true,
+        "signal_restored": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "signal": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "signal": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "signal": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "signal": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "signal": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "signal": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "example": "text",
+        "partial_utf8": false,
+        "resize_without_key": true,
+        "signal_restored": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "example": "text",
+        "partial_utf8": true,
+        "resize_without_key": true,
+        "signal_restored": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "example": "text",
+        "partial_utf8": false,
+        "resize_without_key": true,
+        "signal_restored": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "example": "text",
+        "partial_utf8": true,
+        "resize_without_key": true,
+        "signal_restored": true,
+        "passed": true
+      }
+    ],
+    "public_session_pty_cases": 10,
+    "integrated_example_resize_and_signal_cases": 8,
+    "existing_examples_regression_cases": 30,
+    "python_suite_tests": 89,
+    "javascript": "strict declarations and all 8 tests including terminal stream cleanup passed",
+    "native": "external C/C++ ASan+UBSan/static SDK; native-host ARM64 static ELF checks passed",
+    "java": "pure JAR, release17 compiler checks and actual POSIX OS-stty sessions passed; local JVM27",
+    "runtime_install": "fresh external wheel/npm installs, root InputDecoder/Terminal import and TS types, packaged catalog examples passed",
+    "archives": "six actual SDK/runtime archives, external static/JAR consumers and packaged examples passed",
+    "centos": "not run per user instruction"
+  },
+  "github_ci": "not run for this uncommitted change yet",
+  "publication": "not performed for this change yet; main/tags/registries/public version unchanged",
+  "epics": "remain open and In Progress per user instruction"
+}

@@ -35,6 +35,6 @@ assert focus.focused == 'open'
 
 C 생성자와 갱신은 ID·대상을 복사하고 `tui_focus_free`가 전체 스택을 해제합니다. 반환된 문자열·요청은 빌린 값으로 관련 갱신/닫기/해제 전에만 사용합니다. C 생성 실패는 `NULL`, 조작 실패는 `TUI_INVALID/TUI_NOMEM`이며 다른 언어는 예외를 사용합니다. Python/TS/기타 런타임과 C++도 입력 대상을 소유한 사본으로 보관합니다.
 
-[공유 24단계 사례](../design/interaction-cases.json)로 중첩·차단·안정 ID 갱신·잘못된 초기 대상·닫기 요청·빈 범위·복원을 검사합니다. 추가로 64단계 한계와 사본 소유권, 외부 패키지와 C/C++ ASan/UBSan을 검사합니다. [검증 기록](evidence/language-focus-results.json)에 로컬과 원격 CI·게시를 구분합니다. 순수 상태 모델이므로 새 화면 이미지나 UI 캡처 성공을 주장하지 않습니다. 팝업을 조합하는 통합 예제는 후속 메뉴·오버레이 단계에서 연결합니다.
+[공유 24단계 사례](../design/interaction-cases.json)로 중첩·차단·안정 ID 갱신·잘못된 초기 대상·닫기 요청·빈 범위·복원을 검사합니다. 추가로 64단계 한계와 사본 소유권, 외부 패키지와 C/C++ ASan/UBSan을 검사합니다. [검증 기록](evidence/language-focus-results.json)에 로컬과 원격 CI·게시를 구분합니다. 순수 상태 모델이므로 새 화면 이미지나 UI 캡처 성공을 주장하지 않습니다. 팝업 조합은 [메뉴](language-menu.md)와 [오버레이 예제](language-popups.md)에서 제공합니다.
 
 [독립 언어 지원](languages.md) · [폼](language-forms.md) · [API](api/README.md)

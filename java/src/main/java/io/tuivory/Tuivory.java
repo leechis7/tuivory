@@ -6829,4 +6829,405 @@ public final class Tuivory {
       canvas.blit(child, new Rect(0, 0, r.width(), r.height()), r.x(), r.y());
     }
   }
+  public record InputEvent(String key, String text, int x, int y, int button) {
+    public InputEvent(String key) {
+      this(key, "", 0, 0, 0);
+    }
+    public InputEvent(String key, String text) {
+      this(key, text, 0, 0, 0);
+    }
+  }
+  /** Incremental UTF-8 input without native or terminal dependencies. */
+  public static final class InputDecoder {
+    private byte[] bytes = new byte[0];
+    private int offset;
+    private java.io.ByteArrayOutputStream paste;
+    private boolean rejected;
+    private static final int LIMIT = 16 * 1024 * 1024;
+    private static final String[][] KEYS = {{"\033[A", "up"}, {"\033[B", "down"},
+        {"\033[C", "right"}, {"\033[D", "left"}, {"\033[H", "home"}, {"\033[F", "end"},
+        {"\033[5~", "page_up"}, {"\033[6~", "page_down"}, {"\033[3~", "delete"},
+        {"\033[Z", "shift_tab"}, {"\033OP", "f1"}, {"\033OQ", "f2"}, {"\033[21~", "f10"},
+        {"\033[21;2~", "shift_f10"}};
+    public void feed(byte[] chunk) {
+      if (chunk == null)
+        throw new IllegalArgumentException("input requires bytes");
+      if ((long) bytes.length - offset + chunk.length > LIMIT + 64) {
+        bytes = new byte[0];
+        offset = 0;
+        paste = null;
+        rejected = true;
+        return;
+      }
+      var next = new byte[bytes.length - offset + chunk.length];
+      System.arraycopy(bytes, offset, next, 0, bytes.length - offset);
+      System.arraycopy(chunk, 0, next, bytes.length - offset, chunk.length);
+      bytes = next;
+      offset = 0;
+    }
+    public boolean waitingEscape() {
+      return paste == null && offset < bytes.length && bytes[offset] == 27;
+    }
+    private boolean starts(String s) {
+      if (bytes.length - offset < s.length())
+        return false;
+      for (int i = 0; i < s.length(); i++)
+        if ((bytes[offset + i] & 255) != s.charAt(i))
+          return false;
+      return true;
+    }
+    private boolean prefix(String s) {
+      int size = bytes.length - offset;
+      if (size > s.length())
+        return false;
+      for (int i = 0; i < size; i++)
+        if ((bytes[offset + i] & 255) != s.charAt(i))
+          return false;
+      return true;
+    }
+    public InputEvent next() {
+      return next(false);
+    }
+    public InputEvent next(boolean flushEscape) {
+      if (rejected) {
+        rejected = false;
+        return new InputEvent("paste_rejected");
+      }
+      if (paste != null) {
+        int end = -1;
+        for (int i = offset; i + 6 <= bytes.length; i++)
+          if (bytes[i] == 27 && bytes[i + 1] == '[' && bytes[i + 2] == '2' && bytes[i + 3] == '0'
+              && bytes[i + 4] == '1' && bytes[i + 5] == '~') {
+            end = i;
+            break;
+          }
+        int count = end < 0 ? Math.max(0, bytes.length - offset - 5) : end - offset;
+        if ((long) paste.size() + count > LIMIT) {
+          bytes = new byte[0];
+          offset = 0;
+          paste = null;
+          return new InputEvent("paste_rejected");
+        }
+        paste.write(bytes, offset, count);
+        offset += count;
+        if (end < 0)
+          return null;
+        String text = paste.toString(java.nio.charset.StandardCharsets.UTF_8);
+        paste = null;
+        offset += 6;
+        return new InputEvent("paste", text);
+      }
+      if (offset >= bytes.length)
+        return null;
+      if (starts("\033[200~")) {
+        offset += 6;
+        paste = new java.io.ByteArrayOutputStream();
+        return next(flushEscape);
+      }
+      if (starts("\033[<")) {
+        int end = -1;
+        for (int i = offset + 3; i < bytes.length; i++)
+          if (bytes[i] == 'M' || bytes[i] == 'm') {
+            end = i;
+            break;
+          }
+        if (end >= 0) {
+          String raw = new String(
+              bytes, offset + 3, end - offset - 3, java.nio.charset.StandardCharsets.US_ASCII);
+          boolean release = bytes[end] == 'm';
+          offset = end + 1;
+          var fields = raw.split(";", -1);
+          long[] values = new long[3];
+          boolean valid = fields.length == 3;
+          if (valid)
+            for (int i = 0; i < 3; i++) {
+              if (fields[i].isEmpty() || !fields[i].chars().allMatch(c -> c >= '0' && c <= '9')) {
+                valid = false;
+                break;
+              }
+              try {
+                values[i] = Long.parseLong(fields[i]);
+              } catch (NumberFormatException failure) {
+                valid = false;
+                break;
+              }
+            }
+          if (!valid || values[0] > 1000000000 || values[1] < 1 || values[1] > 1000000001
+              || values[2] < 1 || values[2] > 1000000001)
+            return new InputEvent("unknown");
+          int button = (int) values[0];
+          return new InputEvent(release ? "mouse_release"
+                  : (button & 64) != 0  ? "wheel"
+                  : (button & 32) != 0  ? "mouse_move"
+                                        : "mouse",
+              "", (int) (values[1] - 1), (int) (values[2] - 1), button);
+        }
+      }
+      for (var k : KEYS)
+        if (starts(k[0])) {
+          offset += k[0].length();
+          return new InputEvent(k[1]);
+        }
+      int first = bytes[offset] & 255;
+      if (first == 27) {
+        boolean incomplete = prefix("\033[200~");
+        for (var k : KEYS) incomplete |= prefix(k[0]);
+        incomplete |= starts("\033[<");
+        if (incomplete && !flushEscape)
+          return null;
+        if (bytes.length - offset > 1 && bytes[offset + 1] == '[')
+          for (int i = offset + 2; i < bytes.length; i++)
+            if (bytes[i] >= 0x40 && bytes[i] <= 0x7e) {
+              offset = i + 1;
+              return new InputEvent("unknown");
+            }
+        offset++;
+        return new InputEvent("escape");
+      }
+      if (first < 32 || first == 127) {
+        offset++;
+        String key = switch (first) {
+          case 9 -> "tab";
+          case 10, 13 -> "enter";
+          case 8, 127 -> "backspace";
+          default -> "ctrl_" + (char) (first + 96);
+        };
+        return new InputEvent(key);
+      }
+      int n = first < 128                  ? 1
+          : first >= 0xc2 && first <= 0xdf ? 2
+          : first >= 0xe0 && first <= 0xef ? 3
+          : first >= 0xf0 && first <= 0xf4 ? 4
+                                           : 0;
+      if (n == 0) {
+        offset++;
+        return new InputEvent("text", "\ufffd");
+      }
+      if (bytes.length - offset < n)
+        return null;
+      int cp = first & (n == 1 ? 127 : n == 2 ? 31 : n == 3 ? 15 : 7);
+      boolean valid = true;
+      for (int i = 1; i < n; i++) {
+        int c = bytes[offset + i] & 255;
+        if ((c & 0xc0) != 0x80) {
+          valid = false;
+          break;
+        }
+        cp = (cp << 6) | (c & 63);
+      }
+      if (!valid || cp > 0x10ffff || (cp >= 0xd800 && cp <= 0xdfff) || (n == 2 && cp < 128)
+          || (n == 3 && cp < 2048) || (n == 4 && cp < 65536)) {
+        offset++;
+        return new InputEvent("text", "\ufffd");
+      }
+      String text = new String(bytes, offset, n, java.nio.charset.StandardCharsets.UTF_8);
+      offset += n;
+      return new InputEvent("text", text);
+    }
+  }
+  /** Optional POSIX session using the OS stty utility, without JNI/foreign engines. */
+  public static final class Terminal implements AutoCloseable {
+    private final boolean mouse, mouseMotion;
+    private final InputDecoder decoder = new InputDecoder();
+    private volatile boolean active;
+    private boolean closed, reading, eof;
+    private String saved = "";
+    private long escapeAt, sizeAt;
+    private int columns = 80, rows = 24, reportedColumns = 80, reportedRows = 24;
+    private Thread hook;
+    public Terminal() {
+      this(true, false);
+    }
+    public Terminal(boolean mouse, boolean mouseMotion) {
+      this.mouse = mouse;
+      this.mouseMotion = mouseMotion;
+    }
+    private static String stty(String... args) throws java.io.IOException {
+      var command = new ArrayList<String>();
+      command.add("stty");
+      command.addAll(List.of(args));
+      Process process =
+          new ProcessBuilder(command).redirectInput(new java.io.File("/dev/tty")).start();
+      boolean interrupted = Thread.interrupted();
+      long deadline = System.nanoTime() + 2_000_000_000L;
+      try {
+        while (true) {
+          try {
+            if (process.waitFor(Math.max(1, deadline - System.nanoTime()),
+                    java.util.concurrent.TimeUnit.NANOSECONDS))
+              break;
+            process.destroyForcibly();
+            throw new java.io.IOException("stty timed out");
+          } catch (InterruptedException failure) {
+            interrupted = true;
+            if (System.nanoTime() >= deadline) {
+              process.destroyForcibly();
+              throw new java.io.IOException("stty interrupted", failure);
+            }
+          }
+        }
+        if (process.exitValue() != 0)
+          throw new java.io.IOException("POSIX stty failed: "
+              + new String(process.getErrorStream().readNBytes(4096),
+                  java.nio.charset.StandardCharsets.UTF_8));
+        return new String(
+            process.getInputStream().readNBytes(4096), java.nio.charset.StandardCharsets.US_ASCII)
+            .strip();
+      } finally {
+        if (interrupted)
+          Thread.currentThread().interrupt();
+        process.getInputStream().close();
+        process.getErrorStream().close();
+        process.getOutputStream().close();
+      }
+    }
+    public synchronized Terminal open() throws java.io.IOException {
+      if (active || closed)
+        throw new IllegalStateException("Terminal session cannot be reopened");
+      if (System.console() == null || !new java.io.File("/dev/tty").exists())
+        throw new java.io.IOException("interactive Terminal requires a POSIX TTY");
+      saved = stty("-g");
+      if (saved.isEmpty() || saved.chars().anyMatch(Character::isWhitespace))
+        throw new java.io.IOException("invalid stty state");
+      stty("raw", "-echo");
+      active = true;
+      try {
+        hook = new Thread(() -> {
+          try {
+            close();
+          } catch (java.io.IOException ignored) {
+          }
+        }, "tuivory-terminal-restore");
+        Runtime.getRuntime().addShutdownHook(hook);
+        write("\033[?1049h\033[?2004h"
+            + (mouse ? (mouseMotion ? "\033[?1002h" : "\033[?1000h") + "\033[?1006h" : ""));
+        int[] initial = size();
+        reportedColumns = initial[0];
+        reportedRows = initial[1];
+      } catch (RuntimeException | java.io.IOException failure) {
+        try {
+          close();
+        } catch (java.io.IOException cleanup) {
+          failure.addSuppressed(cleanup);
+        }
+        throw failure;
+      }
+      return this;
+    }
+    public synchronized int[] size() throws java.io.IOException {
+      long now = System.nanoTime();
+      if (active && now - sizeAt > 250_000_000L) {
+        String[] values = stty("size").split("\\s+");
+        if (values.length == 2)
+          try {
+            int r = Integer.parseInt(values[0]), c = Integer.parseInt(values[1]);
+            if (r > 0 && c > 0) {
+              rows = r;
+              columns = c;
+            }
+          } catch (NumberFormatException failure) {
+            throw new java.io.IOException("invalid stty size", failure);
+          }
+        sizeAt = now;
+      }
+      return new int[] {columns, rows};
+    }
+    public void write(String text) throws java.io.IOException {
+      if (!active)
+        throw new IllegalStateException("Terminal is closed");
+      System.out.write(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+      System.out.flush();
+      if (System.out.checkError())
+        throw new java.io.IOException("terminal output failed");
+    }
+    public InputEvent read() throws java.io.IOException, InterruptedException {
+      return read(100);
+    }
+    public InputEvent read(int timeoutMillis) throws java.io.IOException, InterruptedException {
+      if (timeoutMillis < 0 || timeoutMillis > 3600000)
+        throw new IllegalArgumentException("invalid terminal timeout");
+      synchronized (this) {
+        if (!active)
+          return new InputEvent("eof");
+        if (reading)
+          throw new IllegalStateException("only one terminal read may be pending");
+        reading = true;
+      }
+      long deadline = System.nanoTime() + timeoutMillis * 1_000_000L;
+      try {
+        while (active) {
+          int[] current = size();
+          if (reportedColumns != current[0] || reportedRows != current[1]) {
+            reportedColumns = current[0];
+            reportedRows = current[1];
+            return new InputEvent("resize", "", current[0], current[1], 0);
+          }
+          long now = System.nanoTime();
+          InputEvent event =
+              decoder.next(decoder.waitingEscape() && now - escapeAt >= 100_000_000L);
+          if (event != null) {
+            if (decoder.waitingEscape())
+              escapeAt = now;
+            return event;
+          }
+          if (eof)
+            return new InputEvent("eof");
+          int available = System.in.available();
+          if (available > 0) {
+            byte[] input = new byte[Math.min(8192, available)];
+            int n = System.in.read(input);
+            if (n < 0)
+              eof = true;
+            else {
+              if (!decoder.waitingEscape())
+                escapeAt = System.nanoTime();
+              decoder.feed(Arrays.copyOf(input, n));
+            }
+            continue;
+          }
+          if (now >= deadline)
+            return null;
+          Thread.sleep(Math.min(10, Math.max(1, (deadline - now) / 1_000_000L)));
+        }
+        return new InputEvent("eof");
+      } finally {
+        synchronized (this) {
+          reading = false;
+        }
+      }
+    }
+    @Override
+    public synchronized void close() throws java.io.IOException {
+      if (!active)
+        return;
+      active = false;
+      closed = true;
+      java.io.IOException error = null;
+      try {
+        System.out.write(
+            "\033[0m\033[?1000l\033[?1002l\033[?1006l\033[?2004l\033[?25h\033[?1049l".getBytes(
+                java.nio.charset.StandardCharsets.US_ASCII));
+        System.out.flush();
+      } catch (java.io.IOException failure) {
+        error = failure;
+      }
+      try {
+        stty(saved);
+      } catch (java.io.IOException failure) {
+        if (error == null)
+          error = failure;
+        else
+          error.addSuppressed(failure);
+      } finally {
+        if (hook != null && Thread.currentThread() != hook)
+          try {
+            Runtime.getRuntime().removeShutdownHook(hook);
+          } catch (IllegalStateException ignored) {
+          }
+        hook = null;
+      }
+      if (error != null)
+        throw error;
+    }
+  }
 }

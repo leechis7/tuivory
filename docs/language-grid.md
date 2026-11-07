@@ -92,4 +92,3 @@ save_view/saveView와 restore_view/restoreView는 열 순서·너비·고정·�
 ![C++ 그리드](images/language-cpp-grid.png)
 
 ![Java 그리드](images/language-java-grid.png)
-

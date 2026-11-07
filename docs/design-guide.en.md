@@ -22,28 +22,4 @@ The editor buffer contains no synthetic caret character. Share grapheme viewport
 
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](languages.en.md): unreleased independent-component implementation work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
 
-[Independent-language workspace APIs and examples](language-workspace.en.md): tabs/panels/splits/breadcrumbs/status lines are verified in all five implementations. Other catalog ports remain in progress.
-
-[Independent text editing API](language-text.en.md)
-
-[Independent forms and controls API](language-forms.en.md)
-
-[Independent focus scope API](language-focus.en.md)
-
-[Independent lists and search pickers API](language-collections.en.md)
-
-[Independent menu/context-menu API](language-menu.en.md)
-
-[Independent notices/progress/data-state API](language-feedback.en.md)
-
-[Independent spacing/stack and badge/chip/hint API](language-layout.en.md)
-
-[Independent containers and cell-copy API](language-containers.en.md)
-
-[Independent Surface and background API](language-surfaces.en.md)
-
-[Independent data grid: virtual sources, approval, raw/display values and real cursors](language-grid.en.md)
-
-[Independent-language drag and drop: captured previews and host-approved moves](language-drag.en.md)
-
 Drag previews preserve source data, selection and expansion. Feedback keeps the actual background and uses bold/underline; ! identifies rejection. Theme/layout/focus changes cancel capture, and final moves require host approval.

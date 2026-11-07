@@ -74,7 +74,7 @@ C의 State는 `tui_container_state_new/free`, reconcile/move_focus/state_pointer
 
 통합 예제 `--demo container`에서 m은 팝업 열기/닫기, h/l은 스크롤, Tab은 앱이 정한 내부 포커스 이동입니다. Java 줄 입력에서는 m/l/h/next/click x y/cancel/quit 뒤 Enter를 누릅니다. Java click은 입력 모의이며 고정 크기 줄 입력 예제를 실제 resize 검증으로 간주하지 않습니다.
 
-[공유 배치 사례](../design/controls-cases.json), [셀 복사 사례](../design/canvas-copy-cases.json), [검증 기록](evidence/language-containers-results.json)을 사용합니다. 네 raw 예제는 실제 40열 resize, Java 좁은 배치는 API로 검사합니다. [실제 Surface 스타일](language-surfaces.md)을 제공합니다. 일반 TTY 어댑터·대화상자·전체 Grid/문서 편집·그림자·드래그 앤 드롭은 후속 단계입니다.
+[공유 배치 사례](../design/controls-cases.json), [셀 복사 사례](../design/canvas-copy-cases.json), [검증 기록](evidence/language-containers-results.json)을 사용합니다. 네 raw 예제는 실제 40열 resize, Java 좁은 배치는 API로 검사합니다. [실제 Surface 스타일](language-surfaces.md)을 제공합니다. [전체 카탈로그 표](languages.md)에서 현재 제공하는 터미널·대화상자·그리드·문서·그림자·드래그 API를 확인합니다.
 
 | 언어 | 한글 화면 |
 | --- | --- |

@@ -1,3 +1,8 @@
+#if defined(__unix__) || defined(__APPLE__)
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+#endif
 #include "tuivory.h"
 #include "tuivory_data.h"
 #include "tuivory_fold.h"
@@ -12971,4 +12976,501 @@ TuiResult tui_drag_tree_draw(TuiDragState *d, TuiTree *t, TuiCanvas *c,
 TuiResult tui_drag_tabs_draw(TuiDragState *d, TuiTabs *t, TuiCanvas *c,
                              TuiRect r, int focused, int ascii) {
   return drag_draw(d, t, 0, c, r, focused, ascii);
+}
+
+/* Independent byte decoder and optional OS terminal I/O. */
+#define INPUT_LIMIT ((size_t)16 * 1024 * 1024)
+typedef struct {
+  unsigned char *data;
+  size_t size, capacity, offset;
+} InputBytes;
+struct TuiInputDecoder {
+  InputBytes bytes, paste;
+  int pasting, rejected;
+};
+static int input_append(InputBytes *b, const void *data, size_t n) {
+  size_t size = b->size - b->offset;
+  if (size > SIZE_MAX - n)
+    return 0;
+  if (size + n > b->capacity) {
+    size_t capacity =
+        b->capacity && b->capacity <= SIZE_MAX / 2 ? b->capacity * 2 : 256;
+    if (capacity < size + n)
+      capacity = size + n;
+    unsigned char *next = malloc(capacity ? capacity : 1);
+    if (!next)
+      return 0;
+    if (size)
+      memcpy(next, b->data + b->offset, size);
+    free(b->data);
+    b->data = next;
+    b->capacity = capacity;
+  } else if (b->offset && size)
+    memmove(b->data, b->data + b->offset, size);
+  b->offset = 0;
+  b->size = size;
+  if (n)
+    memcpy(b->data + size, data, n);
+  b->size += n;
+  return 1;
+}
+static void input_clear(InputBytes *b) {
+  free(b->data);
+  memset(b, 0, sizeof(*b));
+}
+static void input_consume(InputBytes *b, size_t n) {
+  b->offset += n;
+  if (b->offset == b->size)
+    b->offset = b->size = 0;
+}
+static int input_starts(const unsigned char *b, size_t n, const char *prefix) {
+  size_t k = strlen(prefix);
+  return n >= k && !memcmp(b, prefix, k);
+}
+static int input_prefix(const unsigned char *b, size_t n, const char *full) {
+  return n <= strlen(full) && !memcmp(b, full, n);
+}
+TuiInputDecoder *tui_input_decoder_new(void) {
+  return calloc(1, sizeof(TuiInputDecoder));
+}
+void tui_input_decoder_free(TuiInputDecoder *d) {
+  if (d) {
+    input_clear(&d->bytes);
+    input_clear(&d->paste);
+    free(d);
+  }
+}
+void tui_input_event_free(TuiInputEvent *e) {
+  if (e) {
+    free((void *)e->key);
+    free((void *)e->text);
+    free(e);
+  }
+}
+static TuiInputEvent *input_event(const char *key, const void *text, size_t n) {
+  TuiInputEvent *e = calloc(1, sizeof(*e));
+  char *owned;
+  if (!e)
+    return NULL;
+  e->key = copy(key);
+  owned = malloc(n + 1);
+  e->text = owned;
+  e->text_length = n;
+  if (!e->key || !owned) {
+    tui_input_event_free(e);
+    return NULL;
+  }
+  if (n)
+    memcpy(owned, text, n);
+  owned[n] = 0;
+  return e;
+}
+static TuiResult input_emit(TuiInputDecoder *d, const char *key,
+                            const void *text, size_t n, size_t consume,
+                            TuiInputEvent **out) {
+  TuiInputEvent *e = input_event(key, text, n);
+  if (!e)
+    return TUI_NOMEM;
+  input_consume(&d->bytes, consume);
+  *out = e;
+  return TUI_OK;
+}
+TuiResult tui_input_feed(TuiInputDecoder *d, const void *data, size_t n) {
+  if (!d || (!data && n))
+    return TUI_INVALID;
+  if (n > INPUT_LIMIT + 64 ||
+      d->bytes.size - d->bytes.offset > INPUT_LIMIT + 64 - n) {
+    input_clear(&d->bytes);
+    input_clear(&d->paste);
+    d->pasting = 0;
+    d->rejected = 1;
+    return TUI_OK;
+  }
+  return input_append(&d->bytes, data, n) ? TUI_OK : TUI_NOMEM;
+}
+int tui_input_waiting_escape(const TuiInputDecoder *d) {
+  return d && !d->pasting && d->bytes.offset < d->bytes.size &&
+         d->bytes.data[d->bytes.offset] == 27;
+}
+TuiResult tui_input_next(TuiInputDecoder *d, int flush, TuiInputEvent **out) {
+  static const char *const keys[][2] = {
+      {"\033[A", "up"},       {"\033[B", "down"},
+      {"\033[C", "right"},    {"\033[D", "left"},
+      {"\033[H", "home"},     {"\033[F", "end"},
+      {"\033[5~", "page_up"}, {"\033[6~", "page_down"},
+      {"\033[3~", "delete"},  {"\033[Z", "shift_tab"},
+      {"\033OP", "f1"},       {"\033OQ", "f2"},
+      {"\033[21~", "f10"},    {"\033[21;2~", "shift_f10"}};
+  const unsigned char *b;
+  size_t n, i, end, count;
+  TuiResult result;
+  if (!out)
+    return TUI_INVALID;
+  *out = NULL;
+  if (!d)
+    return TUI_INVALID;
+  if (d->rejected) {
+    result = input_emit(d, "paste_rejected", NULL, 0, 0, out);
+    if (result == TUI_OK)
+      d->rejected = 0;
+    return result;
+  }
+  n = d->bytes.size - d->bytes.offset;
+  b = n ? d->bytes.data + d->bytes.offset : (const unsigned char *)"";
+  if (d->pasting) {
+    end = SIZE_MAX;
+    for (i = 0; i + 6 <= n; i++)
+      if (!memcmp(b + i, "\033[201~", 6)) {
+        end = i;
+        break;
+      }
+    count = end == SIZE_MAX ? (n > 5 ? n - 5 : 0) : end;
+    if (d->paste.size + count > INPUT_LIMIT) {
+      input_clear(&d->bytes);
+      input_clear(&d->paste);
+      d->pasting = 0;
+      return input_emit(d, "paste_rejected", NULL, 0, 0, out);
+    }
+    if (end == SIZE_MAX) {
+      if (!input_append(&d->paste, b, count))
+        return TUI_NOMEM;
+      input_consume(&d->bytes, count);
+      return TUI_OK;
+    }
+    InputBytes raw = {0}, text = {0};
+    if (!input_append(&raw, d->paste.data, d->paste.size) ||
+        !input_append(&raw, b, count)) {
+      input_clear(&raw);
+      return TUI_NOMEM;
+    }
+    for (i = 0; i < raw.size;) {
+      size_t pos = i;
+      unsigned cp;
+      if (decode(raw.data, raw.size, &pos, &cp)) {
+        if (!input_append(&text, raw.data + i, pos - i))
+          goto paste_memory;
+        i = pos;
+      } else {
+        if (!input_append(&text, "\xef\xbf\xbd", 3))
+          goto paste_memory;
+        i++;
+      }
+    }
+    *out = input_event("paste", text.data, text.size);
+    input_clear(&raw);
+    input_clear(&text);
+    if (!*out)
+      return TUI_NOMEM;
+    input_consume(&d->bytes, end + 6);
+    input_clear(&d->paste);
+    d->pasting = 0;
+    return TUI_OK;
+  paste_memory:
+    input_clear(&raw);
+    input_clear(&text);
+    return TUI_NOMEM;
+  }
+  if (!n)
+    return TUI_OK;
+  if (input_starts(b, n, "\033[200~")) {
+    input_consume(&d->bytes, 6);
+    d->pasting = 1;
+    input_clear(&d->paste);
+    return tui_input_next(d, flush, out);
+  }
+  if (input_starts(b, n, "\033[<")) {
+    end = SIZE_MAX;
+    for (i = 3; i < n; i++)
+      if (b[i] == 'M' || b[i] == 'm') {
+        end = i;
+        break;
+      }
+    if (end != SIZE_MAX) {
+      long long values[3] = {0};
+      int field = 0, digits = 0, valid = 1;
+      for (i = 3; i < end; i++) {
+        if (b[i] == ';' && field < 2 && digits) {
+          field++;
+          digits = 0;
+        } else if (b[i] >= '0' && b[i] <= '9') {
+          digits = 1;
+          values[field] = values[field] * 10 + b[i] - '0';
+          if (values[field] > 1000000001) {
+            valid = 0;
+            break;
+          }
+        } else {
+          valid = 0;
+          break;
+        }
+      }
+      if (!valid || field != 2 || !digits || values[0] > 1000000000 ||
+          values[1] < 1 || values[2] < 1)
+        return input_emit(d, "unknown", NULL, 0, end + 1, out);
+      int button = (int)values[0];
+      result = input_emit(d,
+                          b[end] == 'm' ? "mouse_release"
+                          : button & 64 ? "wheel"
+                          : button & 32 ? "mouse_move"
+                                        : "mouse",
+                          NULL, 0, end + 1, out);
+      if (result == TUI_OK) {
+        (*out)->x = (int)(values[1] - 1);
+        (*out)->y = (int)(values[2] - 1);
+        (*out)->button = button;
+      }
+      return result;
+    }
+  }
+  for (i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
+    if (input_starts(b, n, keys[i][0]))
+      return input_emit(d, keys[i][1], NULL, 0, strlen(keys[i][0]), out);
+  if (b[0] == 27) {
+    int incomplete =
+        input_prefix(b, n, "\033[200~") || input_starts(b, n, "\033[<");
+    for (i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
+      incomplete |= input_prefix(b, n, keys[i][0]);
+    if (incomplete && !flush)
+      return TUI_OK;
+    if (n > 1 && b[1] == '[')
+      for (i = 2; i < n; i++)
+        if (b[i] >= 0x40 && b[i] <= 0x7e)
+          return input_emit(d, "unknown", NULL, 0, i + 1, out);
+    return input_emit(d, "escape", NULL, 0, 1, out);
+  }
+  if (b[0] < 32 || b[0] == 127) {
+    char key[16];
+    const char *name = b[0] == 9                  ? "tab"
+                       : b[0] == 10 || b[0] == 13 ? "enter"
+                       : b[0] == 8 || b[0] == 127 ? "backspace"
+                                                  : NULL;
+    if (!name) {
+      snprintf(key, sizeof(key), "ctrl_%c", b[0] + 96);
+      name = key;
+    }
+    return input_emit(d, name, NULL, 0, 1, out);
+  }
+  int length = b[0] < 128                     ? 1
+               : b[0] >= 0xc2 && b[0] <= 0xdf ? 2
+               : b[0] >= 0xe0 && b[0] <= 0xef ? 3
+               : b[0] >= 0xf0 && b[0] <= 0xf4 ? 4
+                                              : 0;
+  if (!length)
+    return input_emit(d, "text", "\xef\xbf\xbd", 3, 1, out);
+  if (n < (size_t)length)
+    return TUI_OK;
+  size_t pos = 0;
+  unsigned cp;
+  if (!decode(b, n, &pos, &cp))
+    return input_emit(d, "text", "\xef\xbf\xbd", 3, 1, out);
+  return input_emit(d, "text", b, pos, pos, out);
+}
+#if defined(__unix__) || defined(__APPLE__)
+#include <errno.h>
+#include <poll.h>
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <time.h>
+#include <unistd.h>
+#endif
+struct TuiTerminal {
+  int input, output, active, closed, eof, mouse, motion, columns, rows;
+  long long escape_at;
+  TuiInputDecoder *decoder;
+#if defined(__unix__) || defined(__APPLE__)
+  struct termios saved;
+#endif
+};
+TuiTerminal *tui_terminal_new(int input, int output,
+                              const TuiTerminalOptions *options) {
+  TuiTerminal *t = calloc(1, sizeof(*t));
+  if (!t)
+    return NULL;
+  t->input = input;
+  t->output = output;
+  t->mouse = options ? !!options->mouse : 1;
+  t->motion = options ? !!options->mouse_motion : 0;
+  t->columns = 80;
+  t->rows = 24;
+  t->decoder = tui_input_decoder_new();
+  if (!t->decoder) {
+    free(t);
+    return NULL;
+  }
+  return t;
+}
+#if defined(__unix__) || defined(__APPLE__)
+static long long input_clock(void) {
+  struct timespec ts;
+  if (clock_gettime(CLOCK_MONOTONIC, &ts))
+    return 0;
+  return (long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+static TuiResult terminal_output(TuiTerminal *t, const char *s) {
+  size_t size = strlen(s), i = 0;
+  while (i < size) {
+    ssize_t n = write(t->output, s + i, size - i);
+    if (n < 0 && errno == EINTR)
+      continue;
+    if (n <= 0)
+      return TUI_INVALID;
+    i += (size_t)n;
+  }
+  return TUI_OK;
+}
+#endif
+TuiResult tui_terminal_size(const TuiTerminal *t, int *columns, int *rows) {
+  if (!t || !columns || !rows)
+    return TUI_INVALID;
+  *columns = 80;
+  *rows = 24;
+#if defined(__unix__) || defined(__APPLE__)
+  struct winsize ws = {0};
+  if (ioctl(t->output, TIOCGWINSZ, &ws) == 0 && ws.ws_col && ws.ws_row) {
+    *columns = ws.ws_col;
+    *rows = ws.ws_row;
+  }
+#endif
+  return TUI_OK;
+}
+TuiResult tui_terminal_close(TuiTerminal *t) {
+  if (!t)
+    return TUI_INVALID;
+  if (!t->active)
+    return TUI_OK;
+  t->active = 0;
+  t->closed = 1;
+#if defined(__unix__) || defined(__APPLE__)
+  TuiResult result = terminal_output(t, "\033[0m\033[?1000l\033[?1002l\033[?"
+                                        "1006l\033[?2004l\033[?25h\033[?1049l");
+  if (tcsetattr(t->input, TCSADRAIN, &t->saved))
+    return TUI_INVALID;
+  return result;
+#else
+  return TUI_INVALID;
+#endif
+}
+void tui_terminal_free(TuiTerminal *t) {
+  if (t) {
+    tui_terminal_close(t);
+    tui_input_decoder_free(t->decoder);
+    free(t);
+  }
+}
+TuiResult tui_terminal_open(TuiTerminal *t) {
+  if (!t || t->active || t->closed)
+    return TUI_INVALID;
+#if defined(__unix__) || defined(__APPLE__)
+  struct termios raw;
+  if (!isatty(t->input) || !isatty(t->output) || tcgetattr(t->input, &t->saved))
+    return TUI_INVALID;
+  raw = t->saved;
+  raw.c_iflag &=
+      ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+  raw.c_oflag &= ~OPOST;
+  raw.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+  raw.c_cflag = (raw.c_cflag & ~(CSIZE | PARENB)) | CS8;
+  raw.c_cc[VMIN] = 0;
+  raw.c_cc[VTIME] = 0;
+  if (tcsetattr(t->input, TCSADRAIN, &raw))
+    return TUI_INVALID;
+  t->active = 1;
+  tui_terminal_size(t, &t->columns, &t->rows);
+  TuiResult result = terminal_output(t, "\033[?1049h\033[?2004h");
+  if (result == TUI_OK && t->mouse)
+    result = terminal_output(t, t->motion ? "\033[?1002h\033[?1006h"
+                                          : "\033[?1000h\033[?1006h");
+  if (result != TUI_OK)
+    tui_terminal_close(t);
+  return result;
+#else
+  return TUI_INVALID;
+#endif
+}
+TuiResult tui_terminal_write(TuiTerminal *t, const char *s) {
+  if (!t || !t->active || !s)
+    return TUI_INVALID;
+#if defined(__unix__) || defined(__APPLE__)
+  return terminal_output(t, s);
+#else
+  return TUI_INVALID;
+#endif
+}
+TuiResult tui_terminal_read(TuiTerminal *t, int timeout, TuiInputEvent **out) {
+  if (!out)
+    return TUI_INVALID;
+  *out = NULL;
+  if (!t || timeout < 0 || timeout > 3600000)
+    return TUI_INVALID;
+  if (!t->active) {
+    *out = input_event("eof", NULL, 0);
+    return *out ? TUI_OK : TUI_NOMEM;
+  }
+#if defined(__unix__) || defined(__APPLE__)
+  long long deadline = input_clock() + timeout;
+  for (;;) {
+    int columns, rows;
+    tui_terminal_size(t, &columns, &rows);
+    if (columns != t->columns || rows != t->rows) {
+      TuiInputEvent *e = input_event("resize", NULL, 0);
+      if (!e)
+        return TUI_NOMEM;
+      t->columns = columns;
+      t->rows = rows;
+      e->x = columns;
+      e->y = rows;
+      *out = e;
+      return TUI_OK;
+    }
+    long long now = input_clock();
+    TuiResult result = tui_input_next(
+        t->decoder,
+        tui_input_waiting_escape(t->decoder) && now - t->escape_at >= 100, out);
+    if (result != TUI_OK || *out) {
+      if (tui_input_waiting_escape(t->decoder))
+        t->escape_at = now;
+      return result;
+    }
+    if (t->eof) {
+      *out = input_event("eof", NULL, 0);
+      return *out ? TUI_OK : TUI_NOMEM;
+    }
+    int remaining = (int)max(0, (int)(deadline - now));
+    if (tui_input_waiting_escape(t->decoder))
+      remaining = min(remaining, max(1, 100 - (int)(now - t->escape_at)));
+    struct pollfd fd = {t->input, POLLIN, 0};
+    int ready = poll(&fd, 1, remaining);
+    if (ready < 0) {
+      if (errno == EINTR) {
+        if (input_clock() >= deadline)
+          return TUI_OK;
+        continue;
+      }
+      return TUI_INVALID;
+    }
+    if (!ready)
+      return tui_input_next(t->decoder,
+                            tui_input_waiting_escape(t->decoder) &&
+                                input_clock() - t->escape_at >= 100,
+                            out);
+    unsigned char data[8192];
+    ssize_t count = read(t->input, data, sizeof(data));
+    if (count < 0) {
+      if (errno == EINTR)
+        continue;
+      return TUI_INVALID;
+    }
+    if (!count)
+      t->eof = 1;
+    else {
+      if (!tui_input_waiting_escape(t->decoder))
+        t->escape_at = input_clock();
+      result = tui_input_feed(t->decoder, data, (size_t)count);
+      if (result != TUI_OK)
+        return result;
+    }
+  }
+#else
+  return TUI_INVALID;
+#endif
 }

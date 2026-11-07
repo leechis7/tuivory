@@ -1078,6 +1078,42 @@ TuiResult tui_drag_tabs_draw(TuiDragState *state, TuiTabs *tabs,
                              TuiCanvas *canvas, TuiRect rect, int focused,
                              int ascii);
 
+/* Optional incremental input and POSIX terminal session. Runtime models remain
+ * platform independent. Decoder feed copies bytes. next/read set output NULL
+ * when no complete event is available. Events own key/text; free explicitly.
+ * text_length also represents literal NUL bytes in bracketed paste. */
+typedef struct {
+  const char *key, *text;
+  size_t text_length;
+  int x, y, button;
+} TuiInputEvent;
+typedef struct TuiInputDecoder TuiInputDecoder;
+TuiInputDecoder *tui_input_decoder_new(void);
+void tui_input_decoder_free(TuiInputDecoder *decoder);
+TuiResult tui_input_feed(TuiInputDecoder *decoder, const void *bytes,
+                         size_t length);
+TuiResult tui_input_next(TuiInputDecoder *decoder, int flush_escape,
+                         TuiInputEvent **output);
+int tui_input_waiting_escape(const TuiInputDecoder *decoder);
+void tui_input_event_free(TuiInputEvent *event);
+typedef struct {
+  int mouse, mouse_motion;
+} TuiTerminalOptions;
+typedef struct TuiTerminal TuiTerminal;
+/* NULL options defaults to mouse enabled, motion disabled. File descriptors are
+ * borrowed, never closed. open requires POSIX TTYs; other platforms reject it.
+ * Hosts own signals/global keys. Session APIs are not thread safe. */
+TuiTerminal *tui_terminal_new(int input_fd, int output_fd,
+                              const TuiTerminalOptions *options);
+void tui_terminal_free(TuiTerminal *terminal);
+TuiResult tui_terminal_open(TuiTerminal *terminal);
+TuiResult tui_terminal_close(TuiTerminal *terminal);
+TuiResult tui_terminal_size(const TuiTerminal *terminal, int *columns,
+                            int *rows);
+TuiResult tui_terminal_write(TuiTerminal *terminal, const char *utf8);
+TuiResult tui_terminal_read(TuiTerminal *terminal, int timeout_ms,
+                            TuiInputEvent **output);
+
 #ifdef __cplusplus
 }
 #endif
