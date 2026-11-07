@@ -1,4 +1,5 @@
 #include "container_host.hpp"
+#include "dialog_host.hpp"
 #include "feedback_host.hpp"
 #include "layout_host.hpp"
 #include "menu_host.hpp"
@@ -93,7 +94,8 @@ int main(int argc, char **argv) {
          workspace = false, tab_focus = false, text_demo = false,
          form_demo = false, list_demo = false, picker_demo = false,
          menu_demo = false, context_demo = false, feedback_demo = false,
-         layout_demo = false, container_demo = false, surface_demo = false;
+         layout_demo = false, container_demo = false, surface_demo = false,
+         shadow_demo = false, dialog_demo = false;
     for (int i = 1; i < argc; i++) {
       std::string arg = argv[i];
       if (arg == "--lang" && i + 1 < argc)
@@ -121,17 +123,22 @@ int main(int argc, char **argv) {
         layout_demo = demo == "layout";
         container_demo = demo == "container";
         surface_demo = demo == "surface";
+        shadow_demo = demo == "shadow";
+        dialog_demo = demo == "dialog";
+        if (shadow_demo)
+          menu_demo = context_demo = true;
         menu_demo = context_demo || demo == "menu";
         if (demo != "tree" && !workspace && !text_demo && !form_demo &&
             !list_demo && !picker_demo && !menu_demo && !feedback_demo &&
-            !layout_demo && !container_demo && !surface_demo)
-          throw std::invalid_argument("Supported demos: tree, workspace, text, "
-                                      "form, list, picker, menu, context-menu, "
-                                      "feedback, layout, container, surface");
+            !layout_demo && !container_demo && !surface_demo && !dialog_demo)
+          throw std::invalid_argument(
+              "Supported demos: tree, workspace, text, "
+              "form, list, picker, menu, context-menu, "
+              "feedback, layout, container, surface, shadow, dialog");
       } else {
         std::cout << "--demo "
                      "tree|workspace|text|form|list|picker|menu|context-menu|"
-                     "feedback|layout|container|surface "
+                     "feedback|layout|container|surface|shadow|dialog "
                      "--lang ko|en "
                      "--theme "
                      "dark|light|blackwhite "
@@ -139,10 +146,11 @@ int main(int argc, char **argv) {
         return arg == "--help" ? 0 : 2;
       }
     }
-    MenuDemo menu_host(en, context_demo);
+    MenuDemo menu_host(en, context_demo, shadow_demo);
     FeedbackDemo feedback_host(en);
     LayoutDemo layout_host(en);
     ContainerDemo container_host(en, ascii);
+    DialogDemo dialog_host(en);
     SurfaceDemo surface_host(en);
     Tree tree({{"root", en ? "Workspace" : "작업 공간"},
                {"src", en ? "Sources" : "소스", "root"},
@@ -230,7 +238,7 @@ int main(int argc, char **argv) {
     std::optional<Session> session;
     if (!snapshot)
       session.emplace(menu_demo || feedback_demo || layout_demo ||
-                      container_demo || surface_demo);
+                      container_demo || surface_demo || dialog_demo);
     while (!stopped) {
       int width = 72, height = 18;
       winsize size{};
@@ -243,7 +251,9 @@ int main(int argc, char **argv) {
       auto area = canvas.panel({0, 0, width, std::max(0, height - 1)},
                                en ? "Tuivory C++ example" : "Tuivory C++ 예제",
                                true, ascii);
-      if (surface_demo)
+      if (dialog_demo)
+        dialog_host.draw(canvas, area, ascii);
+      else if (surface_demo)
         surface_host.draw(canvas, area, ascii);
       else if (container_demo)
         container_host.draw(canvas, area, ascii);
@@ -316,7 +326,8 @@ int main(int argc, char **argv) {
                           : key == ' '                 ? "toggle"
                                                        : "";
       if (text_demo || form_demo || list_demo || picker_demo || menu_demo ||
-          feedback_demo || layout_demo || container_demo || surface_demo) {
+          feedback_demo || layout_demo || container_demo || surface_demo ||
+          dialog_demo) {
         std::string input, edit_action;
         if (key == 27) {
           std::string seq;
@@ -336,11 +347,13 @@ int main(int argc, char **argv) {
           int button = 0, x = 0, y = 0;
           char ending = 0;
           if ((menu_demo || feedback_demo || layout_demo || container_demo ||
-               surface_demo) &&
+               surface_demo || dialog_demo) &&
               std::sscanf(seq.c_str(), "[<%d;%d;%d%c", &button, &x, &y,
                           &ending) == 4) {
             if (ending == 'M' && x > 0 && y > 0) {
-              if (surface_demo)
+              if (dialog_demo)
+                dialog_host.pointer(x - 1, y - 1, button);
+              else if (surface_demo)
                 surface_host.pointer(x - 1, y - 1, button);
               else if (container_demo)
                 container_host.pointer(x - 1, y - 1, button);
@@ -385,7 +398,12 @@ int main(int argc, char **argv) {
           }
           edit_action = "insert";
         }
-        if (surface_demo)
+        if (dialog_demo)
+          dialog_host.handle(key == 9                   ? "next"
+                             : edit_action == "newline" ? "activate"
+                                                        : edit_action,
+                             input);
+        else if (surface_demo)
           surface_host.handle(
               edit_action == "newline" ? "activate" : edit_action, input);
         else if (container_demo)

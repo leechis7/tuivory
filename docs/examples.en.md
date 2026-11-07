@@ -136,3 +136,5 @@ TVR-7 in 0.11.1: [real grid cursor and backend integration](grid-workspace.en.md
 [Independent containers and cell-copy API](language-containers.en.md)
 
 [Independent Surface and background API](language-surfaces.en.md)
+
+[Independent popup shadows and dialogs](language-popups.en.md)

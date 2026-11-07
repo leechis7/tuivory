@@ -3,7 +3,12 @@
 #include "tuivory.hpp"
 // callbacks.
 class MenuDemo {
-  bool en_, context_;
+  bool en_, context_, shadow_demo_;
+  int shadow_index_ = 0;
+  std::string shadow_mode() const {
+    const char *modes[] = {"auto", "solid", "off", "dim"};
+    return shadow_demo_ ? modes[shadow_index_] : "off";
+  }
   tuivory::Menu menu_;
   tuivory::Focus focus_{"root", {{"editor"}}};
   tuivory::Text editor_;
@@ -56,8 +61,8 @@ class MenuDemo {
   }
 
 public:
-  MenuDemo(bool en, bool context)
-      : en_(en), context_(context), menu_(items(en)),
+  MenuDemo(bool en, bool context, bool shadow = false)
+      : en_(en), context_(context), shadow_demo_(shadow), menu_(items(en)),
         editor_(en ? "Close the menu to edit this text."
                    : "메뉴를 닫으면 여기를 편집할 수 있습니다."),
         status_(en ? "Clicks outside the popup are blocked."
@@ -75,7 +80,7 @@ public:
     editor_.draw(c, editor_area_, !menu_.opened());
     std::string underlay;
     for (int x = 0; x < area.width; x++)
-      underlay += ascii ? "." : en_ ? "界" : "가";
+      underlay += ascii ? (shadow_demo_ ? ":" : ".") : en_ ? "界" : "가";
     for (int y = editor_area_.y + editor_area_.height;
          y < area.y + std::max(0, area.height - 2); y++)
       c.write(area.x, y, underlay, "hint", false, area.width);
@@ -83,10 +88,15 @@ public:
       menu_.draw_bar(c, bar_);
     c.write(area.x, area.y + std::max(0, area.height - 2), status_, "hint",
             false, area.width);
-    c.write(area.x, area.y + std::max(0, area.height - 1),
-            en_ ? "F10 menu | Shift+F10 / right click"
-                : "F10 메뉴 | Shift+F10 / 오른쪽 클릭",
-            "hint", false, area.width);
+    const char *ko_modes[] = {"자동", "검정", "끄기", "Dim(호환)"};
+    std::string footer =
+        shadow_demo_ ? (en_ ? "Shadow: " + shadow_mode() + " | s cycle | d Dim"
+                            : std::string("그림자: ") +
+                                  ko_modes[shadow_index_] + " | s 변경 | d Dim")
+                     : (en_ ? "F10 menu | Shift+F10 / right click"
+                            : "F10 메뉴 | Shift+F10 / 오른쪽 클릭");
+    c.write(area.x, area.y + std::max(0, area.height - 1), footer, "hint",
+            false, area.width);
     Rect anchor =
         anchor_.value_or(Rect{area.x + (context_ ? area.width / 2 : 1),
                               area.y + (context_ ? 5 : 0), 1, 1});
@@ -94,18 +104,36 @@ public:
       c.write(anchor.x, anchor.y, "+", "warning", false, 1);
     if (menu_.opened()) {
       auto size = menu_.content_size();
-      auto popup =
-          menu_placement(anchor, area, std::min(48, ((size.first + 5) / 2) * 2),
-                         size.second + 4);
+      ShadowOptions options{shadow_mode()};
+      auto place = popup_placement(anchor, area,
+                                   std::min(48, ((size.first + 5) / 2) * 2),
+                                   size.second + 4, options);
       auto title = menu_.title();
-      content_ = menu_.draw_popup(
-          c, popup,
-          title.empty() ? (en_ ? "Context menu" : "문맥 메뉴") : title, 1,
+      auto caption =
+          title.empty() ? (en_ ? "Context menu" : "문맥 메뉴") : title;
+      Rect local;
+      auto layout = Shadow(options).draw(
+          c, place.bounds,
+          [&](Canvas &child) {
+            local = menu_.draw_popup(child, {0, 0, child.width, child.height},
+                                     caption, 1, ascii);
+          },
           ascii);
+      content_ = {layout.card.x + local.x, layout.card.y + local.y, local.width,
+                  local.height};
+
     } else
       content_ = {};
   }
   void handle(const std::string &action, const std::string &text = "") {
+    auto command = action == "insert" ? text : action;
+    if (shadow_demo_ && (command == "s" || command == "d")) {
+      shadow_index_ = command == "d"      ? 3
+                      : shadow_index_ < 3 ? (shadow_index_ + 1) % 3
+                                          : 0;
+      content_ = {};
+      return;
+    }
     if (action == "f10") {
       if (menu_.opened())
         sync(menu_.close());

@@ -63,7 +63,7 @@ class WorkspaceDemo:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu', 'layout', 'container','surface'], default='tree')
+    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu', 'layout', 'container','surface','shadow','dialog'], default='tree')
     parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
     parser.add_argument('--theme', choices=['dark', 'light', 'blackwhite'], default='dark')
     parser.add_argument('--colors', choices=['8', '16', '256', 'truecolor'], default='256')
@@ -106,6 +106,7 @@ def main():
     from ._menu_example import MenuDemo
     models['menu'] = MenuDemo(not ko)
     models['context-menu'] = MenuDemo(not ko, True)
+    models['shadow'] = MenuDemo(not ko, True, True)
     from ._feedback_example import FeedbackDemo
     models['feedback'] = FeedbackDemo(not ko)
     from ._layout_example import LayoutDemo
@@ -114,6 +115,8 @@ def main():
     models['container'] = ContainerDemo(not ko,args.ascii)
     from ._surface_example import SurfaceDemo
     models['surface'] = SurfaceDemo(not ko)
+    from ._dialog_example import DialogDemo
+    models['dialog'] = DialogDemo(not ko)
     model = models[args.demo]
     themes, profiles = ['dark', 'light', 'blackwhite'], ['8', '16', '256', 'truecolor']
     theme, colors = args.theme, args.colors
@@ -148,7 +151,7 @@ def main():
                 theme = themes[(themes.index(theme) + 1) % len(themes)]
             elif event.key == 'f2':
                 colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
-            elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo)):
+            elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo)):
                 model.pointer(event.x, event.y, event.button)
             elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
                 if isinstance(model, (Grid, Text)):
@@ -159,7 +162,7 @@ def main():
                     model.click(event.x - area.x, event.y - area.y, area.height)
             else:
                 action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
-                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo)):
+                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo)):
                     model.handle(action, area.height, event.text)
                 elif isinstance(model, SearchPicker):
                     model.handle(action,event.text,area.height)

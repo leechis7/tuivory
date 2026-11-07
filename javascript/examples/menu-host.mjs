@@ -1,8 +1,10 @@
 // Example host owns global keys, screen composition, callbacks and focus scopes.
 import * as ui from "../dist/index.js";
 export class MenuDemo {
-  constructor(en = false, context = false) {
+  constructor(en = false, context = false, shadow = false) {
     this.en = en;
+    this.shadowDemo = shadow;
+    this.shadowIndex = 0;
     this.context = context;
     const word = (ko, eng) => (en ? eng : ko);
     this.menu = new ui.Menu([
@@ -102,7 +104,9 @@ export class MenuDemo {
       c.write(
         area.x,
         y,
-        (ascii ? "." : this.en ? "界" : "가").repeat(area.width),
+        (ascii ? (this.shadowDemo ? ":" : ".") : this.en ? "界" : "가").repeat(
+          area.width,
+        ),
         "hint",
         false,
         area.width,
@@ -116,12 +120,22 @@ export class MenuDemo {
       false,
       area.width,
     );
+    const mode = this.shadowDemo
+      ? ["auto", "solid", "off", "dim"][this.shadowIndex]
+      : "off";
+    const footer = this.shadowDemo
+      ? this.en
+        ? "Shadow: " + mode + " | s cycle | d Dim"
+        : "그림자: " +
+          ["자동", "검정", "끄기", "Dim"][this.shadowIndex] +
+          " | s 변경 | d Dim"
+      : this.en
+        ? "F10 menu | Shift+F10 / right click"
+        : "F10 메뉴 | Shift+F10 / 오른쪽 클릭";
     c.write(
       area.x,
       area.y + Math.max(0, area.height - 1),
-      this.en
-        ? "F10 menu | Shift+F10 / right click"
-        : "F10 메뉴 | Shift+F10 / 오른쪽 클릭",
+      footer,
       "hint",
       false,
       area.width,
@@ -138,22 +152,51 @@ export class MenuDemo {
       c.write(anchor.x, anchor.y, "+", "warning", false, 1);
     if (this.menu.opened) {
       const [w, h] = this.menu.contentSize();
-      const popup = ui.menuPlacement(
-        anchor,
-        area,
-        Math.min(48, Math.floor((w + 5) / 2) * 2),
-        h + 4,
-      );
-      this.content = this.menu.drawPopup(
+      const options = new ui.ShadowOptions(mode),
+        placement = ui.popupPlacement(
+          anchor,
+          area,
+          Math.min(48, Math.floor((w + 5) / 2) * 2),
+          h + 4,
+          options,
+        );
+      let local = ui.rect();
+      const layout = new ui.Shadow(options).draw(
         c,
-        popup,
-        this.menu.title() || (this.en ? "Context menu" : "문맥 메뉴"),
-        1,
+        placement.bounds,
+        (child) => {
+          local = this.menu.drawPopup(
+            child,
+            ui.rect(0, 0, child.width, child.height),
+            this.menu.title() || (this.en ? "Context menu" : "문맥 메뉴"),
+            1,
+            ascii,
+          );
+        },
         ascii,
+      );
+      this.popup = layout.card;
+      this.shadowLayout = layout;
+      this.content = ui.rect(
+        layout.card.x + local.x,
+        layout.card.y + local.y,
+        local.width,
+        local.height,
       );
     } else this.content = ui.rect();
   }
   handle(action, text = "") {
+    const command = action === "insert" ? text : action;
+    if (this.shadowDemo && ["s", "d"].includes(command)) {
+      this.shadowIndex =
+        command === "d"
+          ? 3
+          : this.shadowIndex < 3
+            ? (this.shadowIndex + 1) % 3
+            : 0;
+      this.content=ui.rect();
+      return;
+    }
     if (action === "f10") {
       if (this.menu.opened) this.sync(this.menu.close());
       else {

@@ -96,3 +96,5 @@ python3 tools/snapshot_popup_shadows.py .cache/rust/debug/examples/shadows
 ```
 
 The example host owns opening, caller restoration and global keys. The context-menu anchor is synthetic, not a new right-click integration. References use actual TestBackend widgets. Auto/solid/off references use --clean for a quiet application backdrop; edge/ASCII/Dim references retain repeated text to inspect boundaries and underlying content. Go post-Show buffers and Rust TestBackend cover palettes, Unicode/ASCII, clipping, wide edges, backdrop contrast and restoration. [TVR-29 local results](evidence/tvr29-shadow-results.json) distinguish local checks from unexecuted CI/publication; [previous release results](evidence/popup-shadow-results.json) remain historical. No CentOS checks.
+
+[Unreleased independent Python/TS/C/C++/Java shadow and dialog APIs](language-popups.en.md). These share the placement cases and retain separate implementations; published Go/Rust behavior is unchanged.

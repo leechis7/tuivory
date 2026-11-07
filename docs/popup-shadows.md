@@ -96,3 +96,5 @@ python3 tools/snapshot_popup_shadows.py .cache/rust/debug/examples/shadows
 ```
 
 예제 앱이 열기·원래 호출 위치·전역 키를 연결합니다. 문맥 메뉴 호출점은 합성이며 우클릭 위치 연결을 새로 구현한 것은 아닙니다. 참조 화면은 실제 TestBackend 위젯을 사용합니다. 기본 Auto·검정·끄기 화면은 --clean으로 정돈된 앱 배경 위에 표시하며, 모서리·ASCII·Dim 화면은 경계와 배경 글자를 확인하기 위한 반복 텍스트를 유지합니다. Go Show 이후 출력과 Rust TestBackend로 팔레트·Unicode/ASCII·클리핑·두 칸 문자 경계·배경 대비·복원을 검사합니다. [TVR-29 로컬 결과](evidence/tvr29-shadow-results.json)에서 로컬과 미실행 CI·게시를 구분하며 [이전 배포 결과](evidence/popup-shadow-results.json)는 과거 이력입니다. CentOS 검증은 수행하지 않습니다.
+
+[미배포 독립 Python/TS/C/C++/Java 그림자·대화상자 API](language-popups.md). 공통 배치 사례를 사용하며 각 언어는 독립 구현한다. 배포된 Go/Rust 동작은 유지한다.

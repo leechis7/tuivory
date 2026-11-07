@@ -3449,4 +3449,449 @@ public final class Tuivory {
       canvas.blit(child, new Rect(0, 0, bounds.width, bounds.height), bounds.x, bounds.y);
     }
   }
+  private static void popupNumber(int value, int limit) {
+    if (value < 0 || value > limit)
+      throw new IllegalArgumentException("invalid popup bounds/options");
+  }
+  private static void popupRect(Rect r) {
+    popupNumber(r.x, 1000000000);
+    popupNumber(r.y, 1000000000);
+    popupNumber(r.width, 1000000);
+    popupNumber(r.height, 1000000);
+  }
+  public record PopupLayout(Rect bounds, Rect card, Rect shadow) {
+    public PopupLayout() {
+      this(new Rect(0, 0, 0, 0), new Rect(0, 0, 0, 0), new Rect(0, 0, 0, 0));
+    }
+    public List<Rect> shadowRegions() {
+      var s = shadow;
+      var c = card;
+      int sr = s.x + s.width, sb = s.y + s.height, cr = c.x + c.width, cb = c.y + c.height,
+          x = Math.max(s.x, cr), y = Math.max(s.y, cb);
+      return List.of(new Rect(x, s.y, Math.max(0, sr - x), Math.max(0, Math.min(sb, cb) - s.y)),
+          new Rect(s.x, y, s.width, Math.max(0, sb - y)));
+    }
+    public boolean hit(int x, int y) {
+      return card.contains(x, y);
+    }
+  }
+  public record ShadowOptions(String mode, int offsetX, int offsetY) {
+    public ShadowOptions() {
+      this("off", 0, 0);
+    }
+    public ShadowOptions(String mode) {
+      this(mode, 0, 0);
+    }
+    public ShadowOptions {
+      if (!List.of("off", "auto", "solid", "dim").contains(mode))
+        throw new IllegalArgumentException("invalid shadow mode");
+      popupNumber(offsetX, 1000000);
+      popupNumber(offsetY, 1000000);
+    }
+    private int[] offsets() {
+      return mode.equals("off")          ? new int[] {0, 0}
+          : offsetX == 0 && offsetY == 0 ? new int[] {1, 1}
+                                         : new int[] {offsetX, offsetY};
+    }
+    public PopupLayout layout(Rect bounds) {
+      popupRect(bounds);
+      return shadowLayout(this, bounds);
+    }
+  }
+  private static PopupLayout shadowLayout(ShadowOptions o, Rect bounds) {
+    var offsets = o.offsets();
+    if (bounds.width == 0 || bounds.height == 0)
+      return new PopupLayout(bounds, bounds, new Rect(0, 0, 0, 0));
+    int dx = Math.min(offsets[0], bounds.width - 1), dy = Math.min(offsets[1], bounds.height - 1);
+    var card = new Rect(bounds.x, bounds.y, bounds.width - dx, bounds.height - dy);
+    var shadow = new Rect(0, 0, 0, 0);
+    if (dx != 0 || dy != 0) {
+      int caps = (o.mode.equals("auto") || o.mode.equals("solid")) && dy > 0 ? 1 : 0;
+      shadow = new Rect(bounds.x + dx, bounds.y + dy - caps, card.width, card.height + caps);
+    }
+    return new PopupLayout(bounds, card, shadow);
+  }
+  public static PopupLayout popupPlacement(
+      Rect anchor, Rect viewport, int width, int height, ShadowOptions options) {
+    popupRect(anchor);
+    popupRect(viewport);
+    popupNumber(width, 1000000);
+    popupNumber(height, 1000000);
+    var offsets = options.offsets();
+    int w = width != 0 && height != 0 ? Math.min(width + offsets[0], viewport.width) : 0,
+        h = width != 0 && height != 0 ? Math.min(height + offsets[1], viewport.height) : 0,
+        mx = viewport.x + viewport.width - w, my = viewport.y + viewport.height - h,
+        x = Math.max(viewport.x, Math.min(anchor.x, mx)), y = anchor.y + anchor.height;
+    if (y > my)
+      y = Math.max(0, anchor.y - h);
+    return shadowLayout(options, new Rect(x, Math.max(viewport.y, Math.min(y, my)), w, h));
+  }
+  public static PopupLayout popupPlacement(Rect anchor, Rect viewport, int width, int height) {
+    return popupPlacement(anchor, viewport, width, height, new ShadowOptions());
+  }
+  private static int shadowShade(int backdrop, boolean hasRGB, boolean has256) {
+    var rgb = colorRGB(backdrop);
+    int r = rgb[0], g = rgb[1], b = rgb[2], maximum = Math.max(r, Math.max(g, b));
+    if (maximum <= 16)
+      return hasRGB ? 0x1404040 : has256 ? 238 : 7;
+    int factor = maximum <= 96 ? 2 : 4;
+    if (hasRGB)
+      return 0x1000000 | ((r * factor / 5) << 16) | ((g * factor / 5) << 8) | (b * factor / 5);
+    if (has256)
+      return 232 + Math.max(0, Math.min(23, ((r + g + b) * factor / 15 - 3) / 10));
+    return 0;
+  }
+  private static void paintShadow(Canvas canvas, Rect region, PopupLayout layout,
+      ShadowOptions options, boolean ascii, boolean hasRGB, boolean has256) {
+    int left = Math.max(0, region.x), right = Math.min(canvas.width, region.x + region.width),
+        top = Math.max(0, region.y), bottom = Math.min(canvas.height, region.y + region.height);
+    if (left >= right || top >= bottom)
+      return;
+    canvas.clearCursor(new Rect(left, top, right - left, bottom - top));
+    for (int y = top; y < bottom; y++) {
+      var row = canvas.data[y];
+      var backgrounds = new int[right - left];
+      for (int x = left; x < right; x++)
+        backgrounds[x - left] =
+            row[x].owner >= 0 ? row[row[x].owner].style.background : row[x].style.background;
+      if (row[left].owner >= 0)
+        canvas.writeStyle(left, y, " ", row[left].style, 1);
+      int end = right - 1, start = row[end].owner >= 0 ? row[end].owner : end;
+      if (end + 1 < canvas.width && row[end + 1].owner == start)
+        canvas.writeStyle(end, y, " ", row[end].style, 1);
+      for (int x = left; x < right; x++) {
+        if (options.mode.equals("dim")) {
+          var s = row[x].style;
+          row[x].style = new Style(s.foreground, s.background, s.bold, true, s.underline);
+          continue;
+        }
+        int bg = backgrounds[x - left],
+            shade = options.mode.equals("solid") ? 0 : shadowShade(bg, hasRGB, has256),
+            background = shade;
+        String symbol = " ";
+        if (ascii) {
+          symbol = ".";
+          background = bg;
+        } else if (layout.shadow.height > layout.card.height) {
+          if (y == layout.shadow.y) {
+            symbol = "▄";
+            background = bg;
+          } else if (y == layout.shadow.y + layout.shadow.height - 1) {
+            symbol = "▀";
+            background = bg;
+          }
+        }
+        canvas.writeStyle(x, y, symbol, new Style(shade, background, false, false, false), 1);
+      }
+    }
+  }
+  public static final class Shadow {
+    public final ShadowOptions options;
+    public Shadow() {
+      this(new ShadowOptions());
+    }
+    public Shadow(ShadowOptions options) {
+      this.options = options;
+    }
+    public PopupLayout draw(
+        Canvas canvas, Rect bounds, java.util.function.Consumer<Canvas> painter) {
+      return draw(canvas, bounds, painter, false);
+    }
+    public PopupLayout draw(
+        Canvas canvas, Rect bounds, java.util.function.Consumer<Canvas> painter, boolean ascii) {
+      popupRect(bounds);
+      int x = Math.min(bounds.x, canvas.width), y = Math.min(bounds.y, canvas.height),
+          right = Math.min(canvas.width, bounds.x + bounds.width),
+          bottom = Math.min(canvas.height, bounds.y + bounds.height);
+      var layout =
+          shadowLayout(options, new Rect(x, y, Math.max(0, right - x), Math.max(0, bottom - y)));
+      var working = new Canvas(canvas.width, canvas.height, canvas.palette, canvas.surfaceRole);
+      working.blit(canvas, new Rect(0, 0, canvas.width, canvas.height), 0, 0);
+      boolean hasRGB = false, has256 = false;
+      for (String role : Data.ROLES) {
+        var s = canvas.palette.style(role);
+        for (int color : new int[] {s.foreground, s.background}) {
+          hasRGB |= (color & 0x1000000) != 0;
+          has256 |= (color & 0x1000000) == 0 && color >= 16 && color <= 255;
+        }
+      }
+      if (!options.mode.equals("off"))
+        for (var region : layout.shadowRegions())
+          paintShadow(working, region, layout, options, ascii, hasRGB, has256);
+      var card = layout.card;
+      var child = new Canvas(card.width, card.height, canvas.palette, canvas.surfaceRole);
+      child.blit(working, card, 0, 0);
+      child.clearCursor();
+      painter.accept(child);
+      working.blit(child, new Rect(0, 0, card.width, card.height), card.x, card.y);
+      canvas.blit(working, new Rect(0, 0, canvas.width, canvas.height), 0, 0);
+      return layout;
+    }
+  }
+  private static String dialogText(String value, int limit) {
+    if (value == null)
+      throw new IllegalArgumentException("invalid dialog text/ID");
+    int size = 0;
+    for (int at = 0; at < value.length();) {
+      int cp = value.codePointAt(at);
+      if (cp >= 0xd800 && cp <= 0xdfff)
+        throw new IllegalArgumentException("invalid dialog Unicode");
+      size += cp < 128 ? 1 : cp < 2048 ? 2 : cp < 65536 ? 3 : 4;
+      if (size > limit)
+        throw new IllegalArgumentException("dialog text/ID exceeds limit");
+      at += Character.charCount(cp);
+    }
+    return value;
+  }
+  private record DialogRows(List<String> rows, boolean truncated) {}
+  private static DialogRows dialogWrap(String text, int width, int limit) {
+    if (text.isEmpty())
+      return new DialogRows(List.of(), false);
+    if (width <= 0 || limit <= 0)
+      return new DialogRows(List.of(), true);
+    var rows = new ArrayList<String>();
+    var line = new StringBuilder();
+    int used = 0;
+    boolean lastBreak = false, truncated = false;
+    for (String raw : graphemes(text)) {
+      if (raw.equals("\r") || raw.equals("\n") || raw.equals("\r\n")) {
+        if (rows.size() >= limit) {
+          truncated = true;
+          break;
+        }
+        rows.add(line.toString());
+        line.setLength(0);
+        used = 0;
+        lastBreak = true;
+        continue;
+      }
+      lastBreak = false;
+      String g = clean(raw);
+      int n = cells(g);
+      if (n > width) {
+        g = clip(g, width, true);
+        n = cells(g);
+      }
+      if (used + n > width && line.length() != 0) {
+        if (rows.size() >= limit) {
+          truncated = true;
+          break;
+        }
+        rows.add(line.toString());
+        line.setLength(0);
+        used = 0;
+      }
+      if (rows.size() >= limit) {
+        truncated = true;
+        break;
+      }
+      line.append(g);
+      used += n;
+    }
+    if (!truncated && (line.length() != 0 || rows.isEmpty() || lastBreak)) {
+      if (rows.size() < limit)
+        rows.add(line.toString());
+      else
+        truncated = true;
+    }
+    if (truncated && !rows.isEmpty())
+      rows.set(
+          rows.size() - 1, clip(rows.get(rows.size() - 1), Math.max(0, width - 1), false) + "~");
+    return new DialogRows(rows, truncated);
+  }
+  public record DialogButton(String id, String label, boolean disabled) {
+    public DialogButton(String id) {
+      this(id, "", false);
+    }
+    public DialogButton(String id, String label) {
+      this(id, label, false);
+    }
+  }
+  public record
+      DialogButtonCell(String id, Rect rect, String text, boolean disabled, boolean focused) {}
+  public record DialogLayout(
+      List<String> body, List<DialogButtonCell> buttons, int hiddenButtons, boolean bodyTruncated) {
+    public DialogLayout {
+      body = List.copyOf(body);
+      buttons = List.copyOf(buttons);
+    }
+  }
+  public static final class Dialog {
+    private String title = "", message = "", cancel = "", focused = "";
+    private List<DialogButton> buttons = List.of();
+    private record Hit(Rect rect, String id, boolean disabled) {}
+    private final List<Hit> hits = new ArrayList<>();
+    public Dialog() {
+      this("", "", List.of(), "");
+    }
+    public Dialog(String title, String message, List<DialogButton> buttons) {
+      this(title, message, buttons, "");
+    }
+    public Dialog(String title, String message, List<DialogButton> buttons, String cancelId) {
+      setText(title, message);
+      setButtons(buttons, cancelId);
+    }
+    public String title() {
+      return title;
+    }
+    public String message() {
+      return message;
+    }
+    public String cancelId() {
+      return cancel;
+    }
+    public String focused() {
+      return focused;
+    }
+    public List<DialogButton> buttons() {
+      return List.copyOf(buttons);
+    }
+    public void setText(String title, String message) {
+      var heading = dialogText(title == null ? this.title : title, 4096);
+      var content = dialogText(message == null ? this.message : message, 1000000);
+      this.title = heading;
+      this.message = content;
+      hits.clear();
+    }
+    public void setButtons(List<DialogButton> input) {
+      setButtons(input, null);
+    }
+    public void setButtons(List<DialogButton> input, String cancelId) {
+      if (input.size() > 1024)
+        throw new IllegalArgumentException("too many dialog buttons");
+      var owned = List.copyOf(input);
+      var ids = new HashSet<String>();
+      var eligible = new ArrayList<String>();
+      for (var b : owned) {
+        dialogText(b.id, 1024);
+        dialogText(b.label, 4096);
+        if (b.id.isEmpty() || !ids.add(b.id))
+          throw new IllegalArgumentException("empty/duplicate dialog button ID");
+        if (!b.disabled)
+          eligible.add(b.id);
+      }
+      String cancel = dialogText(cancelId == null ? this.cancel : cancelId, 1024);
+      if (!cancel.isEmpty() && !ids.contains(cancel))
+        throw new IllegalArgumentException("unknown dialog cancel ID");
+      String focus = eligible.contains(focused) ? focused
+          : eligible.contains(cancel)           ? cancel
+          : eligible.isEmpty()                  ? ""
+                                                : eligible.get(0);
+      buttons = owned;
+      this.cancel = cancel;
+      focused = focus;
+      hits.clear();
+    }
+    public boolean focus(String id) {
+      if (buttons.stream().noneMatch(b -> b.id.equals(id) && !b.disabled))
+        return false;
+      if (!focused.equals(id)) {
+        focused = id;
+        hits.clear();
+      }
+      return true;
+    }
+    public Event handle(String action) {
+      var eligible = buttons.stream().filter(b -> !b.disabled).map(DialogButton::id).toList();
+      if (action.equals("cancel"))
+        return cancel.isEmpty()         ? new Event("cancel", "")
+            : eligible.contains(cancel) ? new Event("cancel", cancel)
+                                        : new Event();
+      if (action.equals("activate"))
+        return eligible.contains(focused) ? new Event("activate", focused) : new Event();
+      if (eligible.isEmpty())
+        return new Event();
+      int at = Math.max(0, eligible.indexOf(focused));
+      if (List.of("next", "right", "down").contains(action))
+        at = (at + 1) % eligible.size();
+      else if (List.of("previous", "left", "up").contains(action))
+        at = (at + eligible.size() - 1) % eligible.size();
+      else if (action.equals("home"))
+        at = 0;
+      else if (action.equals("end"))
+        at = eligible.size() - 1;
+      else
+        return new Event();
+      String id = eligible.get(at);
+      if (id.equals(focused))
+        return new Event();
+      focus(id);
+      return new Event("focus", id);
+    }
+    public DialogLayout layout(int width, int height) {
+      popupNumber(width, 1000000);
+      popupNumber(height, 1000000);
+      if (width == 0 || height == 0)
+        return new DialogLayout(List.of(), List.of(), buttons.size(), !message.isEmpty());
+      record Position(DialogButton button, Rect rect) {}
+      var positions = new ArrayList<Position>();
+      int x = 0, y = 0, focusRow = 0;
+      for (var b : buttons) {
+        String label = clean(b.label.isEmpty() ? b.id : b.label);
+        int w = Math.min(width, Math.max(1, cells(label) + 4));
+        if (x != 0 && x + 1 + w > width) {
+          x = 0;
+          y++;
+        }
+        if (x != 0)
+          x++;
+        positions.add(new Position(b, new Rect(x, y, w, 1)));
+        if (b.id.equals(focused))
+          focusRow = y;
+        x += w;
+      }
+      int totalRows = positions.isEmpty() ? 0 : y + 1, visible = Math.min(height, totalRows),
+          start = Math.max(0, focusRow + 1 - visible), available = height - visible,
+          gap = !message.isEmpty() && visible > 0 && available >= 2 ? 1 : 0;
+      var body = dialogWrap(message, width, available - gap);
+      var result = new ArrayList<DialogButtonCell>();
+      for (var p : positions) {
+        var b = p.button;
+        var r = p.rect;
+        if (r.y < start || r.y >= start + visible)
+          continue;
+        String label = clean(b.label.isEmpty() ? b.id : b.label),
+               text = r.width >= 6 ? "[ " + clip(label, Math.max(0, r.width - 4), true) + " ]"
+                                   : clip(label, r.width, true);
+        result.add(
+            new DialogButtonCell(b.id, new Rect(r.x, height - visible + r.y - start, r.width, 1),
+                text, b.disabled, b.id.equals(focused)));
+      }
+      return new DialogLayout(body.rows, result, buttons.size() - result.size(), body.truncated);
+    }
+    public DialogLayout draw(Canvas canvas, Rect bounds) {
+      return draw(canvas, bounds, true, false);
+    }
+    public DialogLayout draw(Canvas canvas, Rect bounds, boolean focused, boolean ascii) {
+      popupRect(bounds);
+      hits.clear();
+      int x = Math.min(bounds.x, canvas.width), y = Math.min(bounds.y, canvas.height);
+      var r = new Rect(x, y, Math.max(0, Math.min(canvas.width, bounds.x + bounds.width) - x),
+          Math.max(0, Math.min(canvas.height, bounds.y + bounds.height) - y));
+      var inner = insetRect(canvas.panel(r, title, focused, ascii), 1);
+      var layout = layout(inner.width, inner.height);
+      for (int row = 0; row < layout.body.size(); row++)
+        canvas.write(inner.x, inner.y + row, layout.body.get(row), "body", false, inner.width);
+      for (var b : layout.buttons) {
+        var box = new Rect(inner.x + b.rect.x, inner.y + b.rect.y, b.rect.width, 1);
+        String role = b.disabled ? "disabled" : focused && b.focused ? "button.focus" : "button";
+        canvas.fill(box, role);
+        canvas.write(box.x + Math.max(0, (box.width - cells(b.text)) / 2), box.y, b.text, role,
+            false, box.width);
+        hits.add(new Hit(box, b.id, b.disabled));
+      }
+      return layout;
+    }
+    public Event click(int x, int y) {
+      for (var hit : hits)
+        if (hit.rect.contains(x, y)) {
+          if (hit.disabled)
+            return new Event();
+          String id = hit.id;
+          focus(id);
+          return new Event("activate", id);
+        }
+      return new Event();
+    }
+  }
 }

@@ -6,13 +6,17 @@
 #include <string.h>
 /* Example host owns screens, global keys, focus scopes and action callbacks. */
 typedef struct {
-  int en, context, anchored;
+  int en, context, anchored, shadow_demo, shadow_index;
   TuiMenu *menu;
   TuiFocus *focus;
   TuiText *editor;
   TuiRect area, bar, content, editor_area, anchor;
   char status[256];
 } MenuDemo;
+static const char *menu_shadow_mode(const MenuDemo *h) {
+  static const char *modes[] = {"auto", "solid", "off", "dim"};
+  return h->shadow_demo ? modes[h->shadow_index] : "off";
+}
 static void menu_demo_sync(MenuDemo *h, TuiMenuEvent e) {
   if (!tui_menu_opened(h->menu) && tui_focus_depth(h->focus))
     tui_focus_close(h->focus, "popup");
@@ -95,6 +99,17 @@ static int menu_demo_init(MenuDemo *h, int en, int context) {
 static int menu_demo_contains(TuiRect r, int x, int y) {
   return x >= r.x && x < r.x + r.width && y >= r.y && y < r.y + r.height;
 }
+typedef struct {
+  MenuDemo *host;
+  const char *title;
+  int ascii;
+  TuiRect local;
+} MenuPopupPaint;
+static TuiResult menu_popup_paint(void *context, TuiCanvas *child) {
+  MenuPopupPaint *p = context;
+  return tui_menu_draw_popup(p->host->menu, child, tui_canvas_bounds(child),
+                             p->title, 1, p->ascii, &p->local);
+}
 static void menu_demo_draw(MenuDemo *h, TuiCanvas *c, TuiRect area, int ascii) {
   h->area = area;
   h->bar = (TuiRect){area.x, area.y, area.width, h->context ? 0 : 1};
@@ -104,7 +119,9 @@ static void menu_demo_draw(MenuDemo *h, TuiCanvas *c, TuiRect area, int ascii) {
                              : remaining < 2 ? remaining
                                              : 2};
   tui_text_draw(h->editor, c, h->editor_area, !tui_menu_opened(h->menu));
-  const char *glyph = ascii ? "." : h->en ? "界" : "가";
+  const char *glyph = ascii   ? (h->shadow_demo ? ":" : ".")
+                      : h->en ? "界"
+                              : "가";
   size_t bytes = strlen(glyph);
   char *line = malloc((size_t)area.width * bytes + 1);
   if (line) {
@@ -121,11 +138,20 @@ static void menu_demo_draw(MenuDemo *h, TuiCanvas *c, TuiRect area, int ascii) {
   if (area.height >= 2)
     tui_canvas_write(c, area.x, area.y + area.height - 2, h->status, "hint", 0,
                      area.width);
-  if (area.height >= 1)
-    tui_canvas_write(c, area.x, area.y + area.height - 1,
-                     h->en ? "F10 menu | Shift+F10 / right click"
-                           : "F10 메뉴 | Shift+F10 / 오른쪽 클릭",
-                     "hint", 0, area.width);
+  if (area.height >= 1) {
+    const char *ko_modes[] = {"자동", "검정", "끄기", "Dim(호환)"};
+    char footer[180];
+    if (h->shadow_demo)
+      snprintf(footer, sizeof footer, "%s%s%s", h->en ? "Shadow: " : "그림자: ",
+               h->en ? menu_shadow_mode(h) : ko_modes[h->shadow_index],
+               h->en ? " | s cycle | d Dim" : " | s 변경 | d Dim");
+    else
+      snprintf(footer, sizeof footer, "%s",
+               h->en ? "F10 menu | Shift+F10 / right click"
+                     : "F10 메뉴 | Shift+F10 / 오른쪽 클릭");
+    tui_canvas_write(c, area.x, area.y + area.height - 1, footer, "hint", 0,
+                     area.width);
+  }
   TuiRect anchor = h->anchored
                        ? h->anchor
                        : (TuiRect){area.x + (h->context ? area.width / 2 : 1),
@@ -139,18 +165,36 @@ static void menu_demo_draw(MenuDemo *h, TuiCanvas *c, TuiRect area, int ascii) {
     width = ((width + 5) / 2) * 2;
     if (width > 48)
       width = 48;
-    TuiRect popup = tui_menu_placement(anchor, area, width, height + 4);
+    TuiShadowOptions options = {.mode = menu_shadow_mode(h)};
+    TuiPopupLayout place, layout;
     char *title = tui_menu_title(h->menu);
-    tui_menu_draw_popup(h->menu, c, popup,
-                        title && *title ? title
-                        : h->en         ? "Context menu"
-                                        : "문맥 메뉴",
-                        1, ascii, &h->content);
+    if (tui_popup_placement(anchor, area, width, height + 4, &options,
+                            &place) == TUI_OK) {
+      MenuPopupPaint paint = {h,
+                              title && *title ? title
+                              : h->en         ? "Context menu"
+                                              : "문맥 메뉴",
+                              ascii,
+                              {0}};
+      if (tui_shadow_draw(&options, c, place.bounds, menu_popup_paint, &paint,
+                          ascii, &layout) == TUI_OK)
+        h->content = (TuiRect){layout.card.x + paint.local.x,
+                               layout.card.y + paint.local.y, paint.local.width,
+                               paint.local.height};
+    }
     tui_string_free(title);
   }
 }
 static void menu_demo_handle(MenuDemo *h, const char *action,
                              const char *text) {
+  const char *command = !strcmp(action, "insert") ? text : action;
+  if (h->shadow_demo && (!strcmp(command, "s") || !strcmp(command, "d"))) {
+    h->shadow_index = !strcmp(command, "d") ? 3
+                      : h->shadow_index < 3 ? (h->shadow_index + 1) % 3
+                                            : 0;
+    h->content = (TuiRect){0};
+    return;
+  }
   if (!strcmp(action, "f10")) {
     if (tui_menu_opened(h->menu))
       menu_demo_sync(h, tui_menu_close(h->menu));

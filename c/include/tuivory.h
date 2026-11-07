@@ -608,6 +608,77 @@ typedef TuiResult (*TuiSurfacePainter)(void *context, TuiCanvas *child);
 TuiResult tui_surface_draw(const TuiSurface *surface, TuiCanvas *canvas,
                            TuiRect bounds, TuiSurfacePainter painter,
                            void *context);
+/* Optional visual-only popup shadow. NULL mode/options selects off; enabled
+ * zero offsets default to right1/reserved row1 (auto/solid paint half-row
+ * caps). */
+typedef struct {
+  const char *mode;
+  int offset_x, offset_y;
+} TuiShadowOptions;
+typedef struct {
+  TuiRect bounds, card, shadow;
+} TuiPopupLayout;
+TuiResult tui_shadow_layout(const TuiShadowOptions *options, TuiRect bounds,
+                            TuiPopupLayout *out);
+TuiResult tui_popup_placement(TuiRect anchor, TuiRect viewport, int width,
+                              int height, const TuiShadowOptions *options,
+                              TuiPopupLayout *out);
+TuiResult tui_popup_shadow_regions(TuiPopupLayout layout, TuiRect out[2]);
+int tui_popup_hit(const TuiPopupLayout *layout, int x, int y);
+/* Painter receives only the card's borrowed child Canvas, with local (0,0).
+ * Failed painting leaves the destination unchanged; out may be NULL. */
+TuiResult tui_shadow_draw(const TuiShadowOptions *options, TuiCanvas *canvas,
+                          TuiRect bounds, TuiSurfacePainter painter,
+                          void *context, int ascii, TuiPopupLayout *out);
+/* Literal dialog; buttons/labels are copied. A valid enabled cancel_id is the
+ * initial/default focus. Activation/cancel returns requests, never closes it.
+ */
+typedef struct {
+  const char *id, *label;
+  int disabled;
+} TuiDialogButton;
+typedef struct {
+  const char *id, *text;
+  TuiRect rect;
+  int disabled, focused;
+} TuiDialogButtonCell;
+typedef struct TuiDialog TuiDialog;
+typedef struct TuiDialogLayout TuiDialogLayout;
+TuiDialog *tui_dialog_new(const char *title, const char *message,
+                          const TuiDialogButton *buttons, size_t count,
+                          const char *cancel_id);
+void tui_dialog_free(TuiDialog *dialog);
+/* NULL title/message or cancel_id retains the corresponding existing value. */
+TuiResult tui_dialog_set_text(TuiDialog *dialog, const char *title,
+                              const char *message);
+TuiResult tui_dialog_set_buttons(TuiDialog *dialog,
+                                 const TuiDialogButton *buttons, size_t count,
+                                 const char *cancel_id);
+const char *tui_dialog_title(const TuiDialog *dialog);
+const char *tui_dialog_message(const TuiDialog *dialog);
+const char *tui_dialog_cancel_id(const TuiDialog *dialog);
+const char *tui_dialog_focused(const TuiDialog *dialog);
+size_t tui_dialog_button_count(const TuiDialog *dialog);
+const TuiDialogButton *tui_dialog_button_at(const TuiDialog *dialog,
+                                            size_t index);
+int tui_dialog_focus(TuiDialog *dialog, const char *id);
+/* Event IDs borrow buttons until set_buttons/free. */
+TuiEvent tui_dialog_handle(TuiDialog *dialog, const char *action);
+TuiEvent tui_dialog_click(TuiDialog *dialog, int x, int y);
+/* Layout owns text/IDs and survives model changes/destruction. */
+TuiResult tui_dialog_layout(const TuiDialog *dialog, int width, int height,
+                            TuiDialogLayout **out);
+void tui_dialog_layout_free(TuiDialogLayout *layout);
+size_t tui_dialog_body_count(const TuiDialogLayout *layout);
+const char *tui_dialog_body_at(const TuiDialogLayout *layout, size_t index);
+size_t tui_dialog_cell_count(const TuiDialogLayout *layout);
+const TuiDialogButtonCell *tui_dialog_cell_at(const TuiDialogLayout *layout,
+                                              size_t index);
+size_t tui_dialog_hidden_buttons(const TuiDialogLayout *layout);
+int tui_dialog_body_truncated(const TuiDialogLayout *layout);
+/* Screen coordinates match the Canvas used by draw. out is optional/owned. */
+TuiResult tui_dialog_draw(TuiDialog *dialog, TuiCanvas *canvas, TuiRect bounds,
+                          int focused, int ascii, TuiDialogLayout **out);
 #ifdef __cplusplus
 }
 #endif

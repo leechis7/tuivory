@@ -1,0 +1,14 @@
+{
+  "cases":[
+    {"theme":"dark","colors":"8","backdrop":"0","mode":"auto","shade":"7"},
+    {"theme":"light","colors":"8","backdrop":"7","mode":"auto","shade":"0"},
+    {"theme":"light","colors":"16","backdrop":"15","mode":"auto","shade":"0"},
+    {"theme":"dark","colors":"256","backdrop":"16","mode":"auto","shade":"238"},
+    {"theme":"dark","colors":"256","backdrop":"237","mode":"auto","shade":"234"},
+    {"theme":"dark","colors":"truecolor","backdrop":"#000000","mode":"auto","shade":"#404040"},
+    {"theme":"dark","colors":"truecolor","backdrop":"#303030","mode":"auto","shade":"#131313"},
+    {"theme":"dark","colors":"truecolor","backdrop":"#c0c0c0","mode":"auto","shade":"#999999"},
+    {"theme":"dark","colors":"truecolor","backdrop":"#3d506a","mode":"auto","shade":"#304054"},
+    {"theme":"dark","colors":"truecolor","backdrop":"#000000","mode":"solid","shade":"0"}
+  ]
+}

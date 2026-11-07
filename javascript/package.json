@@ -27,7 +27,8 @@
     "NOTICE.en.md",
     "CASEFOLD-LICENSE",
     "examples/container-host.mjs",
-    "examples/surface-host.mjs"
+    "examples/surface-host.mjs",
+    "examples/dialog-host.mjs"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

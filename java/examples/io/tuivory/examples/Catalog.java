@@ -44,7 +44,8 @@ public final class Catalog {
     boolean en = false, ascii = false, snapshot = false, ansiSnapshot = false, workspace = false,
             tabFocus = false, textDemo = false, formDemo = false, listDemo = false,
             pickerDemo = false, menuDemo = false, contextDemo = false, feedbackDemo = false,
-            layoutDemo = false, containerDemo = false, surfaceDemo = false;
+            layoutDemo = false, containerDemo = false, surfaceDemo = false, shadowDemo = false,
+            dialogDemo = false;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--lang" -> {
@@ -81,17 +82,21 @@ public final class Catalog {
           layoutDemo = args[i].equals("layout");
           containerDemo = args[i].equals("container");
           surfaceDemo = args[i].equals("surface");
+          shadowDemo = args[i].equals("shadow");
+          dialogDemo = args[i].equals("dialog");
+          if (shadowDemo)
+            menuDemo = contextDemo = true;
           menuDemo = contextDemo || args[i].equals("menu");
           if (!args[i].equals("tree") && !workspace && !textDemo && !formDemo && !listDemo
               && !pickerDemo && !menuDemo && !feedbackDemo && !layoutDemo && !containerDemo
-              && !surfaceDemo)
+              && !surfaceDemo && !dialogDemo)
             throw new IllegalArgumentException("Supported demos: tree, workspace, text, form, "
                 + "list, picker, menu, context-menu, feedback");
         }
         case "--help" -> {
           System.out.println("--demo "
               + "tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|"
-                + "surface "
+              + "surface|shadow|dialog "
               + "--lang ko|en "
               + "--theme "
               + "dark|light|blackwhite --colors "
@@ -101,10 +106,11 @@ public final class Catalog {
         default -> throw new IllegalArgumentException("unknown argument: " + args[i]);
       }
     }
-    var menuHost = new MenuHost(en, contextDemo);
+    var menuHost = new MenuHost(en, contextDemo, shadowDemo);
     var feedbackHost = new FeedbackHost(en);
     var layoutHost = new LayoutHost(en);
     var containerHost = new ContainerHost(en, ascii);
+    var dialogHost = new DialogHost(en);
     var surfaceHost = new SurfaceHost(en);
     var tree = new Tree(List.of(new Node("root", en ? "Workspace" : "작업 공간"),
         new Node("src", en ? "Sources" : "소스", "root"),
@@ -173,7 +179,9 @@ public final class Catalog {
         var c = new Canvas(72, 18, new Palette(theme, colors));
         var area = c.panel(
             new Rect(0, 0, 72, 17), en ? "Tuivory Java example" : "Tuivory Java 예제", true, ascii);
-        if (surfaceDemo)
+        if (dialogDemo)
+          dialogHost.draw(c, area, ascii);
+        else if (surfaceDemo)
           surfaceHost.draw(c, area, ascii);
         else if (containerDemo)
           containerHost.draw(c, area, ascii);
@@ -228,11 +236,13 @@ public final class Catalog {
           break;
         String action = line.strip();
         if (textDemo || formDemo || listDemo || pickerDemo || menuDemo || feedbackDemo || layoutDemo
-            || containerDemo || surfaceDemo) {
+            || containerDemo || surfaceDemo || dialogDemo) {
           int space = action.indexOf(' ');
           String command = space < 0 ? action : action.substring(0, space);
           String addition = space < 0 ? "" : action.substring(space + 1);
-          if (surfaceDemo)
+          if (dialogDemo)
+            dialogHost.handle(command, addition);
+          else if (surfaceDemo)
             surfaceHost.handle(command, addition);
           else if (containerDemo)
             containerHost.handle(command, addition);

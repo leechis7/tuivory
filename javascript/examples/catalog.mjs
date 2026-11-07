@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { DialogDemo } from "./dialog-host.mjs";
 import { SurfaceDemo } from "./surface-host.mjs";
 import { ContainerDemo } from "./container-host.mjs";
 import * as ui from "../dist/index.js";
@@ -14,15 +15,18 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
+const dialogDemo = value("--demo", "tree") === "dialog";
 const surfaceDemo = value("--demo", "tree") === "surface";
 const containerDemo = value("--demo", "tree") === "container";
 const layoutDemo = value("--demo", "tree") === "layout";
 const feedbackDemo = value("--demo", "tree") === "feedback";
-const menuDemo = ["menu", "context-menu"].includes(value("--demo", "tree"));
+const menuDemo = ["menu", "context-menu", "shadow"].includes(
+  value("--demo", "tree"),
+);
 const workspace = value("--demo", "tree") === "workspace";
 const textDemo = value("--demo", "tree") === "text";
 const formDemo = value("--demo", "tree") === "form";
@@ -32,6 +36,7 @@ if (
   !layoutDemo &&
   !containerDemo &&
   !surfaceDemo &&
+  !dialogDemo &&
   !feedbackDemo &&
   !menuDemo &&
   !workspace &&
@@ -42,15 +47,20 @@ if (
   value("--demo", "tree") !== "tree"
 )
   throw new Error(
-    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface",
+    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog",
   );
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 const layoutHost = new LayoutDemo(en);
 const containerHost = new ContainerDemo(en, ascii);
+const dialogHost = new DialogDemo(en);
 const surfaceHost = new SurfaceDemo(en);
 const feedbackHost = new FeedbackDemo(en);
-const menuHost = new MenuDemo(en, value("--demo", "tree") === "context-menu");
+const menuHost = new MenuDemo(
+  en,
+  ["context-menu", "shadow"].includes(value("--demo", "tree")),
+  value("--demo", "tree") === "shadow",
+);
 const text = new ui.Text(
   en
     ? ascii
@@ -227,7 +237,8 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  if (surfaceDemo) surfaceHost.draw(c, area, ascii);
+  if (dialogDemo) dialogHost.draw(c, area, ascii);
+  else if (surfaceDemo) surfaceHost.draw(c, area, ascii);
   else if (containerDemo) containerHost.draw(c, area, ascii);
   else if (layoutDemo) layoutHost.draw(c, area, ascii);
   else if (feedbackDemo) feedbackHost.draw(c, area, ascii);
@@ -318,7 +329,8 @@ try {
           !["[", "O"].includes(pending[1])
         ) {
           pending = pending.slice(1);
-          if (containerDemo) containerHost.handle("cancel");
+          if (dialogDemo) dialogHost.handle("cancel");
+          else if (containerDemo) containerHost.handle("cancel");
           else if (menuDemo) menuHost.handle("cancel");
           else if (pickerDemo) picker.handle("cancel");
           else if (formDemo) form.handle("cancel");
@@ -334,18 +346,21 @@ try {
               feedbackDemo ||
               layoutDemo ||
               containerDemo ||
-              surfaceDemo) &&
+              surfaceDemo ||
+              dialogDemo) &&
             mouse[4] === "M"
           ) {
-            (surfaceDemo
-              ? surfaceHost
-              : containerDemo
-                ? containerHost
-                : layoutDemo
-                  ? layoutHost
-                  : feedbackDemo
-                    ? feedbackHost
-                    : menuHost
+            (dialogDemo
+              ? dialogHost
+              : surfaceDemo
+                ? surfaceHost
+                : containerDemo
+                  ? containerHost
+                  : layoutDemo
+                    ? layoutHost
+                    : feedbackDemo
+                      ? feedbackHost
+                      : menuHost
             ).pointer(x, y, Number(mouse[1]));
           } else if (
             mouse[4] === "M" &&
@@ -404,17 +419,20 @@ try {
             feedbackDemo ||
             layoutDemo ||
             containerDemo ||
-            surfaceDemo
+            surfaceDemo ||
+            dialogDemo
           )
-            (surfaceDemo
-              ? surfaceHost
-              : containerDemo
-                ? containerHost
-                : layoutDemo
-                  ? layoutHost
-                  : feedbackDemo
-                    ? feedbackHost
-                    : menuHost
+            (dialogDemo
+              ? dialogHost
+              : surfaceDemo
+                ? surfaceHost
+                : containerDemo
+                  ? containerHost
+                  : layoutDemo
+                    ? layoutHost
+                    : feedbackDemo
+                      ? feedbackHost
+                      : menuHost
             ).handle(
               keys[key] === "toggle" ? "insert" : keys[key],
               keys[key] === "toggle" ? " " : "",
@@ -453,8 +471,8 @@ try {
           pending = pending.slice(key.length);
           continue;
         }
-        if (containerDemo && pending.startsWith("\t")) {
-          containerHost.handle("next");
+        if ((containerDemo || dialogDemo) && pending.startsWith("\t")) {
+          (dialogDemo ? dialogHost : containerHost).handle("next");
           pending = pending.slice(1);
           continue;
         }
@@ -504,7 +522,8 @@ try {
         )
           break;
         if (
-          (surfaceDemo ||
+          (dialogDemo ||
+            surfaceDemo ||
             containerDemo ||
             layoutDemo ||
             feedbackDemo ||
@@ -516,21 +535,23 @@ try {
           pending[0] !== "\x1b"
         ) {
           const cp = String.fromCodePoint(pending.codePointAt(0));
-          (surfaceDemo
-            ? surfaceHost
-            : containerDemo
-              ? containerHost
-              : layoutDemo
-                ? layoutHost
-                : feedbackDemo
-                  ? feedbackHost
-                  : menuDemo
-                    ? menuHost
-                    : pickerDemo
-                      ? picker
-                      : formDemo
-                        ? form
-                        : text
+          (dialogDemo
+            ? dialogHost
+            : surfaceDemo
+              ? surfaceHost
+              : containerDemo
+                ? containerHost
+                : layoutDemo
+                  ? layoutHost
+                  : feedbackDemo
+                    ? feedbackHost
+                    : menuDemo
+                      ? menuHost
+                      : pickerDemo
+                        ? picker
+                        : formDemo
+                          ? form
+                          : text
           ).handle("insert", cp);
           pending = pending.slice(cp.length);
         } else pending = pending.slice(1);
@@ -539,7 +560,8 @@ try {
         escapeTimer = setTimeout(() => {
           if (pending === "\x1b") {
             pending = "";
-            if (containerDemo) containerHost.handle("cancel");
+            if (dialogDemo) dialogHost.handle("cancel");
+            else if (containerDemo) containerHost.handle("cancel");
             else if (menuDemo) menuHost.handle("cancel");
             else if (pickerDemo) picker.handle("cancel");
             else if (formDemo) form.handle("cancel");
