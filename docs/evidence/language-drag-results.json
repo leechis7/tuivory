@@ -1,0 +1,2223 @@
+{
+  "checked_at_utc": "2026-11-07T04:51:37.319459+00:00",
+  "issues": [
+    "TVR-15",
+    "TVR-16",
+    "TVR-30",
+    "TVR-31",
+    "TVR-32"
+  ],
+  "source_base": "ccccce9cadfde24417699b0dab701a6380ad3d00",
+  "source_uncommitted": true,
+  "scope": "Independent tree/tab request-only drag and drop, immutable replacement models, keyboard requests, captured pointers, preview-only expansion/scroll and actual-surface feedback. Terminal adapters and remaining catalog parity remain in progress.",
+  "sha256": {
+    "design/drag-cases.json": "786272d7ddc08b4cb142c556449f5603a661ea70498fae55b545abdfb461fa2f",
+    "python/src/tuivory/drag.py": "4818149882ea4a89db18938554d1fe5a9a0256d7b11086b001c591b0261338fc",
+    "python/src/tuivory/_drag_example.py": "29e003349152fa1f2326db43eb60bdff9b2f8ae8cdfa5791646021832d54d1f7",
+    "python/src/tuivory/terminal.py": "b96d9bd4f78ad37aa6b0b7f859cdb4859b81086e49e65a71f3a58ca1f3ed0c0c",
+    "javascript/src/drag.ts": "f78bc196d23b9cce4fa3f824a05bc69ed2d3b274a253c9fa250fa2ceb3c87456",
+    "javascript/src/colors.ts": "aab80d273d9bc0e004255cb73497aaffad2d5448ad8a2b44ec3f8761de457b08",
+    "javascript/examples/drag-host.mjs": "1887ecf0c7944cf1a874cf8fc10fb41a55db1251db623bd63f2116ff9ef455f2",
+    "javascript/package.json": "73add6bea8cb9ce8ee5762f0c610f48e22edcba26c9c10b552d9d138fb21a4b2",
+    "c/include/tuivory.h": "89d0bcd9448f9cc1512f265b82b92d89d7472041300762296ade7564195d86b3",
+    "c/src/tuivory.c": "e9d09e425aa52ff4f8eacc6428e9673ee7457bf5ee07a2018404d55567d8d5bb",
+    "c/examples/drag_host.h": "6140344082d741ea923222899c7c1162d9c919769365faab89c482fbc2824184",
+    "cpp/include/tuivory_drag.hpp": "5273f7d138fde6706838b470be06d3e47381014b2cc4e1567e6eec46ec406f46",
+    "cpp/examples/drag_host.hpp": "553af3984926946f3c0369655dd9a221dbfb64320ab7261dd654bfd62a69cd8f",
+    "java/src/main/java/io/tuivory/Tuivory.java": "cb37ac0793b812171e8ac074e1f10f07cdd7d5ef3040382573012092606b4ad3",
+    "java/examples/io/tuivory/examples/DragHost.java": "b914f6b473169369d743bfa2696bcf534d729bef0ab59ef73502900e701d7af7",
+    "tools/check_language_drag.py": "e0e4b8c65d855ed7b4bc8edb26bf736cc4130b8d67591790dcf724a463f3d04b",
+    "tools/check_drag_example.py": "ac77aeb276ba4e1728a7e9d9ec651b67a262f087559f5cec138f4742ab4a0ea8",
+    "tools/check_language_examples.py": "7c265a717be95566328891ebe0aa1ba120f0d973865a695412be8a2c46646927",
+    "tools/check_language_archives.py": "34334c723f66f40afb8eeaadb7c4f463d6b11b51cf1ca4ad18a80147077ced12",
+    "tools/check_runtime_languages.py": "410771d3fcf154e3421258c0d7f3077dc707779d34d79136fa105a0f15314533"
+  },
+  "local": {
+    "python_suite_tests": 84,
+    "javascript": "strict declarations and complete suite including 130000-child movement passed",
+    "shared_drop_cases": 22,
+    "native_sdk_languages": [
+      "c",
+      "cpp",
+      "java"
+    ],
+    "ansi_feedback_frames_per_native_consumer": 24,
+    "sanitizers": "C/C++ ASan+UBSan passed; static external SDK consumers passed",
+    "java": "external Java17 JAR consumer passed",
+    "pty_combinations": 240,
+    "pty_results": [
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "python",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "javascript",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "c",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "cpp",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "ko",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "dark",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "light",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "8",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "16",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "256",
+        "ascii": true,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": false,
+        "passed": true
+      },
+      {
+        "language": "java",
+        "demo": "drag",
+        "lang": "en",
+        "theme": "blackwhite",
+        "colors": "truecolor",
+        "ascii": true,
+        "passed": true
+      }
+    ],
+    "extra_restoration_smoke": "10 bilingual actual examples passed, including explicit raw-terminal motion mode teardown",
+    "localized_actual_pngs": 10,
+    "runtime_install": "fresh external wheel/npm installs, single imports, JS runtime, TS declarations and examples passed",
+    "archives": "six preview archives; external static C/C++ and Java17 SDK consumers plus packaged demos passed; latest npm repacked and independently installed after the large-subtree fix",
+    "c_workspace_regression": "shared tab navigation/layout/click, breadcrumbs, status and compact split passed",
+    "go_drag_regression": "targeted Go existing shared drop/drag tests passed",
+    "repository_tests": 13,
+    "generated_api": "Go/Rust public API synchronized",
+    "centos": "not run per user instruction"
+  },
+  "github_ci": "not run for this uncommitted change yet",
+  "publication": "not performed for this change yet; main/tags/registries/public version unchanged",
+  "epics": "remain open and In Progress per user instruction"
+}

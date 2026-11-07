@@ -63,7 +63,7 @@ class WorkspaceDemo:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--demo', choices=['tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu', 'layout', 'container','surface','shadow','dialog','document','syntax'], default='tree')
+    parser.add_argument('--demo', choices=['drag', 'tree', 'tabs', 'list', 'form', 'grid', 'text', 'menu', 'feedback', 'workspace', 'picker', 'context-menu', 'layout', 'container','surface','shadow','dialog','document','syntax'], default='tree')
     parser.add_argument('--lang', choices=['ko', 'en'], default='ko')
     parser.add_argument('--theme', choices=['dark', 'light', 'blackwhite'], default='dark')
     parser.add_argument('--colors', choices=['8', '16', '256', 'truecolor'], default='256')
@@ -122,6 +122,8 @@ def main():
     from ._document_example import DocumentDemo
     models['document'] = DocumentDemo(not ko,args.ascii)
     models['syntax'] = DocumentDemo(not ko,args.ascii,True)
+    from ._drag_example import DragDemo
+    models['drag'] = DragDemo(not ko,args.ascii)
     model = models[args.demo]
     themes, profiles = ['dark', 'light', 'blackwhite'], ['8', '16', '256', 'truecolor']
     theme, colors = args.theme, args.colors
@@ -143,7 +145,7 @@ def main():
         else:
             print(json.dumps({'lines': c.lines(), 'cursor': c.cursor}, ensure_ascii=False))
         return
-    with Terminal() as terminal:
+    with Terminal(mouse_motion=args.demo=='drag') as terminal:
         while True:
             c, area = draw(*terminal.size)
             terminal.write(c.ansi())
@@ -156,6 +158,8 @@ def main():
                 theme = themes[(themes.index(theme) + 1) % len(themes)]
             elif event.key == 'f2':
                 colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
+            elif isinstance(model, DragDemo) and event.key in ('mouse','mouse_move','mouse_release'):
+                model.pointer(event.x,event.y,event.button,{'mouse':'down','mouse_move':'move','mouse_release':'up'}[event.key])
             elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo)):
                 model.pointer(event.x, event.y, event.button)
             elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):
@@ -167,7 +171,7 @@ def main():
                     model.click(event.x - area.x, event.y - area.y, area.height)
             else:
                 action = {'enter': 'activate', 'escape': 'cancel', 'text': 'insert', 'tab': 'next', 'shift_tab': 'previous', 'ctrl_n': 'null', 'ctrl_a':'select_all','ctrl_z':'undo','ctrl_y':'redo'}.get(event.key, event.key)
-                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo)):
+                if isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo,DragDemo)):
                     model.handle(action, area.height, event.text)
                 elif isinstance(model, SearchPicker):
                     model.handle(action,event.text,area.height)

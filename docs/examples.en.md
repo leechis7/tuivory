@@ -144,3 +144,5 @@ TVR-7 in 0.11.1: [real grid cursor and backend integration](grid-workspace.en.md
 [Independent syntax highlighting/SQL classification API](language-syntax.en.md)
 
 [Independent data grid: virtual sources, approval, raw/display values and real cursors](language-grid.en.md)
+
+[Independent-language drag and drop: captured previews and host-approved moves](language-drag.en.md)

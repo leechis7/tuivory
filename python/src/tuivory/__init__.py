@@ -3,14 +3,13 @@ from .drawing import Palette, Style, Rect, Cell, Canvas, graphemes, cells, clip
 from .models import Event, ControlState, Node, Tree, Tab, TabCell, Tabs, Item, List
 from .editing import Text, Field, FormOption, FormRow, Form, Control, Column, Record
 from .workspace import (FocusTarget, Focus, Menu, split, container, breadcrumbs,
-                        StatusItem, status,
-                        Drag)
+                        StatusItem, status)
 
 __all__ = ["Palette", "Style", "Rect", "Cell", "Canvas", "graphemes", "cells", "clip",
            "Event", "ControlState", "Node", "Tree", "Tab", "Tabs", "Item", "List",
            "Text", "Field", "Form", "Control", "Column", "Record", "Grid", "FocusTarget",
            "Focus", "Menu", "split", "container", "breadcrumbs", "StatusItem", "status",
-           "popup_placement", "Drag"]
+           "popup_placement"]
 from .terminal import InputEvent, Terminal
 __all__ += ["InputEvent", "Terminal"]
 
@@ -63,3 +62,6 @@ __all__ += ["GridValue", "GridEditOptions", "GridSource"]
 
 from .grid import GridLabels
 __all__ += ["GridLabels"]
+
+from .drag import DropError, DropRequest, DragOptions, DragPointer, DragLayout, DragState, drag_revision
+__all__ += ["DropError","DropRequest","DragOptions","DragPointer","DragLayout","DragState","drag_revision"]

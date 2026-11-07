@@ -51,3 +51,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Independent syntax highlighting/SQL classification API](../docs/language-syntax.en.md)
 
 [Independent data grid API](../docs/language-grid.en.md)
+
+[Independent-language drag and drop: captured previews and host-approved moves](../docs/language-drag.en.md)

@@ -1,3 +1,10 @@
+import { colorContrast, colorRGB } from "./colors.js";
+import {
+  requestDrop as dragRequest,
+  applyDrop as dragApply,
+  keyboardDrop as dragKeyboard,
+} from "./drag.js";
+import type { DropRequest, DragOptions, DropPolicy } from "./drag.js";
 import syntaxUnicode from "./syntax-unicode.json" with { type: "json" };
 import sqlWords from "./sql-syntax-words.json" with { type: "json" };
 import foldData from "./casefold.json" with { type: "json" };
@@ -141,48 +148,6 @@ const plainRoles = [
   "warning",
   "error",
 ];
-const ansiRGB = [
-  [0, 0, 0],
-  [128, 0, 0],
-  [0, 128, 0],
-  [128, 128, 0],
-  [0, 0, 128],
-  [128, 0, 128],
-  [0, 128, 128],
-  [192, 192, 192],
-  [128, 128, 128],
-  [255, 0, 0],
-  [0, 255, 0],
-  [255, 255, 0],
-  [0, 0, 255],
-  [255, 0, 255],
-  [0, 255, 255],
-  [255, 255, 255],
-];
-function colorRGB(value: string): number[] {
-  if (/^#[0-9a-f]{6}$/i.test(value))
-    return [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16));
-  const n = Number(value);
-  if (!Number.isInteger(n) || n < 0 || n > 255)
-    throw new Error("invalid color");
-  if (n < 16) return [...ansiRGB[n]];
-  if (n >= 232) return Array(3).fill(8 + (n - 232) * 10);
-  const i = n - 16,
-    cube = [0, 95, 135, 175, 215, 255];
-  return [cube[Math.floor(i / 36)], cube[Math.floor(i / 6) % 6], cube[i % 6]];
-}
-function colorContrast(a: string, b: string): number {
-  const luma = (color: string) => {
-    const [r, g, b] = colorRGB(color).map((n) => {
-      const v = n / 255;
-      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  };
-  const x = luma(a),
-    y = luma(b);
-  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
-}
 export class Palette {
   readonly roles: Dict<
     string,
@@ -708,6 +673,25 @@ export class Tree {
       );
     });
   }
+  requestDrop(
+    sourceId: string,
+    targetId: string,
+    position: string,
+    options?: DragOptions,
+    allow?: DropPolicy,
+  ): DropRequest {
+    return dragRequest(this, sourceId, targetId, position, options, allow);
+  }
+  applyDrop(request: DropRequest): Tree {
+    return dragApply(this, request);
+  }
+  keyboardDrop(
+    direction: string,
+    options?: DragOptions,
+    allow?: DropPolicy,
+  ): DropRequest {
+    return dragKeyboard(this, direction, options, allow);
+  }
 }
 export interface Tab {
   id: string;
@@ -856,6 +840,25 @@ export class Tabs {
         cell.width,
       );
     }
+  }
+  requestDrop(
+    sourceId: string,
+    targetId: string,
+    position: string,
+    options?: DragOptions,
+    allow?: DropPolicy,
+  ): DropRequest {
+    return dragRequest(this, sourceId, targetId, position, options, allow);
+  }
+  applyDrop(request: DropRequest): Tabs {
+    return dragApply(this, request);
+  }
+  keyboardDrop(
+    direction: string,
+    options?: DragOptions,
+    allow?: DropPolicy,
+  ): DropRequest {
+    return dragKeyboard(this, direction, options, allow);
   }
 }
 
@@ -3220,42 +3223,6 @@ export class DataState {
   }
 }
 
-export class Drag {
-  source = "";
-  target = "";
-  active = false;
-  private x = 0;
-  private y = 0;
-  constructor(public enabled = false) {}
-  begin(id: string, x: number, y: number): boolean {
-    if (!this.enabled || !id) return false;
-    this.source = id;
-    this.target = "";
-    this.x = x;
-    this.y = y;
-    this.active = false;
-    return true;
-  }
-  move(target: string, x: number, y: number, allowed = true): void {
-    if (!this.source) return;
-    this.active ||= Math.abs(x - this.x) + Math.abs(y - this.y) >= 2;
-    this.target = allowed && target !== this.source ? target : "";
-  }
-  cancel(): Event {
-    this.source = this.target = "";
-    this.active = false;
-    return event("drag_cancel");
-  }
-  drop(): Event {
-    const e =
-      this.active && this.target
-        ? event("drop", this.source, "", { target: this.target })
-        : event();
-    this.cancel();
-    return e;
-  }
-}
-
 export function fold(text: string): string {
   const mapping = foldData.mappings as Dict<string, string>;
   return [...text].map((c) => mapping[String(c.codePointAt(0))] ?? c).join("");
@@ -5575,3 +5542,5 @@ export class SQLAnalyzer {
 }
 
 export * from "./grid.js";
+
+export * from "./drag.js";

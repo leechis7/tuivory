@@ -591,34 +591,3 @@ def status_line(items: list[StatusItem], width: int) -> LineLayout:
     if out.omitted and cells(out.text) + len(marker) <= width:
         out.add(marker, 'hint')
     return out
-
-
-class Drag:
-    """Opt-in request state; host validates/applies immutable model replacement."""
-    def __init__(self, enabled: bool = False):
-        self.enabled, self.source, self.target = enabled, "", ""
-        self.start_x = self.start_y = 0
-        self.active = False
-
-    def begin(self, id: str, x: int, y: int) -> bool:
-        if not self.enabled or not id:
-            return False
-        self.source, self.target = id, ""
-        self.start_x, self.start_y, self.active = x, y, False
-        return True
-
-    def move(self, target: str, x: int, y: int, *, allowed: bool = True) -> None:
-        if not self.source:
-            return
-        self.active |= abs(x - self.start_x) + abs(y - self.start_y) >= 2
-        self.target = target if allowed and target != self.source else ""
-
-    def cancel(self) -> Event:
-        self.source = self.target = ""
-        self.active = False
-        return Event("drag_cancel")
-
-    def drop(self) -> Event:
-        event = Event("drop", self.source, data={"target": self.target}) if self.active and self.target else Event()
-        self.cancel()
-        return event

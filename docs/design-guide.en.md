@@ -43,3 +43,7 @@ The editor buffer contains no synthetic caret character. Share grapheme viewport
 [Independent Surface and background API](language-surfaces.en.md)
 
 [Independent data grid: virtual sources, approval, raw/display values and real cursors](language-grid.en.md)
+
+[Independent-language drag and drop: captured previews and host-approved moves](language-drag.en.md)
+
+Drag previews preserve source data, selection and expansion. Feedback keeps the actual background and uses bold/underline; ! identifies rejection. Theme/layout/focus changes cancel capture, and final moves require host approval.

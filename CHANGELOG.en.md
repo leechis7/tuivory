@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Add independent tree/tab drag and drop, host-approved immutable moves, keyboard moves, captured pointers and preview-only scrolling/expansion. Validate stale data/layout/theme cancellation, C ownership/static consumers, bilingual integrated examples/APIs and 240 actual terminal combinations.
+
 - TVR-15/16/30/31/32: Independent data grids add stable-ID virtual sources, pinned/hidden/reordered columns, bounded automatic sizing, raw/display/NULL states, revision-safe host-approved editing and quoted TSV batches, range copying, Unicode find, view snapshots and actual hardware cursors. Add localized integrated examples, API docs and real-output/package regression checks.
 
 - TVR-15/16/30/31/32: Independent SQL/PLSQL classification, source-tagged results, optional cached automatic binding and failure/secret protection. Add fixed Unicode17 character data, dark ANSI8 cues/italic preservation, bilingual SQL APIs/examples and True Color/ANSI8 screens.

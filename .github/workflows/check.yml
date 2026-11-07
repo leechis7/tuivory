@@ -333,6 +333,9 @@ jobs:
           python tools/check_language_grid.py --language c
           python tools/check_language_grid.py --language cpp
           python tools/check_language_grid.py --language java
+          python tools/check_language_drag.py --language c
+          python tools/check_language_drag.py --language cpp
+          python tools/check_language_drag.py --language java
       - name: Build and install runtime packages outside the repository
         run: |
           mkdir -p .cache/packages/javascript
@@ -378,6 +381,6 @@ jobs:
       - name: Validate all locale/theme/profile/glyph combinations
         shell: bash
         run: |
-          for demo in tree workspace text form list picker menu context-menu feedback layout container surface shadow dialog document syntax grid; do
+          for demo in tree workspace text form list picker menu context-menu feedback layout container surface shadow dialog document syntax grid drag; do
             python tools/check_language_examples.py --language "${{ matrix.language }}" --demo "$demo" --matrix
           done

@@ -403,8 +403,15 @@ public:
     if (theme_ < 0 || profile_ < 0)
       throw std::invalid_argument("unknown palette");
   }
-  std::string theme()const{return theme_==0?"dark":theme_==1?"light":"blackwhite";}
-  std::string colors()const{return profile_==0?"8":profile_==1?"16":profile_==2?"256":"truecolor";}
+  std::string theme() const {
+    return theme_ == 0 ? "dark" : theme_ == 1 ? "light" : "blackwhite";
+  }
+  std::string colors() const {
+    return profile_ == 0   ? "8"
+           : profile_ == 1 ? "16"
+           : profile_ == 2 ? "256"
+                           : "truecolor";
+  }
   Style style(const std::string &role = "body", bool focused = false) const {
     int i = 0;
     for (; i < 16; i++)
@@ -630,6 +637,9 @@ public:
     return out;
   }
 };
+struct DropRequest;
+struct DragOptions;
+using DropPolicy = std::function<bool(const DropRequest &)>;
 struct Node {
   std::string id, name, parent, secondary, icon, ascii_icon;
   std::optional<unsigned long long> count;
@@ -637,18 +647,38 @@ struct Node {
 };
 class Tree {
 private:
-  std::vector<Node> nodes;
+  std::vector<Node> nodes_;
   std::map<std::string, int> depth;
   std::set<std::string> branches;
 
 public:
+  const std::vector<Node> &nodes() const { return nodes_; }
+  int depth_of(const std::string &id) const {
+    auto it = depth.find(id);
+    if (it == depth.end())
+      throw std::invalid_argument("missing tree ID");
+    return it->second;
+  }
+  bool is_branch(const std::string &id) const {
+    return branches.count(id) != 0;
+  }
+  DropRequest request_drop(const std::string &, const std::string &,
+                           const std::string &, const DragOptions &,
+                           const DropPolicy & = {}) const;
+  DropRequest request_drop(const std::string &, const std::string &,
+                           const std::string &) const;
+  Tree apply_drop(const DropRequest &) const;
+  DropRequest keyboard_drop(const std::string &, const DragOptions &,
+                            const DropPolicy & = {}) const;
+  DropRequest keyboard_drop(const std::string &) const;
+
   std::set<std::string> expanded;
   std::string selected;
   int scroll = 0, horizontal = 0;
-  explicit Tree(std::vector<Node> input) : nodes(std::move(input)) {
+  explicit Tree(std::vector<Node> input) : nodes_(std::move(input)) {
     std::set<std::string> ids;
     std::vector<std::string> stack;
-    for (const auto &n : nodes) {
+    for (const auto &n : nodes_) {
       if (n.id.empty() || !ids.insert(n.id).second)
         throw std::invalid_argument("invalid node ID");
       if (n.parent.empty())
@@ -672,7 +702,7 @@ public:
   std::vector<Node> visible() const {
     std::vector<Node> out;
     std::set<std::string> seen;
-    for (const auto &n : nodes)
+    for (const auto &n : nodes_)
       if (n.parent.empty() ||
           (seen.count(n.parent) && expanded.count(n.parent))) {
         out.push_back(n);
@@ -695,9 +725,9 @@ public:
     };
     while (!selected.empty() && index() < 0) {
       const auto n =
-          std::find_if(nodes.begin(), nodes.end(),
+          std::find_if(nodes_.begin(), nodes_.end(),
                        [&](const auto &n) { return n.id == selected; });
-      selected = n == nodes.end() ? "" : n->parent;
+      selected = n == nodes_.end() ? "" : n->parent;
     }
     if (selected.empty() && !rows.empty())
       selected = rows[0].id;
@@ -860,4 +890,5 @@ inline std::string fold(const std::string &text) {
 #include "tuivory_syntax.hpp"
 #include "tuivory_documents.hpp"
 #include "tuivory_grid.hpp"
+#include "tuivory_drag.hpp"
 // clang-format on

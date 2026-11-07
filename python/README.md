@@ -53,3 +53,5 @@ python3 -m tuivory --demo tree --lang ko
 [독립 언어 구문 강조·SQL 분류 API](../docs/language-syntax.md)
 
 [독립 언어 데이터 그리드 API](../docs/language-grid.md)
+
+[독립 언어 드래그앤드롭: 캡처·미리보기·앱 승인](../docs/language-drag.md)

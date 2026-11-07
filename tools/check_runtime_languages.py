@@ -57,7 +57,7 @@ assert any(str(p).endswith("CASEFOLD-LICENSE")for p in distribution("tuivory").f
  run([p,'-I','-m','tuivory','--snapshot','--demo','feedback','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','layout','--lang','en'],b)
  run([p,'-I','-m','tuivory','--snapshot','--demo','container','--lang','en'],b)
- for demo in ['surface','shadow','dialog','document','syntax','grid']:run([p,'-I','-m','tuivory','--snapshot','--demo',demo,'--lang','en'],b)
+ for demo in ['surface','shadow','dialog','document','syntax','grid','drag']:run([p,'-I','-m','tuivory','--snapshot','--demo',demo,'--lang','en'],b)
  print('Independent Python wheel: isolated external venv install/import/Tree/example passed')
 with tempfile.TemporaryDirectory(prefix='tuivory-javascript-')as directory:
  b=Path(directory);(b/'package.json').write_text('{"type":"module"}\n')
@@ -100,5 +100,5 @@ const picker=new ui.SearchPicker([{id:"rust",label:"Rust"}]);picker.handle("open
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','feedback','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','layout','--lang','en'],b)
  run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo','container','--lang','en'],b)
- for demo in ['surface','shadow','dialog','document','syntax','grid']:run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo',demo,'--lang','en'],b)
+ for demo in ['surface','shadow','dialog','document','syntax','grid','drag']:run(['node',b/'node_modules/tuivory/examples/catalog.mjs','--snapshot','--demo',demo,'--lang','en'],b)
  print('Independent npm package: isolated external JS import/runtime, TS declarations and example passed')

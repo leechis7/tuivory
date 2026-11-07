@@ -194,6 +194,18 @@ class Tree:
             canvas.write(rect.x, rect.y + y, prefix + clip("".join(parts), max(0, rect.width - 2), True),
                          role, focused=focused and selected, width=rect.width)
 
+    def request_drop(self,source_id,target_id,position,options=None,allow=None):
+        from .drag import request_drop
+        return request_drop(self,source_id,target_id,position,options,allow)
+
+    def apply_drop(self,request):
+        from .drag import apply_drop
+        return apply_drop(self,request)
+
+    def keyboard_drop(self,direction,options=None,allow=None):
+        from .drag import keyboard_drop
+        return keyboard_drop(self,direction,options,allow)
+
 
 @dataclass
 class Tab:
@@ -302,6 +314,18 @@ class Tabs:
             canvas.write(rect.x + cell.start, rect.y, cell.text,
                          'disabled' if cell.disabled else 'selection' if cell.active else 'body',
                          focused=focused and cell.focused, width=cell.width)
+
+    def request_drop(self,source_id,target_id,position,options=None,allow=None):
+        from .drag import request_drop
+        return request_drop(self,source_id,target_id,position,options,allow)
+
+    def apply_drop(self,request):
+        from .drag import apply_drop
+        return apply_drop(self,request)
+
+    def keyboard_drop(self,direction,options=None,allow=None):
+        from .drag import keyboard_drop
+        return keyboard_drop(self,direction,options,allow)
 
 
 @dataclass

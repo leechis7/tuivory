@@ -983,6 +983,101 @@ size_t tui_grid_tsv_columns(const TuiGridTSV *table);
 const char *tui_grid_tsv_at(const TuiGridTSV *table, size_t row, size_t column);
 TuiResult tui_grid_format_tsv(const TuiGridTSV *table, char **out);
 void tui_grid_tsv_free(TuiGridTSV *table);
+/* Request-only drag/drop. Request/layout handles are owned; view strings and
+ * model metadata getters are borrowed until handle destruction. Hex revisions
+ * have 16 lowercase digits. Apply returns a new owned model, never mutates
+ * input. Optional reason receives a static error code, or an empty string on
+ * success. Policies may inspect requests but must not mutate/free the source or
+ * state. */
+typedef struct TuiDropRequest {
+  const char *source_id, *target_id, *position, *revision;
+} TuiDropRequest;
+typedef int (*TuiDropPolicy)(void *context, const TuiDropRequest *request);
+typedef struct {
+  int threshold, auto_scroll, hover_expand;
+  const char *const *locked;
+  size_t locked_count;
+} TuiDragOptions;
+typedef struct {
+  const char *action;
+  int x, y, width, height;
+} TuiDragPointer;
+typedef struct TuiDragState TuiDragState;
+typedef struct {
+  const char *phase, *result, *source_id, *target_id, *position, *reason;
+  int allowed, captured;
+} TuiDragView;
+/* Preview owns these copied models; never install or free them separately.
+ * Model scroll/expanded/first describe preview viewport; tabs layout is
+ * borrowed from its copied model and does not follow the actual keyboard focus.
+ */
+typedef struct TuiDragLayout {
+  TuiTree *tree;
+  TuiTabs *tabs;
+  const TuiTabCell *tab_cells;
+  size_t tab_count;
+} TuiDragLayout;
+size_t tui_tree_count(const TuiTree *tree);
+const TuiNode *tui_tree_node(const TuiTree *tree, size_t index);
+size_t tui_tabs_count(const TuiTabs *tabs);
+const TuiTab *tui_tabs_item(const TuiTabs *tabs, size_t index);
+TuiResult tui_tree_drag_revision(const TuiTree *tree, char out[17]);
+TuiResult tui_tabs_drag_revision(const TuiTabs *tabs, char out[17]);
+void tui_drop_request_free(TuiDropRequest *request);
+TuiDropRequest *tui_tree_request_drop(const TuiTree *tree, const char *source,
+                                      const char *target, const char *position,
+                                      const TuiDragOptions *options,
+                                      TuiDropPolicy policy, void *context,
+                                      const char **reason);
+TuiDropRequest *tui_tabs_request_drop(const TuiTabs *tabs, const char *source,
+                                      const char *target, const char *position,
+                                      const TuiDragOptions *options,
+                                      TuiDropPolicy policy, void *context,
+                                      const char **reason);
+TuiTree *tui_tree_apply_drop(const TuiTree *tree, const TuiDropRequest *request,
+                             const char **reason);
+TuiTabs *tui_tabs_apply_drop(const TuiTabs *tabs, const TuiDropRequest *request,
+                             const char **reason);
+TuiDropRequest *tui_tree_keyboard_drop(const TuiTree *tree,
+                                       const char *direction,
+                                       const TuiDragOptions *options,
+                                       TuiDropPolicy policy, void *context,
+                                       const char **reason);
+TuiDropRequest *tui_tabs_keyboard_drop(const TuiTabs *tabs,
+                                       const char *direction,
+                                       const TuiDragOptions *options,
+                                       TuiDropPolicy policy, void *context,
+                                       const char **reason);
+TuiDragState *tui_drag_new(int enabled);
+void tui_drag_free(TuiDragState *state);
+TuiResult tui_drag_enable(TuiDragState *state, int enabled);
+TuiResult tui_drag_cancel(TuiDragState *state);
+TuiDragView tui_drag_view(const TuiDragState *state);
+TuiResult tui_drag_render_key(TuiDragState *state, const char *key);
+/* Output is set NULL unless this up event produces an owned approval request.
+ */
+TuiResult tui_drag_tree_pointer(TuiDragState *state, const TuiTree *tree,
+                                TuiDragPointer pointer,
+                                const TuiDragOptions *options,
+                                TuiDropPolicy policy, void *context,
+                                TuiDropRequest **output);
+TuiResult tui_drag_tabs_pointer(TuiDragState *state, const TuiTabs *tabs,
+                                TuiDragPointer pointer,
+                                const TuiDragOptions *options,
+                                TuiDropPolicy policy, void *context,
+                                TuiDropRequest **output);
+TuiDragLayout *tui_drag_tree_preview(TuiDragState *state, const TuiTree *tree,
+                                     int width, int height);
+TuiDragLayout *tui_drag_tabs_preview(TuiDragState *state, const TuiTabs *tabs,
+                                     int width, int height);
+void tui_drag_layout_free(TuiDragLayout *layout);
+TuiResult tui_drag_tree_draw(TuiDragState *state, TuiTree *tree,
+                             TuiCanvas *canvas, TuiRect rect, int focused,
+                             int ascii);
+TuiResult tui_drag_tabs_draw(TuiDragState *state, TuiTabs *tabs,
+                             TuiCanvas *canvas, TuiRect rect, int focused,
+                             int ascii);
+
 #ifdef __cplusplus
 }
 #endif
