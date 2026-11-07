@@ -326,7 +326,7 @@ try {
   stdin.setRawMode(true);
   active = true;
   stdout.write(
-    "\x1b[?1049h" + (dragDemo ? "\x1b[?1002h" : "\x1b[?1000h") + "\x1b[?1006h",
+    "\x1b[?1049h" + (gridDemo ? "\x1b[?1002h" : "\x1b[?1000h") + "\x1b[?1006h",
   );
   draw();
   stdout.on("resize", () => draw());
@@ -358,7 +358,7 @@ try {
           pending = pending.slice(mouse[0].length);
           const x = Number(mouse[2]) - 1,
             y = Number(mouse[3]) - 1;
-          if (dragDemo) {
+          if (gridDemo) {
             const button = Number(mouse[1]);
             gridHost.pointer(
               x,
@@ -373,25 +373,22 @@ try {
               containerDemo ||
               surfaceDemo ||
               dialogDemo ||
-              documentDemo ||
-              gridDemo) &&
+              documentDemo) &&
             mouse[4] === "M"
           ) {
-            (gridDemo
-              ? gridHost
-              : documentDemo
-                ? documentHost
-                : dialogDemo
-                  ? dialogHost
-                  : surfaceDemo
-                    ? surfaceHost
-                    : containerDemo
-                      ? containerHost
-                      : layoutDemo
-                        ? layoutHost
-                        : feedbackDemo
-                          ? feedbackHost
-                          : menuHost
+            (documentDemo
+              ? documentHost
+              : dialogDemo
+                ? dialogHost
+                : surfaceDemo
+                  ? surfaceHost
+                  : containerDemo
+                    ? containerHost
+                    : layoutDemo
+                      ? layoutHost
+                      : feedbackDemo
+                        ? feedbackHost
+                        : menuHost
             ).pointer(x, y, Number(mouse[1]));
           } else if (
             mouse[4] === "M" &&
@@ -427,6 +424,10 @@ try {
         const keys = {
           "\x1b[21~": "f10",
           "\x1b[21;2~": "shift_f10",
+          "\x1b[1;2A": "select_up",
+          "\x1b[1;2B": "select_down",
+          "\x1b[1;2C": "select_right",
+          "\x1b[1;2D": "select_left",
           "\x1b[A": "up",
           "\x1b[B": "down",
           "\x1b[C": "right",

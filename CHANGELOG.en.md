@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Independent grids support captured pointer range selection, Shift+Arrow, column resize and reorder, and whole-grapheme selection in the editor. The integrated examples exercise the shared interaction rules.
+
 - TVR-15/16/30/31/32: Add independent input decoders and optional terminal sessions for fragmented UTF-8, keys, mouse, literal paste, resize, canceled reads and mode/listener restoration, verified in actual PTYs. Java optionally uses OS stty without JNI. Consolidate language API navigation into a catalog table.
 
 - TVR-15/16/30/31/32: Add independent tree/tab drag and drop, host-approved immutable moves, keyboard moves, captured pointers and preview-only scrolling/expansion. Validate stale data/layout/theme cancellation, C ownership/static consumers, bilingual integrated examples/APIs and 240 actual terminal combinations.

@@ -27,6 +27,16 @@ Python은 문자열 또는 None, TS/JS와 Java는 문자열 또는 null, C++는 
 
 정렬·필터·서버 검색·페이지 이동·DB 저장·클립보드 전달·앱의 전체 포커스 순서는 앱 책임이다. 라이브러리는 요청, 그리드 내부 탐색·그리기와 로드된 셀 검색을 제공한다. 변경된 가상 데이터의 이전 화면을 클릭하면 당시 그린 행 ID와 현재 ID가 다른 위치는 거부한다.
 
+## 포인터와 범위 선택
+
+Python·TS/JS·C++·Java는 `pointer(action, x, y, width, height, extend)`, C는 `tui_grid_pointer`를 사용한다. 좌표는 마지막으로 그린 그리드의 왼쪽 위 기준이다. `down`, `move`, `up`, `cancel`을 전달하고, `pointer_captured` / `pointerCaptured` / `tui_grid_pointer_captured`가 참이면 영역 밖의 이동과 놓기도 그리드에 전달한다. 호스트에서 대화상자를 열거나 입력 대상을 바꿀 때는 `cancel`로 캡처를 해제한다. 이전 위치나 데이터에 해당하는 입력은 적용하지 않는다.
+
+- 셀 드래그는 사각 범위를, 행 번호 영역의 드래그는 전체 행을 선택한다. `extend`와 `select_up/down/left/right/home/end/page_up/page_down`은 기존 선택 기준점을 유지한다.
+- 표시된 헤더 구분선 드래그는 설정된 최소·최대 안에서 열 너비를 조절한다. 헤더 본문 드래그는 같은 고정 영역 안에서 순서를 바꾼다. 이동하지 않은 헤더는 놓을 때 `sort_request`를 한 번 보낸다. `down`과 `up` 뒤에 별도 `click`을 중복 전달하지 않는다.
+- 직접 `click`, `double`, `wheel_up/down/left/right`도 지원한다. 편집기에서 포인터로 선택할 때 넓은 문자와 결합 문자를 통째로 선택하며 하드웨어 커서는 그대로 사용한다. 비활성 셀과 승인 대기 중인 편집기는 조작하지 않는다.
+
+C의 `tui_grid_selection`과 `tui_grid_columns`는 그리드가 소유한 값이다. 상태를 바꾸기 전에 필요한 값을 복사한다. 기존 `click` 메서드는 그대로 사용할 수 있다.
+
 ## 앱 승인형 편집
 
     import tuivory as ui
@@ -81,7 +91,13 @@ save_view/saveView와 restore_view/restoreView는 열 순서·너비·고정·�
 
 공통 TSV 14개와 커서 11개 사례, 승인·권한·콜백 재진입·이전 클릭·이전 응답·가상 데이터·보기 상태를 검사한다. C/C++ 외부 SDK의 ASan/UBSan·정적 링크와 Java17 외부 JAR에서 실제 ANSI 23개 프레임을 확인한다. 테마·색상·표시별 PTY 검증과 패키지 결과는 [검증 자료](evidence/)와 [예제](examples.md)에 기록한다. 로컬 검사와 GitHub CI·게시 상태를 구분한다.
 
+셀이나 행 번호를 드래그해 범위를 선택하고 Shift+방향키로 늘린다. 헤더 구분선과 제목도 각각 드래그해 볼 수 있다. Java 예제는 그리드 안의 0부터 시작하는 좌표로 `pointer down|move|up X Y [extend]`를 입력하거나 `select_down` 등 선택 명령을 사용한다. PTY에서 범위 선택과 영역 밖 놓기, 열 크기·순서 변경, 정렬 요청을 검사한다. SDK에서는 만료된 캡처와 실제 ANSI 선택색·커서 위치도 확인한다.
+
+[그리드 포인터 로컬 검증 기록](evidence/language-grid-pointer-results.json)에 240개 터미널 조합과 격리 패키지 검증을 남겼다.
+
 ## 실제 예제 화면
+
+![Python 예제에서 드래그로 선택한 범위](images/language-python-grid-range.png)
 
 ![Python 그리드](images/language-python-grid.png)
 

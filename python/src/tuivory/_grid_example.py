@@ -95,10 +95,16 @@ class GridDemo:
             self.pending=('edit'if event.kind=='edit_submit'else'paste',deepcopy(event.data));self.message=self.word('승인 대기: y 승인 / r 거절','Pending approval: y approve / r reject')
         elif event.kind=='copy':self.message=self.word('복사 원문: ','Raw copy: ')+event.text
         elif event.kind in ('paste_rejected','edit_denied'):self.message=self.word('편집할 수 없는 셀입니다.','This cell cannot be edited.')
-    def pointer(self,x,y,button):
-        if button!=0 or self.detail is not None or self.search is not None or self.pending is not None:return
+    def pointer(self,x,y,button,kind='down'):
         a=self.area
-        if a.contains(x,y):
-            e=self.grid.click(x-a.x,y-a.y,a.width,a.height)
+        if self.detail is not None or self.search is not None or self.pending is not None:
+            self.grid.pointer('cancel',0,0,a.width,a.height)
+            return
+        if button & 64:
+            kind=('wheel_up','wheel_down','wheel_left','wheel_right')[button & 3]
+        elif button & 3 and kind!='up':
+            return
+        if a.contains(x,y) or self.grid.pointer_captured:
+            e=self.grid.pointer(kind,x-a.x,y-a.y,a.width,a.height,bool(button & 4))
             if e.kind=='sort_request':
                 self.message=self.word('정렬 요청: 앱이 처리합니다.','Sort requested: handled by the host.')

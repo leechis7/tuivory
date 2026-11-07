@@ -248,11 +248,21 @@ public:
       message_ =
           word("편집할 수 없는 셀입니다.", "This cell cannot be edited.");
   }
-  void pointer(int x, int y, int button) {
-    if (button || detail_ || search_ || pending_ || paste_ ||
-        !area_.contains(x, y))
+  void pointer(int x, int y, int button, std::string kind) {
+    if (detail_ || search_ || pending_ || paste_) {
+      grid_.pointer("cancel", 0, 0, area_.width, area_.height);
       return;
-    auto e = grid_.click(x - area_.x, y - area_.y, area_.width, area_.height);
+    }
+    const char *wheel[] = {"wheel_up", "wheel_down", "wheel_left",
+                           "wheel_right"};
+    if (button & 64)
+      kind = wheel[button & 3];
+    else if ((button & 3) && kind != "up")
+      return;
+    if (!grid_.pointer_captured() && !area_.contains(x, y))
+      return;
+    auto e = grid_.pointer(kind, x - area_.x, y - area_.y, area_.width,
+                           area_.height, (button & 4) != 0);
     if (e.kind == "sort_request")
       message_ = word("정렬 요청: 앱이 처리합니다.",
                       "Sort requested: handled by the host.");

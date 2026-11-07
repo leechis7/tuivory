@@ -246,7 +246,7 @@ class Grid:
         self._cell_pan = {}
         self.status = GridDataStatus()
         self._labels = GridLabels()
-        self._hits = None
+        self._hits = self._capture = self._paint_key = None
         self._callback = False
 
     @property
@@ -364,7 +364,7 @@ class Grid:
     def _invalidate(self):
         if self._callback: raise ValueError('grid mutation inside callback')
         self._revision += 1
-        self.edit = self._pending_paste = self._hits = None
+        self.edit = self._pending_paste = self._hits = self._capture = None
 
     def set_rows(self, rows): self.set_source(MemoryRows(rows))
     def set_source(self, source):
@@ -482,6 +482,9 @@ class Grid:
         self._guard()
         _integer(height, 0, 4096, 'height')
         if self._options.disable_keyboard: return Event()
+        self._capture=None
+        if not self.edit and action in ('select_up','select_down','select_left','select_right','select_home','select_end','select_page_up','select_page_down'):
+            return self._extend_navigation(action[7:],height)
         e = self.edit
         if e:
             if action == 'cancel': self.edit = None; return Event('edit_cancel', e['row_id'])
@@ -738,7 +741,7 @@ class Grid:
             if used+w>width: break
             text+=g; used+=w
         glyph=max(1,cells(gs[at]) if at<len(gs) else 1)
-        return text,x,1 if glyph>width else glyph
+        return text,x,1 if glyph>width else glyph,start
 
     def edit_cursor(self, width, height):
         e=self.edit
@@ -753,7 +756,7 @@ class Grid:
         room=span.width-2*self._options.padding-extra
         y=geo.header_rows+(i-geo.top)*geo.stride
         if room<=0 or y>=height-geo.footer_rows: return None
-        _,x,glyph=self._editor_window(e['buffer'].value,e['buffer'].cursor,room)
+        _,x,glyph,_=self._editor_window(e['buffer'].value,e['buffer'].cursor,room)
         return span.x+self._options.padding+extra+x,y,glyph
 
     def _display(self,r,c,info,width,editing=False):
@@ -822,6 +825,16 @@ class Grid:
                 text=self._display(r,c,info,room,editing)
                 value=' '*pad+marker+text+' '*max(0,span.width-pad-len(marker)-cells(text))
                 child.write(span.x,y,value,role,focused=focused and selected and not state.disabled,width=span.width)
+                if editing and not self.edit['pending'] and not self.edit['null']:
+                    buf=self.edit['buffer'];lo,hi=sorted((buf.anchor,buf.cursor))
+                    if lo<hi:
+                        _,_,_,start=self._editor_window(buf.value,buf.cursor,room);x=0
+                        from .drawing import clean
+                        for index,glyph in enumerate(graphemes(buf.value)[start:],start):
+                            glyph=clean(glyph);w=cells(glyph)
+                            if x+w>room:break
+                            if lo<=index<hi:child.write(span.x+pad+len(marker)+x,y,glyph,'selection',width=w)
+                            x+=w
             if o.horizontal_lines:
                 yy=y+1+o.row_spacing
                 if yy<rect.height-geo.footer_rows: child.write(geo.gutter,yy,horizontal*max(0,rect.width-geo.gutter),'hint',width=rect.width-geo.gutter)
@@ -836,6 +849,9 @@ class Grid:
         cursor=self.edit_cursor(rect.width,rect.height) if focused else None
         if cursor: child.set_cursor(*cursor)
         canvas.blit(child,Rect(0,0,rect.width,rect.height),rect.x,rect.y)
+        key=(rect.x,rect.y,rect.width,rect.height,canvas.palette.theme,canvas.palette.colors,canvas.surface_role,bool(ascii),bool(focused))
+        if not focused or self._paint_key is not None and self._paint_key!=key:self._capture=None
+        self._paint_key=key
         self._hits=(rect.width,rect.height,geo,hit_rows,signature)
 
     def click(self,x,y,width,height):
@@ -860,6 +876,155 @@ class Grid:
         if self._info(r,c).state.disabled: return Event()
         if not self.focus(r.id,c.id): return Event()
         return Event('select',r.id,data={'column_id':c.id})
+
+    @property
+    def pointer_captured(self):
+        return self._capture is not None
+
+    def _capture_grid(self,kind,width,height,**values):
+        self._capture=dict(kind=kind,width=width,height=height,revision=self._revision,signature=self._column_signature(),**values)
+
+    def _range_anchor(self, current):
+        selected=self.selected
+        if isinstance(selected,GridRange) and self._selection_bounds() is not None:return selected.anchor_row,selected.anchor_column
+        return current[0].id,current[1].id
+
+    def _extend_navigation(self,action,height):
+        current=self._current()
+        if current is None:return Event()
+        anchor_row,anchor_col=self._range_anchor(current)
+        row,column=self.row,self.column
+        result=self.handle(action,height)
+        after=self._current()
+        if result.kind!='select' or after is None:return result
+        if self._info(*after).state.disabled:
+            self.row,self.column=row,column
+            return Event()
+        self.set_selection(GridRange(anchor_row,anchor_col,after[0].id,after[1].id))
+        return result
+
+    def _grid_hit(self,x,y,width,height):
+        if not self._hits or self._hits[:2]!=(width,height) or self._hits[4]!=self._column_signature():return None
+        if not 0<=x<width or not 0<=y<height:return None
+        geo=self._hits[2]
+        span=next((s for s in geo.columns if s.x<=x<s.x+s.width),None)
+        if y<geo.header_rows:return geo,span,None,False
+        dy=y-geo.header_rows
+        if dy%geo.stride or y>=height-geo.footer_rows:return None
+        index=geo.top+dy//geo.stride
+        if index>=self._size():return None
+        row=self._record(index)
+        if self._hits[3].get(index)!=row.id:return None
+        gutter=span is None and x<geo.gutter and self._options.row_numbers
+        if span is None and not gutter:return None
+        return geo,span,row,gutter
+
+    def _edit_pointer(self,action,x,y,width,height,extend):
+        e=self.edit
+        if not e or e['pending']or e['null']or not self._work_valid(e):
+            self._capture=None;return Event()
+        if action=='move' and (not self._capture or self._capture['kind']!='edit'):return Event()
+        if action not in ('down','move','click','double'):return Event()
+        hit=self._grid_hit(x,y,width,height)
+        if not hit or not hit[1] or not hit[2] or (hit[2].id,hit[1].id)!=(e['row_id'],e['column_id']):
+            return Event('edit_blocked') if action!='move' else Event()
+        _,span,row,_=hit;c=next(c for c in self.columns if c.id==span.id)
+        extra=2 if self._options.show_cell_markers and self._info(row,c).state.edited else 0
+        pad=self._options.padding+extra;room=span.width-2*self._options.padding-extra
+        if room<=0:return Event()
+        buf=e['buffer'];_,_,_,start=self._editor_window(buf.value,buf.cursor,room)
+        offset=max(0,min(room,x-span.x-pad));used=0;pos=start
+        from .drawing import clean
+        for g in graphemes(buf.value)[start:]:
+            w=cells(clean(g))
+            if used+w>offset:break
+            used+=w;pos+=1
+        buf.select(buf.anchor if extend or action=='move' else pos,pos)
+        if action=='down':self._capture_grid('edit',width,height,edit_id=e['id'])
+        return Event('edit_select',e['row_id'],data={'column_id':span.id})
+
+    def pointer(self,action,x,y,width,height,extend=False):
+        """Route local pointer input; drag captures receive move/up outside bounds."""
+        self._guard()
+        if action not in ('down','move','up','cancel','click','double','wheel_up','wheel_down','wheel_left','wheel_right'):return Event()
+        _integer(x,-1_000_000_000,1_000_000_000,'pointer x');_integer(y,-1_000_000_000,1_000_000_000,'pointer y')
+        _integer(width,0,65535,'width');_integer(height,0,4096,'height')
+        c=self._capture
+        if c and (c['revision']!=self._revision or c['signature']!=self._column_signature() or (c['width'],c['height'])!=(width,height)):
+            self._capture=c=None
+        if self._options.disable_mouse or self._pending_paste or action=='cancel':
+            self._capture=None;return Event()
+        if action=='up':
+            self._capture=None
+            if c and c['kind']=='column' and not c['moved']:
+                hit=self._grid_hit(x,y,width,height)
+                if hit and hit[2]is None and hit[1]and hit[1].id==c['column']:return self.click(x,y,width,height)
+            return Event()
+        if action=='down':self._capture=c=None
+        if self.edit:
+            if c and c['kind']=='edit' and c['edit_id']!=self.edit['id']:self._capture=c=None
+            return self._edit_pointer(action,x,y,width,height,extend)
+        if action.startswith('wheel_'):
+            self._capture=None
+            return self.handle(action[6:],height)
+        if action=='move' and not c:return Event()
+        if action=='move' and c['kind']=='resize':
+            col=next(v for v in self.columns if v.id==c['column']);o=self._column_options.get(col.id,GridColumnOptions())
+            value=max(o.min_width,min(o.max_width,c['start_width']+x-c['start_x']))
+            if value!=col.width and self.resize_column(col.id,value):
+                self._capture_grid('resize',width,height,column=col.id,start_width=c['start_width'],start_x=c['start_x'])
+                return Event('resize',data={'column_id':col.id,'width':value})
+            return Event()
+        if action=='move' and c['kind']=='column':
+            span=next((s for s in self.geometry(width,height).columns if s.x<=x<s.x+s.width),None)
+            if span and span.id!=c['column']:
+                ids=[v.id for v in self.columns];source=ids.index(c['column']);target=ids.index(span.id)
+                if self.columns[source].pin==self.columns[target].pin:
+                    order=list(self.columns);order.insert(target,order.pop(source))
+                    self.set_column_layout([dict(id=v.id,hidden=v.hidden,pin=v.pin)for v in order])
+                    self._capture_grid('column',width,height,column=c['column'],moved=True)
+                    return Event('columns',data={'column_id':c['column']})
+            return Event()
+        hit=self._grid_hit(x,y,width,height)
+        if not hit:
+            if action=='move' and c and c['kind']=='range' and self._hits and self._hits[:2]==(width,height):
+                geo=self._hits[2];dy=y-geo.header_rows
+                if 0<=x<width and 0<=dy and not dy%geo.stride and y<height-geo.footer_rows:
+                    index=geo.top+dy//geo.stride;seen=self._hits[3].get(index)
+                    if seen and (index>=self._size() or self._record(index).id!=seen):self._capture=None
+            return Event()
+        geo,span,row,gutter=hit
+        if row is None:
+            if action=='down':
+                divider=next((s for s in geo.columns if s.x+s.width==x),None) if self._options.vertical_lines and not self._options.disable_resize else None
+                if divider:
+                    col=next(v for v in self.columns if v.id==divider.id)
+                    self._capture_grid('resize',width,height,column=col.id,start_x=x,start_width=col.width)
+                    return Event('resize_start',data={'column_id':col.id})
+                if span:self._capture_grid('column',width,height,column=span.id,moved=False)
+                return Event()
+            return self.click(x,y,width,height) if action in ('click','double') else Event()
+        if action=='move' and c['kind']!='range':return Event()
+        current=self._current();cols=self.visible_columns()
+        column=span.id if span else current[1].id if current else ''
+        col=next((v for v in cols if v.id==column),None)
+        if col is None or self._info(row,col).state.disabled:return Event()
+        if action=='move':
+            at=self._index(c['anchor_row'])
+            if at!=c['anchor_index']or at is None or at>=self._size()or self._record(at).id!=c['anchor_row']:
+                self._capture=None;return Event()
+            anchor_row,anchor_col=c['anchor_row'],c['anchor_column'];whole=c['whole']
+        else:
+            anchor_row,anchor_col=self._range_anchor(current)if extend and current else(row.id,column)
+            whole=gutter or self._options.selection=='row'
+        if not self.focus(row.id,column):return Event()
+        if action=='double':return self.handle('activate',height)
+        if whole or extend or action=='move':
+            self.set_selection(GridRange(anchor_row,cols[0].id if whole else anchor_col,row.id,cols[-1].id if whole else column))
+        elif action in ('down','click'):self.selected=None
+        if action=='down':
+            self._capture_grid('range',width,height,anchor_row=anchor_row,anchor_column=anchor_col,anchor_index=self._index(anchor_row),whole=whole)
+        return Event('select',row.id,data={'column_id':column})
 
     def save_view(self):
         p=self._current(); cols=self.visible_columns()

@@ -62,8 +62,11 @@ Implementation code lives inside each language directory. This guide indexes exa
 | --- | --- | --- |
 | Go | [Starter](../go/examples/starter/main.go), [tokens](../go/examples/tokens/main.go) | Working Go style API and runnable playground |
 | Rust | [Token reader](../rust/examples/tokens.rs), [playground](rust-playground.en.md) | JSON validation, color/style core, Ratatui adapter, bilingual interactive host |
-| Python | [Token reader](../python/examples/read_tokens.py) | Data example; no UI package |
-| JavaScript | [Token reader](../javascript/examples/read-tokens.mjs) | Data example; no UI package |
+| Python | [Integrated catalog](../python/src/tuivory/__main__.py) | `python -m tuivory --demo grid` after local installation |
+| TypeScript/JavaScript | [Integrated catalog](../javascript/examples/catalog.mjs) | Build TS, then `node javascript/examples/catalog.mjs --demo grid` |
+| C | [Integrated catalog](../c/examples/catalog.c) | `make build-c`; run the native example in `bin/c/` |
+| C++ | [Integrated catalog](../cpp/examples/catalog.cpp) | `make build-cpp`; run the native example in `bin/cpp/` |
+| Java | [Integrated catalog](../java/examples/io/tuivory/examples/Catalog.java) | `make build-java`; run the local JAR from `.cache/packages/java/` |
 | Shell | [ANSI sample](../shell/examples/terminal-colors.sh) | Reference output; no style function package |
 
 The [static component layout](examples-components.txt) is language-independent reference material. The starter and static layout have Korean example labels; the current [playground](playground.en.md) supports `--lang en`.
@@ -112,4 +115,4 @@ Use the existing unified binary: `--demo catalog --mode grid --grid-sample --gri
 
 TVR-7 in 0.11.1: [real grid cursor and backend integration](grid-workspace.en.md). For real cursors in 0.11.1, Go uses NewCursorScreen/NewGridView, Rust GridWidget::render_frame.
 
-[Independent Python·TypeScript/JavaScript·C·C++·Java support](languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
+[Independent Python·TypeScript/JavaScript·C·C++·Java support](languages.en.md): unreleased packages and integrated examples. See [Grid gestures and keys](language-grid.en.md). Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.

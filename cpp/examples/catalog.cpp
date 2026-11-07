@@ -264,7 +264,7 @@ int main(int argc, char **argv) {
       session.emplace(menu_demo || feedback_demo || layout_demo ||
                           container_demo || surface_demo || dialog_demo ||
                           document_demo || grid_demo || drag_demo,
-                      drag_demo);
+                      drag_demo || grid_demo);
     while (!stopped) {
       int width = 72, height = 18;
       winsize size{};
@@ -408,10 +408,14 @@ int main(int argc, char **argv) {
                                 ending == 'm' ? "up"
                                 : button & 32 ? "move"
                                               : "down");
+            } else if (grid_demo && (ending == 'M' || ending == 'm') && x > 0 &&
+                       y > 0) {
+              grid_host.pointer(x - 1, y - 1, button,
+                                ending == 'm' ? "up"
+                                : button & 32 ? "move"
+                                              : "down");
             } else if (ending == 'M' && x > 0 && y > 0) {
-              if (grid_demo)
-                grid_host.pointer(x - 1, y - 1, button);
-              else if (document_demo)
+              if (document_demo)
                 document_host.pointer(x - 1, y - 1, button);
               else if (dialog_demo)
                 dialog_host.pointer(x - 1, y - 1, button);
@@ -430,6 +434,10 @@ int main(int argc, char **argv) {
           }
           edit_action = seq == "[21~"     ? "f10"
                         : seq == "[21;2~" ? "shift_f10"
+                        : seq == "[1;2A"  ? "select_up"
+                        : seq == "[1;2B"  ? "select_down"
+                        : seq == "[1;2C"  ? "select_right"
+                        : seq == "[1;2D"  ? "select_left"
                         : seq == "[A"     ? "up"
                         : seq == "[B"     ? "down"
                         : seq == "[C"     ? "right"

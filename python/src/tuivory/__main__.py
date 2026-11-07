@@ -150,7 +150,7 @@ def main():
         raise SystemExit(0)
     previous_signal=signal.signal(signal.SIGTERM,stop)
     try:
-        with Terminal(mouse_motion=args.demo=='drag') as terminal:
+        with Terminal(mouse_motion=args.demo in ('drag','grid')) as terminal:
             while True:
                 c, area = draw(*terminal.size)
                 terminal.write(c.ansi())
@@ -165,6 +165,8 @@ def main():
                     colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
                 elif isinstance(model, DragDemo) and event.key in ('mouse','mouse_move','mouse_release'):
                     model.pointer(event.x,event.y,event.button,{'mouse':'down','mouse_move':'move','mouse_release':'up'}[event.key])
+                elif isinstance(model, GridDemo) and event.key in ('mouse','mouse_move','mouse_release','wheel'):
+                    model.pointer(event.x,event.y,event.button,{'mouse':'down','mouse_move':'move','mouse_release':'up','wheel':'down'}[event.key])
                 elif event.key == 'mouse' and isinstance(model, (MenuDemo,FeedbackDemo,LayoutDemo,ContainerDemo,SurfaceDemo,DialogDemo,DocumentDemo,GridDemo)):
                     model.pointer(event.x, event.y, event.button)
                 elif event.key == 'mouse' and event.button == 0 and area.contains(event.x, event.y) and hasattr(model, 'click'):

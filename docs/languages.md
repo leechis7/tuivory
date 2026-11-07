@@ -35,11 +35,17 @@
 | 팝업·대화상자 | Shadow·Dialog | [API](language-popups.md) |
 | 문서 | TextDocument·마크업·강조 범위 | [API](language-documents.md) |
 | 구문 강조 | SQLAnalyzer·선택적 분석 연결 | [API](language-syntax.md) |
-| 데이터 그리드 | 가상 데이터·편집·붙여넣기·범위·보기 | [API](language-grid.md) |
+| 데이터 그리드 | 가상 데이터·편집·붙여넣기·포인터 범위·보기 | [API](language-grid.md) |
 | 드래그앤드롭 | DragState·이동 요청·앱 승인 | [API](language-drag.md) |
 | 입력·터미널 | InputDecoder·선택적 Terminal | [API](language-terminal.md) |
 
-각 규격은 실제 API·소유권·앱 책임·검증 범위를 설명합니다. 그리드의 추가 포인터 동작과 전체 카탈로그 점검은 진행 중이며 에픽을 완료 처리하지 않습니다.
+각 규격은 실제 API·소유권·앱 책임·검증 범위를 설명합니다. 그리드 포인터 조작도 포함합니다. 언어별 에픽은 열린 상태를 유지합니다.
+
+## Go·Rust와의 관계
+
+위 컴포넌트 영역에 공통 디자인을 적용합니다. API 이름·소유권·그리기 연결·터미널 세션은 각 언어 방식을 따릅니다. 독립 패키지는 컴포넌트 이벤트를 반환하고 자체 Canvas에 그립니다. Go tview 뷰와 Rust Ratatui 위젯은 해당 언어 구현에서 제공합니다.
+
+독립 그리드는 호출 시 검색하는 `find`, 셀별 수정 상태, 메모리 보기 스냅샷을 제공합니다. Go·Rust의 검색 일치 강조 유지와 행 수정 표식 전용 콜백은 이번 범위에 포함되지 않습니다. [그리드 명세](language-grid.md)에서 실제 지원 동작을 확인할 수 있습니다.
 
 ## API 사용
 
@@ -99,7 +105,7 @@ C/C++ 기본 예제는 현재 Linux 호스트 하나만 `bin/c/tuivory-linux-<ar
 
 로컬 공통 Tree·상태·12팔레트·한글/이모지·두 칸 문자 경계와 외부 설치/링크 검증을 수행합니다. 자세한 실제 실행 결과는 [검증 기록](evidence/language-foundation-results.json)에 기록하며, 미실행 항목과 원격 CI·공개 게시 상태를 구분합니다.
 
-[Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) → [TS/JS TVR-16](https://leechis7.atlassian.net/browse/TVR-16) → [C TVR-30](https://leechis7.atlassian.net/browse/TVR-30) → [C++ TVR-31](https://leechis7.atlassian.net/browse/TVR-31) → [Java TVR-32](https://leechis7.atlassian.net/browse/TVR-32). 각 에픽에서 나머지 컴포넌트를 확장합니다.
+[Python TVR-15](https://leechis7.atlassian.net/browse/TVR-15) → [TS/JS TVR-16](https://leechis7.atlassian.net/browse/TVR-16) → [C TVR-30](https://leechis7.atlassian.net/browse/TVR-30) → [C++ TVR-31](https://leechis7.atlassian.net/browse/TVR-31) → [Java TVR-32](https://leechis7.atlassian.net/browse/TVR-32).
 
 ## Tree 참조 화면
 

@@ -9301,6 +9301,20 @@ struct TuiGridGeometry {
   char **row_ids;
   size_t row_count;
 };
+enum GridCaptureKind {
+  GRID_CAPTURE_NONE,
+  GRID_CAPTURE_RANGE,
+  GRID_CAPTURE_RESIZE,
+  GRID_CAPTURE_COLUMN,
+  GRID_CAPTURE_EDIT
+};
+typedef struct {
+  enum GridCaptureKind kind;
+  int width, height, start_x, start_width, whole, moved;
+  unsigned long long revision, edit_id;
+  size_t anchor_index;
+  char *column, *anchor_row, *anchor_column;
+} GridCapture;
 struct TuiGrid {
   TuiGridColumn *columns;
   TuiGridColumnOptions *column_options;
@@ -9331,6 +9345,8 @@ struct TuiGrid {
   char *sort_column, *sort_direction, *query;
   TuiGridGeometry *hits;
   int hit_width, hit_height;
+  GridCapture capture;
+  char paint_key[128];
   char *event_row, *event_column, *event_text, *event_value;
   char *current_row_id;
 };
@@ -9644,12 +9660,19 @@ void tui_grid_cancel_paste(TuiGrid *g) {
   g->changes = NULL;
   memset(&g->paste, 0, sizeof(g->paste));
 }
+static void grid_capture_clear(GridCapture *c) {
+  free(c->column);
+  free(c->anchor_row);
+  free(c->anchor_column);
+  memset(c, 0, sizeof(*c));
+}
 static void grid_invalidate(TuiGrid *g) {
   g->revision++;
   grid_edit_clear(g);
   tui_grid_cancel_paste(g);
   tui_grid_geometry_free(g->hits);
   g->hits = NULL;
+  grid_capture_clear(&g->capture);
 }
 void tui_grid_geometry_free(TuiGridGeometry *geo) {
   if (!geo)
@@ -9771,6 +9794,7 @@ void tui_grid_free(TuiGrid *g) {
   grid_edit_clear(g);
   tui_grid_cancel_paste(g);
   tui_grid_geometry_free(g->hits);
+  grid_capture_clear(&g->capture);
   grid_rows_clear(g);
   for (size_t i = 0; i < g->column_count; i++)
     grid_column_clear(&g->columns[i]);
@@ -10458,12 +10482,22 @@ int tui_grid_apply_source(TuiGrid *g, unsigned long long revision,
   g->applied_revision = revision;
   return 1;
 }
+static TuiGridEvent grid_extend_navigation(TuiGrid *g, const char *action,
+                                           int height);
 TuiGridEvent tui_grid_handle(TuiGrid *g, const char *action, int height,
                              const char *text) {
   if (!g || g->callback || !action || height < 0 || height > 4096)
     return grid_event(g, TUI_INVALID, "", "", "", "", 0, 0, (TuiGridValue){0});
   if (g->options.disable_keyboard)
     return grid_empty(g);
+  grid_capture_clear(&g->capture);
+  if (!g->buffer &&
+      (!strcmp(action, "select_up") || !strcmp(action, "select_down") ||
+       !strcmp(action, "select_left") || !strcmp(action, "select_right") ||
+       !strcmp(action, "select_home") || !strcmp(action, "select_end") ||
+       !strcmp(action, "select_page_up") ||
+       !strcmp(action, "select_page_down")))
+    return grid_extend_navigation(g, action + 7, height);
   if (g->buffer) {
     TuiGridEditSession *e = &g->edit;
     if (!strcmp(action, "cancel")) {
@@ -11236,7 +11270,8 @@ static char *grid_slice(const char *text, size_t start, size_t end) {
   return s;
 }
 static TuiResult grid_editor_window(const char *value, size_t cursor, int width,
-                                    char **out, int *x, int *glyph) {
+                                    char **out, int *x, int *glyph,
+                                    size_t *start_out) {
   *out = NULL;
   *x = 0;
   *glyph = 1;
@@ -11300,6 +11335,8 @@ static TuiResult grid_editor_window(const char *value, size_t cursor, int width,
     return TUI_NOMEM;
   }
   *glyph = next > width ? 1 : next;
+  if (start_out)
+    *start_out = start;
   *out = b.s ? b.s : copy("");
   return *out ? TUI_OK : TUI_NOMEM;
 }
@@ -11357,7 +11394,7 @@ TuiResult tui_grid_edit_cursor(TuiGrid *g, int width, int height, int *x,
   int offset = 0;
   result =
       grid_editor_window(tui_text_value(g->buffer), tui_text_cursor(g->buffer),
-                         room, &text, &offset, glyph);
+                         room, &text, &offset, glyph, NULL);
   free(text);
   if (result == TUI_OK) {
     *x = span->x + g->options.padding + extra + offset;
@@ -11463,6 +11500,45 @@ static char *grid_status_text(TuiGrid *g) {
   }
   free(sort.s);
   return b.s ? b.s : copy("");
+}
+static TuiResult grid_editor_selection(TuiGrid *g, TuiCanvas *c, int x, int y,
+                                       int room, size_t start) {
+  size_t lo = tui_text_anchor(g->buffer), hi = tui_text_cursor(g->buffer);
+  if (lo > hi) {
+    size_t tmp = lo;
+    lo = hi;
+    hi = tmp;
+  }
+  if (lo == hi)
+    return TUI_OK;
+  const char *value = tui_text_value(g->buffer);
+  size_t *offsets = NULL, count = 0;
+  int parsed = raw_offsets(value, &offsets, &count), used = 0;
+  TuiResult result = TUI_OK;
+  if (parsed != 1)
+    return parsed < 0 ? TUI_NOMEM : TUI_INVALID;
+  for (size_t i = start; i < count; i++) {
+    char *raw = grid_slice(value, offsets[i], offsets[i + 1]);
+    char *clean = raw ? clean_copy(raw) : NULL;
+    free(raw);
+    if (!clean) {
+      result = TUI_NOMEM;
+      break;
+    }
+    int cells = tui_cells(clean);
+    if (used + cells > room) {
+      free(clean);
+      break;
+    }
+    if (lo <= i && i < hi)
+      result = tui_canvas_write(c, x + used, y, clean, "selection", 0, cells);
+    free(clean);
+    if (result != TUI_OK)
+      break;
+    used += cells;
+  }
+  free(offsets);
+  return result;
 }
 TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
                         int ascii) {
@@ -11595,6 +11671,7 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
       int padding = min(g->options.padding, span->width / 2),
           marker = state.edited && g->options.show_cell_markers ? 2 : 0,
           room = max(0, span->width - 2 * padding - marker);
+      size_t editor_start = 0;
       char *text = NULL;
       if (editing) {
         if (g->edit.value.is_null)
@@ -11603,7 +11680,7 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
           int x = 0, glyph = 1;
           result = grid_editor_window(tui_text_value(g->buffer),
                                       tui_text_cursor(g->buffer), room, &text,
-                                      &x, &glyph);
+                                      &x, &glyph, &editor_start);
         }
       } else {
         const TuiGridCell *cell = grid_cell(&record, span->id);
@@ -11651,6 +11728,10 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
                                       focused && active && !state.disabled,
                                       span->width);
       free(b.s);
+      if (result == TUI_OK && editing && !g->edit.pending &&
+          !g->edit.value.is_null)
+        result = grid_editor_selection(g, child, span->x + padding + marker, y,
+                                       room, editor_start);
       if (result != TUI_OK) {
         grid_record_clear(&record);
         goto rows_fail;
@@ -11726,6 +11807,13 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
   result = tui_canvas_blit(canvas, child, (TuiRect){0, 0, r.width, r.height},
                            r.x, r.y);
   if (result == TUI_OK) {
+    char key[128];
+    snprintf(key, sizeof(key), "%d|%d|%d|%d|%s|%s|%s|%d|%d", r.x, r.y, r.width,
+             r.height, canvas->theme, canvas->profile, canvas->surface, !!ascii,
+             !!focused);
+    if (!focused || (*g->paint_key && strcmp(g->paint_key, key)))
+      grid_capture_clear(&g->capture);
+    strcpy(g->paint_key, key);
     tui_grid_geometry_free(g->hits);
     g->hits = geo;
     geo = NULL;
@@ -11788,6 +11876,423 @@ TuiGridEvent tui_grid_click(TuiGrid *g, int x, int y, int width, int height) {
           : grid_event(g, TUI_OK, "select", r.id, g->columns[column].id, "", 0,
                        0, (TuiGridValue){0});
   grid_record_clear(&r);
+  return out;
+}
+static TuiGridEvent grid_pointer_event(TuiGrid *g, TuiResult result,
+                                       const char *kind, const char *row,
+                                       const char *column) {
+  return grid_event(g, result, kind, row, column, "", 0, 0, (TuiGridValue){0});
+}
+const TuiGridRange *tui_grid_selection(const TuiGrid *g) {
+  return g && g->has_selection ? &g->selection : NULL;
+}
+const TuiGridColumn *tui_grid_columns(const TuiGrid *g, size_t *count) {
+  if (count)
+    *count = g ? g->column_count : 0;
+  return g ? g->columns : NULL;
+}
+int tui_grid_pointer_captured(const TuiGrid *g) {
+  return g && g->capture.kind != GRID_CAPTURE_NONE;
+}
+static void grid_capture_arm(TuiGrid *g, GridCapture next, int w, int h) {
+  grid_capture_clear(&g->capture);
+  next.width = w;
+  next.height = h;
+  next.revision = g->revision;
+  g->capture = next;
+}
+static GridCapture grid_capture_take(TuiGrid *g) {
+  GridCapture old = g->capture;
+  memset(&g->capture, 0, sizeof(g->capture));
+  return old;
+}
+static TuiGridEvent grid_extend_navigation(TuiGrid *g, const char *action,
+                                           int height) {
+  TuiGridRecord before = {0}, after = {0};
+  size_t col = 0, range[4];
+  TuiGridRange anchor = {0};
+  if (grid_current(g, &before, &col) != TUI_OK)
+    return grid_empty(g);
+  const char *ar = before.id, *ac = g->columns[col].id;
+  if (g->has_selection && grid_bounds(g, range) == TUI_OK) {
+    ar = g->selection.anchor_row;
+    ac = g->selection.anchor_column;
+  }
+  TuiResult result =
+      grid_selection_copy(&(TuiGridRange){ar, ac, ar, ac}, &anchor);
+  grid_record_clear(&before);
+  if (result != TUI_OK)
+    return grid_pointer_event(g, result, "", "", "");
+  size_t old_row = g->row, old_column = g->column;
+  TuiGridEvent out = tui_grid_handle(g, action, height, "");
+  if (!strcmp(out.kind, "select") && grid_current(g, &after, &col) == TUI_OK) {
+    TuiGridCellInfo info = {0};
+    result = grid_info(g, &after, col, &info);
+    int disabled = result == TUI_OK && info.state.disabled;
+    grid_info_clear(&info);
+    if (!disabled && result == TUI_OK)
+      result = tui_grid_set_selection(
+          g, &(TuiGridRange){anchor.anchor_row, anchor.anchor_column, after.id,
+                             g->columns[col].id});
+    if (disabled || result != TUI_OK) {
+      g->row = old_row;
+      g->column = old_column;
+      out = grid_pointer_event(g, result, "", "", "");
+    }
+  }
+  grid_record_clear(&after);
+  grid_selection_clear(&anchor);
+  return out;
+}
+typedef struct {
+  const TuiGridGeometry *geo;
+  const TuiGridSpan *span;
+  TuiGridRecord row;
+  int valid, header, gutter;
+} GridPointHit;
+static TuiResult grid_point_hit(TuiGrid *g, int x, int y, int w, int h,
+                                GridPointHit *hit) {
+  memset(hit, 0, sizeof(*hit));
+  if (!g->hits || g->hit_width != w || g->hit_height != h || x < 0 || y < 0 ||
+      x >= w || y >= h)
+    return TUI_OK;
+  const TuiGridGeometry *geo = g->hits;
+  hit->geo = geo;
+  for (size_t i = 0; i < geo->count; i++)
+    if (geo->spans[i].x <= x && x < geo->spans[i].x + geo->spans[i].width) {
+      hit->span = &geo->spans[i];
+      break;
+    }
+  if (y < geo->info.header_rows) {
+    hit->valid = hit->header = 1;
+    return TUI_OK;
+  }
+  int dy = y - geo->info.header_rows;
+  if (dy % geo->info.stride || y >= h - geo->info.footer_rows)
+    return TUI_OK;
+  size_t index = (size_t)(dy / geo->info.stride);
+  if (index >= geo->row_count || !geo->row_ids[index])
+    return TUI_OK;
+  hit->gutter = !hit->span && x < geo->info.gutter && g->options.row_numbers;
+  size_t actual = geo->info.top + index;
+  TuiResult result =
+      actual < grid_count(g) ? grid_read(g, actual, &hit->row) : TUI_INVALID;
+  if (result != TUI_OK || strcmp(hit->row.id, geo->row_ids[index])) {
+    if (g->capture.kind == GRID_CAPTURE_RANGE ||
+        g->capture.kind == GRID_CAPTURE_EDIT)
+      grid_capture_clear(&g->capture);
+    grid_record_clear(&hit->row);
+    return result == TUI_NOMEM ? result : TUI_OK;
+  }
+  hit->valid = hit->span != NULL || hit->gutter;
+  return TUI_OK;
+}
+static TuiGridEvent grid_edit_pointer(TuiGrid *g, const char *action, int x,
+                                      int y, int w, int h, int extend) {
+  if (!g->buffer || g->edit.pending || g->edit.value.is_null ||
+      !grid_work_valid(g, g->edit.row_id, g->edit.column_id,
+                       g->edit.revision)) {
+    grid_capture_clear(&g->capture);
+    return grid_empty(g);
+  }
+  int move = !strcmp(action, "move"), down = !strcmp(action, "down");
+  if ((move && g->capture.kind != GRID_CAPTURE_EDIT) ||
+      (!move && !down && strcmp(action, "click") && strcmp(action, "double")))
+    return grid_empty(g);
+  GridPointHit hit;
+  TuiResult result = grid_point_hit(g, x, y, w, h, &hit);
+  if (result != TUI_OK)
+    return grid_pointer_event(g, result, "", "", "");
+  if (!hit.valid || !hit.span || !hit.row.id ||
+      strcmp(hit.row.id, g->edit.row_id) ||
+      strcmp(hit.span->id, g->edit.column_id)) {
+    grid_record_clear(&hit.row);
+    return move ? grid_empty(g)
+                : grid_pointer_event(g, TUI_OK, "edit_blocked", "", "");
+  }
+  TuiGridCellInfo info = {0};
+  int c = grid_column_index(g, hit.span->id);
+  result = grid_info(g, &hit.row, (size_t)c, &info);
+  int extra = info.state.edited && g->options.show_cell_markers ? 2 : 0,
+      pad = g->options.padding + extra,
+      room = hit.span->width - 2 * g->options.padding - extra;
+  grid_info_clear(&info);
+  grid_record_clear(&hit.row);
+  if (result != TUI_OK || room <= 0)
+    return grid_pointer_event(g, result, "", "", "");
+  const char *value = tui_text_value(g->buffer);
+  size_t start = 0;
+  char *window = NULL;
+  int offset = 0, glyph = 1;
+  result = grid_editor_window(value, tui_text_cursor(g->buffer), room, &window,
+                              &offset, &glyph, &start);
+  free(window);
+  if (result != TUI_OK)
+    return grid_pointer_event(g, result, "", "", "");
+  size_t *offsets = NULL, count = 0, pos = start;
+  int parsed = raw_offsets(value, &offsets, &count), used = 0;
+  if (parsed != 1)
+    return grid_pointer_event(g, parsed < 0 ? TUI_NOMEM : TUI_INVALID, "", "",
+                              "");
+  int at = max(0, min(room, x - hit.span->x - pad));
+  for (size_t i = start; i < count; i++) {
+    char *raw = grid_slice(value, offsets[i], offsets[i + 1]);
+    char *clean = raw ? clean_copy(raw) : NULL;
+    free(raw);
+    if (!clean) {
+      free(offsets);
+      return grid_pointer_event(g, TUI_NOMEM, "", "", "");
+    }
+    int cells = tui_cells(clean);
+    free(clean);
+    if (used + cells > at)
+      break;
+    used += cells;
+    pos++;
+  }
+  free(offsets);
+  tui_text_select(g->buffer, extend || move ? tui_text_anchor(g->buffer) : pos,
+                  pos);
+  if (down)
+    grid_capture_arm(
+        g, (GridCapture){.kind = GRID_CAPTURE_EDIT, .edit_id = g->edit.id}, w,
+        h);
+  return grid_pointer_event(g, TUI_OK, "edit_select", g->edit.row_id,
+                            g->edit.column_id);
+}
+TuiGridEvent tui_grid_pointer(TuiGrid *g, const char *action, int x, int y,
+                              int w, int h, int extend) {
+  if (!g || g->callback || !action)
+    return grid_pointer_event(g, TUI_INVALID, "", "", "");
+  int down = !strcmp(action, "down"), move = !strcmp(action, "move"),
+      up = !strcmp(action, "up"), click = !strcmp(action, "click"),
+      dbl = !strcmp(action, "double"), cancel = !strcmp(action, "cancel");
+  int wheel = !strcmp(action, "wheel_up") || !strcmp(action, "wheel_down") ||
+              !strcmp(action, "wheel_left") || !strcmp(action, "wheel_right");
+  if (!down && !move && !up && !click && !dbl && !cancel && !wheel)
+    return grid_empty(g);
+  if (x < -1000000000 || x > 1000000000 || y < -1000000000 || y > 1000000000 ||
+      w < 0 || w > 65535 || h < 0 || h > 4096)
+    return grid_pointer_event(g, TUI_INVALID, "", "", "");
+  if (g->capture.kind && (g->capture.width != w || g->capture.height != h ||
+                          g->capture.revision != g->revision))
+    grid_capture_clear(&g->capture);
+  if (g->options.disable_mouse || g->paste.id || cancel) {
+    grid_capture_clear(&g->capture);
+    return grid_empty(g);
+  }
+  if (up) {
+    GridCapture old = grid_capture_take(g);
+    TuiGridEvent event = grid_empty(g);
+    if (old.kind == GRID_CAPTURE_COLUMN && !old.moved) {
+      GridPointHit hit;
+      TuiResult result = grid_point_hit(g, x, y, w, h, &hit);
+      if (result == TUI_OK && hit.header && hit.span &&
+          !strcmp(hit.span->id, old.column))
+        event = tui_grid_click(g, x, y, w, h);
+      else if (result != TUI_OK)
+        event = grid_pointer_event(g, result, "", "", "");
+      grid_record_clear(&hit.row);
+    }
+    grid_capture_clear(&old);
+    return event;
+  }
+  if (down)
+    grid_capture_clear(&g->capture);
+  if (g->buffer) {
+    if (g->capture.kind == GRID_CAPTURE_EDIT &&
+        g->capture.edit_id != g->edit.id)
+      grid_capture_clear(&g->capture);
+    return grid_edit_pointer(g, action, x, y, w, h, extend);
+  }
+  if (wheel) {
+    grid_capture_clear(&g->capture);
+    return tui_grid_handle(g, action + 6, h, "");
+  }
+  if (move && !g->capture.kind)
+    return grid_empty(g);
+  if (move && g->capture.kind == GRID_CAPTURE_RESIZE) {
+    int c = grid_column_index(g, g->capture.column);
+    if (c < 0) {
+      grid_capture_clear(&g->capture);
+      return grid_empty(g);
+    }
+    const TuiGridColumnOptions *o = &g->column_options[c];
+    int value = max(o->min_width, min(o->max_width, g->capture.start_width + x -
+                                                        g->capture.start_x));
+    if (value == g->columns[c].width)
+      return grid_empty(g);
+    GridCapture next = grid_capture_take(g);
+    int changed = tui_grid_resize_column(g, next.column, value);
+    grid_capture_arm(g, next, w, h);
+    return changed
+               ? grid_pointer_event(g, TUI_OK, "resize", "", g->capture.column)
+               : grid_empty(g);
+  }
+  if (move && g->capture.kind == GRID_CAPTURE_COLUMN) {
+    TuiGridGeometry *geo = NULL;
+    TuiResult result = tui_grid_geometry(g, w, h, &geo);
+    if (result != TUI_OK)
+      return grid_pointer_event(g, result, "", "", "");
+    int source = grid_column_index(g, g->capture.column), target = -1;
+    for (size_t i = 0; i < geo->count; i++)
+      if (geo->spans[i].x <= x && x < geo->spans[i].x + geo->spans[i].width) {
+        target = grid_column_index(g, geo->spans[i].id);
+        break;
+      }
+    tui_grid_geometry_free(geo);
+    if (source < 0 || target < 0 || source == target ||
+        strcmp(g->columns[source].pin, g->columns[target].pin))
+      return grid_empty(g);
+    TuiGridColumn *order = malloc(g->column_count * sizeof(*order));
+    if (!order)
+      return grid_pointer_event(g, TUI_NOMEM, "", "", "");
+    memcpy(order, g->columns, g->column_count * sizeof(*order));
+    TuiGridColumn item = order[source];
+    if (source < target)
+      memmove(order + source, order + source + 1,
+              (size_t)(target - source) * sizeof(*order));
+    else
+      memmove(order + target + 1, order + target,
+              (size_t)(source - target) * sizeof(*order));
+    order[target] = item;
+    GridCapture next = grid_capture_take(g);
+    result = tui_grid_set_column_layout(g, order, g->column_count);
+    free(order);
+    if (result == TUI_OK)
+      next.moved = 1;
+    grid_capture_arm(g, next, w, h);
+    return grid_pointer_event(g, result, result == TUI_OK ? "columns" : "", "",
+                              g->capture.column);
+  }
+  GridPointHit hit;
+  TuiResult result = grid_point_hit(g, x, y, w, h, &hit);
+  if (result != TUI_OK || !hit.valid) {
+    grid_record_clear(&hit.row);
+    return grid_pointer_event(g, result, "", "", "");
+  }
+  if (hit.header) {
+    if (!down)
+      return click || dbl ? tui_grid_click(g, x, y, w, h) : grid_empty(g);
+    if (g->options.vertical_lines && !g->options.disable_resize)
+      for (size_t i = 0; i < hit.geo->count; i++) {
+        const TuiGridSpan *s = &hit.geo->spans[i];
+        if (s->x + s->width == x) {
+          int col = grid_column_index(g, s->id);
+          GridCapture next = {.kind = GRID_CAPTURE_RESIZE,
+                              .start_x = x,
+                              .start_width = g->columns[col].width,
+                              .column = copy(s->id)};
+          if (!next.column)
+            return grid_pointer_event(g, TUI_NOMEM, "", "", "");
+          grid_capture_arm(g, next, w, h);
+          return grid_pointer_event(g, TUI_OK, "resize_start", "",
+                                    g->capture.column);
+        }
+      }
+    if (hit.span) {
+      GridCapture next = {.kind = GRID_CAPTURE_COLUMN,
+                          .column = copy(hit.span->id)};
+      if (!next.column)
+        return grid_pointer_event(g, TUI_NOMEM, "", "", "");
+      grid_capture_arm(g, next, w, h);
+    }
+    return grid_empty(g);
+  }
+  TuiGridRecord previous = {0};
+  size_t *visible = NULL, n = 0, current_col = 0;
+  GridCapture next = {0};
+  TuiGridEvent out = {0};
+  if (move && g->capture.kind != GRID_CAPTURE_RANGE)
+    goto empty;
+  result = grid_visible(g, &visible, &n);
+  if (result != TUI_OK)
+    goto error;
+  if (!n)
+    goto empty;
+  const char *id = hit.span
+                       ? hit.span->id
+                       : g->columns[visible[g->column < n ? g->column : 0]].id;
+  int column = grid_column_index(g, id);
+  if (column < 0)
+    goto empty;
+  TuiGridCellInfo info = {0};
+  result = grid_info(g, &hit.row, (size_t)column, &info);
+  int disabled = info.state.disabled;
+  grid_info_clear(&info);
+  if (result != TUI_OK)
+    goto error;
+  if (disabled)
+    goto empty;
+  const char *ar = hit.row.id, *ac = id;
+  int whole = hit.gutter || !strcmp(g->options.selection, "row");
+  if (move) {
+    size_t at;
+    TuiGridRecord anchor = {0};
+    if (grid_index(g, g->capture.anchor_row, &at) != TUI_OK ||
+        at != g->capture.anchor_index || grid_read(g, at, &anchor) != TUI_OK ||
+        strcmp(anchor.id, g->capture.anchor_row)) {
+      grid_record_clear(&anchor);
+      grid_capture_clear(&g->capture);
+      goto empty;
+    }
+    grid_record_clear(&anchor);
+    ar = g->capture.anchor_row;
+    ac = g->capture.anchor_column;
+    whole = g->capture.whole;
+  } else if (extend && grid_current(g, &previous, &current_col) == TUI_OK) {
+    size_t bounds[4];
+    if (g->has_selection && grid_bounds(g, bounds) == TUI_OK) {
+      ar = g->selection.anchor_row;
+      ac = g->selection.anchor_column;
+    } else {
+      ar = previous.id;
+      ac = g->columns[current_col].id;
+    }
+  }
+  if (down) {
+    next.kind = GRID_CAPTURE_RANGE;
+    next.whole = whole;
+    next.anchor_row = copy(ar);
+    next.anchor_column = copy(ac);
+    if (!next.anchor_row || !next.anchor_column) {
+      result = TUI_NOMEM;
+      goto error;
+    }
+    if (grid_index(g, ar, &next.anchor_index) != TUI_OK)
+      goto empty;
+  }
+  if (!tui_grid_focus(g, hit.row.id, id))
+    goto empty;
+  if (dbl) {
+    out = tui_grid_handle(g, "activate", h, "");
+    goto done;
+  }
+  if (whole || extend || move) {
+    result = tui_grid_set_selection(
+        g,
+        &(TuiGridRange){ar, whole ? g->columns[visible[0]].id : ac, hit.row.id,
+                        whole ? g->columns[visible[n - 1]].id : id});
+    if (result != TUI_OK)
+      goto error;
+  } else if (down || click)
+    tui_grid_set_selection(g, NULL);
+  if (down) {
+    grid_capture_arm(g, next, w, h);
+    memset(&next, 0, sizeof(next));
+  }
+  out = grid_pointer_event(g, TUI_OK, "select", hit.row.id, id);
+  goto done;
+empty:
+  out = grid_empty(g);
+  goto done;
+error:
+  out = grid_pointer_event(g, result, "", "", "");
+done:
+  grid_capture_clear(&next);
+  free(visible);
+  grid_record_clear(&previous);
+  grid_record_clear(&hit.row);
   return out;
 }
 void tui_grid_view_free(TuiGridViewState *view) {

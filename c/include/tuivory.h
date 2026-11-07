@@ -933,6 +933,14 @@ TuiResult tui_grid_set_cell_info(TuiGrid *grid, TuiGridCellProvider provider,
                                  void *context);
 TuiResult tui_grid_set_status(TuiGrid *grid, TuiGridDataStatus status);
 TuiResult tui_grid_set_selection(TuiGrid *grid, const TuiGridRange *range);
+/* Selection/columns are borrowed until the next mutation. Pointer coordinates
+ * are local to the last drawn grid; route captured move/up outside its bounds.
+ * An unmoved header gesture requests sort on up (do not repeat as click). */
+const TuiGridRange *tui_grid_selection(const TuiGrid *grid);
+const TuiGridColumn *tui_grid_columns(const TuiGrid *grid, size_t *count);
+int tui_grid_pointer_captured(const TuiGrid *grid);
+TuiGridEvent tui_grid_pointer(TuiGrid *grid, const char *action, int x, int y,
+                              int width, int height, int extend);
 /* begin_edit first=NULL retains the prepared value. first="" replaces it with
  * a non-NULL empty value. Approval never updates application records itself. */
 int tui_grid_begin_edit(TuiGrid *grid, const char *first);
