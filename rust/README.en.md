@@ -19,7 +19,7 @@ TVR-7 in 0.11.0: [grid editing and data work](../docs/grid-workspace.en.md). Ext
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
-Crate version **0.11.1** matches root `VERSION`. Use Git tag `rust/v0.11.1`. [Release guide](../docs/release-0.11.1.en.md).
+Crate version **0.12.0** matches root `VERSION`. Use Git tag `rust/v0.11.1`. [Release guide](../docs/release-0.11.1.en.md).
 
 The package provides shared component models, candidate-token/style core, optional Ratatui renderers and database-free interactive examples. The default core requires Rust 1.85+ (verified with 1.85.1); the Ratatui 0.30.2 adapter and Crossterm 0.29 example require Rust 1.88+ (verified with 1.88.0). The core and adapter do not depend on Go, terminal I/O, or databases.
 
@@ -29,7 +29,7 @@ Version 0.11.1 is distributed through Git tag `rust/v0.11.1`, not crates.io. Use
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.11.1" }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.0" }
 # Add features = ["ratatui"] for the optional adapter.
 ```
 

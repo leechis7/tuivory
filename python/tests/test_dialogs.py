@@ -26,3 +26,23 @@ class Dialogs(unittest.TestCase):
     def test_public_star_exports_cover_completed_components(self):
         values={};exec('from tuivory import *',values)
         for name in ['Container','Surface','Shadow','Dialog']:self.assertIn(name,values)
+
+    def test_button_rows_center_for_bilingual_labels(self):
+        for labels in (
+            ('확인', '다시 연결한 다음 계속', '설정 열기', '취소'),
+            ('OK', 'Reconnect and continue', 'Open settings', 'Cancel'),
+        ):
+            for count in range(1, len(labels) + 1):
+                buttons = [ui.DialogButton(str(i), label) for i, label in enumerate(labels[:count])]
+                dialog = ui.Dialog(buttons=buttons, cancel_id='0')
+                for width in (36, 116):
+                    layout = dialog.layout(width, 12)
+                    self.assertEqual(len(layout.buttons), count)
+                    rows = {}
+                    for button in layout.buttons:
+                        rect = button.rect
+                        left = rows.get(rect.y, (rect.x,))[0]
+                        rows[rect.y] = left, rect.x + rect.width
+                    for left, right in rows.values():
+                        self.assertLessEqual(right, width)
+                        self.assertEqual(left, (width - (right - left)) // 2)

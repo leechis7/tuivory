@@ -3890,6 +3890,9 @@ public final class Tuivory {
           focusRow = y;
         x += w;
       }
+      int[] rowWidths = new int[y + 1];
+      for (var position : positions)
+        rowWidths[position.rect.y] = position.rect.x + position.rect.width;
       int totalRows = positions.isEmpty() ? 0 : y + 1, visible = Math.min(height, totalRows),
           start = Math.max(0, focusRow + 1 - visible), available = height - visible,
           gap = !message.isEmpty() && visible > 0 && available >= 2 ? 1 : 0;
@@ -3904,7 +3907,7 @@ public final class Tuivory {
                text = r.width >= 6 ? "[ " + clip(label, Math.max(0, r.width - 4), true) + " ]"
                                    : clip(label, r.width, true);
         result.add(
-            new DialogButtonCell(b.id, new Rect(r.x, height - visible + r.y - start, r.width, 1),
+            new DialogButtonCell(b.id, new Rect(r.x + (width - rowWidths[r.y]) / 2, height - visible + r.y - start, r.width, 1),
                 text, b.disabled, b.id.equals(focused)));
       }
       return new DialogLayout(body.rows, result, buttons.size() - result.size(), body.truncated);

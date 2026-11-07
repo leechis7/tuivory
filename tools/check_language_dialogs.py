@@ -47,6 +47,43 @@ def source(lang):
         check(('tui_dialog_hidden_buttons(l)'if c else'l.hiddenButtons()'if java else'l.hidden_buttons')+'=='+str(f['hidden']))
         check(('tui_dialog_body_truncated(l)'if c else'l.bodyTruncated()'if java else'l.body_truncated')+'=='+str(int(f['truncated'])if c else f['truncated']).lower())
         out.append('tui_dialog_layout_free(l);tui_dialog_free(d);}'if c else'}')
+    for labels in (("확인", "다시 연결한 다음 계속", "설정 열기", "취소"),
+                   ("OK", "Reconnect and continue", "Open settings", "Cancel")):
+        for count in range(1, 5):
+            entries = list(enumerate(labels[:count]))
+            out.append("{")
+            if c:
+                entries_code = ",".join("{"+quote(str(i))+","+quote(label)+",0}" for i,label in entries)
+                out.append("TuiDialogButton buttons[]={"+entries_code+"};TuiDialog *dialog=tui_dialog_new(\"Title\",\"\",buttons,"+str(count)+",\"0\");assert(dialog);")
+            elif java:
+                entries_code = ",".join("new DialogButton("+quote(str(i))+","+quote(label)+")" for i,label in entries)
+                out.append("var dialog=new Dialog(\"Title\",\"\",List.of("+entries_code+"),\"0\");")
+            else:
+                entries_code = ",".join("{"+quote(str(i))+","+quote(label)+",false}" for i,label in entries)
+                out.append("Dialog dialog(\"Title\",\"\",{"+entries_code+"},\"0\");")
+            for width in (36,116):
+                out.append("{")
+                if c:
+                    out.append(f"TuiDialogLayout *layout=NULL;assert(tui_dialog_layout(dialog,{width},12,&layout)==TUI_OK);assert(tui_dialog_cell_count(layout)=={count});")
+                else:
+                    out.append(("var" if java else "auto")+f" layout=dialog.layout({width},12);")
+                    check(("layout.buttons().size()" if java else "layout.buttons.size()")+f"=={count}")
+                out.append("int left=0,right=0,row=-1;")
+                for i in range(count):
+                    expr = (f"tui_dialog_cell_at(layout,{i})->rect" if c else
+                            f"layout.buttons().get({i}).rect()" if java else f"layout.buttons[{i}].rect")
+                    x,y,w = (f"box.{part}" + ("()" if java else "") for part in ("x","y","width"))
+                    out.append("{"+("TuiRect" if c else "var" if java else "auto")+f" box={expr};")
+                    out.append(f"if ({y}!=row){{")
+                    check(f"row<0||left==({width}-(right-left))/2")
+                    out.append(f"left={x};row={y};}}right={x}+{w};")
+                    check(f"left>=0&&right<={width}")
+                    out.append("}")
+                check(f"left==({width}-(right-left))/2")
+                if c:out.append("tui_dialog_layout_free(layout);")
+                out.append("}")
+            if c:out.append("tui_dialog_free(dialog);")
+            out.append("}")
     out.append('{');create()
     if c:out.append('''assert(!strcmp(tui_dialog_focused(d),"cancel"));assert(!strcmp(tui_dialog_handle(d,"activate").id,"cancel"));assert(!strcmp(tui_dialog_handle(d,"cancel").kind,"cancel"));assert(!strcmp(tui_dialog_focused(d),"cancel"));items[2].disabled=1;assert(tui_dialog_set_buttons(d,items,3,NULL)==TUI_OK);assert(!strcmp(tui_dialog_focused(d),"retry"));assert(!*tui_dialog_handle(d,"cancel").kind);assert(!tui_dialog_focus(d,"cancel"));assert(!strcmp(tui_dialog_handle(d,"next").id,"details"));assert(!strcmp(tui_dialog_handle(d,"next").id,"retry"));TuiDialogButton invalid[]={{.id="same"},{.id="same"}};assert(tui_dialog_set_buttons(d,invalid,2,NULL)==TUI_INVALID);assert(tui_dialog_button_count(d)==3&&!strcmp(tui_dialog_focused(d),"retry"));const char*literal="한글\r\né [error]literal[/]";assert(tui_dialog_set_text(d,NULL,literal)==TUI_OK);assert(!strcmp(tui_dialog_message(d),literal));TuiDialogLayout*l=NULL;assert(tui_dialog_layout(d,40,12,&l)==TUI_OK);assert(tui_dialog_body_count(l)==2&&!strcmp(tui_dialog_body_at(l,1),"é [error]literal[/]"));tui_dialog_free(d);assert(!strcmp(tui_dialog_cell_at(l,0)->id,"retry"));tui_dialog_layout_free(l);}''')
     elif java:out.append('''check(d.focused().equals("cancel"));check(d.handle("activate").id().equals("cancel"));check(d.handle("cancel").kind().equals("cancel"));check(d.focused().equals("cancel"));d.setButtons(List.of(items.get(0),items.get(1),new DialogButton("cancel","Cancel",true)));check(d.focused().equals("retry"));check(d.handle("cancel").kind().isEmpty());check(!d.focus("cancel"));check(d.handle("next").id().equals("details"));check(d.handle("next").id().equals("retry"));boolean invalid=false;try{d.setButtons(List.of(new DialogButton("same"),new DialogButton("same")));}catch(IllegalArgumentException e){invalid=true;}check(invalid&&d.buttons().size()==3&&d.focused().equals("retry"));String literal="한글\r\né [error]literal[/]";d.setText(null,literal);check(d.message().equals(literal));var l=d.layout(40,12);check(l.body().size()==2&&l.body().get(1).equals("é [error]literal[/]"));}''')

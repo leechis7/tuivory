@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-text.md) · **English**
 
-This is an unreleased TVR-15/16/30/31/32 milestone. Python, TypeScript/JavaScript, C, C++, and Java independently provide a literal `Text` buffer and drawing. These changes are absent from public 0.11.1 and do not call another Tuivory language implementation.
+This is a TVR-15/16/30/31/32 milestone. Python, TypeScript/JavaScript, C, C++, and Java independently provide a literal `Text` buffer and drawing. Each implementation uses its own runtime. Available in 0.12.0.
 
 ## API
 

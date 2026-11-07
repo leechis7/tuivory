@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](language-feedback.en.md)
 
-TVR-15·16·30·31·32의 미배포 구현입니다. 다섯 언어가 자체 모델·그리기를 제공하며 다른 Tuivory 언어 구현을 호출하지 않습니다. 기존 공개 0.11.1에는 포함되지 않습니다. Python/TS의 미배포 `Notices` 초안을 `NoticeQueue`로 교체하며 공개 Go/Rust API는 유지합니다.
+TVR-15·16·30·31·32의 구현입니다. 다섯 언어가 자체 모델·그리기를 제공하며 다른 Tuivory 언어 구현을 호출하지 않습니다. Python/TS의 `Notices` 초안을 `NoticeQueue`로 교체하며 공개 Go/Rust API는 유지합니다. 0.12.0에서 제공합니다.
 
 ## 공개 API
 

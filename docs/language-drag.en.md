@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-drag.md) · **English**
 
-Python, TypeScript/JavaScript, C, C++ and Java independently implement tree/tab move requests and drag previews. They never call another Tuivory language engine. This unreleased TVR-15/16/30/31/32 work is absent from public 0.11.1.
+Python, TypeScript/JavaScript, C, C++ and Java independently implement tree/tab move requests and drag previews. They never call another Tuivory language engine. Available in 0.12.0.
 
 | Purpose | Python | TS/JS · Java | C++ | C |
 | --- | --- | --- | --- | --- |

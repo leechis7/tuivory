@@ -19,6 +19,7 @@ pub mod collections;
 pub mod components;
 pub mod containers;
 pub mod controls;
+pub mod dialog;
 pub mod drag;
 pub mod feedback;
 pub mod forms;

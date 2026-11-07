@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](language-popups.en.md)
 
-TVR-15·16·30·31·32의 미배포 구현이다. Python·TypeScript/JavaScript·C·C++·Java는 각 언어에서 직접 구현하며 다른 Tuivory 구현을 호출하지 않는다. 공개 0.11.1의 지원 범위를 변경하지 않는다.
+TVR-15·16·30·31·32의 구현이다. Python·TypeScript/JavaScript·C·C++·Java는 각 언어에서 직접 구현하며 다른 Tuivory 구현을 호출하지 않는다. 0.12.0에서 제공합니다.
 
 | 기능 | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |
@@ -11,6 +11,8 @@ TVR-15·16·30·31·32의 미배포 구현이다. Python·TypeScript/JavaScript�
 | 카드·그림자 배치 | `PopupLayout` | `PopupLayout` | `TuiPopupLayout` | `PopupLayout` | `PopupLayout` |
 | 합성 | `Shadow.draw` | `Shadow.draw` | `tui_shadow_draw` | `Shadow::draw` | `Shadow.draw` |
 | 대화상자 | `Dialog`, `DialogButton` | `Dialog`, `DialogButton` 타입 | `TuiDialog`, `TuiDialogButton` | `Dialog`, `DialogButton` | `Dialog`, `DialogButton` |
+
+줄바꿈 후 내용 너비를 기준으로 각 버튼 행을 가운데 정렬한다. 남는 칸이 홀수면 오른쪽에 한 칸 더 둔다. 그리기와 클릭 판정에는 같은 사각형을 사용한다. [공통 확인창 규칙과 Go·Rust API](modals.md)
 
 하나의 공개 import/include로 사용한다. `ShadowOptions`의 기본 모드는 off다. auto는 실제 배경에 맞춰 명암을 조정하고, solid는 검정을 사용한다. auto/solid의 기본 여백은 오른쪽 한 칸과 아래 반 줄이다. Unicode는 반 블록, ASCII는 점으로 대체한다. dim은 기존 문자의 색과 내용을 유지하고 Dim 속성을 적용하는 호환 모드다. 터미널이 색 팔레트나 Dim 표시를 재정의하면 실제 외관은 달라질 수 있다.
 

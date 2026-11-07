@@ -2,7 +2,7 @@
 
 [한국어 (default)](modals.md) · **English**
 
-The 0.10.0 Go `NewModal()` clamps its window to the terminal and wraps long buttons across rows. Rust has no equivalent Go compatibility Modal type; compose dialogs with shared Form and layout containers.
+Go `NewModal()` fits its message and buttons within the terminal. Each button row is centered inside the content area after wrapping, including a row with a single button. The button rectangles also determine mouse hit testing.
 
 ```go
 import ui "github.com/leechis7/tuivory/go"
@@ -26,10 +26,22 @@ make build
 
 The filename follows the host architecture. F2 changes theme, F3 color count; Ctrl+Q/Esc exits. The example only displays requests, without saving or DB connections.
 
+In Rust, use `tuivory::dialog::Dialog` with `tuivory::ratatui::DialogWidget`. Call `DialogWidget::draw` to retain the absolute rectangles returned for the clipped frame. Pass that layout to `Dialog::click` and forward keyboard actions to `Dialog::handle`. An event identifies the action for the host to handle.
+
+For an application-composed popup form, Go `PopupButtonRects` and Rust `dialog::popup_button_rects` return the same centered rows for supplied button widths. Use the same rectangles for painting and hit testing. Python, TypeScript/JavaScript, C, C++, and Java apply the rule in their Dialog components. [Independent Dialog APIs](language-popups.en.md)
+
+```sh
+make run-rust ARGS="--demo catalog --mode dialog --lang en"
+```
+
+![Rust confirmation dialog](images/rust-dialog-en.svg)
+
 ![40-column light confirmation](images/modal-light-en.svg)
 ![40-column dark confirmation](images/modal-dark-en.svg)
 
 Go physical post-`Show()` buffers check both languages × twelve palettes, 120→80→40→20→8→3→1 columns and recovery, button bounds/text/callbacks and keyboard/mouse. Images are references generated from those buffers, not physical font verification.
+
+[Local alignment verification](evidence/tvr7-dialog-alignment-results.json) records the seven implementations, rendered buffers, and button hit checks.
 
 [Components](components.en.md) · [Public UI paths](ui-facade.en.md) · [API](api/go.en.md)
 

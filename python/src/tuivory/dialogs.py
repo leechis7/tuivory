@@ -112,6 +112,7 @@ class Dialog:
             positions.append((b,Rect(x,y,w,1)))
             if b.id==self._focused:focus_row=y
             x+=w
+        row_widths = {r.y: r.x + r.width for _, r in positions}
         total_rows=y+1 if positions else 0;visible=min(height,total_rows);start=max(0,focus_row+1-visible)
         available=height-visible;gap=1 if self._message and visible and available>=2 else 0
         body,truncated=_wrap(self._message,width,available-gap);buttons=[]
@@ -119,7 +120,7 @@ class Dialog:
             if not start<=r.y<start+visible:continue
             label=clean(b.label or b.id)
             text='[ '+clip(label,max(0,r.width-4),True)+' ]'if r.width>=6 else clip(label,r.width,True)
-            buttons.append(DialogButtonCell(b.id,Rect(r.x,height-visible+r.y-start,r.width,1),text,b.disabled,b.id==self._focused))
+            buttons.append(DialogButtonCell(b.id,Rect(r.x+(width-row_widths[r.y])//2,height-visible+r.y-start,r.width,1),text,b.disabled,b.id==self._focused))
         return DialogLayout(body,buttons,len(self._buttons)-len(buttons),truncated)
     def draw(self,canvas:Canvas,bounds:Rect,*,focused=True,ascii=False):
         for v,limit in [(bounds.x,1_000_000_000),(bounds.y,1_000_000_000),(bounds.width,1_000_000),(bounds.height,1_000_000)]:

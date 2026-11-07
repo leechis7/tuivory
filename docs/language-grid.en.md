@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-grid.md) · **English**
 
-This is unreleased work under TVR-15, TVR-16, TVR-30, TVR-31 and TVR-32. Python, TypeScript/JavaScript, C, C++ and Java each implement their own state and drawing. They never call another Tuivory language implementation. These additions are absent from public 0.11.1.
+This is work under TVR-15, TVR-16, TVR-30, TVR-31 and TVR-32. Python, TypeScript/JavaScript, C, C++ and Java each implement their own state and drawing. They never call another Tuivory language implementation. Available in 0.12.0.
 
 | Purpose | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |

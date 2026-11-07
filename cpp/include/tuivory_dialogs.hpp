@@ -215,6 +215,9 @@ public:
         focus_row = y;
       x += w;
     }
+    std::vector<int> row_widths(y + 1);
+    for (const auto &position : positions)
+      row_widths[position.rect.y] = position.rect.x + position.rect.width;
     int total_rows = positions.empty() ? 0 : y + 1,
         visible = std::min(height, total_rows),
         start = std::max(0, focus_row + 1 - visible),
@@ -235,7 +238,7 @@ public:
                    ? "[ " + clip(label, std::max(0, r.width - 4), true) + " ]"
                    : clip(label, r.width, true);
       out.buttons.push_back({b.id,
-                             {r.x, height - visible + r.y - start, r.width, 1},
+                             {r.x + (width - row_widths[r.y]) / 2, height - visible + r.y - start, r.width, 1},
                              text,
                              b.disabled,
                              b.id == focused_});

@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](modals.en.md)
 
-0.10.0의 Go `NewModal()`은 창 너비를 실제 터미널 안으로 제한하고 긴 버튼을 여러 행으로 배치합니다. Rust에는 이 Go 호환 Modal 타입이 없으며, 공통 Form·배치 컨테이너로 확인창을 조합합니다.
+Go `NewModal()`은 창과 버튼을 터미널 크기에 맞춰 배치합니다. 줄바꿈 후 각 버튼 행을 내용 영역 가운데에 놓습니다. 버튼이 한 개만 남은 행도 같은 규칙을 따르며, 표시 사각형을 마우스 판정에 그대로 사용합니다.
 
 ```go
 import ui "github.com/leechis7/tuivory/go"
@@ -26,10 +26,22 @@ make build
 
 실행파일 이름은 호스트 아키텍처를 따릅니다. F2 테마, F3 색상 수, Ctrl+Q/Esc 종료. 이 예제는 저장·DB 연결 없이 요청을 표시합니다.
 
+Rust는 `tuivory::dialog::Dialog`와 `tuivory::ratatui::DialogWidget`을 사용합니다. `DialogWidget::draw`가 실제 그린 프레임의 절대 버튼 좌표를 반환합니다. 이 결과를 `Dialog::click`에 전달하고 키보드 동작은 `Dialog::handle`에 전달합니다. 이벤트를 받으면 앱이 실제 동작을 결정합니다.
+
+앱에서 조합하는 일반 팝업 폼은 Go의 `PopupButtonRects`와 Rust의 `dialog::popup_button_rects`로 버튼 너비에 맞는 가운데 정렬 행을 계산할 수 있습니다. 그리기와 클릭 판정에 같은 사각형을 사용합니다. Python·TypeScript/JavaScript·C·C++·Java는 Dialog에서 같은 규칙을 사용합니다. [독립 Dialog API](language-popups.md)
+
+```sh
+make run-rust ARGS="--demo catalog --mode dialog --lang ko"
+```
+
+![Rust 확인창](images/rust-dialog.svg)
+
 ![40열 라이트 확인창](images/modal-light.svg)
 ![40열 다크 확인창](images/modal-dark.svg)
 
 Go 실제 `Show()` 이후 버퍼로 한영 × 12팔레트, 120→80→40→20→8→3→1열과 복원, 버튼 위치·텍스트·콜백·키보드·마우스를 검사합니다. 이미지는 그 출력 버퍼로 생성한 참조이며 물리 폰트 검증과 구분합니다.
+
+[가운데 정렬 로컬 검증](evidence/tvr7-dialog-alignment-results.json)에 일곱 구현의 배치, 실제 출력과 버튼 클릭 검사를 기록했습니다.
 
 [컴포넌트](components.md) · [공개 UI 경로](ui-facade.md) · [API](api/go.md)
 

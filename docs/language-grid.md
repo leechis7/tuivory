@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](language-grid.en.md)
 
-TVR-15·16·30·31·32의 미배포 기능이다. Python·TypeScript/JavaScript·C·C++·Java가 각자 데이터를 처리하고 그린다. 다른 Tuivory 언어 구현을 호출하지 않는다. 공개 0.11.1에는 포함되지 않는다.
+TVR-15·16·30·31·32의 기능이다. Python·TypeScript/JavaScript·C·C++·Java가 각자 데이터를 처리하고 그린다. 다른 Tuivory 언어 구현을 호출하지 않는다. 0.12.0에서 제공합니다.
 
 | 용도 | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |

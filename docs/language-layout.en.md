@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-layout.md) · **English**
 
-This unreleased TVR-15/16/30/31/32 milestone implements the same cell-layout principles and supporting components in five independent languages, without calling another Tuivory implementation. Published 0.11.1 stays unchanged. This step covers **stacks/drawer placement and badges/chips/hints**. [Configured row/column/grid/layer execution and clipped virtual viewports](language-containers.en.md) are now implemented in a following milestone. [Actual Surface styles](language-surfaces.en.md) are now available; [popups and dialogs](language-popups.en.md) are also available.
+This TVR-15/16/30/31/32 milestone implements the same cell-layout principles and supporting components in five independent languages, without calling another Tuivory implementation. This step covers **stacks/drawer placement and badges/chips/hints**. [Configured row/column/grid/layer execution and clipped virtual viewports](language-containers.en.md) are now implemented in a following milestone. [Actual Surface styles](language-surfaces.en.md) are now available; [popups and dialogs](language-popups.en.md) are also available. Available in 0.12.0.
 
 ## API
 

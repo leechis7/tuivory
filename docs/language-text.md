@@ -2,7 +2,7 @@
 
 **한국어 (기본)** · [English](language-text.en.md)
 
-TVR-15·16·30·31·32의 미배포 단계입니다. Python·TypeScript/JavaScript·C·C++·Java가 각자 원문을 보존하는 `Text` 버퍼와 그리기를 제공합니다. 공개 0.11.1에는 포함되지 않으며 다른 Tuivory 언어 구현을 호출하지 않습니다.
+TVR-15·16·30·31·32의 단계입니다. Python·TypeScript/JavaScript·C·C++·Java가 각자 원문을 보존하는 `Text` 버퍼와 그리기를 제공합니다. 0.12.0에서 제공합니다.
 
 ## API
 

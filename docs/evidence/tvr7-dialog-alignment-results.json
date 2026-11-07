@@ -1,0 +1,25 @@
+{
+  "issue": "TVR-7",
+  "request_comment": "11109",
+  "source_stage": "local worktree",
+  "row_alignment_cases": {
+    "dimensions": "Korean and English, one to four buttons, 40 and 120 outer columns or equivalent content widths",
+    "go": 16,
+    "rust": 16,
+    "python": 16,
+    "typescript_javascript": 16,
+    "c": 16,
+    "cpp": 16,
+    "java": 16
+  },
+  "additional_checks": [
+    "Go simulation screen buffer and click callbacks at the painted button rectangles",
+    "Rust clipped Ratatui buffer, keyboard requests, and click against returned rectangles",
+    "C, C++, and Java: 48 actual ANSI dialog frames per implementation",
+    "C and C++ integrated examples: native ARM64 static ELF inspection",
+    "Korean and English captures from the Go, Rust, Python, JS, C, C++, and Java examples",
+    "Generated API reference, lifecycle, and local documentation links"
+  ],
+  "github_ci": "not run for this change",
+  "publication": "not published"
+}

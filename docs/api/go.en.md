@@ -1,4 +1,4 @@
-# Go API — source (0.11.1)
+# Go API — source (0.12.0)
 
 [한국어 (default)](go.md) · **English**
 
@@ -1244,6 +1244,11 @@ func MenuPlacement(anchor, viewport CellRect, width, height int) CellRect
     MenuPlacement clamps only the popup rectangle. Hosts choose anchors, panel
     padding and when/where the popup is shown; no backdrop or screen layout is
     owned.
+
+func PopupButtonRects(width int, buttonWidths []int) []CellRect
+    PopupButtonRects wraps button widths with a one-cell gap and centers
+    each row. Rectangles are local to the content area and use contiguous row
+    indices. Use the same rectangles when drawing and routing mouse events.
 
 func (r CellRect) Inset(padding int) CellRect
 ```

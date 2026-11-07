@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-terminal.md) · **English**
 
-Python, TypeScript/JavaScript, C, C++ and Java independently implement common input events and optional terminal sessions through the existing single public import/include. Models/rendering do not require an open session. This unreleased TVR-15/16/30/31/32 work is absent from public 0.11.1.
+Python, TypeScript/JavaScript, C, C++ and Java independently implement common input events and optional terminal sessions through the existing single public import/include. Models/rendering do not require an open session. Available in 0.12.0.
 
 | Purpose | Python | TS/JS | C | C++ | Java |
 | --- | --- | --- | --- | --- | --- |

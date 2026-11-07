@@ -16,6 +16,8 @@
 use crate::{ColorProfile, Error, Palette, Theme, TokenDocument};
 mod components;
 mod container;
+mod dialog;
+pub use dialog::DialogWidget;
 mod menu;
 mod rows;
 mod shadow;

@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-containers.md) · **English**
 
-This unreleased TVR-15/16/30/31/32 milestone implements row/column/grid/layer layouts, container-local focus/pointer routing, virtual areas and clipped child painting independently in Python, TS/JS, C, C++ and Java. No other Tuivory language implementation is called. Published product 0.11.1 stays unchanged.
+This TVR-15/16/30/31/32 milestone implements row/column/grid/layer layouts, container-local focus/pointer routing, virtual areas and clipped child painting independently in Python, TS/JS, C, C++ and Java. No other Tuivory language implementation is called. Available in 0.12.0.
 
 ## API
 

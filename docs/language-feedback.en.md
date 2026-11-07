@@ -2,7 +2,7 @@
 
 [한국어 (기본)](language-feedback.md) · **English**
 
-This unreleased TVR-15/16/30/31/32 milestone provides independent models and painting in five languages, without calling another Tuivory implementation. It is absent from published 0.11.1. The unpublished Python/TS `Notices` prototype is replaced by `NoticeQueue`; public Go/Rust APIs remain unchanged.
+This TVR-15/16/30/31/32 milestone provides independent models and painting in five languages, without calling another Tuivory implementation. The unpublished Python/TS `Notices` prototype is replaced by `NoticeQueue`; public Go/Rust APIs remain unchanged. Available in 0.12.0.
 
 ## Public API
 
