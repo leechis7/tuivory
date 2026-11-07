@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { DocumentDemo } from "./document-host.mjs";
 import { DialogDemo } from "./dialog-host.mjs";
 import { SurfaceDemo } from "./surface-host.mjs";
 import { ContainerDemo } from "./container-host.mjs";
@@ -15,10 +16,11 @@ const value = (key, fallback) => {
 };
 if (args.includes("--help")) {
   console.log(
-    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
+    "--demo tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|surface|shadow|dialog|document --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --snapshot",
   );
   process.exit(0);
 }
+const documentDemo = value("--demo", "tree") === "document";
 const dialogDemo = value("--demo", "tree") === "dialog";
 const surfaceDemo = value("--demo", "tree") === "surface";
 const containerDemo = value("--demo", "tree") === "container";
@@ -37,6 +39,7 @@ if (
   !containerDemo &&
   !surfaceDemo &&
   !dialogDemo &&
+  !documentDemo &&
   !feedbackDemo &&
   !menuDemo &&
   !workspace &&
@@ -47,12 +50,13 @@ if (
   value("--demo", "tree") !== "tree"
 )
   throw new Error(
-    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog",
+    "Supported demos: tree, workspace, text, form, list, picker, menu, context-menu, feedback, layout, container, surface, shadow, dialog, document",
   );
 const en = value("--lang", "ko") === "en",
   ascii = args.includes("--ascii");
 const layoutHost = new LayoutDemo(en);
 const containerHost = new ContainerDemo(en, ascii);
+const documentHost = new DocumentDemo(en, ascii);
 const dialogHost = new DialogDemo(en);
 const surfaceHost = new SurfaceDemo(en);
 const feedbackHost = new FeedbackDemo(en);
@@ -237,7 +241,8 @@ function draw(snapshot = false, ansiSnapshot = false) {
     true,
     ascii,
   );
-  if (dialogDemo) dialogHost.draw(c, area, ascii);
+  if (documentDemo) documentHost.draw(c, area, ascii);
+  else if (dialogDemo) dialogHost.draw(c, area, ascii);
   else if (surfaceDemo) surfaceHost.draw(c, area, ascii);
   else if (containerDemo) containerHost.draw(c, area, ascii);
   else if (layoutDemo) layoutHost.draw(c, area, ascii);
@@ -347,20 +352,23 @@ try {
               layoutDemo ||
               containerDemo ||
               surfaceDemo ||
-              dialogDemo) &&
+              dialogDemo ||
+              documentDemo) &&
             mouse[4] === "M"
           ) {
-            (dialogDemo
-              ? dialogHost
-              : surfaceDemo
-                ? surfaceHost
-                : containerDemo
-                  ? containerHost
-                  : layoutDemo
-                    ? layoutHost
-                    : feedbackDemo
-                      ? feedbackHost
-                      : menuHost
+            (documentDemo
+              ? documentHost
+              : dialogDemo
+                ? dialogHost
+                : surfaceDemo
+                  ? surfaceHost
+                  : containerDemo
+                    ? containerHost
+                    : layoutDemo
+                      ? layoutHost
+                      : feedbackDemo
+                        ? feedbackHost
+                        : menuHost
             ).pointer(x, y, Number(mouse[1]));
           } else if (
             mouse[4] === "M" &&
@@ -420,19 +428,22 @@ try {
             layoutDemo ||
             containerDemo ||
             surfaceDemo ||
-            dialogDemo
+            dialogDemo ||
+            documentDemo
           )
-            (dialogDemo
-              ? dialogHost
-              : surfaceDemo
-                ? surfaceHost
-                : containerDemo
-                  ? containerHost
-                  : layoutDemo
-                    ? layoutHost
-                    : feedbackDemo
-                      ? feedbackHost
-                      : menuHost
+            (documentDemo
+              ? documentHost
+              : dialogDemo
+                ? dialogHost
+                : surfaceDemo
+                  ? surfaceHost
+                  : containerDemo
+                    ? containerHost
+                    : layoutDemo
+                      ? layoutHost
+                      : feedbackDemo
+                        ? feedbackHost
+                        : menuHost
             ).handle(
               keys[key] === "toggle" ? "insert" : keys[key],
               keys[key] === "toggle" ? " " : "",
@@ -471,8 +482,16 @@ try {
           pending = pending.slice(key.length);
           continue;
         }
-        if ((containerDemo || dialogDemo) && pending.startsWith("\t")) {
-          (dialogDemo ? dialogHost : containerHost).handle("next");
+        if (
+          (containerDemo || dialogDemo || documentDemo) &&
+          pending.startsWith("\t")
+        ) {
+          (documentDemo
+            ? documentHost
+            : dialogDemo
+              ? dialogHost
+              : containerHost
+          ).handle("next");
           pending = pending.slice(1);
           continue;
         }
@@ -522,7 +541,8 @@ try {
         )
           break;
         if (
-          (dialogDemo ||
+          (documentDemo ||
+            dialogDemo ||
             surfaceDemo ||
             containerDemo ||
             layoutDemo ||
@@ -535,23 +555,25 @@ try {
           pending[0] !== "\x1b"
         ) {
           const cp = String.fromCodePoint(pending.codePointAt(0));
-          (dialogDemo
-            ? dialogHost
-            : surfaceDemo
-              ? surfaceHost
-              : containerDemo
-                ? containerHost
-                : layoutDemo
-                  ? layoutHost
-                  : feedbackDemo
-                    ? feedbackHost
-                    : menuDemo
-                      ? menuHost
-                      : pickerDemo
-                        ? picker
-                        : formDemo
-                          ? form
-                          : text
+          (documentDemo
+            ? documentHost
+            : dialogDemo
+              ? dialogHost
+              : surfaceDemo
+                ? surfaceHost
+                : containerDemo
+                  ? containerHost
+                  : layoutDemo
+                    ? layoutHost
+                    : feedbackDemo
+                      ? feedbackHost
+                      : menuDemo
+                        ? menuHost
+                        : pickerDemo
+                          ? picker
+                          : formDemo
+                            ? form
+                            : text
           ).handle("insert", cp);
           pending = pending.slice(cp.length);
         } else pending = pending.slice(1);

@@ -73,3 +73,5 @@ TVR-19 in 0.5.0 adds optional popup shadows, disabled by default: `off/auto/soli
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](../docs/languages.en.md): unreleased package/Tree verification work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
 
 [Independent popup shadows and dialogs](../docs/language-popups.en.md)
+
+[Independent document viewing/editing API](../docs/language-documents.en.md)

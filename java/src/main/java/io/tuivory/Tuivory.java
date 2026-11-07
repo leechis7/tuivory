@@ -3894,4 +3894,423 @@ public final class Tuivory {
       return new Event();
     }
   }
+  public record DocumentRange(int start, int end) {}
+  public record DocumentSpan(int start, int end, String role) {}
+  public record
+      DocumentGlyph(int x, String text, int index, int width, String role, boolean cursor) {}
+  public record DocumentHit(int x, int index) {}
+  public record
+      DocumentLine(int number, String prefix, List<DocumentGlyph> glyphs, List<DocumentHit> hits) {
+    public DocumentLine {
+      glyphs = List.copyOf(glyphs);
+      hits = List.copyOf(hits);
+    }
+  }
+  private static final Set<String> DOCUMENT_ROLES =
+      Set.of("body", "hint", "info", "success", "warning", "error", "header", "field", "selection",
+          "button", "disabled", "edited", "syntax.keyword", "syntax.function", "syntax.type",
+          "syntax.string", "syntax.number", "syntax.comment", "syntax.parameter");
+  private static final Map<String, String> DOCUMENT_SYNTAX =
+      Map.of("keyword", "info", "function", "success", "type", "header", "string", "warning",
+          "number", "edited", "comment", "hint", "parameter", "error");
+  public record MarkupDocument(String source, List<DocumentSpan> spans) {
+    public MarkupDocument {
+      spans = List.copyOf(spans);
+    }
+  }
+  /** Explicit opt-in markup. Plain document setters never parse tags. */
+  public static MarkupDocument parseMarkup(String markup) {
+    dialogText(markup, 1000000);
+    var source = new StringBuilder();
+    var positions = new ArrayList<Integer>();
+    var roles = new ArrayList<String>();
+    positions.add(0);
+    roles.add("body");
+    var stack = new ArrayList<String>();
+    stack.add("body");
+    int at = 0;
+    while (at < markup.length()) {
+      if (markup.startsWith("[[", at)) {
+        source.append('[');
+        at += 2;
+        continue;
+      }
+      if (markup.charAt(at) == '[') {
+        int end = markup.indexOf(']', at);
+        if (end < 0)
+          throw new IllegalArgumentException("unbalanced markup");
+        String tag = markup.substring(at + 1, end);
+        if (tag.equals("/")) {
+          if (stack.size() == 1)
+            throw new IllegalArgumentException("unbalanced markup");
+          stack.remove(stack.size() - 1);
+        } else {
+          if (!DOCUMENT_ROLES.contains(tag))
+            throw new IllegalArgumentException("unknown markup role");
+          stack.add(tag);
+        }
+        positions.add(source.length());
+        roles.add(stack.get(stack.size() - 1));
+        at = end + 1;
+        continue;
+      }
+      int end = markup.indexOf('[', at);
+      if (end < 0)
+        end = markup.length();
+      source.append(markup, at, end);
+      at = end;
+    }
+    if (stack.size() != 1)
+      throw new IllegalArgumentException("unbalanced markup");
+    var spans = new ArrayList<DocumentSpan>();
+    int offset = 0, which = 0, index = 0;
+    for (String g : graphemes(source.toString())) {
+      while (which + 1 < positions.size() && positions.get(which + 1) <= offset) which++;
+      String role = roles.get(which);
+      if (!role.equals("body")) {
+        DocumentSpan last = spans.isEmpty() ? null : spans.get(spans.size() - 1);
+        if (last != null && last.end() == index && last.role().equals(role))
+          spans.set(spans.size() - 1, new DocumentSpan(last.start(), index + 1, role));
+        else
+          spans.add(new DocumentSpan(index, index + 1, role));
+      }
+      offset += g.length();
+      index++;
+    }
+    return new MarkupDocument(source.toString(), spans);
+  }
+  public static final class TextDocument {
+    public Text buffer;
+    public boolean wrap, lineNumbers;
+    public int scrollX, scrollY;
+    private String syntaxSource, searchSource, lastSource;
+    private int lastCursor = -1, lastAnchor = -1, height;
+    private boolean reveal;
+    private List<DocumentSpan> styles = List.of();
+    private List<DocumentRange> matches = List.of();
+    private List<List<DocumentHit>> hits = List.of();
+    public TextDocument() {
+      this("", false);
+    }
+    public TextDocument(String text) {
+      this(text, false);
+    }
+    public TextDocument(String text, boolean readOnly) {
+      buffer = new Text(dialogText(text, 1000000));
+      buffer.state.readOnly = readOnly;
+      lineNumbers = !readOnly;
+      syntaxSource = searchSource = text;
+      reveal = !readOnly;
+    }
+    public static TextDocument editor(String text) {
+      return new TextDocument(text);
+    }
+    public static TextDocument viewer(String text) {
+      return new TextDocument(text, true);
+    }
+    @Override
+    public String toString() {
+      return "TextDocument(" + buffer + ")";
+    }
+    public List<DocumentSpan> syntax() {
+      return styles;
+    }
+    public List<DocumentRange> searchMatches() {
+      return matches;
+    }
+    public void setText(String text) {
+      dialogText(text, 1000000);
+      var old = buffer;
+      buffer = new Text(text);
+      buffer.state = old.state;
+      buffer.secret = old.secret;
+      styles = List.of();
+      matches = List.of();
+      syntaxSource = searchSource = text;
+      scrollX = scrollY = 0;
+      hits = List.of();
+      lastSource = null;
+      reveal = !buffer.state.readOnly;
+    }
+    private void range(int start, int end, int n) {
+      if (start < 0 || end < start || end > n)
+        throw new IllegalArgumentException("invalid document grapheme range");
+    }
+    public void setSyntax(List<DocumentSpan> spans) {
+      if (spans.size() > 1000000)
+        throw new IllegalArgumentException("too many document ranges");
+      int n = graphemes(dialogText(buffer.value(), 1000000)).size();
+      var copy = new ArrayList<DocumentSpan>();
+      for (var s : spans) {
+        range(s.start(), s.end(), n);
+        if (!DOCUMENT_ROLES.contains(s.role()))
+          throw new IllegalArgumentException("unknown document role");
+        copy.add(s);
+      }
+      styles = List.copyOf(copy);
+      syntaxSource = buffer.value();
+    }
+    public void setSearchMatches(List<DocumentRange> ranges) {
+      if (ranges.size() > 1000000)
+        throw new IllegalArgumentException("too many document ranges");
+      int n = graphemes(dialogText(buffer.value(), 1000000)).size();
+      var copy = new ArrayList<DocumentRange>();
+      for (var s : ranges) {
+        range(s.start(), s.end(), n);
+        copy.add(s);
+      }
+      matches = List.copyOf(copy);
+      searchSource = buffer.value();
+    }
+    public void setByteSyntax(List<DocumentSpan> spans) {
+      var boundaries = new HashMap<Integer, Integer>();
+      int offset = 0, index = 0;
+      for (var g : graphemes(buffer.value())) {
+        boundaries.put(offset, index++);
+        offset += g.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+      }
+      boundaries.put(offset, index);
+      var converted = new ArrayList<DocumentSpan>();
+      for (var s : spans) {
+        Integer start = boundaries.get(s.start()), end = boundaries.get(s.end());
+        if (start == null || end == null)
+          throw new IllegalArgumentException("offset splits grapheme or outside text");
+        converted.add(new DocumentSpan(start, end, s.role()));
+      }
+      setSyntax(converted);
+    }
+    public void setMarkup(String markup) {
+      var parsed = parseMarkup(markup);
+      setText(parsed.source());
+      setSyntax(parsed.spans());
+    }
+    public void revealCursor() {
+      reveal = true;
+    }
+    public Event handle(String action) {
+      return handle(action, "");
+    }
+    private void validateScroll() {
+      if (scrollX < 0 || scrollY < 0 || scrollX > 1000000 || scrollY > 1000000)
+        throw new IllegalArgumentException("invalid document scroll position");
+    }
+    public Event handle(String action, String text) {
+      validateScroll();
+      if (buffer.state.disabled)
+        return new Event("", "", "");
+      int step = Math.max(1, height);
+      switch (action) {
+        case "page_up" -> scrollY = Math.max(0, scrollY - step);
+        case "page_down" -> scrollY = (int) Math.min(1000000L, (long) scrollY + step);
+        case "scroll_up" -> scrollY = Math.max(0, scrollY - 1);
+        case "scroll_down" -> scrollY = (int) Math.min(1000000L, (long) scrollY + 1);
+        case "scroll_left" -> scrollX = Math.max(0, scrollX - 4);
+        case "scroll_right" -> scrollX = (int) Math.min(1000000L, (long) scrollX + 4);
+        default -> {
+          if (Set.of("insert", "paste", "newline").contains(action) && !buffer.state.readOnly) {
+            String addition =
+                buffer.sanitize(dialogText(action.equals("newline") ? "\n" : text, 1000000));
+            int[] selected = buffer.selectionBytes();
+            if (buffer.value().getBytes(java.nio.charset.StandardCharsets.UTF_8).length
+                    - (selected[1] - selected[0])
+                    + addition.getBytes(java.nio.charset.StandardCharsets.UTF_8).length
+                > 1000000)
+              throw new IllegalArgumentException("document source exceeds limit");
+          }
+          var e = buffer.handle(action, text);
+          if (Set.of("select", "change", "cut").contains(e.kind()))
+            reveal = true;
+          return e;
+        }
+      }
+      reveal = false;
+      return new Event("scroll", "", "");
+    }
+    private record Item(int index, String text) {}
+    private static final class Logical {
+      final List<Item> items = new ArrayList<>();
+      int end;
+      Logical(int end) {
+        this.end = end;
+      }
+    }
+    public List<DocumentLine> layout(int width, int height) {
+      validateScroll();
+      if (width < 0 || height < 0 || width > 1000000 || height > 1000000)
+        throw new IllegalArgumentException("invalid document dimensions");
+      dialogText(buffer.value(), 1000000);
+      this.height = height;
+      hits = List.of();
+      if (width == 0 || height == 0)
+        return List.of();
+      buffer.select(buffer.anchor, buffer.cursor);
+      String source = buffer.value();
+      if (!source.equals(syntaxSource)) {
+        styles = List.of();
+        syntaxSource = source;
+      }
+      if (!source.equals(searchSource)) {
+        matches = List.of();
+        searchSource = source;
+      }
+      var raw = graphemes(source);
+      var shown = new ArrayList<String>();
+      for (var g : raw) shown.add(buffer.secret ? "*" : g);
+      String[] roles = new String[shown.size()];
+      Arrays.fill(roles, "body");
+      int lo = Math.min(buffer.anchor, buffer.cursor), hi = Math.max(buffer.anchor, buffer.cursor);
+      if (!buffer.secret) {
+        for (var s : styles)
+          for (int i = s.start(); i < Math.min(s.end(), roles.length); i++) roles[i] = s.role();
+        for (var s : matches)
+          for (int i = s.start(); i < Math.min(s.end(), roles.length); i++) roles[i] = "edited";
+      }
+      for (int i = lo; i < hi; i++) roles[i] = "selection";
+      if (buffer.state.disabled)
+        Arrays.fill(roles, "disabled");
+      var logical = new ArrayList<Logical>();
+      logical.add(new Logical(0));
+      for (int i = 0; i < shown.size(); i++) {
+        var line = logical.get(logical.size() - 1);
+        var g = shown.get(i);
+        if (Set.of("\r", "\n", "\r\n").contains(g)) {
+          line.end = i;
+          logical.add(new Logical(i + 1));
+        } else {
+          line.items.add(new Item(
+              i, g.codePoints().anyMatch(cp -> cp < 32 || cp >= 127 && cp < 160) ? " " : g));
+          line.end = i + 1;
+        }
+      }
+      boolean shouldReveal = reveal
+          || (!source.equals(lastSource) || buffer.cursor != lastCursor
+                 || buffer.anchor != lastAnchor)
+              && !buffer.state.readOnly;
+      if (shouldReveal && !wrap)
+        for (int number = 0; number < logical.size(); number++) {
+          var line = logical.get(number);
+          int start = line.items.isEmpty() ? line.end : line.items.get(0).index();
+          if (start <= buffer.cursor && buffer.cursor <= line.end) {
+            int pw = lineNumbers ? cells((number + 1) + " ") : 0,
+                available = Math.max(1, width - pw), col = 0, cw = 1;
+            for (var item : line.items) {
+              if (item.index() < buffer.cursor)
+                col += cells(item.text());
+              if (item.index() == buffer.cursor)
+                cw = Math.max(1, cells(item.text()));
+            }
+            scrollX = Math.max(
+                0, Math.max(Math.min(scrollX, col), col + Math.min(cw, available) - available));
+            break;
+          }
+        }
+      int total = 0;
+      for (var g : shown) total += cells(g);
+      scrollX = Math.max(0, Math.min(scrollX, total));
+      var rows = new ArrayList<DocumentLine>();
+      for (int number = 0; number < logical.size(); number++) {
+        var line = logical.get(number);
+        String prefix = lineNumbers ? clip((number + 1) + " ", width, false) : "";
+        int pw = cells(prefix), available = Math.max(0, width - pw), used = 0;
+        var groups = new ArrayList<List<Item>>();
+        groups.add(new ArrayList<>());
+        for (var item : line.items) {
+          int w = cells(item.text());
+          if (wrap && !groups.get(groups.size() - 1).isEmpty() && used + w > available) {
+            groups.add(new ArrayList<>());
+            used = 0;
+          }
+          groups.get(groups.size() - 1).add(item);
+          used += w;
+        }
+        if (wrap && !groups.get(groups.size() - 1).isEmpty() && used >= available
+            && line.end == buffer.cursor && !buffer.state.readOnly)
+          groups.add(new ArrayList<>());
+        for (int segment = 0; segment < groups.size(); segment++) {
+          var group = groups.get(segment);
+          int x = pw, start = group.isEmpty() ? line.end : group.get(0).index();
+          var glyphs = new ArrayList<DocumentGlyph>();
+          var rowHits = new ArrayList<DocumentHit>();
+          rowHits.add(new DocumentHit(pw, start));
+          for (var item : group) {
+            int w = cells(item.text()), local = x - (wrap ? 0 : scrollX);
+            rowHits.add(new DocumentHit(local, item.index()));
+            if (local >= pw && local + w <= width)
+              glyphs.add(new DocumentGlyph(local, item.text(), item.index(), w, roles[item.index()],
+                  item.index() == buffer.cursor));
+            x += w;
+          }
+          int finish = group.isEmpty() ? line.end : group.get(group.size() - 1).index() + 1,
+              local = x - (wrap ? 0 : scrollX);
+          rowHits.add(new DocumentHit(local, finish));
+          if (finish == buffer.cursor && local >= pw && local < width
+              && (segment == groups.size() - 1 || buffer.cursor < line.end))
+            glyphs.add(new DocumentGlyph(
+                local, " ", finish, 1, buffer.state.disabled ? "disabled" : "body", true));
+          rows.add(new DocumentLine(number + 1, prefix, glyphs, rowHits));
+        }
+      }
+      if (shouldReveal)
+        for (int i = 0; i < rows.size(); i++)
+          if (rows.get(i).glyphs().stream().anyMatch(DocumentGlyph::cursor))
+            scrollY = Math.max(0, Math.max(Math.min(scrollY, i), i - height + 1));
+      scrollY = Math.max(0, Math.min(scrollY, Math.max(0, rows.size() - height)));
+      var visible = List.copyOf(rows.subList(scrollY, Math.min(rows.size(), scrollY + height)));
+      var nextHits = new ArrayList<List<DocumentHit>>();
+      for (var row : visible) nextHits.add(row.hits());
+      hits = List.copyOf(nextHits);
+      lastSource = source;
+      lastCursor = buffer.cursor;
+      lastAnchor = buffer.anchor;
+      reveal = false;
+      return visible;
+    }
+    public void draw(Canvas canvas, Rect bounds) {
+      draw(canvas, bounds, true, false);
+    }
+    public void draw(Canvas canvas, Rect bounds, boolean focused, boolean ascii) {
+      popupRect(bounds);
+      String role = buffer.state.readOnly ? canvas.surfaceRole : "editor";
+      canvas.fill(bounds, role);
+      var rows = layout(bounds.width(), bounds.height());
+      int[] cursor = null;
+      for (int y = 0; y < rows.size(); y++) {
+        var row = rows.get(y);
+        canvas.writeStyle(bounds.x(), bounds.y() + y, row.prefix(),
+            canvas.palette.textOnSurface(buffer.state.disabled ? "disabled" : "hint", role),
+            bounds.width());
+        for (var g : row.glyphs()) {
+          Style style = g.role().startsWith("syntax.")
+              ? canvas.palette.textOnSurface(
+                    DOCUMENT_SYNTAX.getOrDefault(g.role().substring(7), "body"), role)
+              : Set.of("selection", "edited", "field", "button", "header").contains(g.role())
+              ? canvas.palette.style(g.role())
+              : canvas.palette.textOnSurface(g.role(), role);
+          canvas.writeStyle(bounds.x() + g.x(), bounds.y() + y, g.text(), style, g.width());
+          if (g.cursor())
+            cursor = new int[] {bounds.x() + g.x(), bounds.y() + y, g.width()};
+        }
+      }
+      if (focused && !buffer.state.readOnly && !buffer.state.disabled && cursor != null)
+        canvas.setCursor(cursor[0], cursor[1], cursor[2]);
+    }
+    public Event click(int x, int y, int width, int height) {
+      return click(x, y, width, height, false);
+    }
+    public Event click(int x, int y, int width, int height, boolean extend) {
+      if (buffer.state.disabled || x < 0 || y < 0 || x >= width || y >= height)
+        return new Event("", "", "");
+      layout(width, height);
+      if (hits.isEmpty())
+        return new Event("", "", "");
+      var row = hits.get(Math.min(y, hits.size() - 1));
+      int at = row.get(0).index();
+      for (var hit : row)
+        if (hit.x() <= x)
+          at = hit.index();
+      buffer.select(extend ? buffer.anchor : at, at);
+      reveal = true;
+      return new Event("select", "", "");
+    }
+  }
 }

@@ -28,7 +28,8 @@
     "CASEFOLD-LICENSE",
     "examples/container-host.mjs",
     "examples/surface-host.mjs",
-    "examples/dialog-host.mjs"
+    "examples/dialog-host.mjs",
+    "examples/document-host.mjs"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

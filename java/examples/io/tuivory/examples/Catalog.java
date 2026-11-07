@@ -45,7 +45,7 @@ public final class Catalog {
             tabFocus = false, textDemo = false, formDemo = false, listDemo = false,
             pickerDemo = false, menuDemo = false, contextDemo = false, feedbackDemo = false,
             layoutDemo = false, containerDemo = false, surfaceDemo = false, shadowDemo = false,
-            dialogDemo = false;
+            dialogDemo = false, documentDemo = false;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--lang" -> {
@@ -84,19 +84,20 @@ public final class Catalog {
           surfaceDemo = args[i].equals("surface");
           shadowDemo = args[i].equals("shadow");
           dialogDemo = args[i].equals("dialog");
+          documentDemo = args[i].equals("document");
           if (shadowDemo)
             menuDemo = contextDemo = true;
           menuDemo = contextDemo || args[i].equals("menu");
           if (!args[i].equals("tree") && !workspace && !textDemo && !formDemo && !listDemo
               && !pickerDemo && !menuDemo && !feedbackDemo && !layoutDemo && !containerDemo
-              && !surfaceDemo && !dialogDemo)
+              && !surfaceDemo && !dialogDemo && !documentDemo)
             throw new IllegalArgumentException("Supported demos: tree, workspace, text, form, "
                 + "list, picker, menu, context-menu, feedback");
         }
         case "--help" -> {
           System.out.println("--demo "
               + "tree|workspace|text|form|list|picker|menu|context-menu|feedback|layout|container|"
-              + "surface|shadow|dialog "
+              + "surface|shadow|dialog|document "
               + "--lang ko|en "
               + "--theme "
               + "dark|light|blackwhite --colors "
@@ -110,6 +111,7 @@ public final class Catalog {
     var feedbackHost = new FeedbackHost(en);
     var layoutHost = new LayoutHost(en);
     var containerHost = new ContainerHost(en, ascii);
+    var documentHost = new DocumentHost(en, ascii);
     var dialogHost = new DialogHost(en);
     var surfaceHost = new SurfaceHost(en);
     var tree = new Tree(List.of(new Node("root", en ? "Workspace" : "작업 공간"),
@@ -179,7 +181,9 @@ public final class Catalog {
         var c = new Canvas(72, 18, new Palette(theme, colors));
         var area = c.panel(
             new Rect(0, 0, 72, 17), en ? "Tuivory Java example" : "Tuivory Java 예제", true, ascii);
-        if (dialogDemo)
+        if (documentDemo)
+          documentHost.draw(c, area, ascii);
+        else if (dialogDemo)
           dialogHost.draw(c, area, ascii);
         else if (surfaceDemo)
           surfaceHost.draw(c, area, ascii);
@@ -236,11 +240,13 @@ public final class Catalog {
           break;
         String action = line.strip();
         if (textDemo || formDemo || listDemo || pickerDemo || menuDemo || feedbackDemo || layoutDemo
-            || containerDemo || surfaceDemo || dialogDemo) {
+            || containerDemo || surfaceDemo || dialogDemo || documentDemo) {
           int space = action.indexOf(' ');
           String command = space < 0 ? action : action.substring(0, space);
           String addition = space < 0 ? "" : action.substring(space + 1);
-          if (dialogDemo)
+          if (documentDemo)
+            documentHost.handle(command, addition);
+          else if (dialogDemo)
             dialogHost.handle(command, addition);
           else if (surfaceDemo)
             surfaceHost.handle(command, addition);

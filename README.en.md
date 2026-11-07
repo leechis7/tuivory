@@ -68,3 +68,5 @@ TVR-7 in 0.11.1: [real grid cursor and backend integration](docs/grid-workspace.
 [Independent Python·TypeScript/JavaScript·C·C++·Java support](docs/languages.en.md): unreleased independent-component implementation work. Each implementation/runtime is independent; the existing 0.11.1 release is unchanged.
 
 [Independent popup shadows and dialogs](docs/language-popups.en.md)
+
+[Independent document viewing/editing API](docs/language-documents.en.md)

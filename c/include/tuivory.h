@@ -679,6 +679,73 @@ int tui_dialog_body_truncated(const TuiDialogLayout *layout);
 /* Screen coordinates match the Canvas used by draw. out is optional/owned. */
 TuiResult tui_dialog_draw(TuiDialog *dialog, TuiCanvas *canvas, TuiRect bounds,
                           int focused, int ascii, TuiDialogLayout **out);
+/* Document ranges use original grapheme indices; byte setters require exact
+ * boundaries. */
+typedef struct {
+  size_t start, end;
+} TuiDocumentRange;
+typedef struct {
+  size_t start, end;
+  const char *role;
+} TuiDocumentSpan;
+typedef struct {
+  int x;
+  size_t index;
+} TuiDocumentHit;
+typedef struct {
+  int x;
+  const char *text;
+  size_t index;
+  int width;
+  const char *role;
+  int cursor;
+} TuiDocumentGlyph;
+typedef struct {
+  int number;
+  const char *prefix;
+  const TuiDocumentGlyph *glyphs;
+  size_t glyph_count;
+  const TuiDocumentHit *hits;
+  size_t hit_count;
+} TuiDocumentLine;
+typedef struct {
+  int wrap, line_numbers, scroll_x, scroll_y;
+} TuiDocumentOptions;
+typedef struct TuiDocument TuiDocument;
+typedef struct TuiDocumentLayout TuiDocumentLayout;
+TuiDocument *tui_document_new(const char *text, int read_only);
+void tui_document_free(TuiDocument *document);
+/* Borrowed buffer; invalidated by set_text and document_free. Never free it. */
+TuiText *tui_document_buffer(TuiDocument *document);
+TuiDocumentOptions tui_document_options(const TuiDocument *document);
+TuiResult tui_document_configure(TuiDocument *document,
+                                 TuiDocumentOptions options);
+TuiResult tui_document_set_text(TuiDocument *document, const char *text);
+TuiResult tui_document_set_syntax(TuiDocument *document,
+                                  const TuiDocumentSpan *spans, size_t count);
+TuiResult tui_document_set_byte_syntax(TuiDocument *document,
+                                       const TuiDocumentSpan *spans,
+                                       size_t count);
+TuiResult tui_document_set_search_matches(TuiDocument *document,
+                                          const TuiDocumentRange *matches,
+                                          size_t count);
+TuiResult tui_document_set_markup(TuiDocument *document, const char *markup);
+TuiResult tui_parse_markup(const char *markup, char **source,
+                           TuiDocumentSpan **spans, size_t *count);
+void tui_document_spans_free(TuiDocumentSpan *spans, size_t count);
+void tui_document_reveal_cursor(TuiDocument *document);
+TuiTextEvent tui_document_handle(TuiDocument *document, const char *action,
+                                 const char *text);
+TuiResult tui_document_layout(TuiDocument *document, int width, int height,
+                              TuiDocumentLayout **out);
+void tui_document_layout_free(TuiDocumentLayout *layout);
+size_t tui_document_line_count(const TuiDocumentLayout *layout);
+const TuiDocumentLine *tui_document_line_at(const TuiDocumentLayout *layout,
+                                            size_t index);
+TuiResult tui_document_draw(TuiDocument *document, TuiCanvas *canvas,
+                            TuiRect bounds, int focused, int ascii);
+TuiTextEvent tui_document_click(TuiDocument *document, int x, int y, int width,
+                                int height, int extend);
 #ifdef __cplusplus
 }
 #endif

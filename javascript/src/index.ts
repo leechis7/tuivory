@@ -4893,3 +4893,531 @@ export class Dialog {
     return event("activate", hit.id);
   }
 }
+
+/** Literal document ranges use original grapheme indices, never screen cells. */
+export interface DocumentRange {
+  start: number;
+  end: number;
+}
+export interface DocumentSpan extends DocumentRange {
+  role: string;
+}
+export interface DocumentGlyph {
+  x: number;
+  text: string;
+  index: number;
+  width: number;
+  role: string;
+  cursor: boolean;
+}
+export interface DocumentLine {
+  number: number;
+  prefix: string;
+  glyphs: DocumentGlyph[];
+  hits: [number, number][];
+}
+const documentRoles = new Set([
+  "body",
+  "hint",
+  "info",
+  "success",
+  "warning",
+  "error",
+  "header",
+  "field",
+  "selection",
+  "button",
+  "disabled",
+  "edited",
+  "syntax.keyword",
+  "syntax.function",
+  "syntax.type",
+  "syntax.string",
+  "syntax.number",
+  "syntax.comment",
+  "syntax.parameter",
+]);
+const documentSyntaxPalette: { [key: string]: string } = {
+  keyword: "info",
+  function: "success",
+  type: "header",
+  string: "warning",
+  number: "edited",
+  comment: "hint",
+  parameter: "error",
+};
+function documentText(text: string): string {
+  dialogText(text, 1000000);
+  return text;
+}
+/** Explicit opt-in markup; plain text setters never interpret tags. */
+export function parseMarkup(markup: string): {
+  source: string;
+  spans: DocumentSpan[];
+} {
+  documentText(markup);
+  let source = "",
+    at = 0;
+  const changes: [number, string][] = [[0, "body"]],
+    stack = ["body"];
+  while (at < markup.length) {
+    if (markup.startsWith("[[", at)) {
+      source += "[";
+      at += 2;
+      continue;
+    }
+    if (markup[at] === "[") {
+      const end = markup.indexOf("]", at);
+      if (end < 0) throw new Error("unbalanced markup");
+      const tag = markup.slice(at + 1, end);
+      if (tag === "/") {
+        if (stack.length === 1) throw new Error("unbalanced markup");
+        stack.pop();
+      } else {
+        if (!documentRoles.has(tag)) throw new Error("unknown markup role");
+        stack.push(tag);
+      }
+      changes.push([source.length, stack[stack.length - 1]]);
+      at = end + 1;
+      continue;
+    }
+    let end = markup.indexOf("[", at);
+    if (end < 0) end = markup.length;
+    source += markup.slice(at, end);
+    at = end;
+  }
+  if (stack.length !== 1) throw new Error("unbalanced markup");
+  const spans: DocumentSpan[] = [];
+  let offset = 0,
+    which = 0,
+    index = 0;
+  for (const g of graphemes(source)) {
+    while (which + 1 < changes.length && changes[which + 1][0] <= offset)
+      which++;
+    const role = changes[which][1],
+      last = spans.at(-1);
+    if (role !== "body") {
+      if (last && last.end === index && last.role === role) last.end++;
+      else spans.push({ start: index, end: index + 1, role });
+    }
+    offset += g.length;
+    index++;
+  }
+  return { source, spans };
+}
+export class TextDocument {
+  buffer: Text;
+  wrap = false;
+  lineNumbers: boolean;
+  scrollX = 0;
+  scrollY = 0;
+  private syntaxSource: string;
+  private searchSource: string;
+  private styles: DocumentSpan[] = [];
+  private matches: DocumentRange[] = [];
+  private hits: [number, number][][] = [];
+  private last: string | undefined;
+  private height = 0;
+  private reveal: boolean;
+  constructor(text = "", options: { readOnly?: boolean } = {}) {
+    this.buffer = new Text(documentText(text), options);
+    this.lineNumbers = !this.buffer.readOnly;
+    this.syntaxSource = this.searchSource = text;
+    this.reveal = !this.buffer.readOnly;
+  }
+  static editor(text = ""): TextDocument {
+    return new TextDocument(text);
+  }
+  static viewer(text = ""): TextDocument {
+    return new TextDocument(text, { readOnly: true });
+  }
+  get syntax(): DocumentSpan[] {
+    return this.styles.map((s) => ({ ...s }));
+  }
+  get searchMatches(): DocumentRange[] {
+    return this.matches.map((s) => ({ ...s }));
+  }
+  [Symbol.for("nodejs.util.inspect.custom")](): unknown {
+    return {
+      buffer: this.buffer.toJSON(),
+      wrap: this.wrap,
+      lineNumbers: this.lineNumbers,
+    };
+  }
+  toJSON(): unknown {
+    return {
+      buffer: this.buffer.toJSON(),
+      wrap: this.wrap,
+      lineNumbers: this.lineNumbers,
+    };
+  }
+  setText(text: string): void {
+    documentText(text);
+    const previous = this.buffer;
+    this.buffer = new Text(text, {
+      readOnly: previous.readOnly,
+      secret: previous.secret,
+    });
+    this.buffer.disabled = previous.disabled;
+    this.styles = [];
+    this.matches = [];
+    this.syntaxSource = this.searchSource = text;
+    this.scrollX = this.scrollY = 0;
+    this.hits = [];
+    this.last = undefined;
+    this.reveal = !previous.readOnly;
+  }
+  private ranges<T extends DocumentRange>(ranges: T[], syntax = false): T[] {
+    if (ranges.length > 1000000) throw new Error("too many document ranges");
+    const n = graphemes(documentText(this.buffer.value)).length;
+    return ranges.map((s) => {
+      if (
+        !Number.isSafeInteger(s.start) ||
+        !Number.isSafeInteger(s.end) ||
+        s.start < 0 ||
+        s.start > s.end ||
+        s.end > n
+      )
+        throw new Error("invalid document grapheme range");
+      if (syntax && !documentRoles.has((s as unknown as DocumentSpan).role))
+        throw new Error("unknown document role");
+      return { ...s };
+    });
+  }
+  setSyntax(spans: DocumentSpan[]): void {
+    this.styles = this.ranges(spans, true);
+    this.syntaxSource = this.buffer.value;
+  }
+  setSearchMatches(matches: DocumentRange[]): void {
+    this.matches = this.ranges(matches);
+    this.searchSource = this.buffer.value;
+  }
+  setByteSyntax(spans: DocumentSpan[]): void {
+    const boundaries = new Map<number, number>();
+    let offset = 0,
+      index = 0;
+    for (const g of graphemes(this.buffer.value)) {
+      boundaries.set(offset, index++);
+      offset += [...g].reduce((n, c) => {
+        const cp = c.codePointAt(0)!;
+        return n + (cp < 128 ? 1 : cp < 2048 ? 2 : cp < 65536 ? 3 : 4);
+      }, 0);
+    }
+    boundaries.set(offset, index);
+    const converted = spans.map((s) => {
+      const start = boundaries.get(s.start),
+        end = boundaries.get(s.end);
+      if (start === undefined || end === undefined)
+        throw new Error("offset splits grapheme or outside text");
+      return { start, end, role: s.role };
+    });
+    this.setSyntax(converted);
+  }
+  setMarkup(markup: string): void {
+    const parsed = parseMarkup(markup);
+    this.setText(parsed.source);
+    this.setSyntax(parsed.spans);
+  }
+  revealCursor(): void {
+    this.reveal = true;
+  }
+  private validateScroll(): void {
+    for (const v of [this.scrollX, this.scrollY])
+      if (!Number.isSafeInteger(v) || v < 0 || v > 1000000)
+        throw new Error("invalid document scroll position");
+  }
+  handle(action: string, text = ""): Event {
+    this.validateScroll();
+    if (this.buffer.disabled) return event();
+    const step = Math.max(1, this.height);
+    if (
+      [
+        "page_up",
+        "page_down",
+        "scroll_up",
+        "scroll_down",
+        "scroll_left",
+        "scroll_right",
+      ].includes(action)
+    ) {
+      if (action === "page_up") this.scrollY = Math.max(0, this.scrollY - step);
+      else if (action === "page_down")
+        this.scrollY = Math.min(1000000, this.scrollY + step);
+      else if (action === "scroll_up")
+        this.scrollY = Math.max(0, this.scrollY - 1);
+      else if (action === "scroll_down")
+        this.scrollY = Math.min(1000000, this.scrollY + 1);
+      else if (action === "scroll_left")
+        this.scrollX = Math.max(0, this.scrollX - 4);
+      else this.scrollX = Math.min(1000000, this.scrollX + 4);
+      this.reveal = false;
+      return event("scroll");
+    }
+    if (
+      ["insert", "paste", "newline"].includes(action) &&
+      !this.buffer.readOnly
+    ) {
+      const raw = documentText(action === "newline" ? "\n" : text),
+        addition = [...raw.replace(/\r\n|\r/g, "\n").replace(/\t/g, " ")]
+          .filter((c) =>
+            c === "\n"
+              ? this.buffer.multiline
+              : !/[\x00-\x1f\x7f-\x9f]/.test(c),
+          )
+          .join("");
+      const bytes = (s: string) =>
+        [...s].reduce((n, c) => {
+          const cp = c.codePointAt(0)!;
+          return n + (cp < 128 ? 1 : cp < 2048 ? 2 : cp < 65536 ? 3 : 4);
+        }, 0);
+      const [lo, hi] = this.buffer.selectionBytes();
+      if (bytes(this.buffer.value) - (hi - lo) + bytes(addition) > 1000000)
+        throw new Error("document source exceeds limit");
+    }
+    const e = this.buffer.handle(action, text);
+    if (["select", "change", "cut"].includes(e.kind)) this.reveal = true;
+    return e;
+  }
+  layout(width: number, height: number): DocumentLine[] {
+    this.validateScroll();
+    for (const v of [width, height])
+      if (!Number.isSafeInteger(v) || v < 0 || v > 1000000)
+        throw new Error("invalid document dimensions");
+    documentText(this.buffer.value);
+    this.height = height;
+    this.hits = [];
+    if (!width || !height) return [];
+    this.buffer.select(this.buffer.anchor, this.buffer.cursor);
+    const source = this.buffer.value;
+    if (source !== this.syntaxSource) {
+      this.styles = [];
+      this.syntaxSource = source;
+    }
+    if (source !== this.searchSource) {
+      this.matches = [];
+      this.searchSource = source;
+    }
+    const raw = graphemes(source),
+      shown = this.buffer.secret ? raw.map(() => "*") : raw,
+      lo = Math.min(this.buffer.anchor, this.buffer.cursor),
+      hi = Math.max(this.buffer.anchor, this.buffer.cursor),
+      roles = shown.map(() => "body");
+    if (!this.buffer.secret) {
+      for (const s of this.styles)
+        for (let i = s.start; i < Math.min(s.end, roles.length); i++)
+          roles[i] = s.role;
+      for (const s of this.matches)
+        for (let i = s.start; i < Math.min(s.end, roles.length); i++)
+          roles[i] = "edited";
+    }
+    for (let i = lo; i < hi; i++) roles[i] = "selection";
+    if (this.buffer.disabled) roles.fill("disabled");
+    const logical: { items: [number, string][]; end: number }[] = [
+      { items: [], end: 0 },
+    ];
+    shown.forEach((g, i) => {
+      let line = logical[logical.length - 1];
+      if (["\r", "\n", "\r\n"].includes(g)) {
+        line.end = i;
+        logical.push({ items: [], end: i + 1 });
+      } else {
+        line.items.push([
+          i,
+          [...g].some((c) => {
+            const n = c.codePointAt(0)!;
+            return n < 32 || (n >= 127 && n < 160);
+          })
+            ? " "
+            : g,
+        ]);
+        line.end = i + 1;
+      }
+    });
+    const signature = JSON.stringify([
+        source,
+        this.buffer.cursor,
+        this.buffer.anchor,
+      ]),
+      reveal =
+        this.reveal || (this.last !== signature && !this.buffer.readOnly);
+    if (reveal && !this.wrap) {
+      for (let number = 0; number < logical.length; number++) {
+        const { items, end } = logical[number],
+          start = items[0]?.[0] ?? end;
+        if (start <= this.buffer.cursor && this.buffer.cursor <= end) {
+          const pw = this.lineNumbers ? cells(String(number + 1) + " ") : 0,
+            available = Math.max(1, width - pw),
+            col = items
+              .filter(([i]) => i < this.buffer.cursor)
+              .reduce((n, [, g]) => n + cells(g), 0),
+            cw = Math.max(
+              1,
+              cells(items.find(([i]) => i === this.buffer.cursor)?.[1] ?? " "),
+            );
+          this.scrollX = Math.max(
+            0,
+            Math.min(this.scrollX, col),
+            col + Math.min(cw, available) - available,
+          );
+          break;
+        }
+      }
+    }
+    this.scrollX = Math.max(
+      0,
+      Math.min(
+        this.scrollX,
+        shown.reduce((n, g) => n + cells(g), 0),
+      ),
+    );
+    const rows: DocumentLine[] = [];
+    logical.forEach(({ items, end }, number) => {
+      const prefix = this.lineNumbers
+          ? clip(String(number + 1) + " ", width)
+          : "",
+        pw = cells(prefix),
+        available = Math.max(0, width - pw),
+        groups: [number, string][][] = [[]];
+      let used = 0;
+      for (const item of items) {
+        const w = cells(item[1]);
+        if (
+          this.wrap &&
+          groups[groups.length - 1].length &&
+          used + w > available
+        ) {
+          groups.push([]);
+          used = 0;
+        }
+        groups[groups.length - 1].push(item);
+        used += w;
+      }
+      if (
+        this.wrap &&
+        groups[groups.length - 1].length &&
+        used >= available &&
+        end === this.buffer.cursor &&
+        !this.buffer.readOnly
+      )
+        groups.push([]);
+      groups.forEach((group, segment) => {
+        let x = pw;
+        const glyphs: DocumentGlyph[] = [],
+          start = group[0]?.[0] ?? end,
+          hits: [number, number][] = [[pw, start]];
+        for (const [i, g] of group) {
+          const w = cells(g),
+            local = x - (this.wrap ? 0 : this.scrollX);
+          hits.push([local, i]);
+          if (local >= pw && local + w <= width)
+            glyphs.push({
+              x: local,
+              text: g,
+              index: i,
+              width: w,
+              role: roles[i],
+              cursor: i === this.buffer.cursor,
+            });
+          x += w;
+        }
+        const finish = group.length ? group[group.length - 1][0] + 1 : end,
+          local = x - (this.wrap ? 0 : this.scrollX);
+        hits.push([local, finish]);
+        if (
+          finish === this.buffer.cursor &&
+          local >= pw &&
+          local < width &&
+          (segment === groups.length - 1 || this.buffer.cursor < end)
+        )
+          glyphs.push({
+            x: local,
+            text: " ",
+            index: finish,
+            width: 1,
+            role: this.buffer.disabled ? "disabled" : "body",
+            cursor: true,
+          });
+        rows.push({ number: number + 1, prefix, glyphs, hits });
+      });
+    });
+    if (reveal) {
+      const cursorRows = rows
+        .map((r, i) => (r.glyphs.some((g) => g.cursor) ? i : -1))
+        .filter((i) => i >= 0);
+      if (cursorRows.length) {
+        const at = cursorRows[cursorRows.length - 1];
+        this.scrollY = Math.max(0, Math.min(this.scrollY, at), at - height + 1);
+      }
+    }
+    this.scrollY = Math.max(
+      0,
+      Math.min(this.scrollY, Math.max(0, rows.length - height)),
+    );
+    const visible = rows.slice(this.scrollY, this.scrollY + height);
+    this.hits = visible.map((r) => r.hits.map((h) => [...h]));
+    this.last = signature;
+    this.reveal = false;
+    return visible;
+  }
+  draw(canvas: Canvas, bounds: Rect, focused = true, _ascii = false): void {
+    popupRect(bounds);
+    const role = this.buffer.readOnly ? canvas.surfaceRole : "editor";
+    canvas.fill(bounds, role);
+    const rows = this.layout(bounds.width, bounds.height);
+    let cursor: [number, number, number] | undefined;
+    rows.forEach((row, y) => {
+      canvas.writeStyle(
+        bounds.x,
+        bounds.y + y,
+        row.prefix,
+        canvas.palette.textOnSurface(
+          this.buffer.disabled ? "disabled" : "hint",
+          role,
+        ),
+        bounds.width,
+      );
+      for (const g of row.glyphs) {
+        const style = g.role.startsWith("syntax.")
+          ? canvas.palette.textOnSurface(
+              documentSyntaxPalette[g.role.slice(7)] ?? "body",
+              role,
+            )
+          : ["selection", "edited", "field", "button", "header"].includes(
+                g.role,
+              )
+            ? canvas.palette.style(g.role)
+            : canvas.palette.textOnSurface(g.role, role);
+        canvas.writeStyle(bounds.x + g.x, bounds.y + y, g.text, style, g.width);
+        if (g.cursor) cursor = [bounds.x + g.x, bounds.y + y, g.width];
+      }
+    });
+    if (focused && !this.buffer.readOnly && !this.buffer.disabled && cursor)
+      canvas.setCursor(...cursor);
+  }
+  click(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    extend = false,
+  ): Event {
+    if (
+      this.buffer.disabled ||
+      !Number.isInteger(x) ||
+      !Number.isInteger(y) ||
+      x < 0 ||
+      y < 0 ||
+      x >= width ||
+      y >= height
+    )
+      return event();
+    this.layout(width, height);
+    if (!this.hits.length) return event();
+    const row = this.hits[Math.min(y, this.hits.length - 1)];
+    let at = row[0][1];
+    for (const [column, index] of row) if (column <= x) at = index;
+    this.buffer.select(extend ? this.buffer.anchor : at, at);
+    this.reveal = true;
+    return event("select");
+  }
+}

@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- TVR-15/16/30/31/32: Independent TextDocument wrapping/numbers/scrolling, real cursors/source-aware clicks, explicit markup/exact UTF-8 ranges, search/selection priority and stale-style expiry. Add viewer/editor backgrounds, disabled/secret handling, atomic source limits, bilingual examples/APIs and actual-output checks.
+
 - TVR-15/16/30/31/32: Independent popup shadows (auto/solid/off/Dim) and dialogs with default Cancel and wrapped buttons. Add both-edge wide-glyph repair, covered-cursor/failure atomicity/disabled-input checks and bilingual examples, APIs and actual-output validation.
 
 - TVR-15/16/30/31/32: Independent borderless Surface, actual-background text/control styles, contrast fallback and disabled Dim; preserve explicit selection/edited/field/header backgrounds and provide exact-style drawing. Update bilingual APIs/examples/screens and actual ANSI regressions.

@@ -45,3 +45,5 @@ Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` 
 [Independent Surface and background API](../docs/language-surfaces.en.md)
 
 [Independent popup shadows and dialogs](../docs/language-popups.en.md)
+
+[Independent document viewing/editing API](../docs/language-documents.en.md)

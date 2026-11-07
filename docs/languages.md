@@ -138,3 +138,5 @@ C/C++/Java는 위의 명령으로 먼저 빌드합니다. 참조 화면 캡처�
 [독립 언어 Surface·실제 바탕 API](language-surfaces.md)
 
 [독립 언어 팝업 그림자와 대화상자](language-popups.md)
+
+[독립 언어 문서 보기·편집 API](language-documents.md)
