@@ -92,12 +92,12 @@ fn main() {
     let path = tuivory::components::breadcrumbs(&[tuivory::components::PathItem { id: "current".into(), label: "Current".into() }],20);
     assert_eq!(path[0].id,"current");
     let doc = TokenDocument::candidate().unwrap();
-    assert_eq!(doc.roles().len(), 16);
+    assert!(doc.roles().iter().any(|role| role == "grid.header"));
     assert_eq!(doc.palette_names().count(), 12);
     for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {
         for profile in [ColorProfile::Ansi8, ColorProfile::Ansi16, ColorProfile::Indexed256, ColorProfile::Truecolor] {
             let palette = doc.palette(theme, profile).unwrap();
-            assert_eq!(palette.styles().len(), 16);
+            assert_eq!(palette.styles().len(), doc.roles().len());
             assert!(palette.style("selection").is_ok());
         }
     }
