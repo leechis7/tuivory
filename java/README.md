@@ -17,7 +17,7 @@ make build-java
 별도 표시가 없으면 저장소 루트 기준입니다. 빌드된 npm 패키지를 사용하는 JavaScript 앱에는 TypeScript 컴파일러나 빌드 과정이 필요 없습니다.
 
 ```sh
-java -jar .cache/packages/java/tuivory-0.11.1.jar --demo tree --lang ko
+java -jar .cache/packages/java/tuivory-0.12.1.jar --demo tree --lang ko
 ```
 
 비대화형 출력은 `--snapshot`, 표현 선택은 `--ascii`·`--theme`·`--colors`를 사용합니다. C/C++ Tree 예제는 w/s/a/d와 Enter를 사용하고, 컴포넌트 예제는 방향키와 화면에 표시한 키를 사용합니다. Java 기본 예제는 명령어 입력 후 Enter를 누르는 줄 입력 방식입니다. 앱은 별도로 제공하는 POSIX raw 세션을 선택할 수 있으며 OS stty와 /dev/tty가 필요합니다. Python/JS 예제는 명시적으로 터미널 모드에 진입하며 그 밖의 단말 수명과 전역 포커스는 앱 책임입니다.

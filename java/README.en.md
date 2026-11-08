@@ -17,7 +17,7 @@ make build-java
 Commands run from the repository root unless shown otherwise.
 
 ```sh
-java -jar .cache/packages/java/tuivory-0.11.1.jar --demo tree --lang en
+java -jar .cache/packages/java/tuivory-0.12.1.jar --demo tree --lang en
 ```
 
 Use `--snapshot` for noninteractive output and `--ascii`, `--theme`, `--colors` to select presentation. C/C++ Tree examples use w/s/a/d plus Enter; component examples use arrows and their displayed keys. The default Java example uses command names followed by Enter. Applications may opt into the provided POSIX raw session, which requires OS stty and /dev/tty. Python/JS examples have opt-in terminal sessions; hosts otherwise own terminal lifecycle and global focus.
