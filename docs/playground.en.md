@@ -54,7 +54,7 @@ The mouse also operates choices, buttons, checkboxes, and the grid. Outside clic
 2. Press F2/F3 and confirm that values and selections remain.
 3. Press Enter in the grid's Name cell, enter a new value, press Tab, and Save. Look for `* Edited`.
 4. Press F4, switch theme with F2 while the popup is open, then return with Esc.
-5. Open the Color tokens view with F6 and compare foreground/background samples for 16 roles.
+5. Open the Color tokens view with F6 and compare foreground/background samples for 17 roles.
 
 Normal views need at least 80×24 cells. Below 100 columns the left menu is hidden; F6 still reaches every view. Smaller windows display a resize message. Restoring the size restores the existing popup and input state.
 

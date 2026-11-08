@@ -27,3 +27,5 @@ Drag previews preserve source data, selection and expansion. Feedback keeps the 
 Grid drag capture is local to the component. Cells and the row gutter select ranges; header dividers resize and header labels reorder within a pinned region. A stationary header release requests sort once. The host forwards captured release outside the grid and cancels when it changes the input target. [Independent Grid API](language-grid.en.md).
 
 Wrap dialog buttons within the content width and center each row independently, including singleton rows. Use the same clipped rectangles for drawing and pointer routing. [Dialog behavior](modals.en.md)
+
+Grid headers use the `grid.header` role across the whole row, including dividers and unused space. The header uses slate blue in the dark theme, pale blue in the light theme, and inverse video in monochrome. The dark and light themes use purple in the 8/16-color profiles. Body rows keep their own selection and edit styles.

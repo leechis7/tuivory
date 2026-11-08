@@ -1,4 +1,4 @@
-# Go API — source (0.12.0)
+# Go API — source (0.12.1)
 
 **한국어 (기본)** · [English](go.en.md)
 

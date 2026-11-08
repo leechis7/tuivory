@@ -14,7 +14,7 @@
 }
 ```
 
-Top-level `roles` defines display order; `palettes` keys combine theme and capability, such as `dark-8`. Each palette contains every listed role exactly once. The bundled data has 3 themes × 4 profiles × 16 roles.
+Top-level `roles` defines display order; `palettes` keys combine theme and capability, such as `dark-8`. Each palette contains every listed role exactly once. The bundled data has 3 themes × 4 profiles × 17 roles.
 
 - `foreground`/`background`: normalized decimal index strings or `#RRGGBB`. Profiles 8/16/256 allow indices 0–7/15/255 respectively. Truecolor accepts RGB and indices 0–255.
 - `referenceForeground`/`referenceBackground`: reference RGB for validation; these do not replace the user's ANSI palette.

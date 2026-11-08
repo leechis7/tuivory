@@ -65,6 +65,13 @@
         "referenceBackground": "#000000",
         "referenceForeground": "#c0c0c0"
       },
+      "grid.header": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
       "header": {
         "background": "0",
         "fontWeight": "none",
@@ -234,6 +241,13 @@
         "foreground": "7",
         "referenceBackground": "#000000",
         "referenceForeground": "#c0c0c0"
+      },
+      "grid.header": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
       },
       "header": {
         "background": "0",
@@ -405,6 +419,13 @@
         "referenceBackground": "#000000",
         "referenceForeground": "#c0c0c0"
       },
+      "grid.header": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
+      },
       "header": {
         "background": "0",
         "fontWeight": "none",
@@ -574,6 +595,13 @@
         "foreground": "7",
         "referenceBackground": "#000000",
         "referenceForeground": "#c0c0c0"
+      },
+      "grid.header": {
+        "background": "7",
+        "fontWeight": "none",
+        "foreground": "0",
+        "referenceBackground": "#c0c0c0",
+        "referenceForeground": "#000000"
       },
       "header": {
         "background": "0",
@@ -745,6 +773,13 @@
         "referenceBackground": "#000000",
         "referenceForeground": "#c0c0c0"
       },
+      "grid.header": {
+        "background": "5",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#800080",
+        "referenceForeground": "#ffffff"
+      },
       "header": {
         "background": "0",
         "fontWeight": "none",
@@ -915,6 +950,13 @@
         "referenceBackground": "#3a3a3a",
         "referenceForeground": "#87d7ff"
       },
+      "grid.header": {
+        "background": "60",
+        "fontWeight": "none",
+        "foreground": "255",
+        "referenceBackground": "#5f5f87",
+        "referenceForeground": "#eeeeee"
+      },
       "header": {
         "background": "236",
         "fontWeight": "none",
@@ -1083,6 +1125,13 @@
         "fontWeight": "none",
         "foreground": "7",
         "referenceBackground": "#000000",
+        "referenceForeground": "#c0c0c0"
+      },
+      "grid.header": {
+        "background": "5",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#800080",
         "referenceForeground": "#c0c0c0"
       },
       "header": {
@@ -1255,6 +1304,13 @@
         "referenceBackground": "#3b4252",
         "referenceForeground": "#88c0d0"
       },
+      "grid.header": {
+        "background": "#344D67",
+        "fontWeight": "none",
+        "foreground": "#F3F5F7",
+        "referenceBackground": "#344d67",
+        "referenceForeground": "#f3f5f7"
+      },
       "header": {
         "background": "#2E3440",
         "fontWeight": "none",
@@ -1424,6 +1480,13 @@
         "foreground": "4",
         "referenceBackground": "#c0c0c0",
         "referenceForeground": "#000080"
+      },
+      "grid.header": {
+        "background": "5",
+        "fontWeight": "none",
+        "foreground": "15",
+        "referenceBackground": "#800080",
+        "referenceForeground": "#ffffff"
       },
       "header": {
         "background": "15",
@@ -1595,6 +1658,13 @@
         "referenceBackground": "#e4e4e4",
         "referenceForeground": "#005faf"
       },
+      "grid.header": {
+        "background": "153",
+        "fontWeight": "none",
+        "foreground": "235",
+        "referenceBackground": "#afd7ff",
+        "referenceForeground": "#262626"
+      },
       "header": {
         "background": "255",
         "fontWeight": "none",
@@ -1764,6 +1834,13 @@
         "foreground": "4",
         "referenceBackground": "#c0c0c0",
         "referenceForeground": "#000080"
+      },
+      "grid.header": {
+        "background": "5",
+        "fontWeight": "none",
+        "foreground": "7",
+        "referenceBackground": "#800080",
+        "referenceForeground": "#c0c0c0"
       },
       "header": {
         "background": "7",
@@ -1935,6 +2012,13 @@
         "referenceBackground": "#e4eaf0",
         "referenceForeground": "#005fcc"
       },
+      "grid.header": {
+        "background": "#C7DCEF",
+        "fontWeight": "none",
+        "foreground": "#202A36",
+        "referenceBackground": "#c7dcef",
+        "referenceForeground": "#202a36"
+      },
       "header": {
         "background": "#F3F5F7",
         "fontWeight": "none",
@@ -2059,6 +2143,7 @@
     "warning",
     "error",
     "focus.border",
+    "grid.header",
     "sample.dropdown",
     "sample.grid.body",
     "sample.grid.stripe",

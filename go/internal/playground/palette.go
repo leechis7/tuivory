@@ -24,9 +24,22 @@ func loadPalette(theme, profile string) (Palette, error) {
 	if err != nil {
 		return nil, err
 	}
+	doc, err := tuivory.CandidateTokens()
+	if err != nil {
+		return nil, err
+	}
+	raw, err := doc.Palette(theme, profile)
+	if err != nil {
+		return nil, err
+	}
+	tokens, err := tuivory.Resolve(raw)
+	if err != nil {
+		return nil, err
+	}
 	disabledFG, _, _ := s.DisabledStyle().Decompose()
 	return Palette{
-		"body": {FG: s.Text, BG: s.Background}, "surface": {FG: s.Text, BG: s.Surface},
+		"grid.header": tokens["grid.header"],
+		"body":        {FG: s.Text, BG: s.Background}, "surface": {FG: s.Text, BG: s.Surface},
 		"hint": {FG: s.Muted, BG: s.Surface}, "field": {FG: s.FieldText, BG: s.Field},
 		"selection": {FG: s.SelectionFG, BG: s.Selection}, "button": {FG: s.FieldText, BG: s.Button},
 		"button.focus": {FG: s.SelectionFG, BG: s.Selection}, "disabled": {FG: disabledFG, BG: s.Surface},

@@ -216,7 +216,8 @@ public final class Tuivory {
       int index = Arrays.asList(Data.ROLES).indexOf(role);
       if (index < 0)
         throw new IllegalArgumentException("unknown role");
-      int[] t = Data.PALETTES[(theme * 4 + profile) * 16 + index];
+      int[] t =
+          Data.PALETTES[(theme * 4 + profile) * Data.ROLES.length + index];
       return new Style(t[0], t[1], t[2] != 0, role.equals("disabled"), focused);
     }
     public Style textOnSurface(String role, String surface) {
@@ -5981,15 +5982,17 @@ public final class Tuivory {
       for (var c : columns) byId.put(c.id, c);
       var bounds = selectionBounds();
       var visible = visibleColumns();
-      if (geo.headerRows() > 0)
+      if (geo.headerRows() > 0) {
+        child.fill(new Rect(0, 0, r.width(), 1), "grid.header");
         for (var span : geo.columns()) {
           var c = byId.get(span.id());
           String title = c.label.isEmpty() ? c.id : c.label;
           if (sortColumn.equals(c.id))
             title += sortDirection.equals("desc") ? " v" : " ^";
-          child.write(span.x(), 0, gridFit(title, span.width(), "left", true), "header", false,
-              span.width());
+          child.write(span.x(), 0, gridFit(title, span.width(), "left", true),
+                      "grid.header", false, span.width());
         }
+      }
       for (int dy = 0; dy < geo.bodyRows(); dy++) {
         int i = geo.top() + dy, y = geo.headerRows() + dy * geo.stride();
         if (y >= r.height() - geo.footerRows() || i >= sourceSize())
@@ -6095,7 +6098,9 @@ public final class Tuivory {
           int x = span.x() + span.width();
           if (x < r.width())
             for (int y = 0; y < r.height() - geo.footerRows(); y++)
-              child.write(x, y, sep, "hint", false, 1);
+              child.write(x, y, sep,
+                          y < geo.headerRows() ? "grid.header" : "hint", false,
+                          1);
         }
       if (geo.footerRows() > 0)
         child.write(0, r.height() - 1, clip(statusText(), r.width(), true),

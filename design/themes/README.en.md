@@ -2,7 +2,7 @@
 
 [한국어 (default)](README.md) · **English**
 
-[lazyora-candidate.csv](lazyora-candidate.csv) contains **12 profiles × 16 roles, or 192 foreground/background pairs**, created during LazyOra design. It is neither a dump of the current deployed palette nor a standard palette for every TUI.
+[lazyora-candidate.csv](lazyora-candidate.csv) contains **12 profiles × 17 roles, or 204 foreground/background pairs**, initially created during LazyOra design and extended with the Tuivory grid header role. It is neither a dump of the current deployed palette nor a standard palette for every TUI.
 
 | Column | Meaning |
 | --- | --- |
@@ -18,7 +18,7 @@
 python3 tools/check_palette.py design/themes/lazyora-candidate.csv
 ```
 
-The checker validates required columns, duplicate roles, color ranges, reference RGB, finite target/contrast values, calculations, and the bold-to-bright model. Failures return exit code 1. It does not require every input to have exactly the bundled 192 rows, so partial role tables can also be checked.
+The checker validates required columns, duplicate roles, color ranges, reference RGB, finite target/contrast values, calculations, and the bold-to-bright model. Failures return exit code 1. It does not require every input to have exactly the bundled 204 rows, so partial role tables can also be checked.
 
 Targets of 4.5:1 for regular text and 3:1 for focus borders are internal design references. CSV rows specify their own target. Passing does not certify whole-screen accessibility; layers, cursor, glyph width, Dim, reverse video, and behavior require separate checks.
 

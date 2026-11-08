@@ -801,10 +801,11 @@ class Grid:
         sep='|' if ascii or o.ascii else '│'; horizontal='-' if ascii or o.ascii else '─'
         cols={c.id:c for c in self.columns}; bounds=self._selection_bounds()
         if geo.header_rows:
+            child.fill(Rect(0,0,rect.width,1),'grid.header')
             for span in geo.columns:
                 c=cols[span.id]; title=c.label or c.id
                 if self.sort_column==c.id: title+=(' v' if self.sort_direction=='desc' else ' ^')
-                child.write(span.x,0,clip(title,span.width,True).ljust(span.width),'header',width=span.width)
+                child.write(span.x,0,clip(title,span.width,True),'grid.header',width=span.width)
         for dy in range(geo.body_rows):
             i=geo.top+dy; y=geo.header_rows+dy*geo.stride
             if y>=rect.height-geo.footer_rows or i>=self._size(): break
@@ -844,7 +845,7 @@ class Grid:
             for span in geo.columns:
                 x=span.x+span.width
                 if x<rect.width:
-                    for y in range(rect.height-geo.footer_rows): child.write(x,y,sep,'hint',width=1)
+                    for y in range(rect.height-geo.footer_rows): child.write(x,y,sep,'grid.header' if y<geo.header_rows else 'hint',width=1)
         if geo.footer_rows: child.write(0,rect.height-1,clip(self.status_text(),rect.width,True),'error' if self.status.error or self.edit and self.edit['error'] else 'hint',width=rect.width)
         cursor=self.edit_cursor(rect.width,rect.height) if focused else None
         if cursor: child.set_cursor(*cursor)

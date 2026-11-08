@@ -6,6 +6,8 @@
 
 TVR-17 adds configuration to TVR-11's Go `Grid / GridSource / NewGridView` and Rust `grid::Grid / GridSource / GridWidget`. One model, input core and renderer serve both simple and richer configurations. **TVR-17 is included in 0.3.0 and absent from the v0.2.0 tags.** Actual LazyOra integration and DB editing remain separate work.
 
+Grid headers use the `grid.header` role across the whole row, including dividers and unused space. The header uses slate blue in the dark theme, pale blue in the light theme, and inverse video in monochrome. The dark and light themes use purple in the 8/16-color profiles. Body rows keep their own selection and edit styles.
+
 ## Run and compare
 
 ```sh

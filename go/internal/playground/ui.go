@@ -100,7 +100,7 @@ func New(app *tview.Application, terminal tcell.Screen, options Options) (*UI, e
 	}
 	u.buildComponents()
 	u.tokens = tview.NewTable().SetFixed(1, 0).SetSelectable(true, true).SetSeparator('│')
-	u.tokens.SetBorder(true).SetTitle(u.text(" 의미별 색상 · 16개 역할 ", " Semantic colors · 16 roles "))
+	u.tokens.SetBorder(true).SetTitle(u.text(" 의미별 색상 · 17개 역할 ", " Semantic colors · 17 roles "))
 	u.guide = tview.NewTextView().SetText(u.text(guideText, guideTextEN)).SetWrap(true).SetWordWrap(true).SetScrollable(true)
 	u.guide.SetBorder(true).SetTitle(u.text(" 조작 안내 ", " Controls ")).SetBorderPadding(1, 1, 2, 2)
 	u.views.AddPage("components", u.component, true, true).AddPage("tokens", u.tokens, true, false).AddPage("guide", u.guide, true, false)

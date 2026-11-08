@@ -38,7 +38,14 @@ def check_grid_example(language,lang,theme,colors,ascii,master,slave,process,cap
     def click(x,y):
         pointer('down',x,y);pointer('up',x,y)
     def status(number):wait_text(f'{number}/8')
-    wait_text('Name'if lang=='en'else'이름');wait_text('1,234');status(1);frame()
+    wait_text('Name'if lang=='en'else'이름');wait_text('1,234');status(1)
+    initial = frame()
+    width = 72 if language == 'java' else 80
+    palette = json.loads((ROOT/'design/tokens/candidate.json').read_text())['palettes'][theme+'-'+colors]
+    header = palette['grid.header']
+    for x in range(1, width-1):
+        assert initial[x,1][1:3] == (header['foreground'],header['background']), (language,theme,colors,x,initial[x,1])
+    assert initial[1,2][2] != header['background'], (language,theme,colors,'header/body background')
     assert not shown(),(language,'non-editing grid cursor')
     assert frame()[10,4][4],(language,'disabled row must be Dim')
     activate();wait(shown,'real grid edit cursor')

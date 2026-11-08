@@ -70,7 +70,11 @@ func GridPalette(palette Palette) Palette {
 	}
 	hint := p["hint"]
 	hint.BG = base.BG
-	aliases := map[string]Pair{"grid.match": p["warning"], "grid.base": base, "grid.stripe": stripe, "grid.current-row": current, "grid.active": p["selection"], "grid.range": p["selection"], "grid.edited": p["edited"], "grid.header-active": p["header"], "grid.gutter": hint, "grid.divider": hint, "grid.status": p["header"], "grid.null": hint, "grid.readonly": hint, "grid.loading": hint}
+	header, ok := p["grid.header"]
+	if !ok {
+		header = p["header"]
+	}
+	aliases := map[string]Pair{"grid.header": header, "grid.match": p["warning"], "grid.base": base, "grid.stripe": stripe, "grid.current-row": current, "grid.active": p["selection"], "grid.range": p["selection"], "grid.edited": p["edited"], "grid.header-active": header, "grid.gutter": hint, "grid.divider": hint, "grid.status": p["header"], "grid.null": hint, "grid.readonly": hint, "grid.loading": hint}
 	for k, v := range aliases {
 		if _, ok := p[k]; !ok {
 			p[k] = v
@@ -288,7 +292,7 @@ func (g *Grid) decorations(line *ComponentLine, geo GridGeometry, width int, hea
 		label := "#"
 		role := "grid.gutter"
 		if header {
-			role = "header"
+			role = "grid.header"
 		} else {
 			label = strconv.Itoa(index + 1)
 			if !o.HideMarkers {
@@ -307,13 +311,17 @@ func (g *Grid) decorations(line *ComponentLine, geo GridGeometry, width int, hea
 		line.Spans = append(line.Spans, ComponentSpan{Start: 0, Width: w, Text: gridAlign(gridFit(label, w, 0, "clip"), w, "right"), Role: role})
 	}
 	if o.VerticalLines {
+		dividerRole := "grid.divider"
+		if header {
+			dividerRole = "grid.header"
+		}
 		if geo.Gutter > 0 {
-			line.Spans = append(line.Spans, ComponentSpan{Start: geo.Gutter - 1, Width: 1, Text: vertical, Role: "grid.divider"})
+			line.Spans = append(line.Spans, ComponentSpan{Start: geo.Gutter - 1, Width: 1, Text: vertical, Role: dividerRole})
 		}
 		for _, span := range geo.Columns {
 			at := span.Start + span.Width
 			if at < width {
-				line.Spans = append(line.Spans, ComponentSpan{Start: at, Width: 1, Text: vertical, Role: "grid.divider"})
+				line.Spans = append(line.Spans, ComponentSpan{Start: at, Width: 1, Text: vertical, Role: dividerRole})
 			}
 		}
 	}
@@ -338,7 +346,7 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 	o := g.options
 	out := []ComponentLine{}
 	if geo.HeaderRows > 0 {
-		header := ComponentLine{Role: "header", Value: "@header"}
+		header := ComponentLine{Role: "grid.header", Value: "@header"}
 		for _, s := range geo.Columns {
 			col := g.columns[g.columnIndex(s.ID)]
 			label := col.Label
@@ -348,7 +356,7 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 			if s.ID == g.ColumnID && !o.HideSelectionMarker {
 				label = "> " + label
 			}
-			role := "header"
+			role := "grid.header"
 			if s.ID == g.ColumnID && o.HighlightCell {
 				role = "grid.header-active"
 			}

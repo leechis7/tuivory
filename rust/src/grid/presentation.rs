@@ -288,7 +288,7 @@ impl Grid {
                 start: 0,
                 width: w,
                 text: align(&fit(&label, w, 0, "clip"), w, "right"),
-                role: if header { "header" } else { "grid.gutter" }.into(),
+                role: if header { "grid.header" } else { "grid.gutter" }.into(),
                 focused: false,
             });
         }
@@ -307,7 +307,12 @@ impl Grid {
                     start: x,
                     width: 1,
                     text: vertical.into(),
-                    role: "grid.divider".into(),
+                    role: if header {
+                        "grid.header"
+                    } else {
+                        "grid.divider"
+                    }
+                    .into(),
                     focused: false,
                 });
             }
@@ -340,7 +345,7 @@ impl Grid {
         let mut out = vec![];
         if geo.header_rows > 0 {
             let mut h = ComponentLine {
-                role: "header".into(),
+                role: "grid.header".into(),
                 value: "@header".into(),
                 ..Default::default()
             };
@@ -369,7 +374,7 @@ impl Grid {
                     role: if s.id == self.column_id && o.highlight_cell {
                         "grid.header-active"
                     } else {
-                        "header"
+                        "grid.header"
                     }
                     .into(),
                     focused: s.id == self.column_id,

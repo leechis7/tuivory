@@ -1425,7 +1425,8 @@ export class Grid {
       cols = new Map(this.columns.map((c) => [c.id, c])),
       bounds = this.selectionBounds(),
       visible = this.visibleColumns();
-    if (geo.headerRows)
+    if (geo.headerRows) {
+      child.fill(rect(0, 0, r.width, 1), "grid.header");
       for (const span of geo.columns) {
         const c = cols.get(span.id)!;
         let title = c.label || c.id;
@@ -1436,11 +1437,12 @@ export class Grid {
           span.x,
           0,
           text + " ".repeat(Math.max(0, span.width - cells(text))),
-          "header",
+          "grid.header",
           false,
           span.width,
         );
       }
+    }
     for (let dy = 0; dy < geo.bodyRows; dy++) {
       const i = geo.top + dy,
         y = geo.headerRows + dy * geo.stride;
@@ -1578,7 +1580,14 @@ export class Grid {
         const x = span.x + span.width;
         if (x < r.width)
           for (let y = 0; y < r.height - geo.footerRows; y++)
-            child.write(x, y, sep, "hint", false, 1);
+            child.write(
+              x,
+              y,
+              sep,
+              y < geo.headerRows ? "grid.header" : "hint",
+              false,
+              1,
+            );
       }
     if (geo.footerRows)
       child.write(

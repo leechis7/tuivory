@@ -27,7 +27,7 @@ class PaletteChecks(unittest.TestCase):
     def test_candidate_and_bold_failure(self):
         source = Path(__file__).resolve().parents[1] / 'design/themes/lazyora-candidate.csv'
         count, errors = inspect(source)
-        self.assertEqual(count, 192)
+        self.assertEqual(count, 204)
         self.assertEqual(errors, [])
         with source.open(encoding='utf-8-sig', newline='') as stream:
             rows = list(csv.DictReader(stream))

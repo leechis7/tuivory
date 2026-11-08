@@ -16,7 +16,8 @@
     "success",
     "warning",
     "error",
-    "focus.border"
+    "focus.border",
+    "grid.header"
   ],
   "palettes": {
     "dark-8": {
@@ -130,6 +131,13 @@
         "background": "0",
         "referenceForeground": "#c0c0c0",
         "referenceBackground": "#000000",
+        "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "7",
+        "background": "5",
+        "referenceForeground": "#c0c0c0",
+        "referenceBackground": "#800080",
         "fontWeight": "none"
       }
     },
@@ -245,6 +253,13 @@
         "referenceForeground": "#000080",
         "referenceBackground": "#c0c0c0",
         "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "7",
+        "background": "5",
+        "referenceForeground": "#c0c0c0",
+        "referenceBackground": "#800080",
+        "fontWeight": "none"
       }
     },
     "dark-16": {
@@ -358,6 +373,13 @@
         "background": "0",
         "referenceForeground": "#ffffff",
         "referenceBackground": "#000000",
+        "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "15",
+        "background": "5",
+        "referenceForeground": "#ffffff",
+        "referenceBackground": "#800080",
         "fontWeight": "none"
       }
     },
@@ -473,6 +495,13 @@
         "referenceForeground": "#000080",
         "referenceBackground": "#c0c0c0",
         "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "15",
+        "background": "5",
+        "referenceForeground": "#ffffff",
+        "referenceBackground": "#800080",
+        "fontWeight": "none"
       }
     },
     "dark-256": {
@@ -586,6 +615,13 @@
         "background": "237",
         "referenceForeground": "#87d7ff",
         "referenceBackground": "#3a3a3a",
+        "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "255",
+        "background": "60",
+        "referenceForeground": "#eeeeee",
+        "referenceBackground": "#5f5f87",
         "fontWeight": "none"
       }
     },
@@ -701,6 +737,13 @@
         "referenceForeground": "#005faf",
         "referenceBackground": "#e4e4e4",
         "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "235",
+        "background": "153",
+        "referenceForeground": "#262626",
+        "referenceBackground": "#afd7ff",
+        "fontWeight": "none"
       }
     },
     "dark-truecolor": {
@@ -814,6 +857,13 @@
         "background": "#3b4252",
         "referenceForeground": "#88c0d0",
         "referenceBackground": "#3b4252",
+        "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "#f3f5f7",
+        "background": "#344d67",
+        "referenceForeground": "#f3f5f7",
+        "referenceBackground": "#344d67",
         "fontWeight": "none"
       }
     },
@@ -929,6 +979,13 @@
         "referenceForeground": "#005fcc",
         "referenceBackground": "#e4eaf0",
         "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "#202a36",
+        "background": "#c7dcef",
+        "referenceForeground": "#202a36",
+        "referenceBackground": "#c7dcef",
+        "fontWeight": "none"
       }
     },
     "blackwhite-8": {
@@ -1042,6 +1099,13 @@
         "background": "0",
         "referenceForeground": "#c0c0c0",
         "referenceBackground": "#000000",
+        "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "0",
+        "background": "7",
+        "referenceForeground": "#000000",
+        "referenceBackground": "#c0c0c0",
         "fontWeight": "none"
       }
     },
@@ -1157,6 +1221,13 @@
         "referenceForeground": "#c0c0c0",
         "referenceBackground": "#000000",
         "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "0",
+        "background": "7",
+        "referenceForeground": "#000000",
+        "referenceBackground": "#c0c0c0",
+        "fontWeight": "none"
       }
     },
     "blackwhite-256": {
@@ -1271,6 +1342,13 @@
         "referenceForeground": "#c0c0c0",
         "referenceBackground": "#000000",
         "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "0",
+        "background": "7",
+        "referenceForeground": "#000000",
+        "referenceBackground": "#c0c0c0",
+        "fontWeight": "none"
       }
     },
     "blackwhite-truecolor": {
@@ -1384,6 +1462,13 @@
         "background": "0",
         "referenceForeground": "#c0c0c0",
         "referenceBackground": "#000000",
+        "fontWeight": "none"
+      },
+      "grid.header": {
+        "foreground": "0",
+        "background": "7",
+        "referenceForeground": "#000000",
+        "referenceBackground": "#c0c0c0",
         "fontWeight": "none"
       }
     }

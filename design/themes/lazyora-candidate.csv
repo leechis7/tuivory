@@ -15,6 +15,7 @@ dark-8,success,7,0,#c0c0c0,#000000,11.542,4.5,none
 dark-8,warning,3,0,#808000,#000000,5.006,4.5,none
 dark-8,error,7,0,#c0c0c0,#000000,11.542,4.5,none
 dark-8,focus.border,7,0,#c0c0c0,#000000,11.542,3,none
+dark-8,grid.header,7,5,#c0c0c0,#800080,5.177,4.5,none
 light-8,body,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-8,surface,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-8,hint,0,7,#000000,#c0c0c0,11.542,4.5,none
@@ -31,6 +32,7 @@ light-8,success,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-8,warning,1,7,#800000,#c0c0c0,6.018,4.5,none
 light-8,error,1,7,#800000,#c0c0c0,6.018,4.5,none
 light-8,focus.border,4,7,#000080,#c0c0c0,8.799,3,none
+light-8,grid.header,7,5,#c0c0c0,#800080,5.177,4.5,none
 dark-16,body,7,0,#c0c0c0,#000000,11.542,4.5,none
 dark-16,surface,7,0,#c0c0c0,#000000,11.542,4.5,none
 dark-16,hint,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -47,6 +49,7 @@ dark-16,success,10,0,#00ff00,#000000,15.304,4.5,none
 dark-16,warning,11,0,#ffff00,#000000,19.556,4.5,none
 dark-16,error,9,0,#ff0000,#000000,5.252,4.5,none
 dark-16,focus.border,15,0,#ffffff,#000000,21.0,3,none
+dark-16,grid.header,15,5,#ffffff,#800080,9.419,4.5,none
 light-16,body,0,15,#000000,#ffffff,21.0,4.5,none
 light-16,surface,0,7,#000000,#c0c0c0,11.542,4.5,none
 light-16,hint,0,7,#000000,#c0c0c0,11.542,4.5,none
@@ -63,6 +66,7 @@ light-16,success,2,15,#008000,#ffffff,5.137,4.5,none
 light-16,warning,1,15,#800000,#ffffff,10.95,4.5,none
 light-16,error,1,15,#800000,#ffffff,10.95,4.5,none
 light-16,focus.border,4,7,#000080,#c0c0c0,8.799,3,none
+light-16,grid.header,15,5,#ffffff,#800080,9.419,4.5,none
 dark-256,body,252,236,#d0d0d0,#303030,8.557,4.5,none
 dark-256,surface,252,237,#d0d0d0,#3a3a3a,7.375,4.5,none
 dark-256,hint,250,237,#bcbcbc,#3a3a3a,5.989,4.5,none
@@ -79,6 +83,7 @@ dark-256,success,114,236,#87d787,#303030,7.605,4.5,none
 dark-256,warning,222,236,#ffd787,#303030,9.63,4.5,none
 dark-256,error,217,236,#ffafaf,#303030,7.544,4.5,none
 dark-256,focus.border,117,237,#87d7ff,#3a3a3a,7.147,3,none
+dark-256,grid.header,255,60,#eeeeee,#5f5f87,5.211,4.5,none
 light-256,body,235,255,#262626,#eeeeee,13.044,4.5,none
 light-256,surface,235,254,#262626,#e4e4e4,11.902,4.5,none
 light-256,hint,239,254,#4e4e4e,#e4e4e4,6.545,4.5,none
@@ -95,6 +100,7 @@ light-256,success,22,255,#005f00,#eeeeee,6.864,4.5,none
 light-256,warning,94,255,#875f00,#eeeeee,4.936,4.5,none
 light-256,error,124,255,#af0000,#eeeeee,6.412,4.5,none
 light-256,focus.border,25,254,#005faf,#e4e4e4,5.073,3,none
+light-256,grid.header,235,153,#262626,#afd7ff,10.080,4.5,none
 dark-truecolor,body,#eceff4,#2e3440,#eceff4,#2e3440,10.836,4.5,none
 dark-truecolor,surface,#eceff4,#3b4252,#eceff4,#3b4252,8.73,4.5,none
 dark-truecolor,hint,#b3bfce,#3b4252,#b3bfce,#3b4252,5.395,4.5,none
@@ -111,6 +117,7 @@ dark-truecolor,success,#a3be8c,#2e3440,#a3be8c,#2e3440,6.127,4.5,none
 dark-truecolor,warning,#ebcb8b,#2e3440,#ebcb8b,#2e3440,7.998,4.5,none
 dark-truecolor,error,#ffb4ab,#2e3440,#ffb4ab,#2e3440,7.356,4.5,none
 dark-truecolor,focus.border,#88c0d0,#3b4252,#88c0d0,#3b4252,5.03,3,none
+dark-truecolor,grid.header,#f3f5f7,#344d67,#f3f5f7,#344d67,7.995,4.5,none
 light-truecolor,body,#202a36,#f3f5f7,#202a36,#f3f5f7,13.29,4.5,none
 light-truecolor,surface,#202a36,#e4eaf0,#202a36,#e4eaf0,11.983,4.5,none
 light-truecolor,hint,#485869,#e4eaf0,#485869,#e4eaf0,6.026,4.5,none
@@ -127,6 +134,7 @@ light-truecolor,success,#256329,#f3f5f7,#256329,#f3f5f7,6.636,4.5,none
 light-truecolor,warning,#7a4300,#f3f5f7,#7a4300,#f3f5f7,7.305,4.5,none
 light-truecolor,error,#b00020,#f3f5f7,#b00020,#f3f5f7,6.702,4.5,none
 light-truecolor,focus.border,#005fcc,#e4eaf0,#005fcc,#e4eaf0,4.938,3,none
+light-truecolor,grid.header,#202a36,#c7dcef,#202a36,#c7dcef,10.314,4.5,none
 blackwhite-8,body,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-8,surface,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-8,hint,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -143,6 +151,7 @@ blackwhite-8,success,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-8,warning,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-8,error,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-8,focus.border,7,0,#c0c0c0,#000000,11.542,3,none
+blackwhite-8,grid.header,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-16,body,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-16,surface,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-16,hint,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -159,6 +168,7 @@ blackwhite-16,success,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-16,warning,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-16,error,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-16,focus.border,7,0,#c0c0c0,#000000,11.542,3,none
+blackwhite-16,grid.header,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-256,body,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-256,surface,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-256,hint,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -175,6 +185,7 @@ blackwhite-256,success,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-256,warning,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-256,error,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-256,focus.border,7,0,#c0c0c0,#000000,11.542,3,none
+blackwhite-256,grid.header,0,7,#000000,#c0c0c0,11.542,4.5,none
 blackwhite-truecolor,body,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-truecolor,surface,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-truecolor,hint,7,0,#c0c0c0,#000000,11.542,4.5,none
@@ -191,3 +202,4 @@ blackwhite-truecolor,success,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-truecolor,warning,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-truecolor,error,7,0,#c0c0c0,#000000,11.542,4.5,none
 blackwhite-truecolor,focus.border,7,0,#c0c0c0,#000000,11.542,3,none
+blackwhite-truecolor,grid.header,0,7,#000000,#c0c0c0,11.542,4.5,none

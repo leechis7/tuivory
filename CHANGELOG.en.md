@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.12.1
+
+- Grid headers use a dedicated background across all seven implementations, including dividers and unused space.
+
 ## 0.12.0
 
 - TVR-7 centers every wrapped dialog button row in Go, Rust, Python, TypeScript/JavaScript, C, C++, and Java. Rust adds a reusable Dialog model and Ratatui widget.

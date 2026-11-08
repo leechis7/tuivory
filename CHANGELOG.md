@@ -2,6 +2,10 @@
 
 **한국어 (기본)** · [English](CHANGELOG.en.md)
 
+## 0.12.1
+
+- 일곱 언어 구현의 그리드 헤더에 전용 배경색을 적용합니다. 구분선과 빈칸도 같은 배경색으로 이어집니다.
+
 ## 0.12.0
 
 - TVR-7은 Go·Rust·Python·TypeScript/JavaScript·C·C++·Java의 대화상자 버튼 행을 가운데 정렬합니다. Rust에 재사용 가능한 Dialog 모델과 Ratatui 위젯을 추가합니다.

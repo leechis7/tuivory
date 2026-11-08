@@ -9,12 +9,12 @@ Tuivory supports Go/tview and Rust/Ratatui, with independent implementations for
 ## Install
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.12.0
+go get github.com/leechis7/tuivory/go@v0.12.1
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.1", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [Installation details](docs/installation.en.md)
@@ -40,6 +40,6 @@ Korean is the default UI; add `--lang en` for English.
 - [Responsibilities](docs/component-boundary.en.md)
 - [Development and history](docs/development.en.md)
 
-- [Releases](docs/release-0.12.0.en.md) · [Changelog](CHANGELOG.en.md) · [Withdrawn versions](docs/withdrawn-versions.en.md)
+- [Releases](docs/release-0.12.1.en.md) · [Changelog](CHANGELOG.en.md) · [Withdrawn versions](docs/withdrawn-versions.en.md)
 
 [Attribution and license](NOTICE.en.md)
