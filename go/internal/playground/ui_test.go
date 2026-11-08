@@ -162,7 +162,7 @@ func TestPaletteGridAndFocusedBorderAcrossProfiles(t *testing.T) {
 				if r != tview.Borders.TopLeftFocus {
 					t.Fatalf("focused field card corner %q", r)
 				}
-				if ui.tokens.GetRowCount() != 17 {
+				if ui.tokens.GetRowCount() != len(roleNames)+1 {
 					t.Fatal("token roles missing")
 				}
 				p, err := loadPalette(theme, profile)

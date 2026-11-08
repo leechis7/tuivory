@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	tcell "github.com/leechis7/tuivory/go/terminal"
 	ui "github.com/leechis7/tuivory/go"
+	tcell "github.com/leechis7/tuivory/go/terminal"
 	tview "github.com/leechis7/tuivory/go/ui"
 	"github.com/rivo/uniseg"
 )
@@ -231,6 +231,16 @@ func TestGridPhysicalOutputAndOverlayRestore(t *testing.T) {
 					outputCell(t, s, 3+geo.Gutter-1, y, divider)
 				}
 				before, _, _ := s.GetContents()
+				for x := 3; x < 57; x++ {
+					fg, bg, _ := before[2*64+x].Style.Decompose()
+					if fg != p["grid.header"].FG || bg != p["grid.header"].BG {
+						t.Fatalf("%s/%s header cell %d: %v/%v", theme, profile, x, fg, bg)
+					}
+				}
+				_, bodyBackground, _ := before[3*64+3].Style.Decompose()
+				if bodyBackground == p["grid.header"].BG {
+					t.Fatalf("%s/%s header and body use the same background", theme, profile)
+				}
 				before = append([]tcell.SimCell(nil), before...)
 				ui.DimRegion(s, ui.CellRect{X: 4, Y: 3, Width: 12, Height: 4})
 				s.Show()

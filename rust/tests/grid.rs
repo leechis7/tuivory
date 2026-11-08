@@ -368,6 +368,12 @@ fn rich_grid_backend_output_and_overlay_restoration() {
                 };
                 terminal.draw(|f| draw(f, false)).unwrap();
                 let before = terminal.backend().buffer().clone();
+                let header = styles.role("grid.header").unwrap();
+                for x in area.x..area.right() {
+                    assert_eq!(Some(before[(x, area.y)].fg), header.fg);
+                    assert_eq!(Some(before[(x, area.y)].bg), header.bg);
+                }
+                assert_ne!(Some(before[(area.x, area.y + 1)].bg), header.bg);
                 let x = area.x + g.geometry(24, 7).gutter as u16 - 1;
                 assert_eq!(before[(x, 2)].symbol(), if ascii { "|" } else { "│" });
                 assert_eq!(before[(2, 2)].symbol(), " ");

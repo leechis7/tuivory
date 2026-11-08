@@ -10,7 +10,7 @@ func TestCandidateAndIsolation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(d.Palettes) != 12 || len(d.Roles) != 16 {
+	if len(d.Palettes) != 12 || len(d.Roles) != 17 {
 		t.Fatal("missing reference palettes/roles")
 	}
 	p, err := d.Palette("dark", "8")
@@ -18,7 +18,7 @@ func TestCandidateAndIsolation(t *testing.T) {
 		t.Fatal(err)
 	}
 	delete(p, "body")
-	if len(d.Palettes["dark-8"]) != 16 {
+	if len(d.Palettes["dark-8"]) != len(d.Roles) {
 		t.Fatal("caller mutated shared palette")
 	}
 	delete(d.Palettes, "dark-8")

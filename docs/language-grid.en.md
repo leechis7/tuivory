@@ -17,6 +17,8 @@ This is work under TVR-15, TVR-16, TVR-30, TVR-31 and TVR-32. Python, TypeScript
 
 Use the existing single public import/include alongside the collections, documents and palette. No additional framework or foreign-language engine is needed. TypeScript produces JavaScript and declarations together.
 
+Grid headers use the `grid.header` role across the whole row, including dividers and unused space. The header uses slate blue in the dark theme, pale blue in the light theme, and inverse video in monochrome. The dark and light themes use purple in the 8/16-color profiles. Body rows keep their own selection and edit styles.
+
 ## Data and host responsibilities
 
 Column IDs and row IDs must each be nonempty and unique. Memory sources copy their inputs: changing an original list or map does not alter grid data. Virtual sources provide a count, an indexed row and reverse ID lookup. The grid reads the needed rows and checks that returned IDs and reverse indices agree. Valid current cells and range selections survive source replacement by stable ID.

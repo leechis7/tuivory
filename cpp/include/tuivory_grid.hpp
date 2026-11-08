@@ -1286,16 +1286,18 @@ public:
       return *std::find_if(columns.begin(), columns.end(),
                            [&](auto c) { return c.id == id; });
     };
-    if (g.header_rows)
+    if (g.header_rows) {
+      child.fill({0, 0, r.width, 1}, "grid.header");
       for (auto span : g.columns) {
         auto c = col(span.id);
         auto title = c.label.empty() ? c.id : c.label;
         if (sort_column == c.id)
           title += sort_direction == "desc" ? " v" : " ^";
         child.write(span.x, 0,
-                    grid_detail::fit(title, span.width, "left", true), "header",
-                    false, span.width);
+                    grid_detail::fit(title, span.width, "left", true),
+                    "grid.header", false, span.width);
       }
+    }
     for (int dy = 0; dy < g.body_rows; dy++) {
       auto i = g.top + dy;
       int y = g.header_rows + dy * g.stride;
@@ -1420,7 +1422,8 @@ public:
         int x = s.x + s.width;
         if (x < r.width)
           for (int y = 0; y < r.height - g.footer_rows; y++)
-            child.write(x, y, ascii || o.ascii ? "|" : "│", "hint", false, 1);
+            child.write(x, y, ascii || o.ascii ? "|" : "│",
+                        y < g.header_rows ? "grid.header" : "hint", false, 1);
       }
     if (g.footer_rows)
       child.write(0, r.height - 1, clip(status_text(), r.width, true),

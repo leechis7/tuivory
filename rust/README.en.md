@@ -19,17 +19,17 @@ TVR-7 in 0.11.0: [grid editing and data work](../docs/grid-workspace.en.md). Ext
 
 The library owns component rendering/internal interaction; hosts own real screens, global keys, cross-component focus and business bindings. Examples are optional compositions, not required screen templates. [Component/application boundary](../docs/component-boundary.en.md).
 
-Crate version **0.12.0** matches root `VERSION`. Use Git tag `rust/v0.11.1`. [Release guide](../docs/release-0.11.1.en.md).
+Crate version **0.12.1** matches root `VERSION`. Use Git tag `rust/v0.12.1`. [Release guide](../docs/release-0.12.1.en.md).
 
 The package provides shared component models, candidate-token/style core, optional Ratatui renderers and database-free interactive examples. The default core requires Rust 1.85+ (verified with 1.85.1); the Ratatui 0.30.2 adapter and Crossterm 0.29 example require Rust 1.88+ (verified with 1.88.0). The core and adapter do not depend on Go, terminal I/O, or databases.
 
 ## Usage
 
-Version 0.11.1 is distributed through Git tag `rust/v0.11.1`, not crates.io. Use a Git dependency or a local path to rust/:
+Version 0.11.1 is distributed through Git tag `rust/v0.12.1`, not crates.io. Use a Git dependency or a local path to rust/:
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.0" }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.1" }
 # Add features = ["ratatui"] for the optional adapter.
 ```
 
@@ -57,7 +57,7 @@ fn main() -> Result<(), tuivory::Error> {
 - `TokenDocument::candidate()`: loads shared JSON embedded in the crate.
 - `TokenDocument::from_json()`: validates format, roles, profiles, color ranges, reference RGB, weight, fields, and duplicate keys.
 - `tokens()`: independent raw palette. `palette()` and `style(role)`: foreground/background/weight values preserving ANSI indices versus RGB.
-- Twelve palettes, 192 pairs, and 16 semantic roles, including selection, button focus, disabled, edited, warning, and error. Missing roles or palettes return errors instead of silent substitutes.
+- Twelve palettes, 204 pairs, and 17 semantic roles, including selection, button focus, disabled, edited, warning, and error. Missing roles or palettes return errors instead of silent substitutes.
 
 Shared candidate JSON is distinct from the actual LazyOra-derived Go styles. This crate does not claim parity with the entire Go widget styler. The host owns data, focus, selection, scrolling, and events. Shared complex components such as trees and tabs belong to TVR-7; actual LazyBeaver application integration has not been validated.
 

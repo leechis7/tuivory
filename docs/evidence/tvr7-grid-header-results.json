@@ -1,0 +1,24 @@
+{
+  "issue": "TVR-7",
+  "stage": "local worktree",
+  "role": "grid.header",
+  "palette_pairs": 204,
+  "minimum_header_reference_contrast": 5.177,
+  "rendered_go_screen_combinations": 24,
+  "rendered_rust_backend_combinations": 24,
+  "independent_grid_pty_combinations": {
+    "python": 48,
+    "typescript_javascript": 48,
+    "c": 48,
+    "cpp": 48,
+    "java": 48
+  },
+  "checks": [
+    "Full header row foreground and background, including dividers and unused columns",
+    "Header background differs from the body in every theme and profile",
+    "Grid selection, editing, cursor, and pointer regressions in the PTY examples",
+    "Bilingual grid example captures and shared palette export consistency"
+  ],
+  "github_ci": "not run for this change",
+  "publication": "local"
+}

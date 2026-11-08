@@ -332,13 +332,14 @@ TuiResult tui_style(const char *theme, const char *profile, const char *role,
       : !strcmp(profile, "256")       ? 2
       : !strcmp(profile, "truecolor") ? 3
                                       : -1;
-  for (r = 0; r < 16; r++)
+  const int role_count = (int)(sizeof tui_roles / sizeof *tui_roles);
+  for (r = 0; r < role_count; r++)
     if (!strcmp(role, tui_roles[r]))
       break;
-  if (t < 0 || p < 0 || r == 16)
+  if (t < 0 || p < 0 || r == role_count)
     return TUI_INVALID;
   {
-    const unsigned *v = tui_palette_data[(t * 4 + p) * 16 + r];
+    const unsigned *v = tui_palette_data[(t * 4 + p) * role_count + r];
     *out = (TuiStyle){v[0],    v[1], (int)v[2], !strcmp(role, "disabled"),
                       focused, 0};
   }
@@ -11579,7 +11580,10 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
     goto fail;
   size_t bounds[4] = {0};
   int has_bounds = grid_bounds(g, bounds) == TUI_OK;
-  if (gi.header_rows)
+  if (gi.header_rows) {
+    result = tui_canvas_fill(child, (TuiRect){0, 0, r.width, 1}, "grid.header");
+    if (result != TUI_OK)
+      goto rows_fail;
     for (size_t j = 0; j < geo->count; j++) {
       TuiGridSpan *span = &geo->spans[j];
       int c = grid_column_index(g, span->id);
@@ -11595,12 +11599,13 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
         result = TUI_NOMEM;
         goto rows_fail;
       }
-      result =
-          tui_canvas_write(child, span->x, 0, text, "header", 0, span->width);
+      result = tui_canvas_write(child, span->x, 0, text, "grid.header", 0,
+                                span->width);
       free(text);
       if (result != TUI_OK)
         goto rows_fail;
     }
+  }
   for (int dy = 0; dy < gi.body_rows; dy++) {
     size_t i = gi.top + (size_t)dy;
     int y = gi.header_rows + dy * gi.stride;
@@ -11778,7 +11783,8 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
       if (x < r.width)
         for (int y = 0; y < r.height - gi.footer_rows; y++) {
           result = tui_canvas_write(
-              child, x, y, ascii || g->options.ascii ? "|" : "│", "hint", 0, 1);
+              child, x, y, ascii || g->options.ascii ? "|" : "│",
+              y < gi.header_rows ? "grid.header" : "hint", 0, 1);
           if (result != TUI_OK)
             goto rows_fail;
         }

@@ -9,12 +9,12 @@ Go/tview와 Rust/Ratatui 패키지를 제공하며, Python, TypeScript/JavaScrip
 ## 설치
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.12.0
+go get github.com/leechis7/tuivory/go@v0.12.1
 ```
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.0", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.1", features = ["ratatui"] }
 ```
 
 Go 1.24+, Rust core 1.85+, Rust UI 1.88+. [설치 상세](docs/installation.md)
@@ -40,6 +40,6 @@ make run-menu-rust ARGS="--shadow auto"
 - [앱과 라이브러리의 책임](docs/component-boundary.md)
 - [개발·검증·이력](docs/development.md)
 
-- [릴리스](docs/release-0.12.0.md) · [변경 이력](CHANGELOG.md) · [회수 버전](docs/withdrawn-versions.md)
+- [릴리스](docs/release-0.12.1.md) · [변경 이력](CHANGELOG.md) · [회수 버전](docs/withdrawn-versions.md)
 
 [출처·라이선스](NOTICE.md)

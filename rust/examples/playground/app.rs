@@ -793,7 +793,7 @@ impl App {
                         .style(self.role("header")),
                     )
                     .block(self.block(
-                        self.text(" 의미별 색상 · 16개 역할 ", " Semantic colors · 16 roles "),
+                        self.text(" 의미별 색상 · 17개 역할 ", " Semantic colors · 17 roles "),
                         self.focus == Focus::Tokens,
                     )),
                     content,
@@ -882,7 +882,7 @@ Color selection previews tokens; it does not change terminal capabilities.
 Your terminal may approximate colors using a smaller palette.
 
 3. Color tokens
-Use F6 or the left menu. Compare foreground/background pairs for 16 roles.
+Use F6 or the left menu. Compare foreground/background pairs for 17 roles.
 The samples use the Go style palette; shared tokens provide role ordering.
 
 4. Controls

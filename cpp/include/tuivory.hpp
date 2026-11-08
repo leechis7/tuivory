@@ -413,13 +413,16 @@ public:
                            : "truecolor";
   }
   Style style(const std::string &role = "body", bool focused = false) const {
-    int i = 0;
-    for (; i < 16; i++)
+    constexpr auto role_count =
+        sizeof detail::tui_roles / sizeof *detail::tui_roles;
+    std::size_t i = 0;
+    for (; i < role_count; i++)
       if (role == detail::tui_roles[i])
         break;
-    if (i == 16)
+    if (i == role_count)
       throw std::invalid_argument("unknown role");
-    const auto &p = detail::tui_palette_data[(theme_ * 4 + profile_) * 16 + i];
+    const auto &p =
+        detail::tui_palette_data[(theme_ * 4 + profile_) * role_count + i];
     return {p[0], p[1], p[2] != 0, role == "disabled", focused};
   }
   Style text_on_surface(const std::string &role,
