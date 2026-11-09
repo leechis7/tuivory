@@ -1,4 +1,4 @@
-# Go ui API — source (0.12.1)
+# Go ui API — source (0.12.2)
 
 **한국어 (기본)** · [English](go-ui.en.md)
 

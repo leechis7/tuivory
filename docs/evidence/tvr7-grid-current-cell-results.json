@@ -1,0 +1,35 @@
+{
+  "issue": "TVR-7",
+  "stage": "local worktree",
+  "scope": "Dedicated grid current cell palette, distinct ANSI-8 range selection, and removal of grid focus underlines",
+  "shared_palette_pairs": 228,
+  "go_rendered_combinations": 24,
+  "rust_rendered_combinations": 24,
+  "checks": [
+    "Current cell background and absence of header or current row underline",
+    "Blue current cell and teal selected range in dark/light ANSI-8 output",
+    "Edited current cell preserves its asterisk",
+    "Other edited cells retain the edited background",
+    "Grid cursor, pointer, edit and approval regressions",
+    "Korean and English grid screenshots"
+  ],
+  "github_ci": "not run for this change",
+  "publication": "local",
+  "ansi8_dark_light": {
+    "header_and_current_cell": {
+      "foreground": 7,
+      "background": 4,
+      "reference_contrast": 8.799
+    },
+    "selected_range": {
+      "foreground": 0,
+      "background": 6,
+      "reference_contrast": 4.399
+    }
+  },
+  "scope_exceptions": [
+    "Shell terminal palette reference has no Grid implementation"
+  ],
+  "dark_light_ansi8_independent_pty_combinations": 40,
+  "dark_light_256_truecolor_captured_combinations": 4
+}

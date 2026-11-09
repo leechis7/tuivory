@@ -316,7 +316,7 @@ fn rich_grid_backend_output_and_overlay_restoration() {
     use ratatui::{Terminal, backend::TestBackend, layout::Rect, widgets::Paragraph};
     use tuivory::{
         ColorProfile, Theme,
-        grid::grid_preset,
+        grid::{GridRange, grid_preset},
         ratatui::{GridWidget, Styles},
     };
     let mut g = Grid::new(
@@ -327,15 +327,29 @@ fn rich_grid_backend_output_and_overlay_restoration() {
             editable: true,
         }],
         Box::new(
-            MemoryRows::new(vec![GridRecord {
-                id: "a".into(),
-                cells: [("name".into(), "한글😀e\u{301}".into())].into(),
-                ..Default::default()
-            }])
+            MemoryRows::new(vec![
+                GridRecord {
+                    id: "a".into(),
+                    cells: [("name".into(), "한글😀e\u{301}".into())].into(),
+                    ..Default::default()
+                },
+                GridRecord {
+                    id: "b".into(),
+                    cells: [("name".into(), "B".into())].into(),
+                    ..Default::default()
+                },
+            ])
             .unwrap(),
         ),
     )
     .unwrap();
+    assert!(g.select_range(GridRange {
+        anchor_row: "a".into(),
+        anchor_column: "name".into(),
+        end_row: "b".into(),
+        end_column: "name".into(),
+    }));
+    assert!(g.focus("a", "name"));
     for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {
         for profile in [
             ColorProfile::Ansi8,
@@ -374,6 +388,26 @@ fn rich_grid_backend_output_and_overlay_restoration() {
                     assert_eq!(Some(before[(x, area.y)].bg), header.bg);
                 }
                 assert_ne!(Some(before[(area.x, area.y + 1)].bg), header.bg);
+                let geo = g.geometry(24, 7);
+                let active = styles.role("grid.active").unwrap();
+                assert_eq!(
+                    Some(before[(area.x + geo.columns[0].start as u16, 3)].bg),
+                    active.bg
+                );
+                if profile == ColorProfile::Ansi8 && theme != Theme::Blackwhite {
+                    let x = area.x + geo.columns[0].start as u16;
+                    assert_eq!(before[(x, 3)].bg, ratatui::style::Color::Indexed(4));
+                    assert_eq!(before[(x, 4)].bg, ratatui::style::Color::Indexed(6));
+                }
+                for y in [2, 3] {
+                    for x in area.x..area.right() {
+                        assert!(
+                            !before[(x, y)]
+                                .modifier
+                                .contains(ratatui::style::Modifier::UNDERLINED)
+                        );
+                    }
+                }
                 let x = area.x + g.geometry(24, 7).gutter as u16 - 1;
                 assert_eq!(before[(x, 2)].symbol(), if ascii { "|" } else { "│" });
                 assert_eq!(before[(2, 2)].symbol(), " ");

@@ -6,6 +6,8 @@
 
 TVR-7의 **0.11.0** 기능입니다. Go `Grid / NewGridView`, Rust `grid::Grid / GridWidget`에서 같은 모델을 확장합니다. 별도 고급 그리드나 backend 직접 import는 필요하지 않습니다.
 
+현재 데이터 셀은 밑줄 없이 `grid.active` 배경으로 표시합니다. 8색은 헤더와 같은 색을 사용하며 다크·라이트는 파랑, 흑백은 밝은 회색입니다. 그 외 색상 모드는 별도의 명도를 사용합니다. 다크·라이트 8색의 범위 선택은 청록으로 표시해 파란 현재 셀과 구분합니다. 수정된 현재 셀에는 별표를 남기고, 다른 수정 셀은 기존 수정 배경색을 유지합니다.
+
 ## 제공 범위
 
 | 기능 | Go | Rust |
@@ -102,7 +104,7 @@ GridWidget { model: &grid, styles: &styles, focused: grid_has_focus }
 
 실제 변경 셀은 호스트가 `GridCellInfo.State.Edited`로 공급합니다. `GridRecord.State.Edited`는 **행 표식용**이며 다른 셀로 변경색을 상속하지 않습니다. 기존 행 전체 변경색에 의존한 앱은 셀별 상태로 바꾸세요. `SetRowEdited`는 안정 행 ID에 따른 집계 콜백이며 콜백이 없으면 행 상태를 사용합니다. 화면에서 모든 셀을 스캔해 추측하지 않습니다.
 
-배경 우선순위는 disabled → error → 편집 중(field)/승인 대기(loading)/편집 실패(error) → edited(`PreserveEdited`) → 찾기 일치(변경 셀 제외) → 현재 셀 → 선택/범위 → edited → busy → readonly → NULL → 현재 행/줄무늬/기본입니다. 포커스 밑줄은 유지합니다. 변경 셀에는 `*`를 남겨 선택·오류·비활성이 배경을 덮어도 변경 여부를 식별합니다. `ShowCellMarkers`가 꺼져도 이 변경 단서는 유지합니다. 다른 상태 표식·선택 접두어와 함께 쓸 때는 기존 표시 옵션을 따릅니다. 행 번호의 `*`는 `HideMarkers`로 별도 제어하며 셀의 표식을 지우지 않습니다.
+배경 우선순위는 disabled → error → 편집 중(field)/승인 대기(loading)/편집 실패(error) → 현재 셀 → edited(`PreserveEdited`) → 찾기 일치(변경 셀 제외) → 선택/범위 → edited → busy → readonly → NULL → 현재 행/줄무늬/기본입니다.  변경 셀에는 `*`를 남겨 선택·오류·비활성이 배경을 덮어도 변경 여부를 식별합니다. `ShowCellMarkers`가 꺼져도 이 변경 단서는 유지합니다. 다른 상태 표식·선택 접두어와 함께 쓸 때는 기존 표시 옵션을 따릅니다. 행 번호의 `*`는 `HideMarkers`로 별도 제어하며 셀의 표식을 지우지 않습니다.
 
 모든 테마·8/16/256/True Color와 Unicode/ASCII에서 같은 의미 역할을 사용합니다. 사용자 `grid.*` 팔레트 재정의를 보존하고 임의 앱 색값을 요구하지 않습니다. `grid.match`는 기존 warning 역할에서 파생합니다. NULL/읽기 전용 등은 업무 권한을 추론한 결과가 아닌 호스트 메타데이터입니다.
 

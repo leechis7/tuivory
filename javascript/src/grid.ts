@@ -1481,15 +1481,16 @@ export class Grid {
           ? "disabled"
           : state.invalid
             ? "error"
-            : state.edited && o.preserveEdited
-              ? "edited"
-              : (selected && o.highlightCell) ||
-                  (o.highlightRow && i === this.row) ||
-                  (inRange && this.selected)
-                ? "selection"
-                : o.striped && i % 2
-                  ? "surface"
-                  : "body";
+            : selected && o.highlightCell
+              ? "grid.active"
+              : state.edited && o.preserveEdited
+                ? "edited"
+                : (o.highlightRow && i === this.row) ||
+                    (inRange && this.selected)
+                  ? "grid.range"
+                  : o.striped && i % 2
+                    ? "surface"
+                    : "body";
         if (editing)
           role = this.edit!.pending
             ? "hint"
@@ -1497,7 +1498,10 @@ export class Grid {
               ? "error"
               : "field";
         const pad = Math.min(o.padding, Math.floor(span.width / 2)),
-          marker = state.edited && o.showCellMarkers ? "* " : "",
+          marker =
+            state.edited && (o.showCellMarkers || role === "grid.active")
+              ? "* "
+              : "",
           room = Math.max(0, span.width - 2 * pad - marker.length),
           text = this.display(row, c, info, room, editing),
           value =
@@ -1507,14 +1511,7 @@ export class Grid {
             " ".repeat(
               Math.max(0, span.width - pad - marker.length - cells(text)),
             );
-        child.write(
-          span.x,
-          y,
-          value,
-          role,
-          focused && selected && !state.disabled,
-          span.width,
-        );
+        child.write(span.x, y, value, role, false, span.width);
         const edit = this.edit;
         if (editing && edit && !edit.pending && !edit.null) {
           const buf = edit.buffer,

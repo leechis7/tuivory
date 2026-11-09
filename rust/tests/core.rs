@@ -3,7 +3,7 @@ use tuivory::{CANDIDATE_JSON, Color, ColorProfile, Theme, TokenDocument, profile
 #[test]
 fn embedded_document_resolves_all_palettes_and_preserves_color_kinds() {
     let d = TokenDocument::candidate().unwrap();
-    assert_eq!(d.roles().len(), 17);
+    assert_eq!(d.roles().len(), 19);
     assert_eq!(d.palette_names().count(), 12);
     for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {
         for profile in [
@@ -14,7 +14,7 @@ fn embedded_document_resolves_all_palettes_and_preserves_color_kinds() {
         ] {
             let raw = d.tokens(theme, profile).unwrap();
             let palette = d.palette(theme, profile).unwrap();
-            assert_eq!(palette.styles().len(), 17);
+            assert_eq!(palette.styles().len(), 19);
             for role in d.roles() {
                 let pair = &raw.pairs()[role];
                 let style = palette.style(role).unwrap();

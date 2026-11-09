@@ -158,13 +158,14 @@ func TestGridOptionsNarrowUnicodeAndStates(t *testing.T) {
 	if !found {
 		t.Fatal("active cell metadata not exposed")
 	}
-	for _, l := range g.Layout(60, 8) {
-		for _, s := range l.Spans {
-			if l.ID == "a" && s.Focused && s.Role != "grid.edited" {
-				t.Fatal("edited state hidden", s)
+	for _, line := range g.Layout(60, 8) {
+		for _, span := range line.Spans {
+			if line.ID == "a" && span.Role == "grid.active" && strings.Contains(span.Text, "*") {
+				return
 			}
 		}
 	}
+	t.Fatal("edited current cell must retain its marker")
 }
 func TestGridPointerRangeResizeAndHover(t *testing.T) {
 	g := optionGrid(t)
@@ -237,6 +238,19 @@ func TestGridPhysicalOutputAndOverlayRestore(t *testing.T) {
 						t.Fatalf("%s/%s header cell %d: %v/%v", theme, profile, x, fg, bg)
 					}
 				}
+				active := geo.Columns[0]
+				_, activeBG, activeAttrs := before[3*64+3+active.Start].Style.Decompose()
+				if activeBG != p["grid.active"].BG || activeAttrs&tcell.AttrUnderline != 0 {
+					t.Fatalf("%s/%s incorrect current cell style", theme, profile)
+				}
+				for x := 3; x < 57; x++ {
+					for _, y := range []int{2, 3} {
+						_, _, attrs := before[y*64+x].Style.Decompose()
+						if attrs&tcell.AttrUnderline != 0 {
+							t.Fatalf("%s/%s unexpected grid underline at %d,%d", theme, profile, x, y)
+						}
+					}
+				}
 				_, bodyBackground, _ := before[3*64+3].Style.Decompose()
 				if bodyBackground == p["grid.header"].BG {
 					t.Fatalf("%s/%s header and body use the same background", theme, profile)
@@ -257,6 +271,26 @@ func TestGridPhysicalOutputAndOverlayRestore(t *testing.T) {
 				}
 				if g.Handle("copy_cell", 9).Text != "한글😀e\u0301 long" {
 					t.Fatal("output damaged raw value")
+				}
+				if profile == "8" && theme != "blackwhite" {
+					if !g.SelectRange(ui.GridRange{AnchorRow: "a", AnchorColumn: "name", EndRow: "b", EndColumn: "value"}) || !g.Focus("b", "value") {
+						t.Fatal("cannot set grid range")
+					}
+					v.Draw(s)
+					s.Show()
+					cells, _, _ := s.GetContents()
+					for _, point := range []struct {
+						x, y int
+						want tcell.Color
+					}{
+						{3 + geo.Columns[0].Start, 3, tcell.PaletteColor(6)},
+						{3 + geo.Columns[1].Start, 4, tcell.PaletteColor(4)},
+					} {
+						_, bg, _ := cells[point.y*64+point.x].Style.Decompose()
+						if bg != point.want {
+							t.Fatalf("%s/%s incorrect range/current background: %v want %v", theme, profile, bg, point.want)
+						}
+					}
 				}
 			}
 		}

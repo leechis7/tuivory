@@ -33,7 +33,7 @@ Current JSON covers color roles and font weight only. There is no engine executi
 
 ## Cross-implementation validation
 
-Each language implementation must read identical token values. `make check-consumers` compares Go/Python/Node.js across 12 palettes and 204 pairs. `make check-rust-consumers` includes Rust in the same comparison. These checks do not establish equal widget rendering or keyboard behavior.
+Each language implementation must read identical token values. `make check-consumers` compares Go/Python/Node.js across 12 palettes and 228 pairs. `make check-rust-consumers` includes Rust in the same comparison. These checks do not establish equal widget rendering or keyboard behavior.
 
 New widget adapters need framework-specific checks for theme round trips, focus/selection separation, modal input blocking/restoration, small windows, and Korean cell handling. Record [terminal evidence](../docs/evidence/README.en.md).
 

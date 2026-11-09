@@ -6,7 +6,11 @@
 
 TVR-17 adds configuration to TVR-11's Go `Grid / GridSource / NewGridView` and Rust `grid::Grid / GridSource / GridWidget`. One model, input core and renderer serve both simple and richer configurations. **TVR-17 is included in 0.3.0 and absent from the v0.2.0 tags.** Actual LazyOra integration and DB editing remain separate work.
 
-Grid headers use the `grid.header` role across the whole row, including dividers and unused space. The header uses slate blue in the dark theme, pale blue in the light theme, and inverse video in monochrome. The dark and light themes use purple in the 8/16-color profiles. Body rows keep their own selection and edit styles.
+Grid headers use the `grid.header` role across the whole row, including dividers and unused space. The header uses slate blue in the dark theme, pale blue in the light theme, and inverse video in monochrome. The dark and light themes use blue in 8 colors and teal in 16 colors. Body rows keep their own selection and edit styles.
+
+With cell highlighting enabled, the current data cell uses `grid.active` without a focus underline. The 8-color mode uses the header color, blue in dark/light and silver in monochrome. Higher color modes use a separate shade. In dark and light 8-color profiles, selected ranges use teal so the blue current cell stands out. An edited current cell keeps its asterisk. Other edited cells retain their edited background.
+
+[Dark example](images/grid-range-dark-8-en.png) · [Light example](images/grid-range-light-8-en.png)
 
 ## Run and compare
 
@@ -84,7 +88,7 @@ Hosts provide `GridCellInfo` fields `HasDisplay + Display`, `Null`, `Numeric`, `
 
 ## State and input
 
-Cell background precedence: disabled → invalid/error → edited(PreserveEdited) → active → selected range/cell → edited → busy → readonly → NULL → current row/stripe/base. Public `grid.base / stripe / current-row / active / range / edited / header-active / gutter / divider / status / null / readonly / loading` roles derive from the existing 16 semantic roles. Go `GridPalette` preserves overrides named with these roles. Rust `Styles::role` derives them from the common palette. Cues include focus underline, row `>`, edited `*`, error `!`, loading `~`, readonly `=`, and literal NULL. Hiding markers reduces these cues and remains a host choice.
+Cell background precedence: disabled → invalid/error → active → edited(PreserveEdited) → selected range/cell → edited → busy → readonly → NULL → current row/stripe/base. Public `grid.base / stripe / current-row / active / range / edited / header-active / gutter / divider / status / null / readonly / loading` roles use the shared palette and derived roles. Go `GridPalette` preserves overrides named with these roles. Rust `Styles::role` derives them from the common palette. Cues include row `>`, edited `*`, error `!`, loading `~`, readonly `=`, and literal NULL. Hiding markers reduces these cues and remains a host choice.
 
 Existing actions: up/down/left/right, first/last, page_up/page_down, select, row_mode, activate, copy, sort, widen/narrow. Added actions: extend_up/down/left/right, range_start/range_mode, cancel, copy_cell/copy_row/copy_range, autofit, details, cell_pan_left/right, load_more. `SelectRange / select_range` takes stable row/column endpoint IDs. Editing requires the column and both row/cell state to permit it.
 

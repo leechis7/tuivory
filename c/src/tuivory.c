@@ -11667,13 +11667,13 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
                     grid_work_valid(g, g->edit.row_id, g->edit.column_id,
                                     g->edit.revision);
       TuiState state = info.state;
-      const char *role = state.disabled  ? "disabled"
-                         : state.invalid ? "error"
+      const char *role = state.disabled                        ? "disabled"
+                         : state.invalid                       ? "error"
+                         : active && g->options.highlight_cell ? "grid.active"
                          : state.edited && g->options.preserve_edited ? "edited"
-                         : ((active && g->options.highlight_cell) ||
-                            (g->options.highlight_row && i == g->row) ||
+                         : ((g->options.highlight_row && i == g->row) ||
                             (in_range && g->has_selection))
-                             ? "selection"
+                             ? "grid.range"
                          : g->options.striped && i % 2 ? "surface"
                                                        : "body";
       if (editing)
@@ -11681,7 +11681,10 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
                : g->edit.error && *g->edit.error ? "error"
                                                  : "field";
       int padding = min(g->options.padding, span->width / 2),
-          marker = state.edited && g->options.show_cell_markers ? 2 : 0,
+          marker = state.edited && (g->options.show_cell_markers ||
+                                    !strcmp(role, "grid.active"))
+                       ? 2
+                       : 0,
           room = max(0, span->width - 2 * padding - marker);
       size_t editor_start = 0;
       char *text = NULL;
@@ -11734,11 +11737,9 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
       int used = tui_cells(grid_string(b.s));
       for (int k = used; k < span->width; k++)
         append(&b, " ");
-      result = b.failed
-                   ? TUI_NOMEM
-                   : tui_canvas_write(child, span->x, y, grid_string(b.s), role,
-                                      focused && active && !state.disabled,
-                                      span->width);
+      result = b.failed ? TUI_NOMEM
+                        : tui_canvas_write(child, span->x, y, grid_string(b.s),
+                                           role, 0, span->width);
       free(b.s);
       if (result == TUI_OK && editing && !g->edit.pending &&
           !g->edit.value.is_null)
