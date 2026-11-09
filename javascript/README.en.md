@@ -2,7 +2,7 @@
 
 [한국어 (기본)](README.md) · **English**
 
-GitHub Release provides the 0.12.1 package. See the [release notes](../docs/release-0.12.1.en.md) for download and installation.
+GitHub Release provides the 0.12.2 package. See the [release notes](../docs/release-0.12.2.en.md) for download and installation.
 
 All five languages provide installable/importable packages and independent Canvas, Tree/workspace, text/forms, collections, menus, feedback, layout, popups, documents, syntax, data grids, drag and drop, input decoding and optional terminal APIs. Data grids include [pointer and range selection](../docs/language-grid.en.md). The epics remain open.
 

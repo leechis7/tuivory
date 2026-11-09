@@ -6,7 +6,11 @@
 
 TVR-11의 Go `Grid / GridSource / NewGridView`와 Rust `grid::Grid / GridSource / GridWidget`에 TVR-17 구성 옵션을 추가합니다. 별도 고급 그리드 없이 같은 모델·입력·렌더러를 사용합니다. **TVR-17은 0.3.0에 포함하며 v0.2.0 태그에 없습니다.** 실제 LazyOra 연결·DB 편집 통합도 별도 작업입니다.
 
-그리드 헤더는 구분선과 빈칸까지 행 전체에 `grid.header`를 적용합니다. 다크 테마는 청회색, 라이트 테마는 옅은 청색, 흑백은 반전으로 구분합니다. 다크·라이트의 8·16색에서는 보라색을 사용합니다. 본문 행의 선택·편집 스타일은 그대로 사용합니다.
+그리드 헤더는 구분선과 빈칸까지 행 전체에 `grid.header`를 적용합니다. 다크 테마는 청회색, 라이트 테마는 옅은 청색, 흑백은 반전으로 구분합니다. 다크·라이트의 8색에서는 파랑, 16색에서는 청록을 사용합니다. 본문 행의 선택·편집 스타일은 그대로 사용합니다.
+
+셀 강조를 켜면 현재 데이터 셀은 밑줄 없이 `grid.active` 배경으로 표시합니다. 8색은 헤더와 같은 색을 사용하며 다크·라이트는 파랑, 흑백은 밝은 회색입니다. 그 외 색상 모드는 별도의 명도를 사용합니다. 다크·라이트 8색의 범위 선택은 청록으로 표시해 파란 현재 셀과 구분합니다. 수정된 현재 셀에는 별표를 남기고, 다른 수정 셀은 기존 수정 배경색을 유지합니다.
+
+[다크 화면](images/grid-range-dark-8.png) · [라이트 화면](images/grid-range-light-8.png)
 
 ## 실행과 비교
 
@@ -84,7 +88,7 @@ grid.set_cell_info(|_, column| GridCellInfo {
 
 ## 상태와 입력
 
-셀 배경 우선순위는 disabled → invalid/error → edited(PreserveEdited) → active → 선택 범위/셀 → edited → busy → readonly → NULL → 현재 행/줄무늬/기본입니다. `grid.base / stripe / current-row / active / range / edited / header-active / gutter / divider / status / null / readonly / loading` 역할은 기존 16개 의미 색상에서 파생합니다. Go `GridPalette`는 같은 이름의 사용자 정의 역할을 보존합니다. Rust `Styles::role`은 공통 팔레트에서 파생합니다. 포커스 밑줄, 행 `>`, 수정 `*`, 오류 `!`, 로딩 `~`, 읽기 전용 `=`, NULL 문자열을 사용합니다. 표식 숨김 옵션은 표시 단서를 줄이므로 앱에서 필요에 맞춰 선택합니다.
+셀 배경 우선순위는 disabled → invalid/error → active → edited(PreserveEdited) → 선택 범위/셀 → edited → busy → readonly → NULL → 현재 행/줄무늬/기본입니다. `grid.base / stripe / current-row / active / range / edited / header-active / gutter / divider / status / null / readonly / loading` 역할은 공통 팔레트와 파생 색상을 사용합니다. Go `GridPalette`는 같은 이름의 사용자 정의 역할을 보존합니다. Rust `Styles::role`은 공통 팔레트에서 파생합니다. 행 `>`, 수정 `*`, 오류 `!`, 로딩 `~`, 읽기 전용 `=`, NULL 문자열을 사용합니다. 표식 숨김 옵션은 표시 단서를 줄이므로 앱에서 필요에 맞춰 선택합니다.
 
 기본 동작: up/down/left/right, first/last, page_up/page_down, select, row_mode, activate, copy, sort, widen/narrow. 추가 동작: extend_up/down/left/right, range_start/range_mode, cancel, copy_cell/copy_row/copy_range, autofit, details, cell_pan_left/right, load_more. `SelectRange`는 양 끝의 안정 행/열 ID를 받습니다. 편집 요청은 열과 행·셀 상태가 모두 허용할 때만 반환합니다.
 

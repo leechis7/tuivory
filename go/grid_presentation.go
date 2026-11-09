@@ -260,17 +260,14 @@ func (g *Grid) cellRole(row GridRecord, col GridColumn, index int, selected bool
 			return "grid.loading"
 		}
 		return "field"
+	case g.options.HighlightCell && row.ID == g.RowID && col.ID == g.ColumnID:
+		return "grid.active"
 	case s.Edited && g.options.PreserveEdited:
 		return "grid.edited"
 	case g.matches(row, col) && !s.Edited:
 		return "grid.match"
-	case g.options.HighlightCell && row.ID == g.RowID && col.ID == g.ColumnID:
-		return "grid.active"
 	case selected:
-		if g.rangeMode && !g.WholeRow {
-			return "grid.range"
-		}
-		return "selection"
+		return "grid.range"
 	case s.Edited:
 		return "edited"
 	case s.Busy && (g.options.UseSurface || g.cellInfo != nil):
@@ -362,7 +359,7 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 			}
 			content := max(0, s.Width-2*o.Padding)
 			label = strings.Repeat(" ", min(o.Padding, s.Width)) + gridAlign(CellText(label, content), content, g.columnOptions[s.ID].Align)
-			header.Spans = append(header.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: label, Role: role, Focused: s.ID == g.ColumnID})
+			header.Spans = append(header.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: label, Role: role})
 		}
 		g.decorations(&header, geo, width, true, GridRecord{}, 0)
 		out = append(out, header)
@@ -394,12 +391,12 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 		if o.HideMarkers {
 			marker = ""
 		}
-		line := ComponentLine{ID: row.ID, Text: marker + v.Markers, Role: g.rowRole(row, index), Focused: row.ID == g.RowID}
+		line := ComponentLine{ID: row.ID, Text: marker + v.Markers, Role: g.rowRole(row, index)}
 		for _, s := range geo.Columns {
 			colindex := g.columnIndex(s.ID)
 			col := g.columns[colindex]
 			selected := g.selected(index, colindex, row, col)
-			line.Spans = append(line.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: g.cellText(row, col, s.Width, selected), Role: g.cellRole(row, col, index, selected), Focused: row.ID == g.RowID && s.ID == g.ColumnID})
+			line.Spans = append(line.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: g.cellText(row, col, s.Width, selected), Role: g.cellRole(row, col, index, selected)})
 		}
 		g.decorations(&line, geo, width, false, row, index)
 		out = append(out, line)

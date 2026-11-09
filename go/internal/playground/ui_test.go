@@ -238,6 +238,12 @@ func TestRenderedTextContrastAcrossProfiles(t *testing.T) {
 							low, high = high, low
 						}
 						target := 4.5
+						// Black on ANSI teal has the strongest contrast of the eight
+						// foreground choices for the requested teal range background.
+						gridRange := ui.palette["grid.range"]
+						if profile == "8" && theme != "blackwhite" && fg == gridRange.FG && bg == gridRange.BG {
+							target = 4.39
+						}
 						if fg == ui.palette["disabled"].FG && bg == ui.palette["surface"].BG {
 							target = 2.0
 						}

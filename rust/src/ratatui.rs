@@ -161,7 +161,7 @@ impl Styles {
             return Ok(style);
         }
         let alias = match name {
-            "grid.active" | "grid.range" => "selection",
+            "grid.range" if !self.palette.styles().contains_key(name) => "selection",
             "grid.edited" => "edited",
             "grid.match" => "warning",
             "grid.header-active" => "grid.header",

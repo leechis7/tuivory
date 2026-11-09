@@ -819,13 +819,13 @@ class Grid:
                 j=next(j for j,col in enumerate(self.visible_columns()) if col.id==c.id)
                 in_range=bounds is not None and bounds[0]<=i<=bounds[2] and bounds[1]<=j<=bounds[3]
                 editing=self.edit is not None and (r.id,c.id)==(self.edit['row_id'],self.edit['column_id']) and self._work_valid(self.edit)
-                role='disabled' if state.disabled else 'error' if state.invalid else 'edited' if state.edited and o.preserve_edited else 'selection' if (selected and o.highlight_cell or o.highlight_row and i==self.row or in_range and self.selected) else 'surface' if o.striped and i%2 else 'body'
+                role='disabled' if state.disabled else 'error' if state.invalid else 'grid.active' if selected and o.highlight_cell else 'edited' if state.edited and o.preserve_edited else 'grid.range' if (o.highlight_row and i==self.row or in_range and self.selected) else 'surface' if o.striped and i%2 else 'body'
                 if editing: role='hint' if self.edit['pending'] else 'error' if self.edit['error'] else 'field'
-                pad=min(o.padding,span.width//2); marker='* ' if state.edited and o.show_cell_markers else ''
+                pad=min(o.padding,span.width//2); marker='* ' if state.edited and (o.show_cell_markers or role=='grid.active') else ''
                 room=max(0,span.width-2*pad-len(marker))
                 text=self._display(r,c,info,room,editing)
                 value=' '*pad+marker+text+' '*max(0,span.width-pad-len(marker)-cells(text))
-                child.write(span.x,y,value,role,focused=focused and selected and not state.disabled,width=span.width)
+                child.write(span.x,y,value,role,width=span.width)
                 if editing and not self.edit['pending'] and not self.edit['null']:
                     buf=self.edit['buffer'];lo,hi=sorted((buf.anchor,buf.cursor))
                     if lo<hi:

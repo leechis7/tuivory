@@ -6016,18 +6016,22 @@ public final class Tuivory {
               && j <= bounds[3],
                   editing = edit != null && record.id.equals(edit.rowId)
               && c.id.equals(edit.columnId) && workValid(edit.rowId, edit.columnId, edit.revision);
-          String role = state.disabled           ? "disabled"
+          String role =
+              state.disabled                     ? "disabled"
               : state.invalid                    ? "error"
+              : active && o.highlightCell        ? "grid.active"
               : state.edited && o.preserveEdited ? "edited"
-              : active && o.highlightCell || o.highlightRow && i == row
-                  || inRange && selected != null
-              ? "selection"
+              : o.highlightRow && i == row || inRange && selected != null
+                  ? "grid.range"
               : o.striped && i % 2 == 1 ? "surface"
                                         : "body";
           if (editing)
             role = edit.pending ? "hint" : !edit.error.isEmpty() ? "error" : "field";
           int pad = Math.min(o.padding, span.width() / 2);
-          String marker = state.edited && o.showCellMarkers ? "* " : "";
+          String marker =
+              state.edited && (o.showCellMarkers || role.equals("grid.active"))
+                  ? "* "
+                  : "";
           int room = Math.max(0, span.width() - 2 * pad - marker.length());
           String text;
           if (editing)
@@ -6057,7 +6061,7 @@ public final class Tuivory {
           }
           String value = " ".repeat(pad) + marker + text;
           value += " ".repeat(Math.max(0, span.width() - cells(value)));
-          child.write(span.x(), y, value, role, focused && active && !state.disabled, span.width());
+          child.write(span.x(), y, value, role, false, span.width());
           if (editing && edit != null && !edit.pending && !edit.isNull) {
             var buf = edit.buffer;
             int lo = Math.min(buf.anchor, buf.cursor),

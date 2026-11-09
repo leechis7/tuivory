@@ -2,7 +2,7 @@
 
 [한국어 (default)](README.md) · **English**
 
-[lazyora-candidate.csv](lazyora-candidate.csv) contains **12 profiles × 17 roles, or 204 foreground/background pairs**, initially created during LazyOra design and extended with the Tuivory grid header role. It is neither a dump of the current deployed palette nor a standard palette for every TUI.
+[lazyora-candidate.csv](lazyora-candidate.csv) contains **12 profiles × 19 roles, or 228 foreground/background pairs**, initially created during LazyOra design and extended with the Tuivory grid header, current cell, and range selection roles. It is neither a dump of the current deployed palette nor a standard palette for every TUI.
 
 | Column | Meaning |
 | --- | --- |
@@ -18,7 +18,7 @@
 python3 tools/check_palette.py design/themes/lazyora-candidate.csv
 ```
 
-The checker validates required columns, duplicate roles, color ranges, reference RGB, finite target/contrast values, calculations, and the bold-to-bright model. Failures return exit code 1. It does not require every input to have exactly the bundled 204 rows, so partial role tables can also be checked.
+The checker validates required columns, duplicate roles, color ranges, reference RGB, finite target/contrast values, calculations, and the bold-to-bright model. Failures return exit code 1. It does not require every input to have exactly the bundled 228 rows, so partial role tables can also be checked.
 
 Targets of 4.5:1 for regular text and 3:1 for focus borders are internal design references. CSV rows specify their own target. Passing does not certify whole-screen accessibility; layers, cursor, glyph width, Dim, reverse video, and behavior require separate checks.
 
@@ -27,3 +27,5 @@ The [shared JSON draft](../tokens/README.en.md) is generated from this CSV and r
 Distinguish raw role backgrounds from actual component surfaces. Bind plain text to its real surface and check foreground contrast there; preserve explicit field/selection/edit/custom backgrounds. [Surface rules](../surfaces.en.md).
 
 Disabled roles use a 2.0:1 reference contrast floor to remain visibly muted. Light-16 gray on the gray surface is about 2.17:1, separate from the 4.5:1 active-text target. Eight-color Dim is outside the CSV RGB calculation; validate its output attribute and [comparison view](../../docs/disabled-states.en.md) separately.
+
+The dark and light 8-color grid header and current cell use light gray text on ANSI blue. Selected ranges use black text on ANSI teal (about 4.40:1 reference contrast).

@@ -38,8 +38,8 @@ func loadPalette(theme, profile string) (Palette, error) {
 	}
 	disabledFG, _, _ := s.DisabledStyle().Decompose()
 	return Palette{
-		"grid.header": tokens["grid.header"],
-		"body":        {FG: s.Text, BG: s.Background}, "surface": {FG: s.Text, BG: s.Surface},
+		"grid.header": tokens["grid.header"], "grid.active": tokens["grid.active"], "grid.range": tokens["grid.range"],
+		"body": {FG: s.Text, BG: s.Background}, "surface": {FG: s.Text, BG: s.Surface},
 		"hint": {FG: s.Muted, BG: s.Surface}, "field": {FG: s.FieldText, BG: s.Field},
 		"selection": {FG: s.SelectionFG, BG: s.Selection}, "button": {FG: s.FieldText, BG: s.Button},
 		"button.focus": {FG: s.SelectionFG, BG: s.Selection}, "disabled": {FG: disabledFG, BG: s.Surface},

@@ -28,4 +28,6 @@ Grid drag capture is local to the component. Cells and the row gutter select ran
 
 Wrap dialog buttons within the content width and center each row independently, including singleton rows. Use the same clipped rectangles for drawing and pointer routing. [Dialog behavior](modals.en.md)
 
-Grid headers use the `grid.header` role across the whole row, including dividers and unused space. The header uses slate blue in the dark theme, pale blue in the light theme, and inverse video in monochrome. The dark and light themes use purple in the 8/16-color profiles. Body rows keep their own selection and edit styles.
+Grid headers use the `grid.header` role across the whole row, including dividers and unused space. The header uses slate blue in the dark theme, pale blue in the light theme, and inverse video in monochrome. The dark and light themes use blue in 8 colors and teal in 16 colors. Body rows keep their own selection and edit styles.
+
+The current data cell uses `grid.active` without a focus underline. The 8-color mode uses the header color, blue in dark/light and silver in monochrome. Higher color modes use a separate shade. In dark and light 8-color profiles, selected ranges use teal so the blue current cell stands out. An edited current cell keeps its asterisk. Other edited cells retain their edited background.

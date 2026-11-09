@@ -1329,10 +1329,10 @@ public:
         std::string role =
             state.disabled                      ? "disabled"
             : state.invalid                     ? "error"
+            : active && o.highlight_cell        ? "grid.active"
             : state.edited && o.preserve_edited ? "edited"
-            : ((active && o.highlight_cell) || (o.highlight_row && i == row) ||
-               (in_range && selected))
-                ? "selection"
+            : ((o.highlight_row && i == row) || (in_range && selected))
+                ? "grid.range"
             : o.striped && i % 2 ? "surface"
                                  : "body";
         if (editing)
@@ -1340,7 +1340,10 @@ public:
                  : !edit->error.empty() ? "error"
                                         : "field";
         int pad = std::min(o.padding, span.width / 2);
-        std::string marker = state.edited && o.show_cell_markers ? "* " : "";
+        std::string marker =
+            state.edited && (o.show_cell_markers || role == "grid.active")
+                ? "* "
+                : "";
         int room = std::max(0, span.width - 2 * pad - int(marker.size()));
         std::string text;
         if (editing)
@@ -1375,8 +1378,7 @@ public:
         }
         auto value = std::string(pad, ' ') + marker + text;
         value += std::string(std::max(0, span.width - cells(value)), ' ');
-        child.write(span.x, y, value, role,
-                    focused && active && !state.disabled, span.width);
+        child.write(span.x, y, value, role, false, span.width);
         if (editing && edit && !edit->pending && !edit->null) {
           const auto &buf = edit->buffer;
           auto lo = std::min(buf.anchor, buf.cursor),

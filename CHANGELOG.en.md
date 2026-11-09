@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.12.2
+
+- Grid current cells use a dedicated background and keep the edited asterisk. Dark and light 8-color grids use blue for headers and current cells and teal for selected ranges.
+
 ## 0.12.1
 
 - Grid headers use a dedicated background across all seven implementations, including dividers and unused space.

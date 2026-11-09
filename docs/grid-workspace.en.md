@@ -6,6 +6,8 @@
 
 These TVR-7 capabilities are available from **0.11.0**. They extend the existing Go `Grid / NewGridView` and Rust `grid::Grid / GridWidget`; no separate advanced grid or direct backend import is required.
 
+The current data cell uses `grid.active` without a focus underline. The 8-color mode uses the header color, blue in dark/light and silver in monochrome. Higher color modes use a separate shade. In dark and light 8-color profiles, selected ranges use teal so the blue current cell stands out. An edited current cell keeps its asterisk. Other edited cells retain their edited background.
+
 ## Availability
 
 | Capability | Go | Rust |
@@ -102,7 +104,7 @@ Availability: Go model + RowsView + cursor-preserving terminfo factory and Rust 
 
 Hosts supply actual dirty cells through `GridCellInfo.State.Edited`. `GridRecord.State.Edited` now controls the **row marker**, without inheriting edited colors into other cells. Applications relying on row-wide dirty colors should supply per-cell state. `SetRowEdited` is a stable-row-ID aggregate callback; absent a callback, the row state is used. The renderer does not scan all cells to infer changes.
 
-Background precedence: disabled → error → editing(field)/pending(loading)/edit failure(error) → edited with `PreserveEdited` → find match except dirty cells → current cell → selection/range → edited → busy → readonly → NULL → current row/stripe/base. Focus underlines remain. Dirty cells retain `*` even when selection/error/disabled overrides their background, including when `ShowCellMarkers` is off. Other state markers and selection prefixes follow their existing options. `HideMarkers` independently hides the row-gutter `*`, without clearing the cell cue.
+Background precedence: disabled → error → editing(field)/pending(loading)/edit failure(error) → current cell → edited with `PreserveEdited` → find match except dirty cells → selection/range → edited → busy → readonly → NULL → current row/stripe/base.  Dirty cells retain `*` even when selection/error/disabled overrides their background, including when `ShowCellMarkers` is off. Other state markers and selection prefixes follow their existing options. `HideMarkers` independently hides the row-gutter `*`, without clearing the cell cue.
 
 All themes, 8/16/256/True Color and Unicode/ASCII share semantic roles. Custom `grid.*` palette overrides are preserved; applications need no copied color constants. `grid.match` derives from the existing warning role. NULL/read-only metadata is provided by the host, not inferred from business permissions.
 

@@ -10,7 +10,7 @@ func TestCandidateAndIsolation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(d.Palettes) != 12 || len(d.Roles) != 17 {
+	if len(d.Palettes) != 12 || len(d.Roles) != 19 {
 		t.Fatal("missing reference palettes/roles")
 	}
 	p, err := d.Palette("dark", "8")

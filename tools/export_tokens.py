@@ -40,7 +40,7 @@ def main():
         for target in (TARGET, GO_ASSET, RUST_ASSET):
             if not target.exists() or target.read_text(encoding='utf-8') != content:
                 parser.exit(1, 'Token asset differs: {}. Run python3 tools/export_tokens.py\n'.format(target.relative_to(ROOT)))
-        print('Shared design tokens and generated Go/Rust assets match the CSV (204 pairs).')
+        print('Shared design tokens and generated Go/Rust assets match the CSV (228 pairs).')
     else:
         for target in (TARGET, GO_ASSET, RUST_ASSET):
             target.parent.mkdir(parents=True, exist_ok=True)

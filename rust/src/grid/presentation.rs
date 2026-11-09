@@ -148,16 +148,14 @@ impl Grid {
             } else {
                 "field"
             }
+        } else if self.options.highlight_cell && r.id == self.row_id && c.id == self.column_id {
+            "grid.active"
         } else if s.edited && self.options.preserve_edited {
             "grid.edited"
         } else if self.matches(r, c) && !s.edited {
             "grid.match"
-        } else if self.options.highlight_cell && r.id == self.row_id && c.id == self.column_id {
-            "grid.active"
-        } else if selected && self.range_mode && !self.whole_row {
-            "grid.range"
         } else if selected {
-            "selection"
+            "grid.range"
         } else if s.edited {
             "edited"
         } else if s.busy && (self.options.use_surface || self.cell_info.is_some()) {
@@ -377,7 +375,7 @@ impl Grid {
                         "grid.header"
                     }
                     .into(),
-                    focused: s.id == self.column_id,
+                    focused: false,
                 });
             }
             self.decorations(&mut h, geo, width, true, &GridRecord::default(), 0);
@@ -420,7 +418,6 @@ impl Grid {
                     state.visual().markers
                 }),
                 role: self.row_role(r, index),
-                focused: r.id == self.row_id,
                 ..Default::default()
             };
             for s in &geo.columns {
@@ -432,7 +429,7 @@ impl Grid {
                     width: s.width,
                     text: self.cell_text(r, c, s.width, selected),
                     role: self.cell_role(r, c, index, selected),
-                    focused: r.id == self.row_id && s.id == self.column_id,
+                    focused: false,
                 });
             }
             self.decorations(&mut l, geo, width, false, r, index);

@@ -46,6 +46,9 @@ def check_grid_example(language,lang,theme,colors,ascii,master,slave,process,cap
     for x in range(1, width-1):
         assert initial[x,1][1:3] == (header['foreground'],header['background']), (language,theme,colors,x,initial[x,1])
     assert initial[1,2][2] != header['background'], (language,theme,colors,'header/body background')
+    assert initial[12,2][2] == palette['grid.active']['background'], (language,theme,colors,'current cell background')
+    assert not any(cell[5] for (_, y),cell in initial.items() if y in (1,2)), (language,theme,colors,'grid underline')
+    assert initial[31,6][2] == palette['edited']['background'], (language,theme,colors,'other edited cell background')
     assert not shown(),(language,'non-editing grid cursor')
     assert frame()[10,4][4],(language,'disabled row must be Dim')
     activate();wait(shown,'real grid edit cursor')
@@ -54,6 +57,9 @@ def check_grid_example(language,lang,theme,colors,ascii,master,slave,process,cap
     submit()
     key('r');wait_text('Host rejected'if lang=='en'else'앱이 요청을 거절');wait(shown,'rejected edit returns real cursor')
     submit();approve()
+    edited_current = frame()
+    assert edited_current[12,2][2] == palette['grid.active']['background'], (language,theme,colors,'edited current cell background')
+    assert '*' in ''.join(edited_current[x,2][0] for x in range(9,26)), (language,theme,colors,'edited current cell marker')
     key('c');wait_text('Raw copy: EDITED'if lang=='en'else'복사 원문: EDITED')
     key('/');wait(shown,'find field cursor');send('insert target',b'target');wait_text('target');activate()
     wait_text('Match found'if lang=='en'else'검색 일치');status(7);assert not shown()
@@ -73,6 +79,10 @@ def check_grid_example(language,lang,theme,colors,ascii,master,slave,process,cap
     key('b');wait_text('View restored'if lang=='en'else'보기 복원됨');status(2)
     range_label='range'if lang=='en'else'범위'
     pointer('down',12,2);pointer('move',31,3);status(2);wait_text(range_label)
+    if colors == '8' and theme in ('dark','light'):
+        selected = frame()
+        assert selected[31,3][1:3] == ('7','4'), (language,theme,'blue current cell inside range',selected[31,3])
+        assert selected[31,2][1:3] == ('0','6'), (language,theme,'teal selected range',selected[31,2])
     pointer('up',79,23)
     pointer('move',31,7);status(2)
     send('select_down',b'\x1b[1;2B');status(4);wait_text(range_label)

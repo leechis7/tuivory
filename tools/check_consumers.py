@@ -35,7 +35,7 @@ def main():
                 if json.loads(result.stdout) != expected:
                     raise ValueError('Consumer differs: {} / {}'.format(command[0], name))
     languages = 'Go/Python/Node.js/Rust' if args.rust else 'Go/Python/Node.js'
-    print(f'{languages}: all 12 palettes / 204 pairs match shared JSON.')
+    print(f'{languages}: all 12 palettes / 228 pairs match shared JSON.')
 
 
 if __name__ == '__main__':

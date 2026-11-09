@@ -44,7 +44,7 @@ Color selection previews tokens; it does not change terminal capabilities.
 Your terminal may approximate colors using a smaller palette.
 
 3. Color tokens
-Use F6 or the left menu. Compare foreground/background pairs for 17 roles.
+Use F6 or the left menu. Compare foreground/background pairs for 19 roles.
 The samples use the Go style palette; shared tokens provide role ordering.
 
 4. Controls
