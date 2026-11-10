@@ -169,6 +169,7 @@ const tabs = new ui.Tabs([
   { id: "disabled", title: en ? "Disabled" : "비활성", disabled: true },
 ]);
 const split = new ui.Split(16, 20, 24);
+const splitControl = new ui.SplitControl();
 let tabFocus = false;
 let treeArea = ui.rect();
 function workspaceDraw(c, area) {
@@ -180,11 +181,11 @@ function workspaceDraw(c, area) {
     ],
     area.width,
   ).draw(c, ui.rect(area.x, area.y + 1, area.width, 1));
-  const layout = split.layout(area.width),
+  const layout = splitControl.layout(split, area.width),
     body = Math.max(0, area.height - 3);
   let right = ui.rect(area.x, area.y + 2, area.width, body);
   treeArea = ui.rect();
-  if (!layout.compact) {
+  if (layout.first) {
     const left = c.panel(
       ui.rect(area.x, area.y + 2, layout.first, body),
       en ? "Explorer" : "탐색",
@@ -193,16 +194,18 @@ function workspaceDraw(c, area) {
     );
     treeArea = left;
     tree.draw(c, left, !tabFocus, ascii);
+  }
+  if (layout.divider) {
     for (let y = 0; y < body; y++)
       c.write(
         area.x + layout.first,
         area.y + 2 + y,
-        ascii ? "|" : "│",
+        ui.splitGlyph(false, ascii, y === Math.floor(body / 2), 1, splitControl.collapsed),
         "focus.border",
       );
     right = ui.rect(area.x + layout.first + 1, area.y + 2, layout.second, body);
   }
-  right = c.panel(right, en ? "Content" : "내용", false, ascii);
+  right = c.panel(right, en ? "Content" : "내용", !tabFocus && !layout.first, ascii);
   c.write(
     right.x,
     right.y,
@@ -229,7 +232,7 @@ function workspaceDraw(c, area) {
       },
       {
         id: "keys",
-        text: en ? "Tab focus | < > resize" : "Tab 포커스 | < > 크기",
+        text: en ? "Tab focus | < > resize | c collapse" : "Tab 포커스 | < > 크기 | c 접기/복원",
         role: "hint",
         priority: 1,
       },
@@ -326,7 +329,7 @@ try {
   stdin.setRawMode(true);
   active = true;
   stdout.write(
-    "\x1b[?1049h" + (gridDemo ? "\x1b[?1002h" : "\x1b[?1000h") + "\x1b[?1006h",
+    "\x1b[?1049h" + (gridDemo || workspace ? "\x1b[?1002h" : "\x1b[?1000h") + "\x1b[?1006h",
   );
   draw();
   stdout.on("resize", () => draw());
@@ -390,6 +393,11 @@ try {
                         ? feedbackHost
                         : menuHost
             ).pointer(x, y, Number(mouse[1]));
+          } else if (workspace && (Number(mouse[1]) & 67) === 0 &&
+            splitControl.pointer(split, area.width, x - area.x,
+              x >= area.x && x < area.x + area.width && y >= area.y + 2 && y < area.y + area.height - 1,
+              mouse[4] === "m" ? "up" : Number(mouse[1]) & 32 ? "move" : "down", 1)) {
+            // The divider owns this pointer gesture.
           } else if (
             mouse[4] === "M" &&
             Number(mouse[1]) === 0 &&
@@ -502,6 +510,7 @@ try {
                   : keys[key],
               keys[key] === "toggle" ? " " : "",
             );
+          else if (workspace && !tabFocus && !treeArea.width) {}
           else if (workspace && tabFocus)
             tabs.handle(
               { left: "previous", right: "next" }[keys[key]] ?? keys[key],
@@ -536,11 +545,10 @@ try {
           pending = pending.slice(1);
           continue;
         }
-        if (workspace && ["<", ">"].includes(pending[0])) {
-          split.resize(
-            area.width,
-            split.preferred + (pending[0] === "<" ? -1 : 1),
-          );
+        if (workspace && ["<", ">", "c"].includes(pending[0])) {
+          if (pending[0] === "c") splitControl.toggle(split, area.width, 1);
+          else splitControl.resize(split, area.width,
+            splitControl.layout(split, area.width).first + (pending[0] === "<" ? -1 : 1));
           pending = pending.slice(1);
           continue;
         }

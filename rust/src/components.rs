@@ -1,5 +1,7 @@
 //! Shared tabs, split geometry, breadcrumbs, and priority status layout.
 //! Models return requests and literal cell ranges; hosts own application data.
+mod split_control;
+pub use split_control::{SplitControl, SplitSide, split_glyph};
 use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
 

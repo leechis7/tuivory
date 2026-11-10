@@ -312,6 +312,24 @@ def check(language,command,lang,theme,colors,ascii,demo="tree"):
                 os.write(master,b'activate\n'if language=='java'else b'\r');drain(.1)
                 visible='\n'.join(''.join(row)for row in screen.rows)
                 assert ('Draft'if lang=='en'else'초안')in visible.replace(' ',''),(language,'tab activation',visible)
+                explorer = 'Explorer' if lang == 'en' else '탐색'
+                content = 'Content' if lang == 'en' else '내용'
+                def wait_panel(expanded):
+                    deadline = time.monotonic() + 5
+                    while time.monotonic() < deadline:
+                        drain(.02)
+                        line = ''.join(screen.rows[3]).replace(' ', '')
+                        if content in line and (explorer in line) == expanded:
+                            return
+                    raise AssertionError((language, lang, 'workspace collapse/restore', expanded, line))
+                toggle = b'c\n' if language == 'java' else b'c'
+                os.write(master,toggle);wait_panel(False)
+                os.write(master,toggle);wait_panel(True)
+                if language in ('python','javascript'):
+                    # Workspace is inset one cell; default first span is 24 cells.
+                    os.write(master,b'\x1b[<0;26;8M\x1b[<0;26;8m');wait_panel(False)
+                    os.write(master,b'\x1b[<0;2;8M\x1b[<0;2;8m');wait_panel(True)
+
         os.write(master,b'quit\n'if language=='java'else b'\x1b\x11'if demo in ('menu','context-menu')else b'\x11')
         deadline=time.monotonic()+5
         while process.poll()is None and time.monotonic()<deadline:drain(.02)

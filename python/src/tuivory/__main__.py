@@ -10,48 +10,56 @@ from . import (Canvas, Palette, Rect, Tree, Node, Tabs, Tab, List, Item, Form, F
 class WorkspaceDemo:
     """Example host composition, not a required application screen."""
     def __init__(self, tree, en):
-        from . import Split
+        from . import Split, SplitControl
         self.tree, self.en, self.tab_focus = tree, en, False
         self.tabs = Tabs([Tab('overview', 'Overview' if en else '개요'),
                           Tab('draft', 'Draft document' if en else '초안 문서', edited=True, closable=True),
                           Tab('disabled', 'Disabled' if en else '비활성', disabled=True)])
         self.split = Split(16, 20, 24)
+        self.split_control = SplitControl()
         self.areas = {}
 
     def draw(self, canvas, area, *, ascii=False):
-        from . import path_runs, status_line, StatusItem
+        from . import path_runs, status_line, StatusItem, split_glyph
         self.areas['tabs'] = Rect(0, 0, area.width, 1)
         self.tabs.draw(canvas, Rect(area.x, area.y, area.width, 1), focused=self.tab_focus, ascii=ascii)
         path_runs([('root', 'Workspace' if self.en else '작업 공간'),
                    ('current', 'Components' if self.en else '컴포넌트')], area.width).draw(canvas, Rect(area.x, area.y + 1, area.width, 1))
-        layout, body = self.split.layout(area.width), max(0, area.height - 3)
+        layout, body = self.split_control.layout(self.split, area.width), max(0, area.height - 3)
         right = Rect(area.x, area.y + 2, area.width, body)
         self.areas['tree'] = Rect()
         self.areas['divider'] = Rect()
-        if not layout.compact:
+        if layout.first:
             left = canvas.panel(Rect(area.x, area.y + 2, layout.first, body), 'Explorer' if self.en else '탐색', not self.tab_focus, ascii)
             self.areas['tree'] = Rect(left.x - area.x, left.y - area.y, left.width, left.height)
             self.tree.draw(canvas, left, focused=not self.tab_focus, ascii=ascii)
+        if layout.divider:
             self.areas['divider'] = Rect(layout.first, 2, 1, body)
             for y in range(body):
-                canvas.write(area.x + layout.first, area.y + 2 + y, '|' if ascii else '│', 'focus.border', width=1)
+                canvas.write(area.x + layout.first, area.y + 2 + y, split_glyph(False, ascii, y == body // 2, 1, self.split_control.collapsed), 'focus.border', width=1)
             right = Rect(area.x + layout.first + 1, area.y + 2, layout.second, body)
-        right = canvas.panel(right, 'Content' if self.en else '내용', False, ascii)
+        right = canvas.panel(right, 'Content' if self.en else '내용', not self.tab_focus and not layout.first, ascii)
         canvas.write(right.x, right.y, 'Selected tab' if self.en else '선택한 탭', 'hint', width=right.width)
         canvas.write(right.x, right.y + 1, next(t.title for t in self.tabs.items if t.id == self.tabs.active), width=right.width)
         status_line([StatusItem('ready', 'Ready' if self.en else '준비', 'success', 10),
-                     StatusItem('keys', 'Tab focus | < > resize' if self.en else 'Tab 포커스 | < > 크기', 'hint', 1)], area.width).draw(canvas, Rect(area.x, area.y + area.height - 1, area.width, 1))
-        self.width = area.width
+                     StatusItem('keys', 'Tab focus | < > resize | c collapse' if self.en else 'Tab 포커스 | < > 크기 | c 접기/복원', 'hint', 1)], area.width).draw(canvas, Rect(area.x, area.y + area.height - 1, area.width, 1))
+        self.width, self.body = area.width, body
 
     def handle(self, action, height=10, text=''):
         if action in ('next', 'previous'):
             self.tab_focus = not self.tab_focus
+        elif action == 'insert' and text == 'c':
+            self.split_control.toggle(self.split, self.width, 1)
         elif action == 'insert' and text in ('<', '>'):
-            self.split.resize(self.width, self.split.preferred + (-1 if text == '<' else 1))
+            self.split_control.resize(self.split, self.width, self.split_control.layout(self.split, self.width).first + (-1 if text == '<' else 1))
         elif self.tab_focus:
             self.tabs.handle({'left': 'previous', 'right': 'next'}.get(action, action))
-        else:
+        elif self.areas['tree'].height > 0 and not self.split_control.visible_focus(False):
             self.tree.handle(action, self.areas['tree'].height)
+
+    def pointer(self, x, y, action):
+        if not self.split_control.pointer(self.split, self.width, x, 0 <= x < self.width and 2 <= y < self.body + 2, action, 1) and action == 'down':
+            return self.click(x, y)
 
     def click(self, x, y, height=10):
         if self.areas['tabs'].contains(x, y):
@@ -150,7 +158,7 @@ def main():
         raise SystemExit(0)
     previous_signal=signal.signal(signal.SIGTERM,stop)
     try:
-        with Terminal(mouse_motion=args.demo in ('drag','grid')) as terminal:
+        with Terminal(mouse_motion=args.demo in ('drag','grid','workspace')) as terminal:
             while True:
                 c, area = draw(*terminal.size)
                 terminal.write(c.ansi())
@@ -163,6 +171,9 @@ def main():
                     theme = themes[(themes.index(theme) + 1) % len(themes)]
                 elif event.key == 'f2':
                     colors = profiles[(profiles.index(colors) + 1) % len(profiles)]
+                elif isinstance(model, WorkspaceDemo) and event.key in ('mouse','mouse_move','mouse_release'):
+                    if event.button & 3 == 0:
+                        model.pointer(event.x-area.x,event.y-area.y,{'mouse':'down','mouse_move':'move','mouse_release':'up'}[event.key])
                 elif isinstance(model, DragDemo) and event.key in ('mouse','mouse_move','mouse_release'):
                     model.pointer(event.x,event.y,event.button,{'mouse':'down','mouse_move':'move','mouse_release':'up'}[event.key])
                 elif isinstance(model, GridDemo) and event.key in ('mouse','mouse_move','mouse_release','wheel'):

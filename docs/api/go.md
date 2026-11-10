@@ -1,4 +1,4 @@
-# Go API — source (0.12.2)
+# Go API — source (0.12.3)
 
 **한국어 (기본)** · [English](go.en.md)
 
@@ -1035,6 +1035,9 @@ func SetTabSize(value int)
 
 func SetWidgetStyles(value WidgetTheme)
     SetWidgetStyles forwards to the SDK compatibility API.
+
+func SplitGlyph(rows, ascii, grip bool, side, collapsed SplitSide) rune
+    SplitGlyph returns the divider or the action arrow at its grip.
 
 func SyntaxPaletteRole(role string) string
     SyntaxPaletteRole maps semantic syntax styles to existing shared role
@@ -3407,6 +3410,38 @@ type SpacingTokens struct{ Gap, Padding, ControlGap, CompactBelow int }
 func ResolveSpacing(density Density, columns int) (SpacingTokens, error)
 ```
 
+## SplitControl
+
+```go
+type SplitControl struct {
+	// Has unexported fields.
+}
+    SplitControl adds optional collapse and pointer capture to a SplitSpec.
+    Keep a separate control and SplitState for each independently sized axis.
+
+func (c *SplitControl) CancelPointer()
+
+func (c *SplitControl) Captured() bool
+
+func (c *SplitControl) Collapsed() SplitSide
+
+func (c *SplitControl) Dragging() bool
+
+func (c *SplitControl) Layout(spec SplitSpec, state *SplitState, total int) SplitLayout
+
+func (c *SplitControl) Pointer(spec SplitSpec, state *SplitState, total, position int, inside bool, action string, side SplitSide) bool
+    Pointer handles down, move, up or cancel on the split axis. inside means the
+    pointer is inside the split rectangle, including its perpendicular axis.
+
+func (c *SplitControl) Resize(spec SplitSpec, state *SplitState, total, position int) bool
+
+func (c *SplitControl) Toggle(spec SplitSpec, state *SplitState, total int, side SplitSide) bool
+    Toggle is the same action for a keyboard binding, menu or divider click.
+
+func (c *SplitControl) VisibleFocus(activeSecond bool) bool
+    VisibleFocus returns the visible panel to which the host should route focus.
+```
+
 ## SplitLayout
 
 ```go
@@ -3414,6 +3449,19 @@ type SplitLayout struct {
 	First, Divider, Second int
 	Compact                bool
 }
+```
+
+## SplitSide
+
+```go
+type SplitSide uint8
+    SplitSide identifies the panel affected by a collapse action.
+
+const (
+	SplitNeither SplitSide = iota
+	SplitFirst
+	SplitSecond
+)
 ```
 
 ## SplitSpec
@@ -3442,6 +3490,8 @@ type SplitView struct {
 	Spec                      SplitSpec
 	State                     *SplitState
 	Rows, ActiveSecond, ASCII bool
+	CollapseSide              SplitSide
+	Control                   *SplitControl
 
 	// Has unexported fields.
 }
@@ -3468,6 +3518,10 @@ func (v *SplitView) ResizeKey(e *tcell.EventKey) bool
 func (v *SplitView) SetPalette(palette Palette) error
 
 func (v *SplitView) StyleChildren() []tview.Primitive
+
+func (v *SplitView) TogglePanel(focus func(tview.Primitive)) bool
+    TogglePanel invokes the divider action for an application binding. Pass the
+    application's focus callback so a focused hidden child can hand off.
 ```
 
 ## StackItem

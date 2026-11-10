@@ -7,7 +7,7 @@ import java.util.List;
 
 /** Standard-JVM line-input example. Hosts may connect their own raw terminal backend. */
 public final class Catalog {
-  private static void workspaceDraw(Tree tree, Tabs tabs, Split split, Canvas canvas, Rect area,
+  private static void workspaceDraw(Tree tree, Tabs tabs, Split split, SplitControl control, Canvas canvas, Rect area,
       boolean tabFocus, boolean en, boolean ascii) {
     tabs.draw(canvas, new Rect(area.x(), area.y(), area.width(), 1), tabFocus, ascii);
     breadcrumbs(List.of(new PathItem("root", en ? "Workspace" : "작업 공간"),
@@ -15,18 +15,20 @@ public final class Catalog {
         area.width())
         .draw(canvas, new Rect(area.x(), area.y() + 1, area.width(), 1));
     int body = Math.max(0, area.height() - 3);
-    var layout = split.layout(area.width());
+    var layout = control.layout(split, area.width());
     Rect right = new Rect(area.x(), area.y() + 2, area.width(), body);
-    if (!layout.compact()) {
+    if (layout.first() > 0) {
       var left = canvas.panel(new Rect(area.x(), area.y() + 2, layout.first(), body),
           en ? "Explorer" : "탐색", !tabFocus, ascii);
       tree.draw(canvas, left, !tabFocus, ascii);
+    }
+    if (layout.divider() > 0) {
       for (int y = 0; y < body; y++)
         canvas.write(
-            area.x() + layout.first(), area.y() + 2 + y, ascii ? "|" : "│", "focus.border");
+            area.x() + layout.first(), area.y() + 2 + y, splitGlyph(false, ascii, y == body / 2, SplitSide.FIRST, control.collapsed()), "focus.border");
       right = new Rect(area.x() + layout.first() + 1, area.y() + 2, layout.second(), body);
     }
-    right = canvas.panel(right, en ? "Content" : "내용", false, ascii);
+    right = canvas.panel(right, en ? "Content" : "내용", !tabFocus && layout.first() == 0, ascii);
     canvas.write(
         right.x(), right.y(), en ? "Selected tab" : "선택한 탭", "hint", false, right.width());
     canvas.write(right.x(), right.y() + 1,
@@ -34,7 +36,7 @@ public final class Catalog {
         "body", false, right.width());
     statusLine(List.of(new StatusItem("ready", en ? "Ready" : "준비", "success", 10),
                    new StatusItem(
-                       "keys", en ? "tab focus | < > resize" : "tab 포커스 | < > 크기", "hint", 1)),
+                       "keys", en ? "tab focus | < > resize | c collapse" : "tab 포커스 | < > 크기 | c 접기/복원", "hint", 1)),
         area.width())
         .draw(canvas, new Rect(area.x(), area.y() + area.height() - 1, area.width(), 1));
   }
@@ -134,6 +136,7 @@ public final class Catalog {
     disabled.disabled = true;
     var tabs = new Tabs(List.of(new Tab("overview", en ? "Overview" : "개요"), draft, disabled));
     var split = new Split(16, 20, 24);
+    var splitControl = new SplitControl();
     var text = new Text(en ? (ascii ? "Grapheme text\nEdit with real cursor."
                                     : "Unicode é 界\nEdit with real cursor.")
                            : "한글 é 界\n여러 줄을 편집합니다.");
@@ -214,7 +217,7 @@ public final class Catalog {
         else if (textDemo)
           text.draw(c, area, true);
         else if (workspace)
-          workspaceDraw(tree, tabs, split, c, area, tabFocus, en, ascii);
+          workspaceDraw(tree, tabs, split, splitControl, c, area, tabFocus, en, ascii);
         else
           tree.draw(c, area, true, ascii);
         String hint = surfaceDemo ? (en ? "Type s / quit, then Enter" : "s / quit 입력 후 Enter")
@@ -284,8 +287,13 @@ public final class Catalog {
             text.handle(command, addition);
         } else if (workspace && action.equals("tab"))
           tabFocus = !tabFocus;
+        else if (workspace && action.equals("c"))
+          splitControl.toggle(split, area.width(), SplitSide.FIRST);
         else if (workspace && (action.equals("<") || action.equals(">")))
-          split.resize(area.width(), split.preferred + (action.equals("<") ? -1 : 1));
+          splitControl.resize(split, area.width(), splitControl.layout(split, area.width()).first() + (action.equals("<") ? -1 : 1));
+        else if (workspace && !tabFocus && splitControl.layout(split, area.width()).first() == 0) {
+          // The visible content panel has no keyboard action here.
+        }
         else if (workspace && tabFocus)
           tabs.handle(action.equals("left") ? "previous"
                   : action.equals("right")  ? "next"

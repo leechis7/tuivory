@@ -2606,6 +2606,80 @@ export class Split {
     return old.first !== this.preferred;
   }
 }
+export type SplitSide = 0 | 1 | 2;
+export class SplitControl {
+  private side: SplitSide = 0;
+  private ratio = 0;
+  private press?: [number, number];
+  private moved = false;
+  get collapsed(): SplitSide { return this.side; }
+  get captured(): boolean { return this.press !== undefined; }
+  get dragging(): boolean { return this.captured && this.moved; }
+  cancelPointer(): void { this.press = undefined; this.moved = false; }
+  visibleFocus(activeSecond: boolean): boolean {
+    return this.side ? this.side === 1 : activeSecond;
+  }
+  layout(split: Split, total: number): SplitLayout {
+    if (this.side && total > 0) {
+      const first = this.side === 1 ? 0 : total - 1;
+      return { first, divider: 1, second: total - 1 - first, compact: false };
+    }
+    const layout = split.layout(total);
+    return this.ratio && !layout.compact
+      ? new Split(split.firstMin, split.secondMin, Math.max(1, Math.round(this.ratio * (total - 1)))).layout(total)
+      : layout;
+  }
+  toggle(split: Split, total: number, side: SplitSide): boolean {
+    this.cancelPointer();
+    if (this.side) this.side = 0;
+    else if (side === 1 || side === 2) {
+      const layout = this.layout(split, total);
+      if (!this.ratio && !layout.compact) this.ratio = layout.first / (total - 1);
+      this.side = side;
+    } else return false;
+    return true;
+  }
+  resize(split: Split, total: number, position: number): boolean {
+    const old = this.layout(split, total);
+    if (this.side || old.compact) return false;
+    split.resize(total, position);
+    this.ratio = 0;
+    return split.preferred !== old.first;
+  }
+  pointer(split: Split, total: number, position: number, inside: boolean, action: string, side: SplitSide): boolean {
+    if (action === "cancel") {
+      const captured = this.captured;
+      this.cancelPointer();
+      return captured;
+    }
+    if (action === "down") {
+      this.cancelPointer();
+      const layout = this.layout(split, total);
+      if (!inside || layout.divider !== 1 || position !== layout.first) return false;
+      this.press = [position, total];
+      return true;
+    }
+    if (!this.press || (action !== "move" && action !== "up")) return false;
+    if (total !== this.press[1]) { this.cancelPointer(); return true; }
+    this.moved ||= action === "move" || position !== this.press[0] || !inside;
+    if (this.moved) this.resize(split, total, position);
+    if (action === "up") {
+      const click = !this.moved;
+      this.cancelPointer();
+      if (click) this.toggle(split, total, side);
+    }
+    return true;
+  }
+}
+export function splitGlyph(rows: boolean, ascii: boolean, grip: boolean, side: SplitSide, collapsed: SplitSide = 0): string {
+  side = collapsed || side;
+  if (grip && side) {
+    const first = (side === 1) !== Boolean(collapsed);
+    return (rows ? (ascii ? "^v" : "↑↓") : (ascii ? "<>" : "‹›"))[first ? 0 : 1];
+  }
+  return rows ? (ascii ? "-" : "─") : (ascii ? "|" : "│");
+}
+
 export function split(
   r: Rect,
   preferred: number,

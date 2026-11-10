@@ -107,6 +107,20 @@ typedef struct {
 } TuiSplitLayout;
 TuiSplitLayout tui_split_layout(TuiSplit split, int total);
 int tui_split_resize(TuiSplit *split, int total, int position);
+typedef enum { TUI_SPLIT_NEITHER, TUI_SPLIT_FIRST, TUI_SPLIT_SECOND } TuiSplitSide;
+/* Initialize with {0}; use a separate control per independently sized axis. */
+typedef struct {
+  TuiSplitSide collapsed;
+  double ratio;
+  int pressed, moved, start, total;
+} TuiSplitControl;
+TuiSplitLayout tui_split_control_layout(const TuiSplitControl *control, TuiSplit split, int total);
+int tui_split_control_toggle(TuiSplitControl *control, TuiSplit split, int total, TuiSplitSide side);
+int tui_split_control_resize(TuiSplitControl *control, TuiSplit *split, int total, int position);
+int tui_split_control_visible_focus(const TuiSplitControl *control, int active_second);
+void tui_split_control_cancel_pointer(TuiSplitControl *control);
+int tui_split_control_pointer(TuiSplitControl *control, TuiSplit *split, int total, int position, int inside, const char *action, TuiSplitSide side);
+const char *tui_split_glyph(int rows, int ascii, int grip, TuiSplitSide side, TuiSplitSide collapsed);
 typedef struct {
   const char *id, *label;
 } TuiPathItem;

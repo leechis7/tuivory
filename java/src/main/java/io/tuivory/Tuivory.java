@@ -816,6 +816,85 @@ public final class Tuivory {
       return preferred != old.first;
     }
   }
+  public enum SplitSide { NEITHER, FIRST, SECOND }
+
+  public static final class SplitControl {
+    private SplitSide side = SplitSide.NEITHER;
+    private double ratio;
+    private boolean pressed, moved;
+    private int start, pressTotal;
+    public SplitSide collapsed() { return side; }
+    public boolean captured() { return pressed; }
+    public boolean dragging() { return pressed && moved; }
+    public void cancelPointer() { pressed = moved = false; }
+    public boolean visibleFocus(boolean activeSecond) {
+      return side == SplitSide.NEITHER ? activeSecond : side == SplitSide.FIRST;
+    }
+    public SplitLayout layout(Split split, int total) {
+      if (side != SplitSide.NEITHER && total > 0) {
+        int first = side == SplitSide.FIRST ? 0 : total - 1;
+        return new SplitLayout(first, 1, total - 1 - first, false);
+      }
+      var old = split.layout(total);
+      return ratio > 0 && !old.compact
+          ? new Split(split.firstMin, split.secondMin, Math.max(1, (int) Math.round(ratio * (total - 1)))).layout(total)
+          : old;
+    }
+    public boolean toggle(Split split, int total, SplitSide target) {
+      cancelPointer();
+      if (side != SplitSide.NEITHER) side = SplitSide.NEITHER;
+      else if (target == SplitSide.FIRST || target == SplitSide.SECOND) {
+        var old = layout(split, total);
+        if (ratio == 0 && !old.compact) ratio = (double) old.first / (total - 1);
+        side = target;
+      } else return false;
+      return true;
+    }
+    public boolean resize(Split split, int total, int position) {
+      var old = layout(split, total);
+      if (side != SplitSide.NEITHER || old.compact) return false;
+      split.resize(total, position);
+      ratio = 0;
+      return split.preferred != old.first;
+    }
+    public boolean pointer(Split split, int total, int position, boolean inside, String action, SplitSide target) {
+      if ("cancel".equals(action)) {
+        boolean had = captured();
+        cancelPointer();
+        return had;
+      }
+      if ("down".equals(action)) {
+        cancelPointer();
+        var old = layout(split, total);
+        if (!inside || old.divider != 1 || position != old.first) return false;
+        pressed = true;
+        start = position;
+        pressTotal = total;
+        return true;
+      }
+      if (!pressed || !("move".equals(action) || "up".equals(action))) return false;
+      if (total != pressTotal) { cancelPointer(); return true; }
+      moved |= "move".equals(action) || position != start || !inside;
+      if (moved) resize(split, total, position);
+      if ("up".equals(action)) {
+        boolean click = !moved;
+        cancelPointer();
+        if (click) toggle(split, total, target);
+      }
+      return true;
+    }
+  }
+
+  public static String splitGlyph(boolean rows, boolean ascii, boolean grip, SplitSide side, SplitSide collapsed) {
+    if (collapsed != SplitSide.NEITHER) side = collapsed;
+    if (grip && side != SplitSide.NEITHER) {
+      boolean first = (side == SplitSide.FIRST) != (collapsed != SplitSide.NEITHER);
+      if (rows) return ascii ? (first ? "^" : "v") : (first ? "↑" : "↓");
+      return ascii ? (first ? "<" : ">") : (first ? "‹" : "›");
+    }
+    return rows ? (ascii ? "-" : "─") : (ascii ? "|" : "│");
+  }
+
   public record LineRun(String text, String role, String id, int start, int width) {}
   public static final class LineLayout {
     public final List<LineRun> runs = new ArrayList<>();

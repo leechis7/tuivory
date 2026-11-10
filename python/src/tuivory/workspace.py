@@ -441,6 +441,89 @@ class Split:
         return self.preferred != old.first
 
 
+class SplitControl:
+    """Optional collapse and divider pointer capture; side is 0, 1 or 2."""
+    def __init__(self):
+        self.collapsed = 0
+        self._ratio = 0.0
+        self._press = None
+        self._moved = False
+
+    @property
+    def captured(self): return self._press is not None
+
+    @property
+    def dragging(self): return self.captured and self._moved
+
+    def cancel_pointer(self):
+        self._press, self._moved = None, False
+
+    def visible_focus(self, active_second):
+        return self.collapsed == 1 if self.collapsed else active_second
+
+    def layout(self, split, total):
+        if self.collapsed and total > 0:
+            first = 0 if self.collapsed == 1 else total - 1
+            return SplitLayout(first, 1, total - 1 - first, False)
+        layout = split.layout(total)
+        if self._ratio and not layout.compact:
+            return Split(split.first_min, split.second_min, max(1, int(self._ratio * (total - 1) + .5))).layout(total)
+        return layout
+
+    def toggle(self, split, total, side):
+        self.cancel_pointer()
+        if self.collapsed:
+            self.collapsed = 0
+        elif side in (1, 2):
+            layout = self.layout(split, total)
+            if not self._ratio and not layout.compact:
+                self._ratio = layout.first / (total - 1)
+            self.collapsed = side
+        else:
+            return False
+        return True
+
+    def resize(self, split, total, position):
+        old = self.layout(split, total)
+        if self.collapsed or old.compact: return False
+        split.resize(total, position)
+        self._ratio = 0.0
+        return split.preferred != old.first
+
+    def pointer(self, split, total, position, inside, action, side):
+        if action == 'cancel':
+            captured = self.captured
+            self.cancel_pointer()
+            return captured
+        if action == 'down':
+            self.cancel_pointer()
+            layout = self.layout(split, total)
+            if not inside or layout.divider != 1 or position != layout.first: return False
+            self._press = (position, total)
+            return True
+        if not self.captured or action not in ('move', 'up'): return False
+        start, size = self._press
+        if total != size:
+            self.cancel_pointer()
+            return True
+        self._moved = self._moved or action == "move" or position != start or not inside
+        if self._moved: self.resize(split, total, position)
+        if action == 'up':
+            click = not self._moved
+            self.cancel_pointer()
+            if click: self.toggle(split, total, side)
+        return True
+
+
+def split_glyph(rows, ascii, grip, side, collapsed=0):
+    side = collapsed or side
+    if grip and side in (1, 2):
+        first = (side == 1) != bool(collapsed)
+        glyphs = ('^v' if ascii else '↑↓') if rows else ('<>' if ascii else '‹›')
+        return glyphs[0 if first else 1]
+    return ('-' if ascii else '─') if rows else ('|' if ascii else '│')
+
+
 def split(rect: Rect, preferred: int, first_min: int = 0, second_min: int = 0, *, vertical: bool = False) -> tuple[Rect, Rect, Rect]:
     if min(rect.width, rect.height, preferred, first_min, second_min) < 0:
         raise ValueError("negative geometry")

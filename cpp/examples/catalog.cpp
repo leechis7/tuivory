@@ -64,7 +64,7 @@ public:
 };
 } // namespace
 static void workspace_draw(tuivory::Tree &tree, tuivory::Tabs &tabs,
-                           tuivory::Split split, tuivory::Canvas &canvas,
+                           tuivory::Split split, const tuivory::SplitControl &control, tuivory::Canvas &canvas,
                            tuivory::Rect area, bool tab_focus, bool en,
                            bool ascii) {
   using namespace tuivory;
@@ -74,19 +74,21 @@ static void workspace_draw(tuivory::Tree &tree, tuivory::Tabs &tabs,
               area.width)
       .draw(canvas, {area.x, area.y + 1, area.width, 1});
   const int body = std::max(0, area.height - 3);
-  auto layout = split.layout(area.width);
+  auto layout = control.layout(split, area.width);
   Rect right{area.x, area.y + 2, area.width, body};
-  if (!layout.compact) {
+  if (layout.first) {
     auto left = canvas.panel({area.x, area.y + 2, layout.first, body},
                              en ? "Explorer" : "탐색", !tab_focus, ascii);
     tree.draw(canvas, left, !tab_focus, ascii);
+  }
+  if (layout.divider) {
     for (int y = 0; y < body; y++)
-      canvas.write(area.x + layout.first, area.y + 2 + y, ascii ? "|" : "│",
+      canvas.write(area.x + layout.first, area.y + 2 + y, std::string(split_glyph(false, ascii, y == body / 2, SplitSide::first, control.collapsed())),
                    "focus.border");
     right.x += layout.first + 1;
     right.width = layout.second;
   }
-  right = canvas.panel(right, en ? "Content" : "내용", false, ascii);
+  right = canvas.panel(right, en ? "Content" : "내용", !tab_focus && !layout.first, ascii);
   canvas.write(right.x, right.y, en ? "Selected tab" : "선택한 탭", "hint",
                false, right.width);
   canvas.write(right.x, right.y + 1,
@@ -94,7 +96,7 @@ static void workspace_draw(tuivory::Tree &tree, tuivory::Tabs &tabs,
                                        : (en ? "Overview" : "개요")),
                "body", false, right.width);
   status_line({{"ready", en ? "Ready" : "준비", "success", 10},
-               {"keys", en ? "Tab focus | < > resize" : "Tab 포커스 | < > 크기",
+               {"keys", en ? "Tab focus | < > resize | c collapse" : "Tab 포커스 | < > 크기 | c 접기/복원",
                 "hint", 1}},
               area.width)
       .draw(canvas, {area.x, area.y + area.height - 1, area.width, 1});
@@ -188,6 +190,7 @@ int main(int argc, char **argv) {
          {"draft", en ? "Draft document" : "초안 문서", true, true, false},
          {"disabled", en ? "Disabled" : "비활성", false, false, true}});
     Split split(16, 20, 24);
+    SplitControl split_control;
     Text text(en ? (ascii ? "Grapheme text\nEdit with real cursor."
                           : "Unicode é 界\nEdit with real cursor.")
                  : "한글 é 界\n여러 줄을 편집합니다.");
@@ -304,7 +307,7 @@ int main(int argc, char **argv) {
       else if (text_demo)
         text.draw(canvas, area);
       else if (workspace)
-        workspace_draw(tree, tabs, split, canvas, area, tab_focus, en, ascii);
+        workspace_draw(tree, tabs, split, split_control, canvas, area, tab_focus, en, ascii);
       else
         tree.draw(canvas, area, true, ascii);
       const auto hint =
@@ -529,8 +532,13 @@ int main(int argc, char **argv) {
           text.handle(edit_action, input);
       } else if (workspace && key == 9)
         tab_focus = !tab_focus;
+      else if (workspace && key == 'c')
+        split_control.toggle(split, area.width, SplitSide::first);
       else if (workspace && (key == '<' || key == '>'))
-        split.resize(area.width, split.preferred + (key == '<' ? -1 : 1));
+        split_control.resize(split, area.width, split_control.layout(split, area.width).first + (key == '<' ? -1 : 1));
+      else if (workspace && !tab_focus && !split_control.layout(split, area.width).first) {
+        // The visible content panel has no keyboard action here.
+      }
       else if (workspace && tab_focus)
         tabs.handle(std::string(action) == "left"    ? "previous"
                     : std::string(action) == "right" ? "next"

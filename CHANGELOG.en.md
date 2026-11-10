@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.12.3
+
+- All seven SDKs support collapsing a chosen split panel and restoring its previous ratio by divider click or an app binding.
+
 ## 0.12.2
 
 - Grid current cells use a dedicated background and keep the edited asterisk. Dark and light 8-color grids use blue for headers and current cells and teal for selected ranges.

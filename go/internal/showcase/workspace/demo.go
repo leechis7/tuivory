@@ -83,10 +83,13 @@ func Run(args []string) {
 	right, _ := ui.NewPanelView(content, palette())
 	left.SetTitle(text("탐색", "Explorer"))
 	right.SetTitle(text("내용", "Content"))
+	columnControl, rowControl := &ui.SplitControl{}, &ui.SplitControl{}
 	columns := &ui.SplitState{Preferred: 32}
 	rows := &ui.SplitState{Preferred: 8}
 	split, _ := ui.NewSplitView(left, right, columns, ui.SplitSpec{FirstMin: 20, SecondMin: 24}, palette())
+	split.Control, split.CollapseSide = columnControl, ui.SplitFirst
 	if *layout == "rows" {
+		split.Control, split.CollapseSide = rowControl, ui.SplitSecond
 		split.Rows = true
 		split.State = rows
 		split.Spec = ui.SplitSpec{FirstMin: 4, SecondMin: 4}
@@ -119,7 +122,7 @@ func Run(args []string) {
 		if e := status.SetItems([]ui.StatusItem{{ID: "message", Text: message, Role: "info", Priority: 100}, {ID: "changed", Text: text("변경 표시 * / 닫기 x", "Edited * / close x"), Role: "edited", Priority: 20}, {ID: "help", Text: "F1 Help", Role: "hint", Priority: 1}}); e != nil {
 			log.Fatal(e)
 		}
-		hints.SetText(text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · "+quitLabel+" 종료", "Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · "+quitLabel+" quit")).SetTextColor(p["hint"].FG).SetBackgroundColor(p["surface"].BG)
+		hints.SetText(text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · F7 접기/복원 · "+quitLabel+" 종료", "Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · F7 collapse/restore · "+quitLabel+" quit")).SetTextColor(p["hint"].FG).SetBackgroundColor(p["surface"].BG)
 		if *dragEnabled {
 			hints.SetText(text("드래그 이동 · Alt+Shift+방향키 이동 요청 · Esc 취소 · "+quitLabel+" 종료", "Drag to move / Alt+Shift+arrows request move / Esc cancel / "+quitLabel+" quit"))
 		}
@@ -213,11 +216,17 @@ func Run(args []string) {
 			if e.Key() == ui.KeyBacktab {
 				delta = 2
 			}
-			next := (current + delta) % 3
-			if focus[next] != tabView {
-				split.ActiveSecond = focus[next] == content
+			for step := 1; step <= len(focus); step++ {
+				next := focus[(current+delta*step)%3]
+				if next == treeView && split.Control.Collapsed() == ui.SplitFirst || next == content && split.Control.Collapsed() == ui.SplitSecond {
+					continue
+				}
+				if next != tabView {
+					split.ActiveSecond = next == content
+				}
+				app.SetFocus(next)
+				break
 			}
-			app.SetFocus(focus[next])
 			return nil
 		case ui.KeyF1:
 			message = text("탭: ←/→·Enter·x / 트리: 방향키·Space·Enter / Ctrl+방향키 크기 조절", "Tabs: Left/Right, Enter, x / Tree: arrows, Space, Enter / Ctrl+arrows resize")
@@ -245,14 +254,23 @@ func Run(args []string) {
 			_ = tabView.SetTabs(tabs)
 			refresh()
 			return nil
+		case ui.KeyF7:
+			split.TogglePanel(func(p ui.Primitive) { app.SetFocus(p) })
+			return nil
 		case ui.KeyF6:
+			split.Control.CancelPointer()
 			split.Rows = !split.Rows
 			if split.Rows {
+				split.Control, split.CollapseSide = rowControl, ui.SplitSecond
 				split.State = rows
 				split.Spec = ui.SplitSpec{FirstMin: 4, SecondMin: 4}
 			} else {
+				split.Control, split.CollapseSide = columnControl, ui.SplitFirst
 				split.State = columns
 				split.Spec = ui.SplitSpec{FirstMin: 20, SecondMin: 24}
+			}
+			if split.Control.Collapsed() == ui.SplitFirst && treeView.HasFocus() || split.Control.Collapsed() == ui.SplitSecond && content.HasFocus() {
+				split.Focus(func(p ui.Primitive) { app.SetFocus(p) })
 			}
 			return nil
 		}
