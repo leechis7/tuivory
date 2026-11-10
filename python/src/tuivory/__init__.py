@@ -16,7 +16,7 @@ __all__ += ["InputEvent", "InputDecoder", "Terminal"]
 from .workspace import LineRun, LineLayout, path_runs, status_line
 __all__ += ["TabCell", "LineRun", "LineLayout", "path_runs", "status_line"]
 
-from .workspace import Split, SplitLayout
+from .workspace import Split, SplitLayout, SplitControl, split_glyph
 __all__ += ["Split", "SplitLayout"]
 
 __all__ += ["FormOption", "FormRow"]

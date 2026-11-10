@@ -44,14 +44,14 @@ static void restore(void) {
     active = 0;
   }
 }
-static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split,
+static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split, const TuiSplitControl *control,
                            TuiCanvas *canvas, TuiRect area, int tab_focus,
                            int en, int ascii) {
   TuiPathItem path[] = {{"root", en ? "Workspace" : "작업 공간"},
                         {"current", en ? "Components" : "컴포넌트"}};
   TuiStatusItem state[] = {
       {"ready", en ? "Ready" : "준비", "success", 10},
-      {"keys", en ? "Tab focus | < > resize" : "Tab 포커스 | < > 크기", "hint",
+      {"keys", en ? "Tab focus | < > resize | c collapse" : "Tab 포커스 | < > 크기 | c 접기/복원", "hint",
        1}};
   tui_tabs_draw(tabs, canvas, (TuiRect){area.x, area.y, area.width, 1},
                 tab_focus);
@@ -61,20 +61,22 @@ static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split,
     tui_line_free(line);
   }
   int body = area.height > 3 ? area.height - 3 : 0;
-  TuiSplitLayout layout = tui_split_layout(split, area.width);
+  TuiSplitLayout layout = tui_split_control_layout(control, split, area.width);
   TuiRect right = {area.x, area.y + 2, area.width, body};
-  if (!layout.compact) {
+  if (layout.first) {
     TuiRect left = tui_canvas_panel(
         canvas, (TuiRect){area.x, area.y + 2, layout.first, body},
         en ? "Explorer" : "탐색", !tab_focus, ascii);
     tui_tree_draw(tree, canvas, left, !tab_focus, ascii);
+  }
+  if (layout.divider) {
     for (int y = 0; y < body; y++)
       tui_canvas_write(canvas, area.x + layout.first, area.y + 2 + y,
-                       ascii ? "|" : "│", "focus.border", 0, 1);
+                       tui_split_glyph(0, ascii, y == body / 2, TUI_SPLIT_FIRST, control->collapsed), "focus.border", 0, 1);
     right.x += layout.first + 1;
     right.width = layout.second;
   }
-  right = tui_canvas_panel(canvas, right, en ? "Content" : "내용", 0, ascii);
+  right = tui_canvas_panel(canvas, right, en ? "Content" : "내용", !tab_focus && !layout.first, ascii);
   tui_canvas_write(canvas, right.x, right.y, en ? "Selected tab" : "선택한 탭",
                    "hint", 0, right.width);
   tui_canvas_write(canvas, right.x, right.y + 1,
@@ -97,6 +99,7 @@ int main(int argc, char **argv) {
       container_demo = 0, surface_demo = 0, shadow_demo = 0, dialog_demo = 0,
       document_demo = 0, syntax_demo = 0, grid_demo = 0, drag_demo = 0;
   TuiSplit split = {24, 16, 20};
+  TuiSplitControl split_control = {0};
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--lang") && i + 1 < argc)
       en = !strcmp(argv[++i], "en");
@@ -366,7 +369,7 @@ int main(int argc, char **argv) {
     else if (text_demo)
       tui_text_draw(text, canvas, inner, 1);
     else if (workspace)
-      workspace_draw(tree, tabs, split, canvas, inner, tab_focus, en, ascii);
+      workspace_draw(tree, tabs, split, &split_control, canvas, inner, tab_focus, en, ascii);
     else
       tui_tree_draw(tree, canvas, inner, 1, ascii);
     const char *hint =
@@ -626,9 +629,14 @@ int main(int argc, char **argv) {
         tui_text_handle(text, edit_action, input);
     } else if (workspace && key == 9)
       tab_focus = !tab_focus;
+    else if (workspace && key == 'c')
+      tui_split_control_toggle(&split_control, split, inner.width, TUI_SPLIT_FIRST);
     else if (workspace && (key == '<' || key == '>'))
-      tui_split_resize(&split, inner.width,
-                       split.preferred + (key == '<' ? -1 : 1));
+      tui_split_control_resize(&split_control, &split, inner.width,
+        tui_split_control_layout(&split_control, split, inner.width).first + (key == '<' ? -1 : 1));
+    else if (workspace && !tab_focus && !tui_split_control_layout(&split_control, split, inner.width).first) {
+      /* The visible content panel has no keyboard action here. */
+    }
     else if (workspace && tab_focus)
       tui_tabs_handle(tabs, !strcmp(action, "left")    ? "previous"
                             : !strcmp(action, "right") ? "next"

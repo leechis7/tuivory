@@ -1501,6 +1501,80 @@ int tui_split_resize(TuiSplit *s, int total, int position) {
                      max(max(1, s->first_min), position));
   return s->preferred != old.first;
 }
+TuiSplitLayout tui_split_control_layout(const TuiSplitControl *c, TuiSplit split, int total) {
+  if (c && c->collapsed && total > 0) {
+    int first = c->collapsed == TUI_SPLIT_FIRST ? 0 : total - 1;
+    return (TuiSplitLayout){first, 1, total - 1 - first, 0};
+  }
+  TuiSplitLayout old = tui_split_layout(split, total);
+  if (c && c->ratio && !old.compact) {
+    split.preferred = max(1, (int)(c->ratio * (total - 1) + .5));
+    return tui_split_layout(split, total);
+  }
+  return old;
+}
+void tui_split_control_cancel_pointer(TuiSplitControl *c) {
+  if (c) c->pressed = c->moved = 0;
+}
+int tui_split_control_visible_focus(const TuiSplitControl *c, int active_second) {
+  return c && c->collapsed ? c->collapsed == TUI_SPLIT_FIRST : active_second;
+}
+int tui_split_control_toggle(TuiSplitControl *c, TuiSplit split, int total, TuiSplitSide side) {
+  if (!c) return 0;
+  tui_split_control_cancel_pointer(c);
+  if (c->collapsed) c->collapsed = TUI_SPLIT_NEITHER;
+  else if (side == TUI_SPLIT_FIRST || side == TUI_SPLIT_SECOND) {
+    TuiSplitLayout old = tui_split_control_layout(c, split, total);
+    if (!c->ratio && !old.compact) c->ratio = (double)old.first / (total - 1);
+    c->collapsed = side;
+  } else return 0;
+  return 1;
+}
+int tui_split_control_resize(TuiSplitControl *c, TuiSplit *split, int total, int position) {
+  if (!c || !split || c->collapsed) return 0;
+  TuiSplitLayout old = tui_split_control_layout(c, *split, total);
+  if (old.compact) return 0;
+  tui_split_resize(split, total, position);
+  c->ratio = 0;
+  return split->preferred != old.first;
+}
+int tui_split_control_pointer(TuiSplitControl *c, TuiSplit *split, int total, int position, int inside, const char *action, TuiSplitSide side) {
+  if (!c || !split || !action) return 0;
+  if (!strcmp(action, "cancel")) {
+    int had = c->pressed;
+    tui_split_control_cancel_pointer(c);
+    return had;
+  }
+  if (!strcmp(action, "down")) {
+    tui_split_control_cancel_pointer(c);
+    TuiSplitLayout old = tui_split_control_layout(c, *split, total);
+    if (!inside || old.divider != 1 || position != old.first) return 0;
+    c->pressed = 1;
+    c->start = position;
+    c->total = total;
+    return 1;
+  }
+  int up = !strcmp(action, "up");
+  if (!c->pressed || (!up && strcmp(action, "move"))) return 0;
+  if (total != c->total) { tui_split_control_cancel_pointer(c); return 1; }
+  c->moved |= !up || position != c->start || !inside;
+  if (c->moved) tui_split_control_resize(c, split, total, position);
+  if (up) {
+    int click = !c->moved;
+    tui_split_control_cancel_pointer(c);
+    if (click) tui_split_control_toggle(c, *split, total, side);
+  }
+  return 1;
+}
+const char *tui_split_glyph(int rows, int ascii, int grip, TuiSplitSide side, TuiSplitSide collapsed) {
+  if (collapsed) side = collapsed;
+  if (grip && side) {
+    int first = (side == TUI_SPLIT_FIRST) != (collapsed != TUI_SPLIT_NEITHER);
+    if (rows) return ascii ? (first ? "^" : "v") : (first ? "↑" : "↓");
+    return ascii ? (first ? "<" : ">") : (first ? "‹" : "›");
+  }
+  return rows ? (ascii ? "-" : "─") : (ascii ? "|" : "│");
+}
 struct TuiLine {
   TuiLineRun *runs;
   size_t count, capacity, omitted;

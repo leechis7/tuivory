@@ -196,6 +196,91 @@ public:
     return old.first != preferred;
   }
 };
+enum class SplitSide { neither, first, second };
+
+class SplitControl {
+  SplitSide side_ = SplitSide::neither;
+  double ratio_ = 0;
+  bool pressed_ = false, moved_ = false;
+  int start_ = 0, total_ = 0;
+
+public:
+  SplitSide collapsed() const { return side_; }
+  bool captured() const { return pressed_; }
+  bool dragging() const { return pressed_ && moved_; }
+  void cancel_pointer() { pressed_ = moved_ = false; }
+  bool visible_focus(bool active_second) const {
+    return side_ == SplitSide::neither ? active_second : side_ == SplitSide::first;
+  }
+  SplitLayout layout(const Split &split, int total) const {
+    if (side_ != SplitSide::neither && total > 0) {
+      int first = side_ == SplitSide::first ? 0 : total - 1;
+      return {first, 1, total - 1 - first, false};
+    }
+    auto old = split.layout(total);
+    if (ratio_ && !old.compact) {
+      auto scaled = split;
+      scaled.preferred = std::max(1, static_cast<int>(ratio_ * (total - 1) + .5));
+      return scaled.layout(total);
+    }
+    return old;
+  }
+  bool toggle(const Split &split, int total, SplitSide side) {
+    cancel_pointer();
+    if (side_ != SplitSide::neither) side_ = SplitSide::neither;
+    else if (side == SplitSide::first || side == SplitSide::second) {
+      auto old = layout(split, total);
+      if (!ratio_ && !old.compact) ratio_ = double(old.first) / (total - 1);
+      side_ = side;
+    } else return false;
+    return true;
+  }
+  bool resize(Split &split, int total, int position) {
+    auto old = layout(split, total);
+    if (side_ != SplitSide::neither || old.compact) return false;
+    split.resize(total, position);
+    ratio_ = 0;
+    return split.preferred != old.first;
+  }
+  bool pointer(Split &split, int total, int position, bool inside, std::string_view action, SplitSide side) {
+    if (action == "cancel") {
+      bool had = captured();
+      cancel_pointer();
+      return had;
+    }
+    if (action == "down") {
+      cancel_pointer();
+      auto old = layout(split, total);
+      if (!inside || old.divider != 1 || position != old.first) return false;
+      pressed_ = true;
+      start_ = position;
+      total_ = total;
+      return true;
+    }
+    if (!pressed_ || (action != "move" && action != "up")) return false;
+    if (total != total_) { cancel_pointer(); return true; }
+    moved_ = moved_ || action == "move" || position != start_ || !inside;
+    if (moved_) resize(split, total, position);
+    if (action == "up") {
+      bool click = !moved_;
+      cancel_pointer();
+      if (click) toggle(split, total, side);
+    }
+    return true;
+  }
+};
+
+inline std::string_view split_glyph(bool rows, bool ascii, bool grip, SplitSide side,
+                                    SplitSide collapsed = SplitSide::neither) {
+  if (collapsed != SplitSide::neither) side = collapsed;
+  if (grip && side != SplitSide::neither) {
+    bool first = (side == SplitSide::first) != (collapsed != SplitSide::neither);
+    if (rows) return ascii ? (first ? "^" : "v") : (first ? "↑" : "↓");
+    return ascii ? (first ? "<" : ">") : (first ? "‹" : "›");
+  }
+  return rows ? (ascii ? "-" : "─") : (ascii ? "|" : "│");
+}
+
 struct LineRun {
   std::string text, role, id;
   int start = 0, width = 0;

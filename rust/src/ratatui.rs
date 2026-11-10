@@ -37,7 +37,9 @@ use ::ratatui::{
     style::{Color, Modifier, Style},
     widgets::{Block, BorderType, Borders},
 };
-pub use components::{LineWidget, SplitRects, TabsWidget, split_rects};
+pub use components::{
+    LineWidget, SplitRects, TabsWidget, draw_split_divider, split_controlled_rects, split_rects,
+};
 pub use tree::TreeWidget;
 
 impl From<crate::Color> for Color {

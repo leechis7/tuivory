@@ -1,4 +1,4 @@
-# Rust API — source (0.12.2)
+# Rust API — source (0.12.3)
 
 **한국어 (기본)** · [English](rust.en.md)
 
@@ -395,6 +395,112 @@ pub struct PathItem {
 
 
 
+### tuivory::components::SplitControl
+
+```rust
+pub struct SplitControl {
+
+    // Private fields omitted.
+}
+```
+
+Optional collapse, proportional restoration and pointer capture for a split.
+Keep a separate control and state for each independently sized axis.
+
+#### tuivory::components::SplitControl::collapsed
+
+```rust
+pub fn collapsed(&self) -> SplitSide;
+```
+
+
+
+#### tuivory::components::SplitControl::captured
+
+```rust
+pub fn captured(&self) -> bool;
+```
+
+
+
+#### tuivory::components::SplitControl::dragging
+
+```rust
+pub fn dragging(&self) -> bool;
+```
+
+
+
+#### tuivory::components::SplitControl::cancel_pointer
+
+```rust
+pub fn cancel_pointer(&mut self);
+```
+
+
+
+#### tuivory::components::SplitControl::visible_focus
+
+```rust
+pub fn visible_focus(&self, active_second: bool) -> bool;
+```
+
+Returns the visible panel to which the host should route focus.
+
+#### tuivory::components::SplitControl::layout
+
+```rust
+pub fn layout(&self, spec: SplitSpec, state: &SplitState, total: usize) -> SplitLayout;
+```
+
+
+
+#### tuivory::components::SplitControl::toggle
+
+```rust
+pub fn toggle(
+        &mut self,
+        spec: SplitSpec,
+        state: &SplitState,
+        total: usize,
+        side: SplitSide,
+    ) -> bool;
+```
+
+Shared action for keyboard bindings, menus and divider clicks.
+
+#### tuivory::components::SplitControl::resize
+
+```rust
+pub fn resize(
+        &mut self,
+        spec: SplitSpec,
+        state: &mut SplitState,
+        total: usize,
+        position: usize,
+    ) -> bool;
+```
+
+
+
+#### tuivory::components::SplitControl::pointer
+
+```rust
+pub fn pointer(
+        &mut self,
+        spec: SplitSpec,
+        state: &mut SplitState,
+        total: usize,
+        position: isize,
+        inside: bool,
+        action: &str,
+        side: SplitSide,
+    ) -> bool;
+```
+
+Handle down, move, up or cancel; the coordinate is relative to the split axis.
+`inside` includes the perpendicular bounds of the split.
+
 ### tuivory::components::SplitLayout
 
 ```rust
@@ -407,6 +513,20 @@ pub struct SplitLayout {
 ```
 
 
+
+
+### tuivory::components::SplitSide
+
+```rust
+pub enum SplitSide {
+    #[default]
+    Neither,
+    First,
+    Second,
+}
+```
+
+Panel affected by a divider action.
 
 
 ### tuivory::components::SplitSpec
@@ -713,6 +833,21 @@ pub fn clean(text: &str) -> String;
 ```
 
 
+
+
+### tuivory::components::split_glyph
+
+```rust
+pub fn split_glyph(
+    rows: bool,
+    ascii: bool,
+    grip: bool,
+    side: SplitSide,
+    collapsed: SplitSide,
+) -> char;
+```
+
+Divider glyph, or an arrow pointing in the direction of the action.
 
 
 ### tuivory::components::status_line
@@ -3867,6 +4002,39 @@ pub fn new(tree: &'a Tree, styles: &'a Styles) -> Result<Self, crate::Error>;
 pub fn with_drag(mut self, drag: &'a mut crate::drag::DragState) -> Self;
 ```
 
+
+
+### tuivory::ratatui::draw_split_divider
+
+```rust
+pub fn draw_split_divider(
+    area: Rect,
+    buf: &mut Buffer,
+    styles: &Styles,
+    control: &SplitControl,
+    rows: bool,
+    ascii: bool,
+    side: SplitSide,
+) -> Result<(), crate::Error>;
+```
+
+Paint the divider and centered action arrow, clipped to the output buffer.
+
+
+### tuivory::ratatui::split_controlled_rects
+
+```rust
+pub fn split_controlled_rects(
+    area: Rect,
+    spec: SplitSpec,
+    state: &SplitState,
+    control: &SplitControl,
+    rows: bool,
+    active_second: bool,
+) -> SplitRects;
+```
+
+Compute panel and accessible divider rectangles for an optionally collapsed split.
 
 
 ### tuivory::ratatui::split_rects

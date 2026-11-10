@@ -399,15 +399,18 @@ type SplitView struct {
 	Spec                      SplitSpec
 	State                     *SplitState
 	Rows, ActiveSecond, ASCII bool
+	CollapseSide              SplitSide
+	Control                   *SplitControl
+	defaultControl            SplitControl
 	palette                   Palette
-	dragging                  bool
+	releasedDivider           *tcell.EventMouse
 }
 
 func NewSplitView(first, second tview.Primitive, state *SplitState, spec SplitSpec, palette Palette) (*SplitView, error) {
 	if first == nil || second == nil || state == nil {
 		return nil, fmt.Errorf("split: two children and state required")
 	}
-	v := &SplitView{Box: tview.NewBox(), First: first, Second: second, State: state, Spec: spec}
+	v := &SplitView{Box: tview.NewBox(), First: first, Second: second, State: state, Spec: spec, Control: &SplitControl{}}
 	if err := v.SetPalette(palette); err != nil {
 		return nil, err
 	}
@@ -424,20 +427,56 @@ func (v *SplitView) SetPalette(palette Palette) error {
 func (v *SplitView) StyleChildren() []tview.Primitive { return []tview.Primitive{v.First, v.Second} }
 func (v *SplitView) HasFocus() bool                   { return v.First.HasFocus() || v.Second.HasFocus() }
 func (v *SplitView) Focus(delegate func(tview.Primitive)) {
-	if v.ActiveSecond {
-		delegate(v.Second)
-	} else {
-		delegate(v.First)
-	}
+	delegate(v.visibleChild())
 }
 func (v *SplitView) Blur() { v.First.Blur(); v.Second.Blur() }
+func (v *SplitView) splitControl() *SplitControl {
+	if v.Control != nil {
+		return v.Control
+	}
+	return &v.defaultControl
+}
+func (v *SplitView) visibleChild() tview.Primitive {
+	if v.splitControl().VisibleFocus(v.ActiveSecond) {
+		return v.Second
+	}
+	return v.First
+}
+func (v *SplitView) syncSplitFocus(focus func(tview.Primitive)) {
+	if v.splitControl().Collapsed() == SplitNeither {
+		return
+	}
+	v.ActiveSecond = v.splitControl().VisibleFocus(v.ActiveSecond)
+	hidden := v.Second
+	if v.ActiveSecond {
+		hidden = v.First
+	}
+	if hidden.HasFocus() && focus != nil {
+		focus(v.visibleChild())
+	}
+}
+
+// TogglePanel invokes the divider action for an application binding.
+// Pass the application's focus callback so a focused hidden child can hand off.
+func (v *SplitView) TogglePanel(focus func(tview.Primitive)) bool {
+	_, _, w, h, _ := v.geometry()
+	total := w
+	if v.Rows {
+		total = h
+	}
+	changed := v.splitControl().Toggle(v.Spec, v.State, total, v.CollapseSide)
+	if changed {
+		v.syncSplitFocus(focus)
+	}
+	return changed
+}
 func (v *SplitView) geometry() (int, int, int, int, SplitLayout) {
 	x, y, w, h := v.GetInnerRect()
 	total := w
 	if v.Rows {
 		total = h
 	}
-	return x, y, w, h, v.Spec.Layout(v.State, total)
+	return x, y, w, h, v.splitControl().Layout(v.Spec, v.State, total)
 }
 func (v *SplitView) Draw(screen tcell.Screen) {
 	x, y, w, h, l := v.geometry()
@@ -456,26 +495,20 @@ func (v *SplitView) Draw(screen tcell.Screen) {
 	}
 	if v.Rows {
 		v.First.SetRect(x, y, w, l.First)
-		v.Second.SetRect(x, y+l.First+1, w, l.Second)
+		v.Second.SetRect(x, y+l.First+l.Divider, w, l.Second)
 	} else {
 		v.First.SetRect(x, y, l.First, h)
-		v.Second.SetRect(x+l.First+1, y, l.Second, h)
+		v.Second.SetRect(x+l.First+l.Divider, y, l.Second, h)
 	}
-	v.First.Draw(screen)
-	v.Second.Draw(screen)
+	if l.First > 0 {
+		v.First.Draw(screen)
+	}
+	if l.Second > 0 {
+		v.Second.Draw(screen)
+	}
 	st := v.palette["hint"].Style()
-	if v.dragging {
+	if v.splitControl().Dragging() {
 		st = v.palette["focus.border"].Style().Bold(true)
-	}
-	symbol := '│'
-	if v.Rows {
-		symbol = '─'
-	}
-	if v.ASCII {
-		symbol = '|'
-		if v.Rows {
-			symbol = '-'
-		}
 	}
 	length := h
 	if v.Rows {
@@ -486,7 +519,7 @@ func (v *SplitView) Draw(screen tcell.Screen) {
 		if v.Rows {
 			cx, cy = x+i, y+l.First
 		}
-		screen.SetContent(cx, cy, symbol, nil, st)
+		screen.SetContent(cx, cy, SplitGlyph(v.Rows, v.ASCII, i == length/2, v.CollapseSide, v.splitControl().Collapsed()), nil, st)
 	}
 }
 func (v *SplitView) ResizeKey(e *tcell.EventKey) bool {
@@ -508,7 +541,7 @@ func (v *SplitView) ResizeKey(e *tcell.EventKey) bool {
 	if v.Rows {
 		total = h
 	}
-	v.Spec.Resize(v.State, total, l.First+delta)
+	v.splitControl().Resize(v.Spec, v.State, total, l.First+delta)
 	return true
 }
 func (v *SplitView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
@@ -516,10 +549,7 @@ func (v *SplitView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) 
 		if v.ResizeKey(e) {
 			return
 		}
-		child := v.First
-		if v.ActiveSecond {
-			child = v.Second
-		}
+		child := v.visibleChild()
 		if handler := child.InputHandler(); handler != nil {
 			handler(e, focus)
 		}
@@ -536,32 +566,43 @@ func (v *SplitView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, fu
 			position = my - y
 			total = h
 		}
-		if v.dragging {
-			if a == tview.MouseLeftUp {
-				v.Spec.Resize(v.State, total, position)
-				v.dragging = false
-				return true, nil
+		if (a == tview.MouseLeftClick || a == tview.MouseLeftDoubleClick) && e == v.releasedDivider {
+			v.releasedDivider = nil
+			return true, nil
+		}
+		action := ""
+		switch a {
+		case tview.MouseLeftDown:
+			action = "down"
+			v.releasedDivider = nil
+		case tview.MouseLeftUp:
+			action = "up"
+		case tview.MouseMove:
+			action = "move"
+		}
+		if v.splitControl().Pointer(v.Spec, v.State, total, position, inside, action, v.CollapseSide) {
+			if action == "up" {
+				v.releasedDivider = e
+				v.syncSplitFocus(focus)
 			}
-			v.Spec.Resize(v.State, total, position)
+			if v.splitControl().Captured() {
+				return true, v
+			}
+			return true, nil
+		}
+		if v.splitControl().Captured() {
 			return true, v
 		}
 		if !inside {
 			return false, nil
 		}
-		if !l.Compact && position == l.First && a == tview.MouseLeftDown {
-			v.dragging = true
-			return true, v
-		}
-		child := v.First
-		if l.Compact {
-			if v.ActiveSecond {
-				child = v.Second
+		child := v.visibleChild()
+		if !l.Compact {
+			if position == l.First {
+				return false, nil
 			}
-		} else if position > l.First {
-			child = v.Second
-			v.ActiveSecond = true
-		} else {
-			v.ActiveSecond = false
+			v.ActiveSecond = position > l.First
+			child = v.visibleChild()
 		}
 		if handler := child.MouseHandler(); handler != nil {
 			return handler(a, e, focus)

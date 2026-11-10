@@ -11,6 +11,7 @@ This is a follow-up for TVR-15, 16, 30, 31 and 32, adding tabs, panels, splits, 
 | Tabs | `Tab/Tabs/TabCell` | `Tab/Tabs/TabCell` | `TuiTab/TuiTabs/TuiTabCell` | `Tab/Tabs/TabCell` | `Tab/Tabs/TabCell` |
 | Actions/output | `handle/click/layout/draw` | `handle/click/layout/draw` | `tui_tabs_handle/click/layout/draw` | `handle/click/layout/draw` | `handle/click/layout/draw` |
 | Split | `Split.layout/resize` | `Split.layout/resize` | `tui_split_layout/resize` | `Split.layout/resize` | `Split.layout/resize` |
+| Collapse/restore | `SplitControl` | `SplitControl` | `TuiSplitControl`, `tui_split_control_*` | `SplitControl` | `Tuivory.SplitControl` |
 | Panel | `Canvas.panel` | `Canvas.panel` | `tui_canvas_panel` | `Canvas.panel` | `Canvas.panel` |
 | Breadcrumbs | `path_runs` | `pathRuns` | `tui_breadcrumbs` | `breadcrumbs` | `breadcrumbs` |
 | Status line | `status_line` | `statusLine` | `tui_status_line` | `status_line` | `statusLine` |
@@ -30,7 +31,7 @@ Status lines place higher priorities first, preserving input order for ties. War
 
 ## Examples and validation
 
-Select `--demo workspace` in each existing unified example. Presentation options are consistent: `--lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii`. Python/JS use arrows, Tab and Enter; C/C++ use w/s/a/d, Tab and Enter; Java's line-input example accepts up/down/left/right/tab/activate commands. `<` and `>` resize the split. These are host compositions, not mandatory application structures.
+Select `--demo workspace` in each existing unified example. Presentation options are consistent: `--lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii`. Python/JS use arrows, Tab and Enter; C/C++ use w/s/a/d, Tab and Enter; Java's line-input example accepts up/down/left/right/tab/activate commands. `<` and `>` resize the split. The TVR-33 examples toggle collapse with `c` (then Enter for Java). Python and JavaScript also handle divider clicks. C, C++, and Java hosts can wire the pointer API themselves. [Ratio, focus, and input behavior](workspace.en.md#panels-and-splitters). These are host compositions, not mandatory application structures.
 
 ```sh
 make build-c build-cpp build-java

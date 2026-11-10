@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tuivory"
-version = "0.12.2"
+version = "0.12.3"
 description = "Independent Python TUI component models and semantic terminal drawing"
 requires-python = ">=3.11"
 license = "AGPL-3.0-only"

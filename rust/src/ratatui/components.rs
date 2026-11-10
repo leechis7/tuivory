@@ -1,5 +1,8 @@
 use super::Styles;
-use crate::components::{LineRun, SplitSpec, SplitState, TabState, Tabs};
+use crate::components::{
+    LineRun, SplitControl, SplitLayout, SplitSide, SplitSpec, SplitState, TabState, Tabs,
+    split_glyph,
+};
 use ::ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -182,6 +185,33 @@ pub fn split_rects(
         state,
         usize::from(if rows { area.height } else { area.width }),
     );
+    split_layout_rects(area, layout, rows, active_second)
+}
+
+/// Compute panel and accessible divider rectangles for an optionally collapsed split.
+pub fn split_controlled_rects(
+    area: Rect,
+    spec: SplitSpec,
+    state: &SplitState,
+    control: &SplitControl,
+    rows: bool,
+    active_second: bool,
+) -> SplitRects {
+    let total = usize::from(if rows { area.height } else { area.width });
+    split_layout_rects(
+        area,
+        control.layout(spec, state, total),
+        rows,
+        control.visible_focus(active_second),
+    )
+}
+
+fn split_layout_rects(
+    area: Rect,
+    layout: SplitLayout,
+    rows: bool,
+    active_second: bool,
+) -> SplitRects {
     let empty = Rect::new(area.x, area.y, 0, 0);
     if layout.compact {
         return SplitRects {
@@ -196,16 +226,62 @@ pub fn split_rects(
     if rows {
         SplitRects {
             first: Rect::new(area.x, area.y, area.width, first),
-            divider: Rect::new(area.x, area.y + first, area.width, 1),
-            second: Rect::new(area.x, area.y + first + 1, area.width, second),
+            divider: Rect::new(area.x, area.y.saturating_add(first), area.width, 1),
+            second: Rect::new(
+                area.x,
+                area.y.saturating_add(first).saturating_add(1),
+                area.width,
+                second,
+            ),
             compact: false,
         }
     } else {
         SplitRects {
             first: Rect::new(area.x, area.y, first, area.height),
-            divider: Rect::new(area.x + first, area.y, 1, area.height),
-            second: Rect::new(area.x + first + 1, area.y, second, area.height),
+            divider: Rect::new(area.x.saturating_add(first), area.y, 1, area.height),
+            second: Rect::new(
+                area.x.saturating_add(first).saturating_add(1),
+                area.y,
+                second,
+                area.height,
+            ),
             compact: false,
         }
     }
+}
+
+/// Paint the divider and centered action arrow, clipped to the output buffer.
+pub fn draw_split_divider(
+    area: Rect,
+    buf: &mut Buffer,
+    styles: &Styles,
+    control: &SplitControl,
+    rows: bool,
+    ascii: bool,
+    side: SplitSide,
+) -> Result<(), crate::Error> {
+    let style = styles.role(if control.dragging() {
+        "focus.border"
+    } else {
+        "hint"
+    })?;
+    let clip = area.intersection(buf.area);
+    let grip = if rows {
+        area.x.saturating_add(area.width / 2)
+    } else {
+        area.y.saturating_add(area.height / 2)
+    };
+    for y in clip.y..clip.bottom() {
+        for x in clip.x..clip.right() {
+            let glyph = split_glyph(
+                rows,
+                ascii,
+                if rows { x == grip } else { y == grip },
+                side,
+                control.collapsed(),
+            );
+            buf[(x, y)].set_char(glyph).set_style(style);
+        }
+    }
+    Ok(())
 }

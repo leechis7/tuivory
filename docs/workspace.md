@@ -28,6 +28,13 @@ Go: `NewTabs`, `TabState`, `TabAction`, `TabEvent`, `Tabs.Layout/Handle/Click`, 
 
 Go `NewSplitView(first, second, state, spec, palette)`는 열/행 배치·마우스 드래그·크기 조절 키 처리를 제공합니다. 자식이 입력 포커스를 소유할 때 앱의 input capture에서 `split.ResizeKey(event)`로 Ctrl+방향키를 전달합니다. Rust `split_rects`는 같은 모델의 패널/분할선 Rect를 계산합니다. 호스트가 Ctrl+방향키·드래그 좌표를 `SplitSpec::resize`로 전달합니다. 분할 크기를 바꿔도 트리/탭/편집 데이터는 재생성하지 않습니다.
 
+앱이 접을 패널을 지정하면 분할선 클릭이나 앱의 단축키로 접고 복원할 수 있습니다. 접힌 쪽은 그리거나 입력을 보내지 않고, 가장자리에 복원용 분할선 한 칸을 유지합니다. 이전 첫 패널의 비율(분할선을 제외한 길이 기준)을 현재 크기에 적용하고 두 패널의 최소 크기에 맞춥니다. 너무 좁으면 기존 compact 배치를 쓰며 넓어졌을 때 비율을 복원합니다. 드래그는 크기만 바꾸고, 화면 크기나 분할 방향이 바뀌면 누르고 있던 제스처를 취소합니다.
+
+- **Go:** `SplitView.CollapseSide`에 `SplitFirst` 또는 `SplitSecond`를 지정합니다. 분할선 마우스 처리는 뷰가 맡습니다. 앱의 단축키·메뉴에서 `TogglePanel(func(tuivory.Primitive))`에 포커스 콜백을 넘기세요. 독자적인 Tab 순서는 `Control.Collapsed()`를 참고해 접힌 패널을 건너뜁니다.
+- **Rust:** `components::SplitControl`의 `toggle`, `pointer`, `visible_focus`를 사용합니다. `ui::components::split_controlled_rects`와 `draw_split_divider`는 배치와 표시를 맡습니다. 호스트는 `visible_focus`의 결과로 포커스를 옮기고 숨은 패널에 이벤트를 보내지 않습니다.
+- **Python·TypeScript/JavaScript·C·C++·Java:** `SplitControl`(C는 `TuiSplitControl`)의 배치, 토글, 포인터, 포커스 선택 및 분할선 글리프 API를 사용합니다. 포인터 좌표는 열 분할이면 X, 행 분할이면 Y의 분할 영역 기준값이며, `inside`에는 두 축의 영역 검사를 반영합니다. Python과 TypeScript/JavaScript에서 패널 값은 0(지정 안 함), 1(첫째), 2(둘째)입니다.
+- Go·Rust 견본은 F7 또는 분할선 클릭으로 접고 펼칩니다. F6은 분할 방향을 바꿉니다. 독립 견본은 `c`(Java는 `c` 후 Enter)를 쓰고, Python·JavaScript 견본은 분할선 클릭도 지원합니다. Shell은 분할창 구현이 없는 참조 견본입니다.
+
 ## 경로·상태 표시줄
 
 `Breadcrumbs/breadcrumbs`는 `PathItem { ID/id, Label/label }`을 셀 범위 `LineRun`으로 배치합니다. `/`는 구분자, `...`는 생략 구간입니다. 가능하면 루트와 현재 위치를 유지하고, 부족하면 현재 위치를 우선합니다. 현재 이름 자체가 너무 길면 앞을 `~`로 줄여 뒤쪽 이름을 보존합니다. 생략 표식/구분자에는 이동 ID가 없으며, 보이는 항목 클릭만 앱에 이동 요청을 전달합니다. Go `NewBreadcrumbView`는 클릭 콜백을 제공하며 Rust는 반환한 범위를 이용해 앱이 hit test합니다.
@@ -73,13 +80,15 @@ make run-workspace-go ARGS="--lang ko"
 make run-workspace-rust ARGS="--lang en --ascii"
 ```
 
-두 예제는 기본 한국어, `--lang en`, `--theme dark|light|blackwhite`, `--colors 8|16|256|truecolor`, `--ascii`를 지원합니다. Tab/Shift+Tab으로 탭→트리→내용 포커스, F1 안내, F2 테마, F3 색상, F4 ASCII, F5 활성 문서 변경 상태, F6 열/행 분할을 바꿉니다. Ctrl+방향키와 분할선 드래그로 크기를 조절하고 Ctrl+Q로 종료합니다. 변경된 문서 닫기는 앱이 보류하며 F5로 변경 상태를 해제한 후 다시 닫으면 앱이 제거합니다. 파일·DB에 저장하지 않습니다. 기본 `make build`와 `make build-rust`의 제품 출력 정책은 유지합니다.
+두 예제는 기본 한국어, `--lang en`, `--theme dark|light|blackwhite`, `--colors 8|16|256|truecolor`, `--ascii`를 지원합니다. Tab/Shift+Tab으로 탭→트리→내용 포커스, F1 안내, F2 테마, F3 색상, F4 ASCII, F5 활성 문서 변경 상태, F6으로 열/행 분할을 바꾸고, F7 또는 분할선 클릭으로 지정 패널을 접고 복원합니다. Ctrl+방향키와 분할선 드래그로 크기를 조절하고 Ctrl+Q로 종료합니다. 변경된 문서 닫기는 앱이 보류하며 F5로 변경 상태를 해제한 후 다시 닫으면 앱이 제거합니다. 파일·DB에 저장하지 않습니다. 기본 `make build`와 `make build-rust`의 제품 출력 정책은 유지합니다.
 
 ![한국어 공통 워크스페이스](images/workspace-dark.svg)
 
 [밝은 테마](images/workspace-light.svg) · [흑백](images/workspace-blackwhite.svg) · [ASCII](images/workspace-ascii.svg). 실제 Rust 호스트의 Ratatui TestBackend 120×32 참조 SVG이며 Go 캡처나 원격 단말 결과가 아닙니다. `tools/snapshot_workspace.py`로 한영 8장을 생성합니다.
 
 ## 검증 범위
+
+[TVR-33 공통 상태 전환 사례](../design/split-control-cases.json) · [로컬 검증 결과](evidence/tvr33-split-collapse-results.json)
 
 공통 `design/components-cases.json`은 탭 탐색/닫기/넘침, 경로 생략, 상태 우선순위·생략 결과를 Go/Rust에서 동일하게 검사합니다. `tools/export_tree_cases.py`는 이 파일과 Tree 명세의 테스트 사본을 함께 생성합니다. 별도로 12팔레트 렌더링·포커스 구분·닫기 요청의 데이터 보존·작은 화면 후 분할 선호 복원·드래그·클릭·0 크기 영역·외부 프로젝트 import/렌더링을 확인합니다.
 

@@ -11,6 +11,7 @@ TVR-15·16·30·31·32의 후속 단계입니다. 다섯 언어의 Tree에 탭·
 | 탭 | `Tab/Tabs/TabCell` | `Tab/Tabs/TabCell` | `TuiTab/TuiTabs/TuiTabCell` | `Tab/Tabs/TabCell` | `Tab/Tabs/TabCell` |
 | 조작·출력 | `handle/click/layout/draw` | `handle/click/layout/draw` | `tui_tabs_handle/click/layout/draw` | `handle/click/layout/draw` | `handle/click/layout/draw` |
 | 분할 | `Split.layout/resize` | `Split.layout/resize` | `tui_split_layout/resize` | `Split.layout/resize` | `Split.layout/resize` |
+| 접기·복원 | `SplitControl` | `SplitControl` | `TuiSplitControl`, `tui_split_control_*` | `SplitControl` | `Tuivory.SplitControl` |
 | 패널 | `Canvas.panel` | `Canvas.panel` | `tui_canvas_panel` | `Canvas.panel` | `Canvas.panel` |
 | 경로 | `path_runs` | `pathRuns` | `tui_breadcrumbs` | `breadcrumbs` | `breadcrumbs` |
 | 상태줄 | `status_line` | `statusLine` | `tui_status_line` | `status_line` | `statusLine` |
@@ -30,7 +31,7 @@ C의 line 객체는 `tui_line_free`로 해제합니다. `tui_line_text`가 반�
 
 ## 예제와 검증
 
-언어별 기존 통합 예제에서 `--demo workspace`를 선택합니다. `--lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii` 옵션은 동일합니다. Python/JS는 방향키·Tab·Enter, C/C++는 w/s/a/d·Tab·Enter, Java 줄 입력 예제는 up/down/left/right/tab/activate 명령을 사용합니다. `<`·`>`로 분할 크기를 조절합니다. 예제 화면은 호스트 조합이며 필수 앱 구조가 아닙니다.
+언어별 기존 통합 예제에서 `--demo workspace`를 선택합니다. `--lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii` 옵션은 동일합니다. Python/JS는 방향키·Tab·Enter, C/C++는 w/s/a/d·Tab·Enter, Java 줄 입력 예제는 up/down/left/right/tab/activate 명령을 사용합니다. `<`·`>`로 분할 크기를 조절합니다. TVR-33 견본에서는 `c`로 접기·복원을 호출합니다(Java는 Enter 포함). Python·JavaScript는 분할선 클릭도 지원합니다. C·C++·Java의 포인터 API는 호스트가 연결합니다. [비율·포커스·이벤트 규칙](workspace.md#패널분할선). 예제 화면은 호스트 조합이며 필수 앱 구조가 아닙니다.
 
 ```sh
 make build-c build-cpp build-java

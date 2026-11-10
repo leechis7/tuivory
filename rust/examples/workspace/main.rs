@@ -26,7 +26,10 @@ use tuivory::{
     components::*,
     drag::{DragAction, DragMove, DragOptions, DragPointer, DragState, DropPosition, DropRequest},
     tree::{Tree, TreeAction, TreeNode, TreeState},
-    ui::components::{LineWidget, SplitRects, Styles, TabsWidget, TreeWidget, split_rects},
+    ui::components::{
+        LineWidget, SplitRects, Styles, TabsWidget, TreeWidget, draw_split_divider,
+        split_controlled_rects,
+    },
 };
 struct App {
     drag_enabled: bool,
@@ -57,7 +60,8 @@ struct App {
     tree_inner: Rect,
     content_inner: Rect,
     rects: SplitRects,
-    dragging: bool,
+    column_control: SplitControl,
+    row_control: SplitControl,
     content_scroll: u16,
 }
 impl App {
@@ -230,19 +234,73 @@ impl App {
     fn split_state(&self) -> &SplitState {
         if self.rows { &self.row } else { &self.column }
     }
-    fn resize(&mut self, position: usize) {
-        let spec = self.spec();
-        let total = usize::from(if self.rows {
+    fn control(&self) -> &SplitControl {
+        if self.rows {
+            &self.row_control
+        } else {
+            &self.column_control
+        }
+    }
+    fn side(&self) -> SplitSide {
+        if self.rows {
+            SplitSide::Second
+        } else {
+            SplitSide::First
+        }
+    }
+    fn split_total(&self) -> usize {
+        usize::from(if self.rows {
             self.body.height
         } else {
             self.body.width
-        });
-        let state = if self.rows {
-            &mut self.row
+        })
+    }
+    fn split_parts(&mut self) -> (&mut SplitControl, &mut SplitState) {
+        if self.rows {
+            (&mut self.row_control, &mut self.row)
         } else {
-            &mut self.column
-        };
-        spec.resize(state, total, position);
+            (&mut self.column_control, &mut self.column)
+        }
+    }
+    fn sync_split_focus(&mut self) {
+        if self.control().collapsed() != SplitSide::Neither {
+            self.active_second = self.control().visible_focus(self.active_second);
+            if self.focus != 0 {
+                self.focus = if self.active_second { 2 } else { 1 };
+            }
+        }
+    }
+    fn cycle_focus(&mut self, forward: bool) {
+        let at = self
+            .focus_order
+            .iter()
+            .position(|f| *f == self.focus)
+            .unwrap_or(0);
+        let delta = if forward { 1 } else { 2 };
+        for step in 1..=3 {
+            let next = self.focus_order[(at + delta * step) % 3];
+            if (next == 1 && self.control().collapsed() == SplitSide::First)
+                || (next == 2 && self.control().collapsed() == SplitSide::Second)
+            {
+                continue;
+            }
+            self.focus = next;
+            if next != 0 {
+                self.active_second = next == 2;
+            }
+            break;
+        }
+    }
+    fn toggle_split(&mut self) {
+        let (spec, total, side) = (self.spec(), self.split_total(), self.side());
+        let (control, state) = self.split_parts();
+        control.toggle(spec, state, total, side);
+        self.sync_split_focus();
+    }
+    fn resize(&mut self, position: usize) {
+        let (spec, total) = (self.spec(), self.split_total());
+        let (control, state) = self.split_parts();
+        control.resize(spec, state, total, position);
     }
     fn tab_event(&mut self, event: Option<TabEvent>) {
         if let Some(event) = event {
@@ -319,10 +377,11 @@ impl App {
         }
         frame.render_stateful_widget(tabs, layout[2], &mut self.tab);
         self.body = layout[3];
-        self.rects = split_rects(
+        self.rects = split_controlled_rects(
             self.body,
             self.spec(),
             self.split_state(),
+            self.control(),
             self.rows,
             self.active_second,
         );
@@ -363,28 +422,15 @@ impl App {
                 self.content_inner,
             );
         }
-        if !self.rects.compact {
-            let glyph = if self.rows {
-                if self.ascii { "-" } else { "─" }
-            } else if self.ascii {
-                "|"
-            } else {
-                "│"
-            };
-            for y in self.rects.divider.y..self.rects.divider.bottom() {
-                for x in self.rects.divider.x..self.rects.divider.right() {
-                    frame.buffer_mut()[(x, y)].set_symbol(glyph).set_style(
-                        self.styles
-                            .role(if self.dragging {
-                                "focus.border"
-                            } else {
-                                "hint"
-                            })
-                            .unwrap(),
-                    );
-                }
-            }
-        }
+        let _ = draw_split_divider(
+            self.rects.divider,
+            frame.buffer_mut(),
+            &self.styles,
+            self.control(),
+            self.rows,
+            self.ascii,
+            self.side(),
+        );
         let statuses = vec![
             StatusItem {
                 id: "message".into(),
@@ -420,7 +466,7 @@ impl App {
         } else {
             "Ctrl+Q"
         };
-        frame.render_widget(Paragraph::new(self.text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · Ctrl+Q 종료","Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · Ctrl+Q quit").replace("Ctrl+Q",quit_label)).style(self.styles.role("hint").unwrap()),layout[5]);
+        frame.render_widget(Paragraph::new(self.text("Tab 이동 · F2 테마 · F3 색상 · F4 ASCII · F5 변경 · F6 분할 방향 · F7 접기/복원 · Ctrl+Q 종료","Tab focus · F2 theme · F3 colors · F4 ASCII · F5 edited · F6 split axis · F7 collapse/restore · Ctrl+Q quit").replace("Ctrl+Q",quit_label)).style(self.styles.role("hint").unwrap()),layout[5]);
         if self.drag_enabled {
             frame.render_widget(
                 Paragraph::new(
@@ -661,7 +707,8 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             second: Rect::default(),
             compact: true,
         },
-        dragging: false,
+        column_control: SplitControl::default(),
+        row_control: SplitControl::default(),
         content_scroll: 0,
     };
     app.tabs.reconcile(&mut app.tab);
@@ -740,49 +787,47 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                         _ => 0,
                     };
                     if delta != 0 {
-                        let l = app.spec().layout(
-                            app.split_state(),
-                            usize::from(if app.rows {
-                                app.body.height
-                            } else {
-                                app.body.width
-                            }),
-                        );
+                        let l =
+                            app.control()
+                                .layout(app.spec(), app.split_state(), app.split_total());
                         app.resize(l.first.saturating_add_signed(delta));
                         continue;
                     }
                 }
-                match key.code{KeyCode::Tab|KeyCode::BackTab=>{let at=app.focus_order.iter().position(|f|*f==app.focus).unwrap_or(0);app.focus=app.focus_order[(at+if key.code==KeyCode::Tab{1}else{2})%3];if app.focus!=0{app.active_second=app.focus==2}},
+                match key.code{KeyCode::Tab|KeyCode::BackTab=>app.cycle_focus(key.code==KeyCode::Tab),
+                KeyCode::F(7)=>app.toggle_split(),
                 KeyCode::F(1)=>app.message=app.text("탭: ←/→·Enter·x / 트리: 방향키·Space·Enter / Ctrl+방향키 크기 조절","Tabs: Left/Right, Enter, x / Tree: arrows, Space, Enter / Ctrl+arrows resize").into(),
                 KeyCode::F(2)=>{app.theme=match app.theme{Theme::Dark=>Theme::Light,Theme::Light=>Theme::Blackwhite,Theme::Blackwhite=>Theme::Dark};app.styles=Styles::new(app.theme,app.profile)?},
                 KeyCode::F(3)=>{app.profile=match app.profile{ColorProfile::Ansi8=>ColorProfile::Ansi16,ColorProfile::Ansi16=>ColorProfile::Indexed256,ColorProfile::Indexed256=>ColorProfile::Truecolor,ColorProfile::Truecolor=>ColorProfile::Ansi8};app.styles=Styles::new(app.theme,app.profile)?},
-                KeyCode::F(4)=>app.ascii= !app.ascii,KeyCode::F(5)=>{for item in &mut app.items{if item.id==app.tab.active{item.edited= !item.edited}}app.tabs=Tabs::new(app.items.clone())?;app.tabs.reconcile(&mut app.tab)},KeyCode::F(6)=>app.rows= !app.rows,
+                KeyCode::F(4)=>app.ascii= !app.ascii,KeyCode::F(5)=>{for item in &mut app.items{if item.id==app.tab.active{item.edited= !item.edited}}app.tabs=Tabs::new(app.items.clone())?;app.tabs.reconcile(&mut app.tab)},KeyCode::F(6)=>{app.split_parts().0.cancel_pointer();app.rows= !app.rows;app.sync_split_focus()},
                 _ if app.focus==0=>{let action=match key.code{KeyCode::Left=>Some(TabAction::Previous),KeyCode::Right=>Some(TabAction::Next),KeyCode::Home=>Some(TabAction::First),KeyCode::End=>Some(TabAction::Last),KeyCode::Enter=>Some(TabAction::Activate),KeyCode::Delete|KeyCode::Char('x')=>Some(TabAction::Close),_=>None};if let Some(action)=action{let event=app.tabs.handle(&mut app.tab,action);app.tab_event(event)}},
                 _ if app.focus==1=>{let action=match key.code{KeyCode::Left if key.modifiers.contains(KeyModifiers::ALT)=>Some(TreeAction::PanLeft),KeyCode::Right if key.modifiers.contains(KeyModifiers::ALT)=>Some(TreeAction::PanRight),KeyCode::Left=>Some(TreeAction::Left),KeyCode::Right=>Some(TreeAction::Right),KeyCode::Up=>Some(TreeAction::Up),KeyCode::Down=>Some(TreeAction::Down),KeyCode::Home=>Some(TreeAction::Home),KeyCode::End=>Some(TreeAction::End),KeyCode::PageUp=>Some(TreeAction::PageUp),KeyCode::PageDown=>Some(TreeAction::PageDown),KeyCode::Enter=>Some(TreeAction::Activate),KeyCode::Char(' ')=>Some(TreeAction::Toggle),_=>None};if let Some(action)=action{app.tree_action(action)}},
                 KeyCode::Up if app.focus==2=>app.content_scroll=app.content_scroll.saturating_sub(1),KeyCode::Down if app.focus==2=>app.content_scroll=app.content_scroll.saturating_add(1).min(20),_=>(),
             }
             }
             Event::Mouse(mouse) => {
-                if app.drag_mouse(mouse) {
-                    continue;
-                }
                 let position = (mouse.column, mouse.row).into();
-                if app.dragging {
+                let action = match mouse.kind {
+                    MouseEventKind::Down(MouseButton::Left) => "down",
+                    MouseEventKind::Drag(MouseButton::Left) => "move",
+                    MouseEventKind::Up(MouseButton::Left) => "up",
+                    _ => "",
+                };
+                if !action.is_empty() && app.drag_press.is_none() {
+                    let (spec, total, side) = (app.spec(), app.split_total(), app.side());
                     let offset = if app.rows {
-                        mouse.row.saturating_sub(app.body.y)
+                        mouse.row as isize - app.body.y as isize
                     } else {
-                        mouse.column.saturating_sub(app.body.x)
+                        mouse.column as isize - app.body.x as isize
                     };
-                    app.resize(usize::from(offset));
-                    if mouse.kind == MouseEventKind::Up(MouseButton::Left) {
-                        app.dragging = false
+                    let inside = app.body.contains(position);
+                    let (control, state) = app.split_parts();
+                    if control.pointer(spec, state, total, offset, inside, action, side) {
+                        app.sync_split_focus();
+                        continue;
                     }
-                    continue;
                 }
-                if mouse.kind == MouseEventKind::Down(MouseButton::Left)
-                    && app.rects.divider.contains(position)
-                {
-                    app.dragging = true;
+                if app.drag_mouse(mouse) {
                     continue;
                 }
                 if mouse.row == 2 && mouse.kind == MouseEventKind::Down(MouseButton::Left) {
@@ -831,7 +876,10 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                     app.active_second = true;
                 }
             }
-            Event::Resize(_, _) => app.cancel_drop(),
+            Event::Resize(_, _) => {
+                app.cancel_drop();
+                app.split_parts().0.cancel_pointer();
+            }
             _ => (),
         }
     }

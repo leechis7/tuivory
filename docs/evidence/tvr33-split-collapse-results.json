@@ -1,0 +1,29 @@
+{
+  "issue": "TVR-33",
+  "stage": "local worktree",
+  "base": "88265e85d3fba40e36f30249f68e8a56056420a1",
+  "scope": ["Go", "Rust", "Python", "TypeScript/JavaScript", "C", "C++", "Java"],
+  "checks": {
+    "go_rust_pty": {
+      "command": "python3 tools/check_split_example.py <unified-example>",
+      "combinations": 16,
+      "dimensions": ["Go and Rust", "columns and rows", "Unicode and ASCII", "Korean and English"],
+      "behavior": ["pointer drag versus click", "focus handoff", "Tab skips hidden pane", "edge grip in compact width or height", "restore previous ratio after resize", "keyboard toggle", "terminal restoration"]
+    },
+    "independent_model_transitions": {
+      "command": "python3 tools/check_split_models.py",
+      "cases_per_implementation": 20,
+      "implementations": 5,
+      "behavior": ["both panels", "zero- and one-cell space", "minimum clamp", "resize and cancel during pointer capture", "outside release"]
+    },
+    "independent_workspace_pty": {
+      "command": "python3 tools/check_language_examples.py --demo workspace",
+      "combinations": 10,
+      "behavior": ["keyboard toggle in five implementations", "divider click in Python and JavaScript"]
+    },
+    "other": ["Go unit suite", "Rust components suite and Clippy", "host ARM64 static example builds", "Java JAR and TypeScript builds", "Korean and English workspace images and API documentation"]
+  },
+  "scope_exception": "The Shell terminal reference has no split component.",
+  "github_ci": "not run for this change",
+  "publication": "local"
+}

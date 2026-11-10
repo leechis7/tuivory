@@ -103,6 +103,7 @@ jobs:
           python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --demo workspace --lang ko
           python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --demo workspace --lang en
           python3 tools/smoke_workspace.py bin/go/tuivory-linux-x86_64 --demo workspace
+          python3 tools/check_split_example.py bin/go/tuivory-linux-x86_64
       - name: Check public catalog widgets
         run: |
           python3 tools/smoke_catalog.py bin/go/tuivory-linux-x86_64 --demo catalog --lang ko
@@ -194,6 +195,7 @@ jobs:
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --lang ko
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --lang en
           python3 tools/smoke_workspace.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace
+          python3 tools/check_split_example.py "$CARGO_TARGET_DIR/debug/examples/showcase"
           python3 tools/snapshot_workspace.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --output "$RUNNER_TEMP/tuivory-workspace-images"
       - name: Check public focus scopes, popups and reference views
         run: |
@@ -343,6 +345,7 @@ jobs:
           python -m pip download --only-binary=:all: --dest .cache/packages/python/deps regex wcwidth
           npm pack ./javascript --pack-destination .cache/packages/javascript
           python tools/check_runtime_languages.py
+          python tools/check_split_models.py
           python tools/package_languages.py
           python tools/check_language_archives.py
   independent-examples:

@@ -28,6 +28,13 @@ Panels share titles, borders, surfaces, and default one-cell padding. Double bor
 
 Go `NewSplitView(first, second, state, spec, palette)` provides column/row layout, mouse dragging, and resize-key handling. When a child owns application focus, route Ctrl+arrows through `split.ResizeKey(event)` in the host input capture. Rust `split_rects` returns panel/divider rectangles from the same model; hosts pass Ctrl+arrow adjustments and drag coordinates to `SplitSpec::resize`. Resizing does not recreate tree, tab, or edit data.
 
+When the app chooses a panel to collapse, the divider or an app key can collapse and restore it. Skip drawing and input for the hidden child. A one-cell divider at the edge remains available to restore it. Restore scales the previous first-panel ratio against the current space excluding the divider, then applies both minimum sizes. If the area is too small, the split stays in compact layout until there is room. Dragging only resizes; a size or axis change cancels an outstanding gesture.
+
+- **Go:** Set `SplitView.CollapseSide` to `SplitFirst` or `SplitSecond`. The view handles divider pointer events. From an app key or menu, call `TogglePanel(func(tuivory.Primitive))` with the app's focus callback. App-owned Tab order can check `Control.Collapsed()` to skip the hidden panel.
+- **Rust:** Use `components::SplitControl` and its `toggle`, `pointer`, and `visible_focus` methods. The `ui::components::split_controlled_rects` and `draw_split_divider` helpers handle layout and drawing. Route focus using `visible_focus` and skip input for the hidden child.
+- **Python, TypeScript/JavaScript, C, C++, and Java:** Use the layout, toggle, pointer, focus selection, and glyph APIs of `SplitControl` (`TuiSplitControl` in C). Pass the local X coordinate for columns or Y for rows, and set `inside` from both axes. Python and TypeScript/JavaScript use panel values 0 (none), 1 (first), and 2 (second).
+- Go and Rust examples use F7 or a divider click to toggle, and F6 to change the split axis. Independent examples use `c` (followed by Enter in Java); Python and JavaScript examples also handle divider clicks. The Shell reference has no split component.
+
 ## Breadcrumbs and status bar
 
 `Breadcrumbs/breadcrumbs` lays out `PathItem` IDs/labels into literal `LineRun` cell ranges. `/` separates items and `...` indicates omitted ancestors. Preserve root and current location when possible; prioritize current location when space is scarce. An oversized current label truncates its beginning with `~`, retaining the tail. Decorations have no navigation IDs; only visible items request host navigation. Go `NewBreadcrumbView` exposes the click callback; Rust hosts hit-test returned ranges.
@@ -73,13 +80,15 @@ make run-workspace-go ARGS="--lang en"
 make run-workspace-rust ARGS="--lang en --ascii"
 ```
 
-Both examples default to Korean and support `--lang en`, `--theme dark|light|blackwhite`, `--colors 8|16|256|truecolor`, and `--ascii`. Tab/Shift+Tab cycles tabs→tree→content focus. F1 shows guidance, F2 themes, F3 colors, F4 ASCII, F5 active-document edited state, and F6 column/row splits. Ctrl+arrows and divider dragging resize panes; Ctrl+Q exits. Hosts retain edited tabs on close requests; clear edited state with F5 and close again to remove the tab. Nothing is saved to files/databases. Default product output policies for `make build` and `make build-rust` remain.
+Both examples default to Korean and support `--lang en`, `--theme dark|light|blackwhite`, `--colors 8|16|256|truecolor`, and `--ascii`. Tab/Shift+Tab cycles tabs→tree→content focus. F1 shows guidance, F2 themes, F3 colors, F4 ASCII, F5 active-document edited state, and F6 column/row splits. F7 or a divider click toggles the chosen panel. Ctrl+arrows and divider dragging resize panes; Ctrl+Q exits. Hosts retain edited tabs on close requests; clear edited state with F5 and close again to remove the tab. Nothing is saved to files/databases. Default product output policies for `make build` and `make build-rust` remain.
 
 ![Shared workspace in English](images/workspace-dark-en.svg)
 
 [Light](images/workspace-light-en.svg) · [monochrome](images/workspace-blackwhite-en.svg) · [ASCII](images/workspace-ascii-en.svg). These 120×32 reference SVGs render the actual Rust host with Ratatui TestBackend; they are neither Go captures nor remote terminal results. Generate all eight language-matched images with `tools/snapshot_workspace.py`.
 
 ## Validation scope
+
+[TVR-33 shared state transitions](../design/split-control-cases.json) · [Local validation results](evidence/tvr33-split-collapse-results.json)
 
 Shared `design/components-cases.json` defines identical Go/Rust expectations for tab navigation/closing/overflow, breadcrumb omission, and status priority/packing. `tools/export_tree_cases.py` mirrors this and the Tree specification into module-local tests. Separate checks cover twelve-palette rendering, independent focus, close-request data preservation, split-preference restoration after narrow screens, dragging/clicks, zero-sized areas, and external imports/rendering.
 
