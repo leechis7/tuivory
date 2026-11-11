@@ -5170,6 +5170,8 @@ public final class Tuivory {
     }
     return String.join("\n", out);
   }
+  public enum GridRowDraft { NORMAL, ADDED, MODIFIED, DELETED }
+
   public static final class Grid {
     private GridSource source;
     public List<GridColumn> columns;
@@ -5180,6 +5182,8 @@ public final class Tuivory {
     private final Map<String, GridColumnOptions> columnConfig = new HashMap<>();
     private final Map<String, Integer> cellPan = new HashMap<>();
     private GridCellProvider cellProvider;
+    private java.util.function.Function<String, GridRowDraft> rowDraft;
+    private boolean dimDeletes;
     public GridEditSession edit;
     public GridRange selected;
     private GridPasteRequest paste;
@@ -5415,6 +5419,13 @@ public final class Tuivory {
     public void setEditOptions(GridEditOptions options) {
       invalidate();
       editOptions = options.copy();
+    }
+    /** Look up pending changes by stable row ID; null clears the provider. */
+    public void setRowDraft(java.util.function.Function<String, GridRowDraft> lookup, boolean dimDeletes) {
+      if (callback)
+        throw new IllegalArgumentException("grid mutation inside callback");
+      rowDraft = lookup;
+      this.dimDeletes = dimDeletes;
     }
     public void setCellInfo(GridCellProvider fn) {
       invalidate();
@@ -6078,12 +6089,17 @@ public final class Tuivory {
           break;
         var record = record(i);
         hitRows.put(i, record.id);
-        if (geo.gutter() > 0)
-          child.write(0, y,
-              gridFit(o.rowNumbers ? String.valueOf(i + 1) : "", Math.max(0, geo.gutter() - 1),
-                  "right", false)
-                  + " ",
+        var draft = rowDraft == null ? GridRowDraft.NORMAL : invoke(() -> rowDraft.apply(record.id));
+        if (geo.gutter() > 0) {
+          String number = o.rowNumbers ? String.valueOf(i + 1) : "";
+          String mark = !o.rowNumbers ? "" : draft == GridRowDraft.ADDED ? "+" :
+              draft == GridRowDraft.MODIFIED ? "*" : draft == GridRowDraft.DELETED ? (ascii || o.ascii ? "-" : "−") : "";
+          int room = Math.max(0, geo.gutter() - 1);
+          if (!mark.isEmpty() && number.length() > room)
+            number = number.substring(number.length() - room);
+          child.write(0, y, mark + gridFit(number, room, "right", false) + (mark.isEmpty() ? " " : ""),
               record.state.disabled ? "disabled" : "hint", false, geo.gutter());
+        }
         for (var span : geo.columns()) {
           var c = byId.get(span.id());
           var info = info(record, c);
@@ -6141,6 +6157,14 @@ public final class Tuivory {
           String value = " ".repeat(pad) + marker + text;
           value += " ".repeat(Math.max(0, span.width() - cells(value)));
           child.write(span.x(), y, value, role, false, span.width());
+          if (draft == GridRowDraft.DELETED && dimDeletes && !editing && !state.edited &&
+              (role.equals("body") || role.equals("surface"))) {
+            for (int x = span.x(); x < span.x() + span.width(); x++) {
+              var cell = child.data[y][x];
+              var style = cell.style;
+              cell.style = new Style(style.foreground(), style.background(), style.bold(), true, style.underline(), style.italic());
+            }
+          }
           if (editing && edit != null && !edit.pending && !edit.isNull) {
             var buf = edit.buffer;
             int lo = Math.min(buf.anchor, buf.cursor),

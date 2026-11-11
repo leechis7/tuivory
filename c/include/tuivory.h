@@ -811,6 +811,13 @@ const char *tui_document_syntax_error(const TuiDocument *document);
  * not mutate or free the grid. A returned row is borrowed until the next
  * source callback; the grid copies it before calling index_of. */
 typedef struct TuiGrid TuiGrid;
+typedef enum {
+  TUI_GRID_ROW_NORMAL, TUI_GRID_ROW_ADDED, TUI_GRID_ROW_MODIFIED, TUI_GRID_ROW_DELETED
+} TuiGridRowDraft;
+typedef TuiGridRowDraft (*TuiGridRowDraftLookup)(void *context, const char *row_id);
+/* Look up pending changes by stable row ID. NULL clears the provider. */
+TuiResult tui_grid_set_row_draft(TuiGrid *grid, TuiGridRowDraftLookup lookup,
+                                 void *context, int dim_deletes);
 typedef struct TuiGridGeometry TuiGridGeometry;
 typedef struct TuiGridViewState TuiGridViewState;
 typedef struct TuiGridTSV TuiGridTSV;

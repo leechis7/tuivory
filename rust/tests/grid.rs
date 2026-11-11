@@ -459,3 +459,97 @@ fn viewport_does_not_jump_when_moving_up() {
     g.handle("up", 12);
     assert_eq!(g.geometry(40, 12).top, before);
 }
+
+#[cfg(feature = "ratatui")]
+#[test]
+fn row_draft_survives_source_reorder_without_changing_copy_or_focus() {
+    use ratatui::{Terminal, backend::TestBackend, style::Modifier};
+    use tuivory::{
+        ColorProfile, Theme,
+        grid::{GridRowDraft, grid_preset},
+        ratatui::{GridWidget, Styles},
+    };
+    let record = |id: &str| GridRecord {
+        id: id.into(),
+        cells: [("name".into(), format!("raw {id}"))].into(),
+        ..Default::default()
+    };
+    let source = |ids: &[&str]| {
+        Box::new(MemoryRows::new(ids.iter().map(|id| record(id)).collect()).unwrap())
+    };
+    let mut grid = Grid::new(
+        vec![GridColumn {
+            id: "name".into(),
+            label: "Name".into(),
+            width: 12,
+            editable: true,
+        }],
+        source(&["a", "b", "c"]),
+    )
+    .unwrap();
+    let mut options = grid_preset("data").unwrap();
+    grid.set_options(options.clone()).unwrap();
+    grid.set_row_edited(|r| r.id == "a");
+    grid.set_row_draft(
+        |id| match id {
+            "a" => GridRowDraft::Added,
+            "b" => GridRowDraft::Deleted,
+            "c" => GridRowDraft::Modified,
+            _ => GridRowDraft::Normal,
+        },
+        true,
+    );
+    let styles = Styles::new(Theme::Blackwhite, ColorProfile::Ansi8).unwrap();
+    let mut terminal = Terminal::new(TestBackend::new(40, 8)).unwrap();
+    let mut draw = |grid: &Grid| {
+        terminal
+            .draw(|f| {
+                let area = f.area();
+                f.render_widget(
+                    GridWidget {
+                        model: grid,
+                        styles: &styles,
+                        focused: true,
+                    },
+                    area,
+                );
+            })
+            .unwrap();
+        terminal.backend().buffer().clone()
+    };
+    let gutter = grid.geometry(40, 8).gutter as u16;
+    let first = grid.geometry(40, 8).columns[0].start as u16;
+    let mark = |buffer: &ratatui::buffer::Buffer, y, want| {
+        assert!((0..gutter).any(|x| buffer[(x, y)].symbol() == want))
+    };
+    let frame = draw(&grid);
+    mark(&frame, 1, "+");
+    mark(&frame, 2, "−");
+    mark(&frame, 3, "*");
+    assert!(frame[(first, 2)].modifier.contains(Modifier::DIM));
+    assert!(grid.focus("b", "name"));
+    assert!(!draw(&grid)[(first, 2)].modifier.contains(Modifier::DIM));
+    assert_eq!(grid.handle("copy_cell", 8).text, "raw b");
+    grid.set_source(source(&["b", "a"]));
+    mark(&draw(&grid), 1, "−");
+    options.ascii = true;
+    grid.set_options(options).unwrap();
+    let mut tiny = Terminal::new(TestBackend::new(1, 5)).unwrap();
+    tiny.draw(|f| {
+        let area = f.area();
+        f.render_widget(
+            GridWidget {
+                model: &grid,
+                styles: &styles,
+                focused: true,
+            },
+            area,
+        );
+    })
+    .unwrap();
+    assert_eq!(tiny.backend().buffer()[(0, 1)].symbol(), "-");
+    grid.clear_row_draft();
+    let frame = draw(&grid);
+    mark(&frame, 2, "*");
+    assert!((0..gutter).all(|x| frame[(x, 1)].symbol() != "-"));
+}

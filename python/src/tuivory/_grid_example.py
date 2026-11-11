@@ -19,6 +19,7 @@ class GridDemo:
         self.grid=Grid([Column('id','ID',5,pin='left'),Column('name',self.word('이름','Name'),18,True),
                         Column('value',self.word('값','Value'),22,True),Column('state',self.word('상태','State'),12,pin='right')],self.rows)
         self.grid.set_options(grid_preset('data'))
+        self.grid.set_row_draft({'r2':'added','r5':'modified','r6':'deleted'}.get, True)
         self.grid.set_labels(GridLabels(loading=self.word('로딩 중','loading'),empty=self.word('비어 있음','empty'),range=self.word('범위','range'),more=self.word('더 있음','more')))
         self.grid.set_edit_options(GridEditOptions(True,True,True))
         self.grid.set_column_options('value',GridColumnOptions(align='auto',overflow='scroll',expand=1))

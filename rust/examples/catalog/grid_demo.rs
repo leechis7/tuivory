@@ -60,6 +60,15 @@ pub fn sample(en: bool, changes: Changes) -> Grid {
 }
 pub fn configure(g: &mut Grid, en: bool, changes: Changes) {
     g.set_details_enabled(true);
+    g.set_row_draft(
+        |id| match id {
+            "row-3" => tuivory::grid::GridRowDraft::Added,
+            "row-2" => tuivory::grid::GridRowDraft::Modified,
+            "row-5" => tuivory::grid::GridRowDraft::Deleted,
+            _ => tuivory::grid::GridRowDraft::Normal,
+        },
+        true,
+    );
     g.set_edit_options(GridEditOptions {
         enabled: true,
         start_typing: true,

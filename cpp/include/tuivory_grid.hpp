@@ -313,6 +313,8 @@ format_grid_tsv(const std::vector<std::vector<std::string>> &rows) {
   }
   return out;
 }
+enum class GridRowDraft { normal, added, modified, deleted };
+
 class Grid {
   std::shared_ptr<const GridSource> source_;
   GridOptions options_;
@@ -322,6 +324,8 @@ class Grid {
   std::map<std::string, int> cell_pan_;
   std::function<GridCellInfo(const GridRecord &, const GridColumn &)>
       cell_info_;
+  std::function<GridRowDraft(const std::string &)> row_draft_;
+  bool dim_deletes_ = false;
   std::optional<GridPasteRequest> paste_;
   std::uint64_t serial_ = 0, revision_ = 0, applied_revision_ = 0;
   mutable bool callback_ = false;
@@ -661,6 +665,12 @@ public:
   void set_edit_options(GridEditOptions options) {
     invalidate();
     edit_options_ = std::move(options);
+  }
+  void set_row_draft(std::function<GridRowDraft(const std::string &)> lookup, bool dim_deletes = false) {
+    if (callback_)
+      throw std::invalid_argument("grid mutation inside callback");
+    row_draft_ = std::move(lookup);
+    dim_deletes_ = dim_deletes;
   }
   void set_cell_info(
       std::function<GridCellInfo(const GridRecord &, const GridColumn &)> fn) {
@@ -1305,13 +1315,18 @@ public:
         break;
       auto row_data = record(i);
       hit_rows[i] = row_data.id;
-      if (g.gutter)
-        child.write(0, y,
-                    grid_detail::fit(o.row_numbers ? std::to_string(i + 1) : "",
-                                     std::max(0, g.gutter - 1), "right") +
-                        " ",
-                    row_data.state.disabled ? "disabled" : "hint", false,
-                    g.gutter);
+      auto draft = row_draft_ ? source_call([&] { return row_draft_(row_data.id); }) : GridRowDraft::normal;
+      if (g.gutter) {
+        std::string number = o.row_numbers ? std::to_string(i + 1) : "";
+        const char *mark = !o.row_numbers ? "" : draft == GridRowDraft::added ? "+" :
+                           draft == GridRowDraft::modified ? "*" :
+                           draft == GridRowDraft::deleted ? (ascii || o.ascii ? "-" : "−") : "";
+        int room = std::max(0, g.gutter - 1);
+        if (*mark && number.size() > static_cast<size_t>(room))
+          number.erase(0, number.size() - room);
+        child.write(0, y, mark + grid_detail::fit(number, room, "right") + (*mark ? "" : " "),
+                    row_data.state.disabled ? "disabled" : "hint", false, g.gutter);
+      }
       for (auto span : g.columns) {
         auto c = col(span.id);
         auto inf = info(row_data, c);
@@ -1379,6 +1394,10 @@ public:
         auto value = std::string(pad, ' ') + marker + text;
         value += std::string(std::max(0, span.width - cells(value)), ' ');
         child.write(span.x, y, value, role, false, span.width);
+        if (draft == GridRowDraft::deleted && dim_deletes_ && !editing && !state.edited &&
+            (role == "body" || role == "surface"))
+          for (int x = span.x; x < span.x + span.width; ++x)
+            child.data[y][x].style.dim = true;
         if (editing && edit && !edit->pending && !edit->null) {
           const auto &buf = edit->buffer;
           auto lo = std::min(buf.anchor, buf.cursor),

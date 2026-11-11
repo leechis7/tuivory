@@ -2,7 +2,8 @@
 from __future__ import annotations
 from copy import deepcopy
 from itertools import chain, islice
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from enum import Enum
 from typing import Protocol
 from .drawing import Canvas, Rect, cells, clip, graphemes, fold
 from .models import ControlState, Event, unique
@@ -218,6 +219,13 @@ class MemoryRows:
     def index_of(self, id): return self._indices.get(id)
 
 
+class GridRowDraft(str, Enum):
+    NORMAL = 'normal'
+    ADDED = 'added'
+    MODIFIED = 'modified'
+    DELETED = 'deleted'
+
+
 class Grid:
     def __init__(self, columns: list[Column], rows):
         self.columns = deepcopy(list(columns)); unique(self.columns)
@@ -233,7 +241,8 @@ class Grid:
         self.edit_enabled = False
         self.allow_null = False
         self.start_typing = False
-        self.prepare = self.cell_info = None
+        self.prepare = self.cell_info = self._row_draft = None
+        self._dim_deletes = False
         self.edit = self._pending_paste = None
         self._serial = self._revision = self._applied_revision = 0
         self.query = ''
@@ -349,6 +358,12 @@ class Grid:
         self._invalidate()
         self.edit_enabled, self.start_typing, self.allow_null = bool(options.enabled), bool(options.start_typing), bool(options.allow_null)
         self.prepare = options.prepare
+
+    def set_row_draft(self, lookup, dim_deletes=False):
+        """Look up pending changes by stable row ID; None clears the provider."""
+        if self._callback or (lookup is not None and not callable(lookup)):
+            raise ValueError('invalid row draft lookup')
+        self._row_draft, self._dim_deletes = lookup, bool(dim_deletes)
 
     def set_cell_info(self, callback):
         if callback is not None and not callable(callback): raise ValueError('invalid cell info callback')
@@ -810,9 +825,13 @@ class Grid:
             i=geo.top+dy; y=geo.header_rows+dy*geo.stride
             if y>=rect.height-geo.footer_rows or i>=self._size(): break
             r=self._record(i); hit_rows[i]=r.id
+            draft=self._invoke(self._row_draft,r.id) if self._row_draft else GridRowDraft.NORMAL
             if geo.gutter:
                 number=str(i+1) if o.row_numbers else ''
-                child.write(0,y,number.rjust(max(0,geo.gutter-1))+' ','disabled' if r.state.disabled else 'hint',width=geo.gutter)
+                marker={GridRowDraft.ADDED: '+', GridRowDraft.MODIFIED: '*', GridRowDraft.DELETED: '-' if ascii or o.ascii else '−'}.get(draft,'') if o.row_numbers else ''
+                room=max(0,geo.gutter-1)
+                number=number[-room:] if marker and room else '' if marker else number
+                child.write(0,y,marker+number.rjust(room)+('' if marker else ' '),'disabled' if r.state.disabled else 'hint',width=geo.gutter)
             for span in geo.columns:
                 c=cols[span.id]; info=self._info(r,c); state=info.state
                 selected=i==self.row and c.id==current_column_id
@@ -826,6 +845,9 @@ class Grid:
                 text=self._display(r,c,info,room,editing)
                 value=' '*pad+marker+text+' '*max(0,span.width-pad-len(marker)-cells(text))
                 child.write(span.x,y,value,role,width=span.width)
+                if draft == GridRowDraft.DELETED and self._dim_deletes and not editing and not state.edited and role in ('body','surface'):
+                    for cell in child.data[y][span.x:span.x+span.width]:
+                        cell.style=replace(cell.style,dim=True)
                 if editing and not self.edit['pending'] and not self.edit['null']:
                     buf=self.edit['buffer'];lo,hi=sorted((buf.anchor,buf.cursor))
                     if lo<hi:

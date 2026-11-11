@@ -62,7 +62,9 @@ type gridWork struct {
 
 	editDragging bool
 
-	rowEdited func(GridRecord) bool
+	rowEdited  func(GridRecord) bool
+	rowDraft   func(string) GridRowDraft
+	dimDeletes bool
 
 	findBuffer     *TextBuffer
 	dragMoveColumn string
@@ -701,6 +703,42 @@ func (g *Grid) rowEdited(row GridRecord) bool {
 		return g.work.rowEdited(row)
 	}
 	return row.State.Edited
+}
+
+// GridRowDraft is an application-owned, uncommitted row change.
+type GridRowDraft uint8
+
+const (
+	GridRowNormal GridRowDraft = iota
+	GridRowAdded
+	GridRowModified
+	GridRowDeleted
+)
+
+// SetRowDraft looks up the draft by stable row ID. Pass nil to clear the lookup.
+// The grid does not apply the draft or change which cells are editable.
+func (g *Grid) SetRowDraft(lookup func(string) GridRowDraft, dimDeletes bool) {
+	g.work.rowDraft, g.work.dimDeletes = lookup, dimDeletes
+}
+func (g *Grid) rowDraft(id string) GridRowDraft {
+	if g.work.rowDraft != nil {
+		return g.work.rowDraft(id)
+	}
+	return GridRowNormal
+}
+func (d GridRowDraft) marker(ascii bool) string {
+	switch d {
+	case GridRowAdded:
+		return "+"
+	case GridRowModified:
+		return "*"
+	case GridRowDeleted:
+		if ascii {
+			return "-"
+		}
+		return "−"
+	}
+	return ""
 }
 
 // SetRowEdited supplies an independent aggregate gutter marker without coloring cells.

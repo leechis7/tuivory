@@ -1,4 +1,4 @@
-# Go API — source (0.12.3)
+# Go API — source (0.12.4)
 
 [한국어 (default)](go.md) · **English**
 
@@ -2245,6 +2245,11 @@ func (g *Grid) SetFind(query string, o GridFindOptions)
 
 func (g *Grid) SetOptions(o GridOptions) error
 
+func (g *Grid) SetRowDraft(lookup func(string) GridRowDraft, dimDeletes bool)
+    SetRowDraft looks up the draft by stable row ID. Pass nil to clear the
+    lookup. The grid does not apply the draft or change which cells are
+    editable.
+
 func (g *Grid) SetRowEdited(fn func(GridRecord) bool)
     SetRowEdited supplies an independent aggregate gutter marker without
     coloring cells.
@@ -2451,6 +2456,20 @@ type GridRecord struct {
 	Cells map[string]string
 	State ControlState
 }
+```
+
+## GridRowDraft
+
+```go
+type GridRowDraft uint8
+    GridRowDraft is an application-owned, uncommitted row change.
+
+const (
+	GridRowNormal GridRowDraft = iota
+	GridRowAdded
+	GridRowModified
+	GridRowDeleted
+)
 ```
 
 ## GridSource

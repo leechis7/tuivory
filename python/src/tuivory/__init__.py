@@ -60,7 +60,7 @@ __all__ += ["MemoryRows","GridOptions","GridColumnOptions","GridCellInfo","GridR
 from .grid import GridValue, GridEditOptions, GridSource
 __all__ += ["GridValue", "GridEditOptions", "GridSource"]
 
-from .grid import GridLabels
+from .grid import GridLabels, GridRowDraft
 __all__ += ["GridLabels"]
 
 from .drag import DropError, DropRequest, DragOptions, DragPointer, DragLayout, DragState, drag_revision

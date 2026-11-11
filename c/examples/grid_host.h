@@ -86,6 +86,12 @@ static TuiResult grid_demo_index(void *context, const char *id, size_t *out) {
 static TuiGridSource grid_demo_source(GridDemo *h) {
   return (TuiGridSource){h, 8, grid_demo_row, grid_demo_index};
 }
+static TuiGridRowDraft grid_demo_draft(void *context, const char *id) {
+  (void)context;
+  return !strcmp(id, "r2") ? TUI_GRID_ROW_ADDED :
+         !strcmp(id, "r5") ? TUI_GRID_ROW_MODIFIED :
+         !strcmp(id, "r6") ? TUI_GRID_ROW_DELETED : TUI_GRID_ROW_NORMAL;
+}
 static int grid_demo_init(GridDemo *h, int en, int ascii) {
   memset(h, 0, sizeof(*h));
   h->en = en;
@@ -160,6 +166,7 @@ static int grid_demo_init(GridDemo *h, int en, int ascii) {
           (TuiGridColumnOptions){
               .align = "auto", .overflow = "scroll", .expand = 1}) != TUI_OK ||
       tui_grid_set_cell_info(h->grid, grid_demo_info, h) != TUI_OK ||
+      tui_grid_set_row_draft(h->grid, grid_demo_draft, NULL, 1) != TUI_OK ||
       !tui_grid_focus(h->grid, "r1", "name"))
     goto fail;
   return 1;

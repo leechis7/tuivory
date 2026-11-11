@@ -8,6 +8,10 @@ These TVR-7 capabilities are available from **0.11.0**. They extend the existing
 
 The current data cell uses `grid.active` without a focus underline. The 8-color mode uses the header color, blue in dark/light and silver in monochrome. Higher color modes use a separate shade. In dark and light 8-color profiles, selected ranges use teal so the blue current cell stands out. An edited current cell keeps its asterisk. Other edited cells retain their edited background.
 
+The app supplies `GridRowDraft` by stable row ID. Normal rows keep their existing display; added `+`, modified `*`, and deleted `−` (ASCII `-`) appear in the row-number gutter. At very narrow widths, the marker takes precedence over digits. Enable row numbers and, in Go/Rust, leave row markers visible. Optional deletion dimming preserves current-cell, selection, edit and error styling. Data and copied values are unchanged. Clearing the app's drafts or removing the lookup removes the display.
+
+Use `SetRowDraft(lookup, dimDeletes)` with `nil` in Go or `clear_row_draft()` in Rust to remove the lookup. A normal draft falls back to `SetRowEdited`/`set_row_edited`. The app owns INSERT, UPDATE, DELETE, original-row identity, confirmation and rollback.
+
 ## Availability
 
 | Capability | Go | Rust |

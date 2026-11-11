@@ -113,6 +113,7 @@ export class GridDemo {
       this.rows,
     );
     this.grid.setOptions(ui.gridPreset("data"));
+    this.grid.setRowDraft(id => ({ r2: "added", r5: "modified", r6: "deleted" })[id] ?? "normal", true);
     this.grid.setLabels(
       new ui.GridLabels({
         loading: this.word("로딩 중", "loading"),

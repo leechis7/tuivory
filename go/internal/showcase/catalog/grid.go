@@ -20,6 +20,17 @@ func sampleGrid(tr translate) (*ui.Grid, *editableDemoRows) {
 }
 func configureGrid(g *ui.Grid, tr translate, host *editableDemoRows) {
 	g.SetDetailsEnabled(true)
+	g.SetRowDraft(func(id string) ui.GridRowDraft {
+		switch id {
+		case "row-3":
+			return ui.GridRowAdded
+		case "row-2":
+			return ui.GridRowModified
+		case "row-5":
+			return ui.GridRowDeleted
+		}
+		return ui.GridRowNormal
+	}, true)
 	g.SetEditOptions(ui.GridEditOptions{Enabled: true, StartTyping: true, AllowNull: true})
 	g.SetRowEdited(func(r ui.GridRecord) bool {
 		for ref := range host.changes {

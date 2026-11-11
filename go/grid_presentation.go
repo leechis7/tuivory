@@ -279,11 +279,15 @@ func (g *Grid) cellRole(row GridRecord, col GridColumn, index int, selected bool
 	}
 	return role
 }
-func (g *Grid) decorations(line *ComponentLine, geo GridGeometry, width int, header bool, row GridRecord, index int) {
+func (g *Grid) decorations(line *ComponentLine, geo GridGeometry, width int, header bool, row GridRecord, index int, draft GridRowDraft) {
 	o := g.options
 	vertical := "│"
 	if o.ASCII {
 		vertical = "|"
+	}
+	draftMarker := ""
+	if !header && !o.HideMarkers && o.RowNumbers && line.Value != "@padding" {
+		draftMarker = draft.marker(o.ASCII)
 	}
 	if o.RowNumbers && geo.Gutter > 0 {
 		label := "#"
@@ -293,26 +297,34 @@ func (g *Grid) decorations(line *ComponentLine, geo GridGeometry, width int, hea
 		} else {
 			label = strconv.Itoa(index + 1)
 			if !o.HideMarkers {
-				if g.rowEdited(row) {
+				if draftMarker != "" {
+					label = draftMarker + label
+				} else if g.rowEdited(row) {
 					label = "*" + label
 				}
-				if row.ID == g.RowID {
+				if row.ID == g.RowID && (draftMarker == "" || geo.Gutter >= 3) {
 					label = ">" + label
 				}
 			}
 		}
 		w := geo.Gutter
 		if o.VerticalLines {
-			w = max(0, w-1)
+			if w > 1 || draftMarker == "" {
+				w = max(0, w-1)
+			}
 		}
-		line.Spans = append(line.Spans, ComponentSpan{Start: 0, Width: w, Text: gridAlign(gridFit(label, w, 0, "clip"), w, "right"), Role: role})
+		text := gridAlign(gridFit(label, w, 0, "clip"), w, "right")
+		if draftMarker != "" && w < len([]rune(label)) {
+			text = draftMarker + gridAlign(gridFit(strconv.Itoa(index+1), max(0, w-1), 0, "clip"), max(0, w-1), "right")
+		}
+		line.Spans = append(line.Spans, ComponentSpan{Start: 0, Width: w, Text: text, Role: role})
 	}
 	if o.VerticalLines {
 		dividerRole := "grid.divider"
 		if header {
 			dividerRole = "grid.header"
 		}
-		if geo.Gutter > 0 {
+		if geo.Gutter > 0 && (geo.Gutter != 1 || draftMarker == "") {
 			line.Spans = append(line.Spans, ComponentSpan{Start: geo.Gutter - 1, Width: 1, Text: vertical, Role: dividerRole})
 		}
 		for _, span := range geo.Columns {
@@ -361,7 +373,7 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 			label = strings.Repeat(" ", min(o.Padding, s.Width)) + gridAlign(CellText(label, content), content, g.columnOptions[s.ID].Align)
 			header.Spans = append(header.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: label, Role: role})
 		}
-		g.decorations(&header, geo, width, true, GridRecord{}, 0)
+		g.decorations(&header, geo, width, true, GridRecord{}, 0, GridRowNormal)
 		out = append(out, header)
 	}
 	bodyLimit := height - geo.FooterRows
@@ -381,8 +393,9 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 			break
 		}
 		index := geo.Top + i
+		draft := g.rowDraft(row.ID)
 		rs := row.State
-		rs.Edited = g.rowEdited(row)
+		rs.Edited = (!o.RowNumbers || draft.marker(o.ASCII) == "") && g.rowEdited(row)
 		v := rs.Visual()
 		marker := "  "
 		if row.ID == g.RowID {
@@ -396,9 +409,16 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 			colindex := g.columnIndex(s.ID)
 			col := g.columns[colindex]
 			selected := g.selected(index, colindex, row, col)
-			line.Spans = append(line.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: g.cellText(row, col, s.Width, selected), Role: g.cellRole(row, col, index, selected)})
+			role := g.cellRole(row, col, index, selected)
+			if draft == GridRowDeleted && g.work.dimDeletes && !selected {
+				switch role {
+				case "body", "grid.base", "grid.stripe", "grid.current-row", "grid.null", "grid.readonly":
+					role = "grid.dim:" + role
+				}
+			}
+			line.Spans = append(line.Spans, ComponentSpan{Start: s.Start, Width: s.Width, Text: g.cellText(row, col, s.Width, selected), Role: role})
 		}
-		g.decorations(&line, geo, width, false, row, index)
+		g.decorations(&line, geo, width, false, row, index, draft)
 		out = append(out, line)
 		for pad := 0; pad < o.RowSpacing && len(out) < bodyLimit; pad++ {
 			blank := line
@@ -410,7 +430,7 @@ func (g *Grid) Layout(width, height int) []ComponentLine {
 				blank.Spans[j].Text = ""
 				blank.Spans[j].Focused = false
 			}
-			g.decorations(&blank, geo, width, false, row, index)
+			g.decorations(&blank, geo, width, false, row, index, GridRowNormal)
 			out = append(out, blank)
 		}
 		if o.HorizontalLines && i+1 < len(window.records) && len(out) < bodyLimit {

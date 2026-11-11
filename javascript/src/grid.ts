@@ -368,6 +368,8 @@ type GridHit = {
   row: Record | null;
   gutter: boolean;
 };
+export type GridRowDraft = "normal" | "added" | "modified" | "deleted";
+
 export class Grid {
   columns: Column[];
   private source: GridSource;
@@ -380,6 +382,8 @@ export class Grid {
   startTyping = false;
   prepare:
     ((row: Record, column: Column) => GridValue | boolean | null) | null = null;
+  private rowDraft: ((id: string) => GridRowDraft) | null = null;
+  private dimDeletes = false;
   cellInfo: ((row: Record, column: Column) => GridCellInfo) | null = null;
   edit: GridEdit | null = null;
   private pasteRequest: GridPasteRequest | null = null;
@@ -584,6 +588,12 @@ export class Grid {
     this.startTyping = !!options.startTyping;
     this.allowNull = !!options.allowNull;
     this.prepare = options.prepare ?? null;
+  }
+  /** Look up pending changes by stable row ID; null clears the provider. */
+  setRowDraft(lookup: ((id: string) => GridRowDraft) | null, dimDeletes = false): void {
+    if (this.callback) throw new Error("grid mutation inside callback");
+    this.rowDraft = lookup;
+    this.dimDeletes = dimDeletes;
   }
   setCellInfo(callback: ((r: Record, c: Column) => GridCellInfo) | null): void {
     if (callback !== null && typeof callback !== "function")
@@ -1449,12 +1459,16 @@ export class Grid {
       if (y >= r.height - geo.footerRows || i >= this.sourceSize()) break;
       const row = this.record(i);
       hitRows.set(i, row.id);
+      const draft = this.rowDraft ? this.sourceCall(() => this.rowDraft!(row.id)) : "normal";
       if (geo.gutter) {
-        const n = o.rowNumbers ? String(i + 1) : "";
+        let n = o.rowNumbers ? String(i + 1) : "";
+        const mark = !o.rowNumbers ? "" : draft === "added" ? "+" : draft === "modified" ? "*" : draft === "deleted" ? (ascii || o.ascii ? "-" : "−") : "";
+        const room = Math.max(0, geo.gutter - 1);
+        if (mark) n = room ? n.slice(-room) : "";
         child.write(
           0,
           y,
-          n.padStart(Math.max(0, geo.gutter - 1)) + " ",
+          mark + n.padStart(room) + (mark ? "" : " "),
           row.state?.disabled ? "disabled" : "hint",
           false,
           geo.gutter,
@@ -1512,6 +1526,10 @@ export class Grid {
               Math.max(0, span.width - pad - marker.length - cells(text)),
             );
         child.write(span.x, y, value, role, false, span.width);
+        if (draft === "deleted" && this.dimDeletes && !editing && !state.edited && (role === "body" || role === "surface")) {
+          for (const cell of child.data[y].slice(span.x, span.x + span.width))
+            cell.style = {...cell.style, dim: true};
+        }
         const edit = this.edit;
         if (editing && edit && !edit.pending && !edit.null) {
           const buf = edit.buffer,

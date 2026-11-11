@@ -75,7 +75,7 @@ func (v *RowsView) Draw(screen tcell.Screen) {
 		for _, span := range line.Spans {
 			start := max(0, min(w, span.Start))
 			width := min(max(0, span.Width), w-start)
-			role := span.Role
+			role, dim := strings.CutPrefix(span.Role, "grid.dim:")
 			if strings.HasPrefix(role, "syntax.") {
 				role = SyntaxPaletteRole(role)
 			}
@@ -93,6 +93,9 @@ func (v *RowsView) Draw(screen tcell.Screen) {
 				if v.SyntaxStyle != nil {
 					style = v.SyntaxStyle(span.Role, componentStyle(v.palette, "body"))
 				}
+			}
+			if dim {
+				style = style.Dim(true)
 			}
 			if span.Focused && !v.hideFocus && v.HasFocus() {
 				style = style.Underline(true)

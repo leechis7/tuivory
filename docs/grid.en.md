@@ -12,6 +12,10 @@ With cell highlighting enabled, the current data cell uses `grid.active` without
 
 [Dark example](images/grid-range-dark-8-en.png) · [Light example](images/grid-range-light-8-en.png)
 
+The app supplies `GridRowDraft` by stable row ID. Normal rows keep their existing display; added `+`, modified `*`, and deleted `−` (ASCII `-`) appear in the row-number gutter. At very narrow widths, the marker takes precedence over digits. Enable row numbers and, in Go/Rust, leave row markers visible. Optional deletion dimming preserves current-cell, selection, edit and error styling. Data and copied values are unchanged. Clearing the app's drafts or removing the lookup removes the display.
+
+[Draft row API and examples](grid-workspace.en.md) · [Independent SDK APIs](language-grid.en.md)
+
 ## Run and compare
 
 ```sh

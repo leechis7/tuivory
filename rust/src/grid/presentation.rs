@@ -256,6 +256,7 @@ impl Grid {
         }
         r.id == self.selected_row && (self.whole_row || c.id == self.selected_column)
     }
+    #[allow(clippy::too_many_arguments)]
     fn decorations(
         &self,
         l: &mut ComponentLine,
@@ -264,9 +265,15 @@ impl Grid {
         header: bool,
         r: &GridRecord,
         index: usize,
+        draft: GridRowDraft,
     ) {
         let o = &self.options;
         let vertical = if o.ascii { "|" } else { "│" };
+        let draft_marker = if !header && !o.hide_markers && o.row_numbers && l.value != "@padding" {
+            draft.marker(o.ascii)
+        } else {
+            ""
+        };
         if o.row_numbers && geo.gutter > 0 {
             let mut label = if header {
                 "#".into()
@@ -274,25 +281,39 @@ impl Grid {
                 (index + 1).to_string()
             };
             if !header && !o.hide_markers {
-                if self.row_edited(r) {
+                if !draft_marker.is_empty() {
+                    label = format!("{draft_marker}{label}");
+                } else if self.row_edited(r) {
                     label = format!("*{label}")
                 }
-                if r.id == self.row_id {
+                if r.id == self.row_id && (draft_marker.is_empty() || geo.gutter >= 3) {
                     label = format!(">{label}")
                 }
             }
-            let w = geo.gutter.saturating_sub(usize::from(o.vertical_lines));
+            let w = geo.gutter.saturating_sub(usize::from(
+                o.vertical_lines && (geo.gutter > 1 || draft_marker.is_empty()),
+            ));
+            let text = if !draft_marker.is_empty() && label.chars().count() > w {
+                let n = (index + 1).to_string();
+                let room = w.saturating_sub(1);
+                format!(
+                    "{draft_marker}{}",
+                    align(&fit(&n, room, 0, "clip"), room, "right")
+                )
+            } else {
+                align(&fit(&label, w, 0, "clip"), w, "right")
+            };
             l.spans.push(ComponentSpan {
                 start: 0,
                 width: w,
-                text: align(&fit(&label, w, 0, "clip"), w, "right"),
+                text,
                 role: if header { "grid.header" } else { "grid.gutter" }.into(),
                 focused: false,
             });
         }
         if o.vertical_lines {
             let mut at = vec![];
-            if geo.gutter > 0 {
+            if geo.gutter > 0 && (geo.gutter != 1 || draft_marker.is_empty()) {
                 at.push(geo.gutter - 1)
             }
             for s in &geo.columns {
@@ -378,7 +399,15 @@ impl Grid {
                     focused: false,
                 });
             }
-            self.decorations(&mut h, geo, width, true, &GridRecord::default(), 0);
+            self.decorations(
+                &mut h,
+                geo,
+                width,
+                true,
+                &GridRecord::default(),
+                0,
+                GridRowDraft::Normal,
+            );
             out.push(h);
         }
         let body_limit = height - geo.footer_rows;
@@ -403,6 +432,7 @@ impl Grid {
                 break;
             }
             let index = geo.top + n;
+            let draft = self.row_draft(&r.id);
             let marker = if o.hide_markers {
                 ""
             } else if r.id == self.row_id {
@@ -414,7 +444,8 @@ impl Grid {
                 id: r.id.clone(),
                 text: format!("{}{}", marker, {
                     let mut state = r.state;
-                    state.edited = self.row_edited(r);
+                    state.edited =
+                        (!o.row_numbers || draft == GridRowDraft::Normal) && self.row_edited(r);
                     state.visual().markers
                 }),
                 role: self.row_role(r, index),
@@ -428,11 +459,30 @@ impl Grid {
                     start: s.start,
                     width: s.width,
                     text: self.cell_text(r, c, s.width, selected),
-                    role: self.cell_role(r, c, index, selected),
+                    role: {
+                        let role = self.cell_role(r, c, index, selected);
+                        if draft == GridRowDraft::Deleted
+                            && self.work.dim_deletes
+                            && !selected
+                            && matches!(
+                                role.as_str(),
+                                "body"
+                                    | "grid.base"
+                                    | "grid.stripe"
+                                    | "grid.current-row"
+                                    | "grid.null"
+                                    | "grid.readonly"
+                            )
+                        {
+                            format!("grid.dim:{role}")
+                        } else {
+                            role
+                        }
+                    },
                     focused: false,
                 });
             }
-            self.decorations(&mut l, geo, width, false, r, index);
+            self.decorations(&mut l, geo, width, false, r, index, draft);
             out.push(l.clone());
             for _ in 0..o.row_spacing {
                 if out.len() >= body_limit {
@@ -446,7 +496,15 @@ impl Grid {
                     s.text.clear();
                     s.focused = false
                 }
-                self.decorations(&mut blank, geo, width, false, r, index);
+                self.decorations(
+                    &mut blank,
+                    geo,
+                    width,
+                    false,
+                    r,
+                    index,
+                    GridRowDraft::Normal,
+                );
                 out.push(blank);
             }
             if o.horizontal_lines && n + 1 < win.rows.len() && out.len() < body_limit {

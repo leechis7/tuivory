@@ -75,12 +75,35 @@ pub struct GridCellRef {
     pub row_id: String,
     pub column_id: String,
 }
+/// An application-owned, uncommitted row change.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum GridRowDraft {
+    #[default]
+    Normal,
+    Added,
+    Modified,
+    Deleted,
+}
+impl GridRowDraft {
+    pub(super) fn marker(self, ascii: bool) -> &'static str {
+        match self {
+            Self::Normal => "",
+            Self::Added => "+",
+            Self::Modified => "*",
+            Self::Deleted if ascii => "-",
+            Self::Deleted => "−",
+        }
+    }
+}
+type RowDraft = Box<dyn Fn(&str) -> GridRowDraft>;
 type RowEdited = Box<dyn Fn(&GridRecord) -> bool>;
 #[derive(Default)]
 pub(super) struct GridWork {
     pub details_enabled: bool,
     pub edit_dragging: bool,
     pub row_edited: Option<RowEdited>,
+    pub row_draft: Option<RowDraft>,
+    pub dim_deletes: bool,
     pub find_buffer: Option<TextBuffer>,
     pub drag_move_column: String,
     pub drag_moved: bool,
@@ -937,6 +960,26 @@ fn parse_tsv(text: &str, limit: usize) -> Result<Vec<Vec<String>>, Error> {
     Ok(rows)
 }
 impl Grid {
+    /// Install an application lookup by stable row ID.
+    pub fn set_row_draft(
+        &mut self,
+        lookup: impl Fn(&str) -> GridRowDraft + 'static,
+        dim_deletes: bool,
+    ) {
+        self.work.row_draft = Some(Box::new(lookup));
+        self.work.dim_deletes = dim_deletes;
+    }
+    /// Remove the application draft lookup and deletion shading.
+    pub fn clear_row_draft(&mut self) {
+        self.work.row_draft = None;
+        self.work.dim_deletes = false;
+    }
+    pub(super) fn row_draft(&self, id: &str) -> GridRowDraft {
+        self.work
+            .row_draft
+            .as_ref()
+            .map_or(GridRowDraft::Normal, |lookup| lookup(id))
+    }
     pub fn set_row_edited(&mut self, callback: impl Fn(&GridRecord) -> bool + 'static) {
         self.work.row_edited = Some(Box::new(callback))
     }

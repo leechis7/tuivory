@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.12.4
+
+- Grids show pending additions, modifications and deletions by stable row ID, with optional deletion dimming.
+
 ## 0.12.3
 
 - All seven SDKs support collapsing a chosen split panel and restoring its previous ratio by divider click or an app binding.
