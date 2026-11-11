@@ -21,6 +21,10 @@ Grid headers use the `grid.header` role across the whole row, including dividers
 
 The current data cell uses `grid.active` without a focus underline. The 8-color mode uses the header color, blue in dark/light and silver in monochrome. Higher color modes use a separate shade. In dark and light 8-color profiles, selected ranges use teal so the blue current cell stands out. An edited current cell keeps its asterisk. Other edited cells retain their edited background.
 
+The app supplies `GridRowDraft` by stable row ID. Normal rows keep their existing display; added `+`, modified `*`, and deleted `−` (ASCII `-`) appear in the row-number gutter. At very narrow widths, the marker takes precedence over digits. Enable row numbers and, in Go/Rust, leave row markers visible. Optional deletion dimming preserves current-cell, selection, edit and error styling. Data and copied values are unchanged. Clearing the app's drafts or removing the lookup removes the display.
+
+Use `set_row_draft` in Python/C++, `setRowDraft` in TypeScript/JavaScript and Java, or `tui_grid_set_row_draft` in C. The lookup runs for visible rows; return state without side effects.
+
 ## Data and host responsibilities
 
 Column IDs and row IDs must each be nonempty and unique. Memory sources copy their inputs: changing an original list or map does not alter grid data. Virtual sources provide a count, an indexed row and reverse ID lookup. The grid reads the needed rows and checks that returned IDs and reverse indices agree. Valid current cells and range selections survive source replacement by stable ID.

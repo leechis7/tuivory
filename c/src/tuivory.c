@@ -9416,6 +9416,9 @@ struct TuiGrid {
   TuiGridEditOptions edit_options;
   TuiGridCellProvider cell_provider;
   void *cell_context;
+  TuiGridRowDraftLookup row_draft;
+  void *row_draft_context;
+  int dim_deletes;
   TuiGridEditSession edit;
   TuiText *buffer;
   char *edit_move;
@@ -10164,6 +10167,15 @@ TuiResult tui_grid_set_edit_options(TuiGrid *g, TuiGridEditOptions options) {
     return TUI_INVALID;
   grid_invalidate(g);
   g->edit_options = options;
+  return TUI_OK;
+}
+TuiResult tui_grid_set_row_draft(TuiGrid *g, TuiGridRowDraftLookup lookup,
+                                 void *context, int dim_deletes) {
+  if (!g || g->callback)
+    return TUI_INVALID;
+  g->row_draft = lookup;
+  g->row_draft_context = context;
+  g->dim_deletes = !!dim_deletes;
   return TUI_OK;
 }
 TuiResult tui_grid_set_cell_info(TuiGrid *g, TuiGridCellProvider provider,
@@ -11695,19 +11707,33 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
       result = TUI_NOMEM;
       goto rows_fail;
     }
+    TuiGridRowDraft draft = TUI_GRID_ROW_NORMAL;
+    if (g->row_draft) {
+      g->callback = 1;
+      draft = g->row_draft(g->row_draft_context, record.id);
+      g->callback = 0;
+    }
     if (gi.gutter) {
       char value[32] = "";
       if (g->options.row_numbers)
         snprintf(value, sizeof(value), "%zu", i + 1);
-      char *text = grid_fit(value, max(0, gi.gutter - 1), "right", 0);
+      const char *mark = !g->options.row_numbers ? "" : draft == TUI_GRID_ROW_ADDED ? "+" :
+                         draft == TUI_GRID_ROW_MODIFIED ? "*" :
+                         draft == TUI_GRID_ROW_DELETED ? (ascii || g->options.ascii ? "-" : "−") : "";
+      int room = max(0, gi.gutter - 1);
+      const char *number = value;
+      if (*mark && (int)strlen(value) > room)
+        number += strlen(value) - (size_t)room;
+      char *text = grid_fit(number, room, "right", 0);
       if (!text) {
         grid_record_clear(&record);
         result = TUI_NOMEM;
         goto rows_fail;
       }
       Buffer b = {0};
+      append(&b, mark);
       append(&b, text);
-      append(&b, " ");
+      if (!*mark) append(&b, " ");
       free(text);
       result = b.failed ? TUI_NOMEM
                         : tui_canvas_write(child, 0, y, b.s,
@@ -11815,6 +11841,10 @@ TuiResult tui_grid_draw(TuiGrid *g, TuiCanvas *canvas, TuiRect r, int focused,
                         : tui_canvas_write(child, span->x, y, grid_string(b.s),
                                            role, 0, span->width);
       free(b.s);
+      if (result == TUI_OK && draft == TUI_GRID_ROW_DELETED && g->dim_deletes &&
+          !editing && !state.edited && (!strcmp(role, "body") || !strcmp(role, "surface")))
+        for (int x = span->x; x < span->x + span->width; ++x)
+          child->cells[(size_t)y * child->width + x].style.dim = 1;
       if (result == TUI_OK && editing && !g->edit.pending &&
           !g->edit.value.is_null)
         result = grid_editor_selection(g, child, span->x + padding + marker, y,

@@ -61,12 +61,19 @@ impl<'a> RowsWidget<'a> {
             for span in &row.spans {
                 let start = span.start.min(usize::from(area.width));
                 let width = span.width.min(usize::from(area.width) - start);
+                let (role, dim) = span
+                    .role
+                    .strip_prefix("grid.dim:")
+                    .map_or((span.role.as_str(), false), |role| (role, true));
                 let mut style = if preserve {
-                    self.styles.role(&span.role)
+                    self.styles.role(role)
                 } else {
-                    self.styles.component_role(&span.role)
+                    self.styles.component_role(role)
                 }
                 .expect("span role");
+                if dim {
+                    style = style.add_modifier(Modifier::DIM);
+                }
                 if span.focused && self.focused {
                     style = style.add_modifier(Modifier::UNDERLINED)
                 }

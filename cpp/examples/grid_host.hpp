@@ -109,6 +109,11 @@ public:
   GridDemo(bool en, bool ascii)
       : en_(en), rows_(rows(en, ascii)), grid_(columns(en), rows_) {
     grid_.set_options(tuivory::grid_preset("data"));
+    grid_.set_row_draft([](const std::string &id) {
+      using Draft = tuivory::GridRowDraft;
+      return id == "r2" ? Draft::added : id == "r5" ? Draft::modified :
+             id == "r6" ? Draft::deleted : Draft::normal;
+    }, true);
     tuivory::GridLabels labels;
     labels.loading = word("로딩 중", "loading");
     labels.empty = word("비어 있음", "empty");

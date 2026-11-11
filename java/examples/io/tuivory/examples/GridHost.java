@@ -59,6 +59,12 @@ public final class GridHost {
                         new GridColumn("value", word("값", "Value"), 22, true), state),
         rows);
     grid.setOptions(gridPreset("data"));
+    grid.setRowDraft(rowId -> switch (rowId) {
+      case "r2" -> GridRowDraft.ADDED;
+      case "r5" -> GridRowDraft.MODIFIED;
+      case "r6" -> GridRowDraft.DELETED;
+      default -> GridRowDraft.NORMAL;
+    }, true);
     var labels = new GridLabels();
     labels.loading = word("로딩 중", "loading");
     labels.empty = word("비어 있음", "empty");

@@ -1,4 +1,4 @@
-# Rust API — source (0.12.3)
+# Rust API — source (0.12.4)
 
 **한국어 (기본)** · [English](rust.en.md)
 
@@ -2065,6 +2065,26 @@ pub fn close_details(&mut self);
 
 
 
+#### tuivory::grid::Grid::set_row_draft
+
+```rust
+pub fn set_row_draft(
+        &mut self,
+        lookup: impl Fn(&str) -> GridRowDraft + 'static,
+        dim_deletes: bool,
+    );
+```
+
+Install an application lookup by stable row ID.
+
+#### tuivory::grid::Grid::clear_row_draft
+
+```rust
+pub fn clear_row_draft(&mut self);
+```
+
+Remove the application draft lookup and deletion shading.
+
 #### tuivory::grid::Grid::set_row_edited
 
 ```rust
@@ -2489,6 +2509,21 @@ pub struct GridRecord {
 ```
 
 
+
+
+### tuivory::grid::GridRowDraft
+
+```rust
+pub enum GridRowDraft {
+    #[default]
+    Normal,
+    Added,
+    Modified,
+    Deleted,
+}
+```
+
+An application-owned, uncommitted row change.
 
 
 ### tuivory::grid::GridSource

@@ -49,6 +49,9 @@ def check_grid_example(language,lang,theme,colors,ascii,master,slave,process,cap
     assert initial[12,2][2] == palette['grid.active']['background'], (language,theme,colors,'current cell background')
     assert not any(cell[5] for (_, y),cell in initial.items() if y in (1,2)), (language,theme,colors,'grid underline')
     assert initial[31,6][2] == palette['edited']['background'], (language,theme,colors,'other edited cell background')
+    assert [initial[1,y][0] for y in (3,6,7)] == ['+', '*', '-' if ascii else '−'], (language,theme,colors,'row draft markers')
+    assert initial[12,7][4], (language,theme,colors,'pending deletion dim')
+
     assert not shown(),(language,'non-editing grid cursor')
     assert frame()[10,4][4],(language,'disabled row must be Dim')
     activate();wait(shown,'real grid edit cursor')

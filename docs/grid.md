@@ -12,6 +12,10 @@ TVR-11의 Go `Grid / GridSource / NewGridView`와 Rust `grid::Grid / GridSource 
 
 [다크 화면](images/grid-range-dark-8.png) · [라이트 화면](images/grid-range-light-8.png)
 
+행 변경 초안은 앱이 안정 행 ID로 제공하는 `GridRowDraft`입니다. 일반 행은 기존 표시를 유지하며, 추가 `+`, 수정 `*`, 삭제 `−`(ASCII `-`)는 행 번호 영역에 표시합니다. 좁은 폭에서는 번호보다 초안 표식을 우선합니다. 행 번호를 켜면 표식이 보이며 Go·Rust에서는 행 표식 숨기기 옵션을 끕니다. 삭제 행 흐리기는 선택 사항이고 현재 셀·선택·편집·오류의 기존 스타일을 보존합니다. 데이터와 복사 원문은 바뀌지 않습니다. 앱이 초안 저장소를 비우거나 조회 함수를 해제하면 표시가 사라집니다.
+
+[행 초안 API와 예제](grid-workspace.md) · [독립 언어 API](language-grid.md)
+
 ## 실행과 비교
 
 ```sh

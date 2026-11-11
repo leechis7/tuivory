@@ -314,3 +314,79 @@ func TestGridViewportDoesNotJumpWhenMovingUp(t *testing.T) {
 		t.Fatalf("up moved viewport %d -> %d", before, after)
 	}
 }
+
+func TestGridRowDraftOutput(t *testing.T) {
+	g := optionGrid(t)
+	options, _ := ui.GridPreset("data")
+	if err := g.SetOptions(options); err != nil {
+		t.Fatal(err)
+	}
+	g.SetRowEdited(func(r ui.GridRecord) bool { return r.ID == "a" })
+	doc, _ := ui.CandidateTokens()
+	raw, _ := doc.Palette("blackwhite", "8")
+	p, _ := ui.Resolve(raw)
+	v, err := ui.NewGridView(g, p, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := drawingScreen(t)
+	s.SetSize(40, 8)
+	v.SetRect(0, 0, 40, 8)
+	g.Focus("a", "name")
+	drafts := map[string]ui.GridRowDraft{"a": ui.GridRowAdded, "b": ui.GridRowDeleted, "c": ui.GridRowModified}
+	g.SetRowDraft(func(id string) ui.GridRowDraft { return drafts[id] }, true)
+	draw := func() { v.Draw(s); s.Show() }
+	mark := func(y int, want rune) {
+		t.Helper()
+		for x := 0; x < g.Geometry(40, 8).Gutter; x++ {
+			r, _, _, _ := s.GetContent(x, y)
+			if r == want {
+				return
+			}
+		}
+		t.Fatalf("row %d missing %q", y, want)
+	}
+	draw()
+	mark(1, '+')
+	mark(2, '−')
+	mark(3, '*')
+	x := g.Geometry(40, 8).Columns[0].Start
+	_, _, style, _ := s.GetContent(x, 2)
+	_, _, attrs := style.Decompose()
+	if attrs&tcell.AttrDim == 0 {
+		t.Fatal("deleted row is not dimmed")
+	}
+	if !g.Focus("b", "name") {
+		t.Fatal("deletion draft must remain focusable")
+	}
+	draw()
+	_, _, style, _ = s.GetContent(x, 2)
+	_, _, attrs = style.Decompose()
+	if attrs&tcell.AttrDim != 0 || g.Handle("copy_cell", 8).Text != "B\n\"C" {
+		t.Fatal("draft changed current-cell style or raw copy")
+	}
+	// Filtering/reordering replaces the source; the provider still sees stable IDs.
+	rows, _ := ui.NewMemoryRows([]ui.GridRecord{{ID: "b", Cells: map[string]string{"name": "B"}}, {ID: "a", Cells: map[string]string{"name": "A"}}})
+	g.SetSource(rows)
+	draw()
+	mark(1, '−')
+	mark(2, '+')
+	options.ASCII = true
+	if err := g.SetOptions(options); err != nil {
+		t.Fatal(err)
+	}
+	v.SetRect(0, 0, 1, 8)
+	draw()
+	if r, _, _, _ := s.GetContent(0, 1); r != '-' {
+		t.Fatalf("narrow ASCII mark = %q", r)
+	}
+	v.SetRect(0, 0, 40, 8)
+	clear(drafts)
+	draw()
+	mark(2, '*') // Existing row marker resumes once the draft is cleared.
+	for i := 0; i < g.Geometry(40, 8).Gutter; i++ {
+		if r, _, _, _ := s.GetContent(i, 1); r == '-' || r == '−' {
+			t.Fatal("cleared deletion still visible")
+		}
+	}
+}

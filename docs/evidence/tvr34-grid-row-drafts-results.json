@@ -1,0 +1,14 @@
+{
+  "issue": "TVR-34",
+  "stage": "local worktree",
+  "scope": ["Go", "Rust", "Python", "TypeScript/JavaScript", "C", "C++", "Java"],
+  "checks": [
+    "Go and Rust render the three draft markers, preserve current-cell styling and raw copy, and follow stable IDs through source replacement",
+    "Go and Rust retain the ASCII deletion marker in a one-cell viewport and restore the legacy edited marker when drafts are cleared",
+    "Five independent grid examples render the three draft markers and deletion dimming through their actual ANSI output",
+    "Host ARM64 static examples, independent Python wheel/npm consumers, Java JAR, and bilingual grid images/API documents"
+  ],
+  "scope_exception": "The Shell terminal reference has no grid component.",
+  "github_ci": "not run at the local evidence stage",
+  "publication": "local evidence"
+}
