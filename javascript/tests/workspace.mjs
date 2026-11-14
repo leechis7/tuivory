@@ -72,3 +72,21 @@ test("tab hit testing and compact split", () => {
   }
   assert.ok(split.resize(30, 10));
 });
+
+test("tab outline keeps activation, focus, and close hit separate", () => {
+  const t = new ui.Tabs([
+    { id: "a", title: "조회", closable: true },
+    { id: "b", title: "Draft", edited: true },
+  ]);
+  t.handle("next");
+  const c = new ui.Canvas(32, 3);
+  const [active, candidate] = t.layout(32);
+  t.draw(c, ui.rect(0, 0, 32, 3), true, true);
+  const [top, , rail] = c.lines();
+  assert.equal(top[active.start], "+");
+  assert.equal(rail[active.start + 1], " ");
+  assert.equal(rail[candidate.start], "-");
+  const close = active.start + ui.cells(active.text) - 2;
+  assert.equal(c.data[1][close].text, "x");
+  assert.equal(t.click(close, 32).kind, "close");
+});

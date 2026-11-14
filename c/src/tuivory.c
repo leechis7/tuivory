@@ -1443,42 +1443,88 @@ TuiEvent tui_tabs_click(TuiTabs *t, int x, int width) {
   }
   return none;
 }
-TuiResult tui_tabs_draw(TuiTabs *t, TuiCanvas *c, TuiRect r, int focused) {
-  size_t n, i;
-  TuiResult result;
-  if (!t || !c)
-    return TUI_INVALID;
-  result = tui_canvas_fill(c, r, "surface");
+static TuiResult tabs_draw_rail(const TuiTabs *t, TuiCanvas *c, TuiRect r,
+                                 const TuiTabCell *views, size_t n, int focused, int ascii) {
+  TuiResult result = tui_canvas_fill(c, r, "surface");
+  if (result != TUI_OK || !r.height)
+    return result;
+  int y = r.y + (r.height >= 3);
+  const char *edge = ascii ? "|" : "│", *dash = ascii ? "-" : "─";
+  TuiStyle border;
+  result = tui_text_on_surface(c->theme, c->profile, "hint", c->surface, 0, &border);
   if (result != TUI_OK)
     return result;
-  result = tui_tabs_layout(t, r.width, NULL, 0, &n);
-  if (result != TUI_OK)
+  if (r.height >= 2) {
+    long long right = (long long)r.x + r.width;
+    for (int x = max(0, r.x); x < c->width && x < right; ++x)
+      if ((result = tui_canvas_write_style(c, x, y + 1, dash, &border, 1)) != TUI_OK)
+        return result;
+  }
+  if (t->first > 0 && (result = tui_canvas_write_style(c,r.x,y,"<",&border,1)) != TUI_OK)
     return result;
-  if (t->first > 0)
-    tui_canvas_write(c, r.x, r.y, "<", "hint", 0, 1);
-  if ((size_t)t->first + n < t->count && r.width > 0)
-    tui_canvas_write(c, r.x + r.width - 1, r.y, ">", "hint", 0, 1);
-  for (i = 0; i < n; i++) {
-    const TuiTabCell *v = &t->views[i];
+  if ((size_t)t->first + n < t->count && r.width > 0 &&
+      (result = tui_canvas_write_style(c,r.x+r.width-1,y,">",&border,1)) != TUI_OK)
+    return result;
+  for (size_t i = 0; i < n; ++i) {
+    const TuiTabCell *v = &views[i];
+    const int x = r.x + v->start, w = v->width;
+    const char *role = v->disabled ? "disabled" : v->active ? "selection" : "body";
+    const int focus = focused && v->focused;
     char spaces[25];
-    memset(spaces, ' ', v->width);
-    spaces[v->width] = 0;
-    result = tui_canvas_write(c, r.x + v->start, r.y, spaces,
-                              v->disabled ? "disabled"
-                              : v->active ? "selection"
-                                          : "body",
-                              focused && v->focused, v->width);
-    if (result != TUI_OK)
+    memset(spaces, ' ', w);
+    spaces[w] = 0;
+    if ((result = tui_canvas_write(c,x,y,spaces,role,focus,w)) != TUI_OK)
       return result;
-    result = tui_canvas_write(c, r.x + v->start, r.y, v->text,
-                              v->disabled ? "disabled"
-                              : v->active ? "selection"
-                                          : "body",
-                              focused && v->focused, v->width);
-    if (result != TUI_OK)
+    if (w < 4) {
+      if ((result = tui_canvas_write(c,x,y,v->text,role,focus,w)) != TUI_OK)
+        return result;
+      continue;
+    }
+    /* Retain the model text and its close-button column; change only the frame. */
+    char label[98];
+    size_t bytes = strlen(v->text);
+    char *title = malloc(bytes);
+    if (!title)
+      return TUI_NOMEM;
+    title[0] = v->focused ? '>' : ' ';
+    size_t end = bytes - (v->text[bytes - 1] == (v->active ? ']' : ' '));
+    memcpy(title + 1, v->text + 2, end - 2);
+    title[end - 1] = 0;
+    result = tui_canvas_write(c,x,y,edge,role,focus,1);
+    if (result == TUI_OK)
+      result = tui_canvas_write(c,x+1,y,title,role,focus,w-2);
+    free(title);
+    if (result != TUI_OK || (result = tui_canvas_write(c,x+w-1,y,edge,role,focus,1)) != TUI_OK)
       return result;
+    if (r.height >= 3) {
+      char *p = label;
+      const char *left = ascii ? "+" : "┌", *right = ascii ? "+" : "┐";
+      memcpy(p,left,strlen(left)); p += strlen(left);
+      for (int j = 0; j < w-2; ++j) { memcpy(p,dash,strlen(dash)); p += strlen(dash); }
+      strcpy(p,right);
+      if ((result = tui_canvas_write_style(c,x,r.y,label,&border,w)) != TUI_OK)
+        return result;
+    }
+    if (r.height >= 2 && v->active) {
+      if ((result = tui_canvas_write(c,x,y+1,spaces,"surface",0,w)) != TUI_OK ||
+          (result = tui_canvas_write_style(c,x,y+1,ascii ? "+" : "┘",&border,1)) != TUI_OK ||
+          (result = tui_canvas_write_style(c,x+w-1,y+1,ascii ? "+" : "└",&border,1)) != TUI_OK)
+        return result;
+    }
   }
   return TUI_OK;
+}
+TuiResult tui_tabs_draw_ascii(TuiTabs *t, TuiCanvas *c, TuiRect r, int focused, int ascii) {
+  size_t n;
+  if (!t || !c)
+    return TUI_INVALID;
+  TuiResult result = tui_tabs_layout(t, r.width, NULL, 0, &n);
+  if (result != TUI_OK)
+    return result;
+  return tabs_draw_rail(t,c,r,t->views,n,focused,ascii);
+}
+TuiResult tui_tabs_draw(TuiTabs *t, TuiCanvas *c, TuiRect r, int focused) {
+  return tui_tabs_draw_ascii(t,c,r,focused,0);
 }
 TuiSplitLayout tui_split_layout(TuiSplit s, int total) {
   int a = max(1, s.first_min), b = max(1, s.second_min), first;
@@ -13511,7 +13557,7 @@ static TuiResult drag_draw(TuiDragState *d, void *m, int tree, TuiCanvas *c,
     return result;
   if (!drag_valid(d, m, tree, r.width, r.height))
     return tree ? tui_tree_draw(m, c, r, focused, ascii)
-                : tui_tabs_draw(m, c, r, focused);
+                : tui_tabs_draw_ascii(m, c, r, focused, ascii);
   l = drag_preview(d, m, tree, r.width, r.height);
   if (!l)
     return TUI_NOMEM;
@@ -13543,27 +13589,12 @@ static TuiResult drag_draw(TuiDragState *d, void *m, int tree, TuiCanvas *c,
                                                         : "↳";
   } else {
     TuiTabs *t = l->tabs;
-    result = TUI_OK;
-    if (t->first)
-      tui_canvas_write(child, 0, 0, "<", "hint", 0, 1);
-    if ((size_t)t->first + l->tab_count < t->count && r.width)
-      tui_canvas_write(child, r.width - 1, 0, ">", "hint", 0, 1);
+    result = tabs_draw_rail(t,child,(TuiRect){0,0,r.width,r.height},
+                            l->tab_cells,l->tab_count,focused,ascii);
+    my = r.height >= 3;
     mx = max(0, min(r.width - 1, d->pointer.x));
     for (i = 0; i < l->tab_count; i++) {
       const TuiTabCell *v = &l->tab_cells[i];
-      const char *role = v->disabled ? "disabled"
-                         : v->active ? "selection"
-                                     : "body";
-      char spaces[25];
-      memset(spaces, ' ', (size_t)v->width);
-      spaces[v->width] = 0;
-      result = tui_canvas_write(child, v->start, 0, spaces, role,
-                                focused && v->focused, v->width);
-      if (result == TUI_OK)
-        result = tui_canvas_write(child, v->start, 0, v->text, role,
-                                  focused && v->focused, v->width);
-      if (result != TUI_OK)
-        break;
       if (d->request && !strcmp(v->id, d->request->target_id))
         mx = v->start +
              (!strcmp(d->request->position, "after") ? v->width - 1 : 0);

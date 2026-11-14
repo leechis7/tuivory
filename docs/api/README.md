@@ -8,9 +8,9 @@
 
 **0.10.0:** Go UI를 `github.com/leechis7/tuivory/go` 하나로 구성합니다. 기존 하위 경로는 호환용으로 유지합니다. [단일 import·이름 대응](../ui-facade.md).
 
-이 명세는 0.12.4 소스를 따르며 **TVR-22~26 API를 포함합니다.** [제공 범위·전환 안내](../controls.md).
+이 명세는 0.12.5 소스를 따르며 **TVR-22~26 API를 포함합니다.** [제공 범위·전환 안내](../controls.md).
 
-기준 버전은 **0.12.4**입니다. Go 모듈은 `github.com/leechis7/tuivory/go`, Rust crate는 `tuivory`입니다. Rust 렌더러는 `ratatui`, 대화형 예제는 `playground` 기능을 켭니다.
+기준 버전은 **0.12.5**입니다. Go 모듈은 `github.com/leechis7/tuivory/go`, Rust crate는 `tuivory`입니다. Rust 렌더러는 `ratatui`, 대화형 예제는 `playground` 기능을 켭니다.
 
 - [Go 공개 선언](go.md)
 - [Rust 공개 선언](rust.md)

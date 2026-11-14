@@ -30,6 +30,11 @@ impl<'a> TabsWidget<'a> {
             ascii: false,
         })
     }
+    /// Use ASCII outlines when the terminal cannot display box drawing.
+    pub fn with_ascii(mut self, ascii: bool) -> Self {
+        self.ascii = ascii;
+        self
+    }
     pub fn with_drag(mut self, drag: &'a mut crate::drag::DragState, ascii: bool) -> Self {
         self.drag = Some(drag);
         self.ascii = ascii;
@@ -66,10 +71,26 @@ impl StatefulWidget for TabsWidget<'_> {
             .as_ref()
             .filter(|d| d.phase == "dragging")
             .map(|d| (d.target_id.clone(), d.position, d.allowed));
+        let y = area.y + u16::from(area.height >= 3);
+        let (edge, dash, tl, tr, bl, br) = if self.ascii {
+            ("|", "-", "+", "+", "+", "+")
+        } else {
+            ("│", "─", "┌", "┐", "┘", "└")
+        };
+        let border = self.styles.text_on_surface("hint", "surface").unwrap();
+        if area.height >= 2 {
+            buf.set_stringn(
+                area.x,
+                y + 1,
+                dash.repeat(usize::from(area.width)),
+                usize::from(area.width),
+                border,
+            );
+        }
         if layout.previous {
             buf.set_stringn(
                 area.x,
-                area.y,
+                y,
                 "<",
                 usize::from(area.width),
                 self.styles.role("hint").unwrap(),
@@ -78,31 +99,52 @@ impl StatefulWidget for TabsWidget<'_> {
         if layout.next && area.width > 0 {
             buf.set_stringn(
                 area.right() - 1,
-                area.y,
+                y,
                 ">",
                 1,
                 self.styles.role("hint").unwrap(),
             );
         }
         for cell in layout.cells {
-            let role = if cell.disabled {
-                "disabled"
-            } else if cell.active {
-                "header"
+            let role = if cell.disabled { "disabled" } else { "body" };
+            let mut style = if cell.active {
+                self.styles.role("selection")
             } else {
-                "body"
-            };
-            let mut style = self.styles.role(role).unwrap();
+                self.styles.text_on_surface(role, "surface")
+            }
+            .unwrap();
             if self.focused && cell.focused {
-                style = self
-                    .styles
-                    .role("selection")
-                    .unwrap()
-                    .add_modifier(Modifier::UNDERLINED)
+                style = style.add_modifier(Modifier::UNDERLINED)
             }
             let x = area.x + cell.start as u16;
-            buf.set_style(Rect::new(x, area.y, cell.width as u16, 1), style);
-            buf.set_stringn(x, area.y, &cell.text, cell.width, style);
+            buf.set_style(Rect::new(x, y, cell.width as u16, 1), style);
+            if cell.width < 4 {
+                buf.set_stringn(x, y, &cell.text, cell.width, style);
+            } else {
+                let mark = if cell.focused { ">" } else { " " };
+                let label = cell.text.get(2..).unwrap_or("");
+                let label = label
+                    .strip_suffix(if cell.active { ']' } else { ' ' })
+                    .unwrap_or(label);
+                buf.set_stringn(x, y, edge, 1, style);
+                buf.set_stringn(x + 1, y, format!("{mark}{label}"), cell.width - 2, style);
+                buf.set_stringn(x + cell.width as u16 - 1, y, edge, 1, style);
+                if area.height >= 3 {
+                    buf.set_stringn(
+                        x,
+                        area.y,
+                        format!("{tl}{}{tr}", dash.repeat(cell.width - 2)),
+                        cell.width,
+                        border,
+                    );
+                }
+                if area.height >= 2 && cell.active {
+                    let surface = self.styles.role("surface").unwrap();
+                    buf.set_stringn(x, y + 1, " ".repeat(cell.width), cell.width, surface);
+                    buf.set_stringn(x, y + 1, bl, 1, border);
+                    buf.set_stringn(x + cell.width as u16 - 1, y + 1, br, 1, border);
+                }
+            }
             if let Some((target, position, allowed)) = &feedback {
                 if *target == cell.id {
                     let column = if *position == Some(crate::drag::DropPosition::After) {
@@ -117,18 +159,12 @@ impl StatefulWidget for TabsWidget<'_> {
                     } else {
                         "│"
                     };
-                    buf.set_stringn(
-                        column,
-                        area.y,
-                        marker,
-                        1,
-                        self.styles.drag_feedback(*allowed),
-                    );
+                    buf.set_stringn(column, y, marker, 1, self.styles.drag_feedback(*allowed));
                 }
             }
         }
         if feedback.as_ref().is_some_and(|f| f.0.is_empty()) && area.width > 0 {
-            buf.set_stringn(area.x, area.y, "!", 1, self.styles.drag_feedback(false));
+            buf.set_stringn(area.x, y, "!", 1, self.styles.drag_feedback(false));
         }
     }
 }

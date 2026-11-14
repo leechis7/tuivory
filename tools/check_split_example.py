@@ -66,7 +66,7 @@ def check(binary, rows, ascii, lang):
     collapsed = ('^' if ascii else '↑') if rows else ('>' if ascii else '›')
     # Find a grip on its known perpendicular center; other widgets use > and v.
     def grip(axis):
-        return (width // 2, 3 + axis) if rows else (axis, 3 + (height - 5) // 2)
+        return (width // 2, 4 + axis) if rows else (axis, 4 + (height - 6) // 2)
     def drawn(glyph, axis):
         x, y = grip(axis)
         return screen.rows[y][x] == glyph
@@ -82,7 +82,7 @@ def check(binary, rows, ascii, lang):
         new_axis = axis + dx + dy
         wait(lambda: drawn(expanded, new_axis) and hidden in text(), 'drag resizes')
         click(*grip(new_axis))
-        edge = height - 6 if rows else 0
+        edge = height - 7 if rows else 0
         wait(lambda: drawn(collapsed, edge) and hidden not in text() and focused(shown), 'click collapses and hands off focus')
         os.write(master, b'\t')
         wait(lambda: not focused(shown), 'tab reaches the tab bar')
@@ -91,16 +91,16 @@ def check(binary, rows, ascii, lang):
         # Restore by clicking even while below the two-pane minimum; grow afterwards.
         width, height = (120, 13) if rows else (35, 32)
         resize(width, height)
-        edge = height - 6 if rows else 0
-        wait(lambda: drawn(collapsed, edge) and (rows or screen.rows[3][width - 1] in '+╗┐'), 'narrow collapsed divider remains clickable')
+        edge = height - 7 if rows else 0
+        wait(lambda: drawn(collapsed, edge) and (rows or screen.rows[4][width - 1] in '+╗┐'), 'narrow collapsed divider remains clickable')
         click(*grip(edge))
-        wait(lambda: not drawn(collapsed, edge) and screen.rows[3 + edge if rows else 3][0] in '+╚└╔┌', 'narrow click restores compact layout')
+        wait(lambda: not drawn(collapsed, edge) and screen.rows[4 + edge if rows else 4][0] in '+╚└╔┌', 'narrow click restores compact layout')
         width, height = (120, 27) if rows else (100, 32)
         resize(width, height)
         new_axis = 8 if rows else 35
         wait(lambda: drawn(expanded, new_axis) and hidden in text(), 'ratio restored at new size')
         os.write(master, b'\x1b[18~')  # F7
-        edge = height - 6 if rows else 0
+        edge = height - 7 if rows else 0
         wait(lambda: drawn(collapsed, edge) and hidden not in text(), 'keyboard collapse')
         os.write(master, b'\x1b[18~')
         wait(lambda: drawn(expanded, new_axis) and hidden in text(), 'keyboard restore')

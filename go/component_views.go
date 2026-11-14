@@ -2,6 +2,8 @@ package tuivory
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -110,26 +112,71 @@ func (v *TabView) Draw(screen tcell.Screen) {
 	} else {
 		layout = v.tabs.Layout(v.state, w)
 	}
+	edge, dash, tl, tr := "│", "─", "┌", "┐"
+	if v.ASCII {
+		edge, dash, tl, tr = "|", "-", "+", "+"
+	}
+	border, _ := TextOnSurface(v.palette, "hint", "surface")
+	titleY := y
+	if h >= 3 {
+		titleY++
+	}
+	if h >= 2 {
+		drawTreeText(screen, x, titleY+1, w, 0, strings.Repeat(dash, max(0, w)), border)
+	}
 	if layout.Previous {
-		drawTreeText(screen, x, y, w, 0, "<", v.palette["hint"].Style())
+		drawTreeText(screen, x, titleY, 1, 0, "<", border)
 	}
 	if layout.Next && w > 0 {
-		drawTreeText(screen, x+w-1, y, 1, 0, ">", v.palette["hint"].Style())
+		drawTreeText(screen, x+w-1, titleY, 1, 0, ">", border)
 	}
 	for _, cell := range layout.Cells {
 		role := "body"
 		if cell.Active {
-			role = "header"
+			role = "selection"
 		}
 		if cell.Disabled {
 			role = "disabled"
 		}
-		st := disabledCue(v.palette, role, v.palette[role].Style())
-		if cell.Focused && v.HasFocus() {
-			st = v.palette["selection"].Style().Underline(true)
+		st, _ := TextOnSurface(v.palette, role, "surface")
+		if cell.Active {
+			st = v.palette["selection"].Style()
 		}
-		fillComponent(screen, x+cell.Start, y, cell.Width, 1, st)
-		drawTreeText(screen, x+cell.Start, y, cell.Width, 0, cell.Text, st)
+		if cell.Focused && v.HasFocus() {
+			st = st.Underline(true)
+		}
+		start := x + cell.Start
+		fillComponent(screen, start, titleY, cell.Width, 1, st)
+		if cell.Width < 4 {
+			drawTreeText(screen, start, titleY, cell.Width, 0, cell.Text, st)
+			continue
+		}
+		mark := " "
+		if cell.Focused {
+			mark = ">"
+		}
+		label := cell.Text[2:]
+		if cell.Active {
+			label = strings.TrimSuffix(label, "]")
+		} else {
+			label = strings.TrimSuffix(label, " ")
+		}
+		drawTreeText(screen, start, titleY, 1, 0, edge, st)
+		drawTreeText(screen, start+1, titleY, cell.Width-2, 0, mark+label, st)
+		drawTreeText(screen, start+cell.Width-1, titleY, 1, 0, edge, st)
+		if h >= 3 {
+			drawTreeText(screen, start, y, cell.Width, 0, tl+strings.Repeat(dash, cell.Width-2)+tr, border)
+		}
+		if h >= 2 && cell.Active {
+			fillComponent(screen, start, titleY+1, cell.Width, 1, v.palette["surface"].Style())
+			if !v.ASCII {
+				drawTreeText(screen, start, titleY+1, 1, 0, "┘", border)
+				drawTreeText(screen, start+cell.Width-1, titleY+1, 1, 0, "└", border)
+			} else {
+				drawTreeText(screen, start, titleY+1, 1, 0, "+", border)
+				drawTreeText(screen, start+cell.Width-1, titleY+1, 1, 0, "+", border)
+			}
+		}
 	}
 	if v.Drag != nil && v.Drag.Phase == "dragging" {
 		for _, c := range layout.Cells {
@@ -138,12 +185,12 @@ func (v *TabView) Draw(screen tcell.Screen) {
 				if v.Drag.Position == DropAfter {
 					column += max(0, c.Width-1)
 				}
-				drawTreeText(screen, x+column, y, 1, 0, dragMarker(v.Drag, v.ASCII, false), dragFeedbackStyle(v.palette, v.Drag))
+				drawTreeText(screen, x+column, titleY, 1, 0, dragMarker(v.Drag, v.ASCII, false), dragFeedbackStyle(v.palette, v.Drag))
 				break
 			}
 		}
 		if v.Drag.TargetID == "" && w > 0 {
-			drawTreeText(screen, x, y, 1, 0, "!", dragFeedbackStyle(v.palette, v.Drag))
+			drawTreeText(screen, x, titleY, 1, 0, "!", dragFeedbackStyle(v.palette, v.Drag))
 		}
 	}
 }
@@ -206,6 +253,10 @@ func (v *TabView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func
 	return v.WrapMouseHandler(func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
 		x, y := e.Position()
 		left, top, w, h := v.GetInnerRect()
+		if h >= 3 {
+			top++
+			h--
+		}
 		if v.Drag != nil {
 			if a == tview.MouseLeftClick && v.suppressDragClick {
 				v.suppressDragClick = false

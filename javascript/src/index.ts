@@ -816,29 +816,59 @@ export class Tabs {
       }
     return event();
   }
-  draw(c: Canvas, r: Rect, focused = true): void {
+  draw(c: Canvas, r: Rect, focused = true, ascii = false): void {
+    this.drawRail(c, r, this.layout(r.width), this.first, focused, ascii);
+  }
+  /** @internal Keep drag preview and resting tabs visually identical. */
+  drawRail(
+    c: Canvas,
+    r: Rect,
+    views: TabCell[],
+    first: number,
+    focused: boolean,
+    ascii: boolean,
+  ): void {
     c.fill(r);
-    const views = this.layout(r.width);
-    if (this.first > 0) c.write(r.x, r.y, "<", "hint");
-    if (this.first + views.length < this.items.length && r.width > 0)
-      c.write(r.x + r.width - 1, r.y, ">", "hint");
+    if (r.height <= 0) return;
+    const [edge, dash, tl, tr, bl, br] = ascii
+      ? ["|", "-", "+", "+", "+", "+"]
+      : ["│", "─", "┌", "┐", "┘", "└"];
+    const y = r.y + Number(r.height >= 3);
+    const border = c.palette.textOnSurface("hint", c.surfaceRole);
+    if (r.height >= 2)
+      c.writeStyle(r.x, y + 1, dash.repeat(r.width), border, r.width);
+    if (first > 0) c.writeStyle(r.x, y, "<", border, 1);
+    if (first + views.length < this.items.length && r.width)
+      c.writeStyle(r.x + r.width - 1, y, ">", border, 1);
     for (const cell of views) {
-      c.write(
-        r.x + cell.start,
-        r.y,
-        " ".repeat(cell.width),
-        cell.disabled ? "disabled" : cell.active ? "selection" : "body",
-        focused && cell.focused,
-        cell.width,
-      );
-      c.write(
-        r.x + cell.start,
-        r.y,
-        cell.text,
-        cell.disabled ? "disabled" : cell.active ? "selection" : "body",
-        focused && cell.focused,
-        cell.width,
-      );
+      const role = cell.disabled
+        ? "disabled"
+        : cell.active
+          ? "selection"
+          : "body";
+      const focus = focused && cell.focused;
+      const x = r.x + cell.start,
+        w = cell.width;
+      c.write(x, y, " ".repeat(w), role, focus, w);
+      if (w < 4) {
+        c.write(x, y, cell.text, role, focus, w);
+        continue;
+      }
+      const text =
+        (cell.focused ? ">" : " ") +
+        (cell.text.endsWith(cell.active ? "]" : " ")
+          ? cell.text.slice(2, -1)
+          : cell.text.slice(2));
+      c.write(x, y, edge, role, focus, 1);
+      c.write(x + 1, y, text, role, focus, w - 2);
+      c.write(x + w - 1, y, edge, role, focus, 1);
+      if (r.height >= 3)
+        c.writeStyle(x, r.y, tl + dash.repeat(w - 2) + tr, border, w);
+      if (r.height >= 2 && cell.active) {
+        c.fill(rect(x, y + 1, w, 1));
+        c.writeStyle(x, y + 1, bl, border, 1);
+        c.writeStyle(x + w - 1, y + 1, br, border, 1);
+      }
     }
   }
   requestDrop(

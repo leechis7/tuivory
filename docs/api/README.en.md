@@ -8,9 +8,9 @@
 
 **0.10.0:** compose Go UI through `github.com/leechis7/tuivory/go` alone. Existing `/ui` and `/terminal` paths remain compatible. [Single import and name mappings](../ui-facade.en.md).
 
-This reference follows 0.12.4 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
+This reference follows 0.12.5 source and **includes TVR-22–26 APIs**. [Availability and migration](../controls.en.md).
 
-Reference version: **0.12.4**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
+Reference version: **0.12.5**. Go module: `github.com/leechis7/tuivory/go`; Rust crate: `tuivory`. Enable `ratatui` for Rust renderers and `playground` for interactive examples.
 
 - [Go public declarations](go.en.md)
 - [Rust public declarations](rust.en.md)

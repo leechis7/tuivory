@@ -14,11 +14,17 @@ TVR-7의 [Tree](tree.md)에 이어 Go/tview와 Rust/Ratatui의 공통 워크스�
 | Enter / 제목 클릭 | 활성화 이벤트 / 클릭한 탭을 포커스·활성화 |
 | x·Delete / x 표식 클릭 | 닫기 요청. 라이브러리가 문서를 삭제하지 않음 |
 | 넘침 | 포커스 탭을 보이도록 이동하고 양끝 `<`/`>`로 이전·다음 탐색. 휠도 탐색 |
-| 표현 | 활성 탭 `[제목]`, 탐색 위치 `>`, 입력 포커스 밑줄, 변경 `*`, 닫기 `x`, 비활성 `-` |
+| 표현 | 탭 윤곽, 활성 탭 아래 열림, 탐색 위치 `>`, 입력 포커스 밑줄, 변경 `*`, 닫기 `x`, 비활성 흐림 |
+
+높이 1줄에서는 좌우 윤곽, 2줄에서는 공통 아래 구분선, 3줄에서는 위쪽 윤곽까지 그립니다. 2줄 이상이면 활성 탭 아래가 열려 내용 영역과 이어집니다. 활성 탭에만 선택 바탕색을 적용하며, 키보드 포커스를 이동해도 다른 탭이 활성화된 것처럼 보이지 않습니다. 클릭과 드래그 시작은 제목 줄(높이가 3줄 이상이면 둘째 줄)에서 처리하며, 윤곽과 구분선은 표시용입니다.
+
+![활성 탭 아래가 열려 있고 다른 탭에 키보드 포커스가 있는 예](images/tab-rail-dark.png)
+
+[라이트](images/tab-rail-light.png) · [흑백](images/tab-rail-blackwhite.png) · [ASCII](images/tab-rail-ascii.png)
 
 긴 제목은 최대 24셀 슬롯 안에서 `~`로 줄이고 상태 표식 공간을 먼저 확보합니다. 매우 좁은 슬롯에서는 표시 가능한 부분만 그리며, 보이지 않는 닫기 표식은 클릭되지 않습니다. 폭 2셀 이하는 탭을 그리지 않습니다. 넓히면 앞쪽 탭으로 표시 공간을 다시 채웁니다. 테마 변경은 활성/포커스/변경 상태를 바꾸지 않습니다. 닫기 승인 후 앱이 새 모델을 제공하면 유효한 ID는 유지하고 사라진 ID는 첫 활성 가능 탭으로 정리합니다.
 
-Go: `NewTabs`, `TabState`, `TabAction`, `TabEvent`, `Tabs.Layout/Handle/Click`, `NewTabView`. `TabView.SetTabs`는 데이터, `SetPalette`는 스타일만 바꿉니다. Rust: `components::{Tabs, TabItem, TabState, TabAction, TabEvent}`와 `ratatui::TabsWidget`. Rust 호스트는 키/클릭을 모델에 전달하고 반환 이벤트를 처리합니다.
+Go: `NewTabs`, `TabState`, `TabAction`, `TabEvent`, `Tabs.Layout/Handle/Click`, `NewTabView`. `TabView.SetTabs`는 데이터, `SetPalette`는 스타일만 바꿉니다. Rust: `components::{Tabs, TabItem, TabState, TabAction, TabEvent}`와 `ratatui::TabsWidget`. Go의 `TabView.ASCII` 또는 Rust의 `TabsWidget::with_ascii(true)`로 ASCII 윤곽을 선택합니다. Rust 호스트는 키/클릭을 모델에 전달하고 반환 이벤트를 처리합니다.
 
 ## 패널·분할선
 
@@ -109,7 +115,7 @@ Go `PanelView`는 [공통 두 칸 문자 보정](overlay-drawing.md)을 자동 �
 
 예제에 `--layout rows --focus-order content,tree,tabs --quit-key ctrl-x`를 주면 같은 공개 컴포넌트를 다른 정책으로 조합합니다. 기본은 columns·tabs,tree,content·ctrl-q입니다. 첫 항목이 초기 포커스를 받고 Tab/Shift+Tab은 지정 순서를 따릅니다. 설정은 라이브러리 전역 옵션이 아닌 예제 호스트의 CLI이며 화면 전체의 표준을 강제하지 않습니다. 새 호스트 옵션은 0.4.0에 포함합니다. [책임 범위·한영 화면·재현 명령](component-boundary.md).
 
-포커스 테두리 규칙: 탐색 트리/목록·입력/편집 영역·데이터 그리드·일반 팝업처럼 내용을 감싼 영역은 현재 조작 중일 때 이중선, 비활성일 때 단일선을 사용합니다. 테두리를 갖지 않는 개별 입력칸·버튼·탭에 테두리를 추가하지 않습니다. 메뉴는 선택/열림 표시만으로 충분하므로 단일선을 유지합니다. Go 견본의 카드·팝업은 tview 기본 이중선을 사용하며, 0.4.0부터 탐색·토큰·도움말의 포커스 색상 갱신도 맞춥니다. Rust 공통 패널은 이미 이중선을 지원합니다. [실제 검증](evidence/focus-borders.md).
+포커스 테두리 규칙: 탐색 트리/목록·입력/편집 영역·데이터 그리드·일반 팝업처럼 내용을 감싼 영역은 현재 조작 중일 때 이중선, 비활성일 때 단일선을 사용합니다. 테두리를 갖지 않는 개별 입력칸과 버튼에는 별도 테두리를 추가하지 않습니다. 탭 윤곽은 단일선이며 입력 포커스와 별개입니다. 메뉴는 선택/열림 표시만으로 충분하므로 단일선을 유지합니다. Go 견본의 카드·팝업은 tview 기본 이중선을 사용하며, 0.4.0부터 탐색·토큰·도움말의 포커스 색상 갱신도 맞춥니다. Rust 공통 패널은 이미 이중선을 지원합니다. [실제 검증](evidence/focus-borders.md).
 
 0.4.0의 평문은 실제 surface 바탕을 따르며 입력·선택·수정 배경은 보존합니다. [공통 표면·대비 디자인 규칙](../design/surfaces.md)과 [수정 검증](evidence/background-fix.md)을 참고하세요.
 

@@ -287,15 +287,10 @@ class DragState:
         child=Canvas(rect.width,rect.height,canvas.palette,canvas.surface_role)
         if isinstance(model,Tabs):
             views=self._tab_cells(model,rect.width,self._first)
-            if self._first:child.write(0,0,'<','hint',width=1)
-            if self._first+len(views)<len(model.items)and rect.width:child.write(rect.width-1,0,'>','hint',width=1)
-            for cell in views:
-                role='disabled'if cell.disabled else'selection'if cell.active else'body'
-                child.write(cell.start,0,' '*cell.width,role,focused=focused and cell.focused,width=cell.width)
-                child.write(cell.start,0,cell.text,role,focused=focused and cell.focused,width=cell.width)
+            model._draw_rail(child,Rect(0,0,rect.width,rect.height),views,self._first,focused,ascii)
             target=next((c for c in views if c.id==self.target_id),None)
             marker_x=(target.start+(target.width-1 if self.position=='after'else 0))if target else max(0,min(rect.width-1,self._pointer.x))
-            marker_y=0;marker='|'if ascii else'│'
+            marker_y=int(rect.height>=3);marker='|'if ascii else'│'
         else:
             from .drawing import graphemes
             rows=self._tree_rows(model,rect.height)

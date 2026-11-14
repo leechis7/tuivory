@@ -2,8 +2,8 @@ package tuivory_test
 
 import (
 	"encoding/json"
-	tcell "github.com/leechis7/tuivory/go/terminal"
 	ui "github.com/leechis7/tuivory/go"
+	tcell "github.com/leechis7/tuivory/go/terminal"
 	tview "github.com/leechis7/tuivory/go/ui"
 	"github.com/rivo/uniseg"
 	"os"
@@ -170,6 +170,29 @@ func TestWorkspaceViewsAllPalettesAndResizeEvents(t *testing.T) {
 			if attrs&tcell.AttrUnderline == 0 {
 				t.Fatal("focus cue missing")
 			}
+			view.SetRect(0, 0, 60, 3)
+			view.Draw(screen)
+			screen.Show()
+			active := layout.Cells[0]
+			frame, stride, _ := screen.GetContents()
+			for _, point := range []struct {
+				x, y int
+				want rune
+			}{
+				{active.Start, 0, '┌'}, {active.Start, 1, '│'}, {active.Start + 1, 2, ' '},
+				{cell.Start, 0, '┌'}, {cell.Start, 2, '─'},
+			} {
+				got := frame[point.y*stride+point.x].Runes
+				if len(got) != 1 || got[0] != point.want {
+					t.Fatalf("%s/%s: (%d,%d) %q want %q", theme, profile, point.x, point.y, got, point.want)
+				}
+			}
+			closeCol := cell.Start + uniseg.StringWidth(cell.Text) - 2
+			event := tabs.Click(state, closeCol, 60)
+			if event.Kind != "close" || event.ID != cell.ID || state.Active != before.Active {
+				t.Fatal(event, state)
+			}
+			view.SetRect(0, 0, 60, 1)
 			panel, _ := ui.NewPanelView(view, p)
 			panel.SetTitle("[red] Literal")
 			panel.ASCII = true
