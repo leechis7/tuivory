@@ -23,6 +23,8 @@ C line objects use `tui_line_free`; strings returned by `tui_line_text` use `tui
 
 Tabs distinguish the active document (`active`) from the keyboard candidate (`focused`). `previous/next/first/last` skip disabled candidates; `activate` changes the active tab. `close` emits a request for the host to apply. Disabled/nonclosable tabs never emit close requests. Titles are grapheme-clipped, the current candidate remains visible in narrow layouts, and edge indicators support overflow navigation. Active backgrounds cover the full clickable tab width.
 
+All seven SDKs render the same tab outlines and active opening. The workspace guide explains [row heights and pointer hit testing](workspace.en.md#tabs). For ASCII use C’s `tui_tabs_draw_ascii(..., true)`; the other SDKs accept an ASCII option on the tab renderer.
+
 Panels provide titles and Unicode/ASCII borders; focused panels use double borders. Splits preserve minimum sizes and `preferred`. If both minima and the divider cannot fit, the first pane collapses and the second receives the allocation. `resize(total, position)` applies the same constraints to pointer coordinates and keyboard increments. Hosts choose panes and global input routing.
 
 Breadcrumbs show all items when possible and collapse intermediate items to `...` under pressure. The last item is retained, with a `~` prefix when its beginning must be clipped. Runs expose stable IDs, cell starts and widths for host hit testing.

@@ -22,6 +22,19 @@ class Workspace(unittest.TestCase):
         first=t.layout(80)[0];self.assertEqual(t.click(first.start+ui.cells(first.text)-2,80).kind,'activate')
         disabled=t.layout(80)[1];self.assertEqual(t.click(disabled.start,80).kind,'')
         last=t.layout(80)[2];self.assertEqual(t.click(last.start+ui.cells(last.text)-2,80).kind,'close')
+    def test_outline_keeps_close_hit_and_active_opening(self):
+        t = ui.Tabs([ui.Tab('a', '조회', closable=True), ui.Tab('b', 'Draft', edited=True)])
+        t.handle('next')
+        active, candidate = t.layout(32)
+        canvas = ui.Canvas(32, 3)
+        t.draw(canvas, ui.Rect(0, 0, 32, 3))
+        self.assertEqual(canvas.data[0][active.start].text, '┌')
+        self.assertEqual(canvas.data[2][active.start + 1].text, ' ')
+        self.assertEqual(canvas.data[2][candidate.start].text, '─')
+        close = active.start + ui.cells(active.text) - 2
+        self.assertEqual(canvas.data[1][close].text, 'x')
+        self.assertEqual(t.click(close, 32).kind, 'close')
+
     def test_split(self):
         s=ui.Split(3,4,7)
         for total in range(30):

@@ -6,12 +6,12 @@
 
 소스의 예제 빌드는 0.9.1 TVR-27 변경으로 [언어별 통합 실행파일 하나·호스트 아키텍처 자동 감지](examples.md)를 사용합니다.
 
-현재 버전은 **0.12.4**입니다. Go 1.24+, Rust 코어 1.85+, Rust UI/예제 1.88+가 필요합니다.
+현재 버전은 **0.12.5**입니다. Go 1.24+, Rust 코어 1.85+, Rust UI/예제 1.88+가 필요합니다.
 
 ## Go
 
 ```sh
-go get github.com/leechis7/tuivory/go@v0.12.4
+go get github.com/leechis7/tuivory/go@v0.12.5
 ```
 
 ```go
@@ -28,7 +28,7 @@ button은 앱이 만든 tview 버튼입니다. Go 모듈은 저장소 루트가 
 
 ```toml
 [dependencies]
-tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.4", features = ["ratatui"] }
+tuivory = { git = "https://github.com/leechis7/tuivory", tag = "rust/v0.12.5", features = ["ratatui"] }
 ```
 
 Rust는 crates.io 대신 Git 태그로 배포합니다. 모델·토큰만 사용할 때는 ratatui 기능을 생략할 수 있고, 로컬 체크아웃은 rust/를 path 의존성으로 연결합니다.
@@ -48,6 +48,6 @@ make run-menu-rust ARGS="--shadow auto"
 
 ## 정적 실행파일
 
-릴리스는 Linux ARM64/x86_64의 Go·Rust 정적 실행파일을 제공합니다. 로컬 `make build`와 `make build-rust`는 각각 현재 Linux 호스트 아키텍처의 통합 실행파일 하나를 만듭니다. 산출물은 bin/<언어>/ 아래에 OS·아키텍처를 포함한 이름으로 저장합니다. CentOS는 검증하지 않습니다. 신규 언어 UI 패키지는 [독립 지원](languages.md)의 미배포 검증 단계입니다.
+이번 릴리스는 라이브러리 패키지를 제공합니다. Go나 Rust 예제를 소스에서 빌드하는 방법은 [예제 안내](examples.md)를 참고하세요. CentOS 검증은 하지 않습니다.
 
-[API](api/README.md) · [컴포넌트](components.md) · [릴리스](release-0.11.1.md) · [정적 배포](static-build.md)
+[API](api/README.md) · [컴포넌트](components.md) · [릴리스](release-0.12.5.md) · [정적 배포](static-build.md)

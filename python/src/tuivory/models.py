@@ -302,18 +302,38 @@ class Tabs:
         return Event()
 
     def draw(self, canvas: Canvas, rect: Rect, *, focused: bool = True, ascii: bool = False) -> None:
+        self._draw_rail(canvas, rect, self.layout(rect.width), self.first, focused, ascii)
+
+    def _draw_rail(self, canvas, rect, views, first, focused, ascii):
         canvas.fill(rect)
-        views = self.layout(rect.width)
-        if self.first > 0:
-            canvas.write(rect.x, rect.y, '<', 'hint', width=1)
-        if self.first + len(views) < len(self.items) and rect.width:
-            canvas.write(rect.x + rect.width - 1, rect.y, '>', 'hint', width=1)
+        if rect.height <= 0: return
+        edge, dash, tl, tr, bl, br = ('|', '-', '+', '+', '+', '+') if ascii else ('│', '─', '┌', '┐', '┘', '└')
+        y = rect.y + (rect.height >= 3)
+        border = canvas.palette.text_on_surface('hint', canvas.surface_role)
+        if rect.height >= 2:
+            canvas.write_style(rect.x,y+1,dash*rect.width,border,width=rect.width)
+        if first > 0:
+            canvas.write_style(rect.x,y,'<',border,width=1)
+        if first + len(views) < len(self.items) and rect.width:
+            canvas.write_style(rect.x+rect.width-1,y,'>',border,width=1)
         for cell in views:
             role = 'disabled' if cell.disabled else 'selection' if cell.active else 'body'
-            canvas.write(rect.x + cell.start, rect.y, ' ' * cell.width, role, focused=focused and cell.focused, width=cell.width)
-            canvas.write(rect.x + cell.start, rect.y, cell.text,
-                         'disabled' if cell.disabled else 'selection' if cell.active else 'body',
-                         focused=focused and cell.focused, width=cell.width)
+            focus = focused and cell.focused
+            x, w = rect.x+cell.start, cell.width
+            canvas.write(x,y,' '*w,role,focused=focus,width=w)
+            if w < 4:
+                canvas.write(x,y,cell.text,role,focused=focus,width=w)
+                continue
+            text = ('>' if cell.focused else ' ')+cell.text[2:].removesuffix(']' if cell.active else ' ')
+            canvas.write(x,y,edge,role,focused=focus,width=1)
+            canvas.write(x+1,y,text,role,focused=focus,width=w-2)
+            canvas.write(x+w-1,y,edge,role,focused=focus,width=1)
+            if rect.height >= 3:
+                canvas.write_style(x,rect.y,tl+dash*(w-2)+tr,border,width=w)
+            if rect.height >= 2 and cell.active:
+                canvas.fill(Rect(x,y+1,w,1))
+                canvas.write_style(x,y+1,bl,border,width=1)
+                canvas.write_style(x+w-1,y+1,br,border,width=1)
 
     def request_drop(self,source_id,target_id,position,options=None,allow=None):
         from .drag import request_drop

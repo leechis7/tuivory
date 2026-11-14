@@ -99,6 +99,9 @@ const char *tui_tabs_focused(const TuiTabs *tabs);
 int tui_tabs_first(const TuiTabs *tabs);
 TuiResult tui_tabs_draw(TuiTabs *tabs, TuiCanvas *canvas, TuiRect area,
                         int focused);
+/* Draw the same tab outlines using ASCII when ascii is nonzero. */
+TuiResult tui_tabs_draw_ascii(TuiTabs *tabs, TuiCanvas *canvas, TuiRect area,
+                              int focused, int ascii);
 typedef struct {
   int preferred, first_min, second_min;
 } TuiSplit;

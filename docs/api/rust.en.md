@@ -1,4 +1,4 @@
-# Rust API — source (0.12.4)
+# Rust API — source (0.12.5)
 
 [한국어 (default)](rust.md) · **English**
 
@@ -3989,6 +3989,14 @@ pub fn new(tabs: &'a Tabs, styles: &'a Styles) -> Result<Self, crate::Error>;
 ```
 
 
+
+#### tuivory::ratatui::TabsWidget::with_ascii
+
+```rust
+pub fn with_ascii(mut self, ascii: bool) -> Self;
+```
+
+Use ASCII outlines when the terminal cannot display box drawing.
 
 #### tuivory::ratatui::TabsWidget::with_drag
 

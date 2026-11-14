@@ -53,8 +53,8 @@ static void workspace_draw(TuiTree *tree, TuiTabs *tabs, TuiSplit split, const T
       {"ready", en ? "Ready" : "준비", "success", 10},
       {"keys", en ? "Tab focus | < > resize | c collapse" : "Tab 포커스 | < > 크기 | c 접기/복원", "hint",
        1}};
-  tui_tabs_draw(tabs, canvas, (TuiRect){area.x, area.y, area.width, 1},
-                tab_focus);
+  tui_tabs_draw_ascii(tabs, canvas, (TuiRect){area.x, area.y, area.width, 1},
+                      tab_focus, ascii);
   TuiLine *line = tui_breadcrumbs(path, 2, area.width);
   if (line) {
     tui_line_draw(line, canvas, (TuiRect){area.x, area.y + 1, area.width, 1});

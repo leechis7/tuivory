@@ -345,7 +345,7 @@ impl App {
         let layout = Layout::vertical([
             Constraint::Length(1),
             Constraint::Length(1),
-            Constraint::Length(1),
+            Constraint::Length(2),
             Constraint::Min(0),
             Constraint::Length(1),
             Constraint::Length(1),
@@ -369,7 +369,9 @@ impl App {
             .unwrap(),
             layout[1],
         );
-        let mut tabs = TabsWidget::new(&self.tabs, &self.styles).unwrap();
+        let mut tabs = TabsWidget::new(&self.tabs, &self.styles)
+            .unwrap()
+            .with_ascii(self.ascii);
         tabs.focused = self.focus == 0;
         self.tab_area = layout[2];
         if self.drag_enabled {

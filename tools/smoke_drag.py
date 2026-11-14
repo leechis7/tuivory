@@ -33,22 +33,22 @@ try:
     send(b'\x1b[1;4D')
     check('drop tabs: overview before logs')
     # Reparent a leaf, then use the same library request through keyboard input.
-    mouse(0,12,9);mouse(32,12,6);mouse(0,12,6,True)
+    mouse(0,12,10);mouse(32,12,7);mouse(0,12,7,True)
     check('drop tree: notes inside src')
-    mouse(0,12,7);mouse(0,12,7,True)
+    mouse(0,12,8);mouse(0,12,8,True)
     send(b'\x1b[1;4B');check('drop tree: go after rust')
     # The src -> descendant cycle must not produce a move request.
-    mouse(0,12,6);mouse(32,18,7);mouse(0,18,7,True)
+    mouse(0,12,7);mouse(32,18,8);mouse(0,18,8,True)
     check('drop tree: go after rust')
-    mouse(0,12,8);mouse(32,110,20);send(b'\x1b');mouse(0,110,20,True)
+    mouse(0,12,9);mouse(32,110,20);send(b'\x1b');mouse(0,110,20,True)
     check('drop tree: go after rust')
     # Theme/resize invalidation must not synthesize a later click or drop.
-    mouse(0,12,8);mouse(32,20,9);send(b'\x1b[12~');mouse(0,20,9,True)
+    mouse(0,12,9);mouse(32,20,10);send(b'\x1b[12~');mouse(0,20,10,True)
     assert 'droptree:goafternotes' not in visible(),visible()
-    mouse(0,12,8);mouse(32,20,9)
+    mouse(0,12,9);mouse(32,20,10)
     for h,w in [(16,32),(32,120)]:
         fcntl.ioctl(master,termios.TIOCSWINSZ,struct.pack('HHHH',h,w,0,0));os.killpg(process.pid,signal.SIGWINCH);drain(.3)
-    mouse(0,20,9,True);assert 'droptree:goafternotes' not in visible(),visible()
+    mouse(0,20,10,True);assert 'droptree:goafternotes' not in visible(),visible()
     send(b'\x1b[13~');os.write(master,b'\x11');drain();process.wait(timeout=3)
     assert process.returncode==0 and b'\x1b[?1049l' in raw
     if a.lang=='en':assert not any('\uac00'<=c<='\ud7a3' for c in raw.decode(errors='replace'))

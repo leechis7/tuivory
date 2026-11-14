@@ -771,23 +771,40 @@ public final class Tuivory {
       return new Event();
     }
     public void draw(Canvas c, Rect r, boolean hasFocus, boolean ascii) {
-      c.fill(r, "surface");
       var views = layout(r.width);
-      if (first > 0)
-        c.write(r.x, r.y, "<", "hint");
-      if (first + views.size() < items.size() && r.width > 0)
-        c.write(r.x + r.width - 1, r.y, ">", "hint");
+      drawRail(c, r, views, first, hasFocus, ascii);
+    }
+    private void drawRail(Canvas c, Rect r, List<TabCell> views, int start, boolean hasFocus, boolean ascii) {
+      c.fill(r, "surface");
+      if (r.height <= 0) return;
+      String edge = ascii ? "|" : "│", dash = ascii ? "-" : "─";
+      int y = r.y + (r.height >= 3 ? 1 : 0);
+      var border = c.palette.textOnSurface("hint",c.surfaceRole);
+      if (r.height >= 2) c.writeStyle(r.x,y+1,dash.repeat(r.width),border,r.width);
+      if (start > 0) c.writeStyle(r.x,y,"<",border,1);
+      if (start+views.size() < items.size() && r.width > 0)
+        c.writeStyle(r.x+r.width-1,y,">",border,1);
       for (var v : views) {
-        c.write(r.x + v.start, r.y, " ".repeat(v.width),
-            v.disabled     ? "disabled"
-                : v.active ? "selection"
-                           : "body",
-            hasFocus && v.focused, v.width);
-        c.write(r.x + v.start, r.y, v.text,
-            v.disabled     ? "disabled"
-                : v.active ? "selection"
-                           : "body",
-            hasFocus && v.focused, v.width);
+        String role = v.disabled ? "disabled" : v.active ? "selection" : "body";
+        boolean focus = hasFocus && v.focused;
+        int x=r.x+v.start, w=v.width;
+        c.write(x,y," ".repeat(w),role,focus,w);
+        if (w < 4) {
+          c.write(x,y,v.text,role,focus,w);
+          continue;
+        }
+        int end = v.text.endsWith(v.active ? "]" : " ") ? v.text.length()-1 : v.text.length();
+        String text = (v.focused ? ">" : " ")+v.text.substring(2,end);
+        c.write(x,y,edge,role,focus,1);
+        c.write(x+1,y,text,role,focus,w-2);
+        c.write(x+w-1,y,edge,role,focus,1);
+        if (r.height >= 3)
+          c.writeStyle(x,r.y,(ascii ? "+" : "┌")+dash.repeat(w-2)+(ascii ? "+" : "┐"),border,w);
+        if (r.height >= 2 && v.active) {
+          c.fill(new Rect(x,y+1,w,1),"surface");
+          c.writeStyle(x,y+1,ascii ? "+" : "┘",border,1);
+          c.writeStyle(x+w-1,y+1,ascii ? "+" : "└",border,1);
+        }
       }
     }
   }
@@ -7207,15 +7224,8 @@ public final class Tuivory {
       String marker = "!";
       if (model instanceof Tabs t) {
         var views = tabCells(t, r.width(), first);
-        if (first > 0)
-          child.write(0, 0, "<", "hint");
-        if (first + views.size() < t.items.size() && r.width() > 0)
-          child.write(r.width() - 1, 0, ">", "hint");
-        for (var c : views) {
-          String role = c.disabled() ? "disabled" : c.active() ? "selection" : "body";
-          child.write(c.start(), 0, " ".repeat(c.width()), role, focused && c.focused(), c.width());
-          child.write(c.start(), 0, c.text(), role, focused && c.focused(), c.width());
-        }
+        t.drawRail(child,new Rect(0,0,r.width(),r.height()),views,first,focused,ascii);
+        my = r.height() >= 3 ? 1 : 0;
         var target = views.stream().filter(c -> c.id().equals(targetId)).findFirst();
         mx = target.isEmpty()
             ? Math.max(0, Math.min(r.width() - 1, last.x()))

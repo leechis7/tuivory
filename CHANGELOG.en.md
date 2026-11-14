@@ -2,6 +2,10 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.12.5
+
+- All seven SDKs render outlined tabs; with room for a bottom rule, the active tab opens into the content below. Keyboard focus remains separate.
+
 ## 0.12.4
 
 - Grids show pending additions, modifications and deletions by stable row ID, with optional deletion dimming.

@@ -692,8 +692,7 @@ export class DragState {
       ].join("|"),
     );
     if (!this.valid(model, r.width, r.height)) {
-      if (model instanceof Tabs) model.draw(canvas, r, focused);
-      else model.draw(canvas, r, focused, ascii);
+      model.draw(canvas, r, focused, ascii);
       return;
     }
     const child = new Canvas(
@@ -707,26 +706,19 @@ export class DragState {
       marker = "!";
     if (model instanceof Tabs) {
       const views = this.tabCells(model, r.width, this.first);
-      if (this.first) child.write(0, 0, "<", "hint", false, 1);
-      if (this.first + views.length < model.items.length && r.width)
-        child.write(r.width - 1, 0, ">", "hint", false, 1);
-      for (const c of views) {
-        const role = c.disabled ? "disabled" : c.active ? "selection" : "body";
-        child.write(
-          c.start,
-          0,
-          " ".repeat(c.width),
-          role,
-          focused && c.focused,
-          c.width,
-        );
-        child.write(c.start, 0, c.text, role, focused && c.focused, c.width);
-      }
+      model.drawRail(
+        child,
+        rect(0, 0, r.width, r.height),
+        views,
+        this.first,
+        focused,
+        ascii,
+      );
       const target = views.find((c) => c.id === this.targetId);
       markerX = target
         ? target.start + (this.position === "after" ? target.width - 1 : 0)
         : Math.max(0, Math.min(r.width - 1, this.lastPointer.x));
-      markerY = 0;
+      markerY = Number(r.height >= 3);
       marker = ascii ? "|" : "│";
     } else {
       const rows = this.treeRows(model, r.height);

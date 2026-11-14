@@ -246,6 +246,20 @@ fn twelve_palette_widgets_geometry_and_literal_text() {
             let style = styles.text_on_surface("error", "surface").unwrap();
             assert_eq!(terminal.backend().buffer()[(0, 15)].fg, style.fg.unwrap());
             assert_eq!(terminal.backend().buffer()[(0, 15)].bg, style.bg.unwrap());
+            terminal
+                .draw(|f| {
+                    let widget = TabsWidget::new(&tabs, &styles).unwrap().with_ascii(true);
+                    f.render_stateful_widget(widget, Rect::new(0, 0, 60, 3), &mut state);
+                })
+                .unwrap();
+            let active = layout.cells[0].start as u16;
+            let inactive = layout.cells[1].start as u16;
+            let output = terminal.backend().buffer();
+            assert_eq!(output[(active, 0)].symbol(), "+");
+            assert_eq!(output[(active, 1)].symbol(), "|");
+            assert_eq!(output[(active + 1, 2)].symbol(), " ");
+            assert_eq!(output[(inactive, 2)].symbol(), "-");
+
             for rows in [false, true] {
                 for width in 0..60 {
                     let r = split_rects(Rect::new(0, 0, width, 20), spec, &split, rows, true);

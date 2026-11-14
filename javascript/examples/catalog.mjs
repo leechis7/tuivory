@@ -173,7 +173,7 @@ const splitControl = new ui.SplitControl();
 let tabFocus = false;
 let treeArea = ui.rect();
 function workspaceDraw(c, area) {
-  tabs.draw(c, ui.rect(area.x, area.y, area.width, 1), tabFocus);
+  tabs.draw(c, ui.rect(area.x, area.y, area.width, 1), tabFocus, ascii);
   ui.pathRuns(
     [
       { id: "root", label: en ? "Workspace" : "작업 공간" },

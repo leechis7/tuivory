@@ -67,7 +67,7 @@ static int drag_demo_draw(DragDemo *h, TuiCanvas *c, TuiRect area, int ascii) {
     tui_tree_draw(h->tree, c, h->tree_area, 0, ascii);
     result = tui_drag_tabs_draw(h->drag, h->tabs, c, h->tab_area, 1, ascii);
   } else {
-    tui_tabs_draw(h->tabs, c, h->tab_area, 0);
+    tui_tabs_draw_ascii(h->tabs, c, h->tab_area, 0, ascii);
     result = tui_drag_tree_draw(h->drag, h->tree, c, h->tree_area, 1, ascii);
   }
   char status[512], state[128];

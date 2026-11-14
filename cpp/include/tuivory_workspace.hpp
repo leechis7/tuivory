@@ -145,26 +145,45 @@ public:
     return {};
   }
   void draw(Canvas &c, Rect r, bool has_focus = true, bool ascii = false) {
-    (void)ascii;
-    c.fill(r);
     auto views = layout(r.width);
-    if (first > 0)
-      c.write(r.x, r.y, "<", "hint");
-    if (first + static_cast<int>(views.size()) <
-            static_cast<int>(items_.size()) &&
-        r.width > 0)
-      c.write(r.x + r.width - 1, r.y, ">", "hint");
+    draw_rail(c, r, views, first, has_focus, ascii);
+  }
+private:
+  friend class DragState;
+  void draw_rail(Canvas &c, Rect r, const std::vector<TabCell> &views,
+                 int start, bool has_focus, bool ascii) const {
+    c.fill(r);
+    if (r.height <= 0) return;
+    const std::string edge = ascii ? "|" : "│", dash = ascii ? "-" : "─";
+    const int y = r.y + (r.height >= 3);
+    const auto border = c.palette.text_on_surface("hint", c.surface_role);
+    auto line = [&](int count) {
+      std::string out;
+      for (int i=0;i<count;++i) out += dash;
+      return out;
+    };
+    if (r.height >= 2) c.write_style(r.x,y+1,line(r.width),border,r.width);
+    if (start > 0) c.write_style(r.x,y,"<",border,1);
+    if (start + static_cast<int>(views.size()) < static_cast<int>(items_.size()) && r.width > 0)
+      c.write_style(r.x+r.width-1,y,">",border,1);
     for (const auto &v : views) {
-      c.write(r.x + v.start, r.y, std::string(v.width, ' '),
-              v.disabled ? "disabled"
-              : v.active ? "selection"
-                         : "body",
-              has_focus && v.focused, v.width);
-      c.write(r.x + v.start, r.y, v.text,
-              v.disabled ? "disabled"
-              : v.active ? "selection"
-                         : "body",
-              has_focus && v.focused, v.width);
+      const char *role = v.disabled ? "disabled" : v.active ? "selection" : "body";
+      const bool focus = has_focus && v.focused;
+      const int x=r.x+v.start, w=v.width;
+      c.write(x,y,std::string(w,' '),role,focus,w);
+      if (w < 4) { c.write(x,y,v.text,role,focus,w); continue; }
+      const auto end = v.text.back() == (v.active ? ']' : ' ') ? v.text.size()-1 : v.text.size();
+      const auto text = std::string(v.focused ? ">" : " ") + v.text.substr(2,end-2);
+      c.write(x,y,edge,role,focus,1);
+      c.write(x+1,y,text,role,focus,w-2);
+      c.write(x+w-1,y,edge,role,focus,1);
+      if (r.height >= 3)
+        c.write_style(x,r.y,(ascii ? "+" : "┌")+line(w-2)+(ascii ? "+" : "┐"),border,w);
+      if (r.height >= 2 && v.active) {
+        c.fill({x,y+1,w,1});
+        c.write_style(x,y+1,ascii ? "+" : "┘",border,1);
+        c.write_style(x+w-1,y+1,ascii ? "+" : "└",border,1);
+      }
     }
   }
 };

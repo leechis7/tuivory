@@ -184,7 +184,7 @@ func Run(args []string) {
 		message = fmt.Sprintf("%s: %s", text("경로 이동 요청", "Navigation request"), id)
 		refresh()
 	}
-	root := ui.NewFlex().SetDirection(ui.FlexRow).AddItem(header, 1, 0, false).AddItem(path, 1, 0, false).AddItem(tabView, 1, 0, true).AddItem(split, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
+	root := ui.NewFlex().SetDirection(ui.FlexRow).AddItem(header, 1, 0, false).AddItem(path, 1, 0, false).AddItem(tabView, 2, 0, true).AddItem(split, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
 	// The host supplies screen composition, cross-component focus, and global keys.
 	controls := map[string]ui.Primitive{"tabs": tabView, "tree": treeView, "content": content}
 	focus := []ui.Primitive{controls[order[0]], controls[order[1]], controls[order[2]]}

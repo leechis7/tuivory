@@ -29,6 +29,7 @@ def native(language):
         for c in F['status']:lines.append(f'line=tui_status_line(status,3,{c["width"]});assert(line);text=tui_line_text(line);assert(text);assert(!strcmp(text,{quote(c["text"])}));assert(tui_line_omitted(line)=={c["omitted"]});tui_string_free(text);tui_line_free(line);')
         lines+=['TuiSplit split={7,3,4};for(int n=0;n<40;n++){TuiSplitLayout l=tui_split_layout(split,n);assert(l.first+l.divider+l.second==n);if(n<8){assert(l.compact);assert(l.first==0);}}assert(tui_split_resize(&split,30,10));assert(tui_split_layout(split,30).first==10);',
                 '{TuiTab one={"one","ax",0,0,0};TuiTabCell cell;size_t n;t=tui_tabs_new(&one,1);assert(tui_tabs_layout(t,30,&cell,1,&n)==TUI_OK);e=tui_tabs_click(t,cell.start+tui_cells(cell.text)-2,30);assert(!strcmp(e.kind,"activate"));tui_tabs_free(t);}',
+                '{TuiTab test[]={{"a","조회",0,1,0},{"b","Draft",0,0,0}};TuiTabCell v[2];size_t n;t=tui_tabs_new(test,2);TuiCanvas*c=tui_canvas_new(32,3,"light","8");assert(t&&c);tui_tabs_handle(t,"next");assert(tui_tabs_layout(t,32,v,2,&n)==TUI_OK&&n==2);int close=v[0].start+tui_cells(v[0].text)-2;assert(tui_tabs_draw_ascii(t,c,(TuiRect){0,0,32,3},1,1)==TUI_OK);char*rail=tui_canvas_line(c,2);assert(rail&&rail[v[0].start]==\'+\'&&rail[v[0].start+1]==\' \'&&rail[v[1].start]==\'-\');tui_string_free(rail);assert(!strcmp(tui_tabs_click(t,close,32).kind,"close"));tui_canvas_free(c);tui_tabs_free(t);}',
                 'return 0;}']
     else:
         lines=['#include "tuivory.hpp"','#include <cassert>','int main(){using namespace tuivory;std::vector<Tab> items={']
@@ -45,6 +46,7 @@ def native(language):
         for c in F['status']:lines.append(f'{{auto line=status_line(status,{c["width"]});assert(line.text()=={quote(c["text"])});assert(line.omitted=={c["omitted"]});}}')
         lines+=['Split split(3,4,7);for(int n=0;n<40;n++){auto l=split.layout(n);assert(l.first+l.divider+l.second==n);if(n<8){assert(l.compact);assert(l.first==0);}}assert(split.resize(30,10));assert(split.layout(30).first==10);',
                 '{Tabs t({{"one","ax",false,false,false}});auto cell=t.layout(30).front();assert(t.click(cell.start+cells(cell.text)-2,30).kind=="activate");}',
+                '{Tabs t({{"a","조회",false,true,false},{"b","Draft"}});Canvas c(32,3);t.handle("next");auto v=t.layout(32);t.draw(c,{0,0,32,3},true,true);auto rail=c.lines().at(2);assert(rail.at(v[0].start)==43&&rail.at(v[0].start+1)==32&&rail.at(v[1].start)==45);assert(t.click(v[0].start+cells(v[0].text)-2,32).kind=="close");}',
                 '}']
     return '\n'.join(lines)
 
@@ -64,6 +66,7 @@ def java():
     for c in F['status']:lines.append(f'{{var line=statusLine(status,{c["width"]});check(line.text().equals({quote(c["text"])}));check(line.omitted=={c["omitted"]});}}')
     lines+=['var split=new Split(3,4,7);for(int n=0;n<40;n++){var l=split.layout(n);check(l.first()+l.divider()+l.second()==n);if(n<8){check(l.compact());check(l.first()==0);}}check(split.resize(30,10));check(split.layout(30).first()==10);',
             '{var t=new Tabs(List.of(new Tab("one","ax")));var cell=t.layout(30).get(0);check(t.click(cell.start()+cells(cell.text())-2,30).kind().equals("activate"));}',
+            '{var a=new Tab("a","조회");a.closable=true;var t=new Tabs(List.of(a,new Tab("b","Draft")));var c=new Canvas(32,3);t.handle("next");var v=t.layout(32);t.draw(c,new Rect(0,0,32,3),true,true);var rail=c.lines().get(2);check(rail.charAt(v.get(0).start())==43&&rail.charAt(v.get(0).start()+1)==32&&rail.charAt(v.get(1).start())==45);check(t.click(v.get(0).start()+cells(v.get(0).text())-2,32).kind().equals("close"));}',
             '}}']
     return '\n'.join(lines)
 

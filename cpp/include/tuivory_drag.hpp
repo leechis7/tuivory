@@ -599,16 +599,8 @@ public:
     std::string marker = "!";
     if constexpr (std::is_same_v<Model, Tabs>) {
       auto views = tab_cells(m, r.width, first_);
-      if (first_)
-        child.write(0, 0, "<", "hint", false, 1);
-      if (first_ + int(views.size()) < int(m.items().size()) && r.width)
-        child.write(r.width - 1, 0, ">", "hint", false, 1);
-      for (auto c : views) {
-        auto role = c.disabled ? "disabled" : c.active ? "selection" : "body";
-        child.write(c.start, 0, std::string(c.width, ' '), role,
-                    focused && c.focused, c.width);
-        child.write(c.start, 0, c.text, role, focused && c.focused, c.width);
-      }
+      m.draw_rail(child,{0,0,r.width,r.height},views,first_,focused,ascii);
+      marker_y = r.height >= 3;
       auto target = std::find_if(views.begin(), views.end(),
                                  [&](auto c) { return c.id == target_id; });
       marker_x =
