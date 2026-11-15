@@ -32,4 +32,6 @@ Grid headers use the `grid.header` role across the whole row, including dividers
 
 The current data cell uses `grid.active` without a focus underline. The 8-color mode uses the header color, blue in dark/light and silver in monochrome. Higher color modes use a separate shade. In dark and light 8-color profiles, selected ranges use teal so the blue current cell stands out. An edited current cell keeps its asterisk. Other edited cells retain their edited background.
 
-Tabs use a single-line outline. The active tab uses the selection background and opens into the content below when there is room for a bottom rule. Keyboard focus stays independent, and disabled tabs remain muted. See [tab layouts](workspace.en.md#tabs) for compact and ASCII forms.
+Tabs use a single-line outline. Reserve one row by default; opt into three rows to show the full outline. The active tab uses the selection background and opens into the content below when there is room for a bottom rule. Keyboard focus stays independent, and disabled tabs remain muted. See [tab layouts](workspace.en.md#tabs) for compact and ASCII forms.
+
+The [compact popup shadow](popup-shadows.en.md) is one cell right and half a row below by default. A host may omit its top cap; keep the lower half-row continuous across changes in backdrop.

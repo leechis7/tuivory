@@ -39,13 +39,13 @@ __all__ += ["NoticeAction", "Notice", "NoticeEvent", "FeedbackSpan", "FeedbackRo
 from .layout import SpacingTokens, StackItem, StackSlot, StackResult, NamedRect, LayoutResult, DrawerPlacement, inset_rect, stack_layout, stack_rects, drawer_layout, Badge, Chip, Shortcut, Help
 __all__ += ["SpacingTokens", "StackItem", "StackSlot", "StackResult", "NamedRect", "LayoutResult", "DrawerPlacement", "inset_rect", "stack_layout", "stack_rects", "drawer_layout", "Badge", "Chip", "Shortcut", "Help"]
 
-from .containers import Track, LayoutItem, ContainerOptions, ContainerState, Container, compute_container
+from .containers import LayerInput, Track, LayoutItem, ContainerOptions, ContainerState, Container, compute_container
 
 from .surfaces import Surface
 
 from .popups import ShadowOptions, PopupLayout, Shadow, popup_placement
 
-__all__ += ["Track","LayoutItem","ContainerOptions","ContainerState","Container","compute_container","Surface","ShadowOptions","PopupLayout","Shadow"]
+__all__ += ["Track","LayoutItem","ContainerOptions","ContainerState","LayerInput","Container","compute_container","Surface","ShadowOptions","PopupLayout","Shadow"]
 from .dialogs import DialogButton, DialogButtonCell, DialogLayout, Dialog
 __all__ += ["DialogButton","DialogButtonCell","DialogLayout","Dialog"]
 from .documents import DocumentRange,DocumentSpan,DocumentGlyph,DocumentLine,TextDocument,parse_markup

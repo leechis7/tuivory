@@ -6598,6 +6598,104 @@ static int container_assign(char **destination, const char *value) {
   *destination = owned;
   return 1;
 }
+typedef struct {
+  char *target, *last_click;
+  int down;
+} LayerPress;
+struct TuiLayerInput {
+  char *front, *released_target;
+  LayerPress buttons[256];
+};
+TuiLayerInput *tui_layer_input_new(void) {
+  return calloc(1, sizeof(TuiLayerInput));
+}
+void tui_layer_input_free(TuiLayerInput *s) {
+  if (!s) return;
+  for (size_t n = 0; n < 256; ++n) {
+    free(s->buttons[n].target);
+    free(s->buttons[n].last_click);
+  }
+  free(s->front);
+  free(s->released_target);
+  free(s);
+}
+void tui_layer_input_invalidate(TuiLayerInput *s, TuiLayerCancel cancel, void *ctx) {
+  if (!s) return;
+  if (cancel)
+    for (size_t n = 0; n < 256; ++n) {
+      LayerPress *p = &s->buttons[n];
+      if (!p->down || !p->target || !*p->target) continue;
+      size_t i = 0;
+      for (; i < n; ++i)
+        if (s->buttons[i].down && s->buttons[i].target &&
+            !strcmp(s->buttons[i].target, p->target))
+          break;
+      if (i == n) cancel(ctx, p->target);
+    }
+  for (size_t n = 0; n < 256; ++n) {
+    if (s->buttons[n].target) s->buttons[n].target[0] = 0;
+    free(s->buttons[n].last_click);
+    s->buttons[n].last_click = NULL;
+  }
+}
+TuiResult tui_layer_input_set_front(TuiLayerInput *s, const char *id,
+                                   TuiLayerCancel cancel, void *ctx) {
+  if (!s || !id) return TUI_INVALID;
+  if (!strcmp(container_string(s->front), id)) return TUI_OK;
+  if (!container_assign(&s->front, id)) return TUI_NOMEM;
+  tui_layer_input_invalidate(s, cancel, ctx);
+  return TUI_OK;
+}
+const char *tui_layer_input_keyboard_target(const TuiLayerInput *s,
+                                            const char *focused) {
+  if (!s || !focused) return "";
+  return !*container_string(s->front) || !strcmp(s->front, focused) ? focused : "";
+}
+TuiResult tui_layer_input_pointer(TuiLayerInput *s, const char *action,
+                                 int button, const char *hit, int through,
+                                 TuiLayerRoute *out) {
+  if (!s || !action || !hit || !out || button < 0 || button > 255)
+    return TUI_INVALID;
+  *out = (TuiLayerRoute){"", action};
+  if (!through && *container_string(s->front) && strcmp(hit, s->front)) hit = "";
+  LayerPress *p = &s->buttons[button];
+  if (!strcmp(action, "down")) {
+    if (!container_assign(&p->target, hit)) return TUI_NOMEM;
+    p->down = 1;
+    out->target = p->target;
+  } else if (!strcmp(action, "move")) {
+    if (!button && !p->target) {
+      for (size_t n = 1; n < 256; ++n)
+        if (s->buttons[n].down) {
+          if (p != &s->buttons[0]) return TUI_OK;
+          p = &s->buttons[n];
+        }
+    }
+    out->target = p->down ? container_string(p->target) : hit;
+  } else if (!strcmp(action, "up")) {
+    p->down = 0;
+    out->target = container_string(p->target);
+  } else if (!strcmp(action, "click") || !strcmp(action, "double")) {
+    if (!p->down && *hit && p->target && !strcmp(p->target, hit)) {
+      if (!strcmp(action, "double") && strcmp(container_string(p->last_click), hit))
+        out->action = "click";
+      if (!container_assign(&p->last_click, hit)) return TUI_NOMEM;
+      out->target = p->target;
+      free(s->released_target);
+      s->released_target = p->target;
+    } else {
+      free(p->last_click);
+      p->last_click = NULL;
+      free(p->target);
+    }
+    p->target = NULL;
+    p->down = 0;
+  } else if (!strcmp(action, "wheel")) {
+    out->target = hit;
+  }
+  return TUI_OK;
+}
+
 TuiContainerState *tui_container_state_new(void) {
   return calloc(1, sizeof(TuiContainerState));
 }
@@ -7121,11 +7219,20 @@ static unsigned shadow_shade(unsigned backdrop, int has_rgb, int has_256) {
                       max(0, min(23, ((r + g + b) * factor / 15 - 3) / 10)));
   return 0;
 }
+static int shadow_brightness(unsigned color) {
+  int rgb[3];
+  style_rgb(color, rgb);
+  return 299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2];
+}
 static TuiResult shadow_paint(TuiCanvas *c, TuiRect region,
                               TuiPopupLayout layout, TuiShadowOptions options,
                               int ascii, int has_rgb, int has_256) {
   int left = max(0, region.x), right = min(c->width, region.x + region.width),
       top = max(0, region.y), bottom = min(c->height, region.y + region.height);
+  int has_caps = layout.shadow.height > layout.card.height;
+  if (has_caps && options.hide_top_cap && top == layout.shadow.y &&
+      top < layout.card.y + layout.card.height)
+    top++;
   if (left >= right || top >= bottom)
     return TUI_OK;
   unsigned *backgrounds = malloc((size_t)(right - left) * sizeof *backgrounds);
@@ -7163,6 +7270,15 @@ static TuiResult shadow_paint(TuiCanvas *c, TuiRect region,
                shade = !strcmp(mode, "solid")
                            ? 0
                            : shadow_shade(bg, has_rgb, has_256);
+      if (!ascii && !strcmp(mode, "auto") && has_caps &&
+          y == layout.shadow.y + layout.shadow.height - 1 &&
+          y > 0 && y - 1 > layout.shadow.y &&
+          x >= layout.card.x + layout.card.width &&
+          shadow_brightness(shade) < shadow_brightness(bg)) {
+        unsigned side = c->cells[(size_t)(y - 1) * c->width + x].style.background;
+        if (shadow_brightness(side) < shadow_brightness(shade))
+          shade = side;
+      }
       const char *symbol = " ";
       TuiStyle style = {.foreground = shade, .background = shade};
       if (ascii) {

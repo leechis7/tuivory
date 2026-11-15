@@ -1,4 +1,4 @@
-# Rust API — source (0.12.5)
+# Rust API — source (0.12.6)
 
 [한국어 (default)](rust.md) · **English**
 
@@ -2867,6 +2867,61 @@ pub struct PopupCloseRequest {
 
 
 
+### tuivory::layer_input::LayerInput
+
+```rust
+pub struct LayerInput {
+
+    // Private fields omitted.
+}
+```
+
+Routes input using host-supplied layer IDs and hit tests.
+
+#### tuivory::layer_input::LayerInput::set_front
+
+```rust
+pub fn set_front(&mut self, id: &str) -> Vec<String>;
+```
+
+Switch front layer; cancel child captures for the returned layer IDs.
+
+#### tuivory::layer_input::LayerInput::invalidate
+
+```rust
+pub fn invalidate(&mut self) -> Vec<String>;
+```
+
+Cancel gestures when the host replaces a layer without changing its ID.
+
+#### tuivory::layer_input::LayerInput::keyboard_target
+
+```rust
+pub fn keyboard_target<'a>(&self, focused: &'a str) -> &'a str;
+```
+
+Share the guard between keyboard and paste. An empty result consumes the event.
+
+#### tuivory::layer_input::LayerInput::pointer
+
+```rust
+pub fn pointer(&mut self, action: &str, button: u8, hit: &str, through: bool) -> LayerRoute;
+```
+
+Route down, move, up, click, double or wheel. Use 0 for buttonless motion.
+
+### tuivory::layer_input::LayerRoute
+
+```rust
+pub struct LayerRoute {
+    pub target: String,
+    pub action: String,
+}
+```
+
+Empty target consumes the event. The action can be downgraded to `click`.
+
+
 ### tuivory::layout::Badge
 
 ```rust
@@ -3424,6 +3479,7 @@ pub struct ShadowOptions {
     pub mode: ShadowMode,
     pub offset_x: usize,
     pub offset_y: usize,
+    pub hide_top_cap: bool,
 }
 ```
 

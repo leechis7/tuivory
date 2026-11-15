@@ -16,6 +16,8 @@ After wrapping, each button row is centered in the content width. Odd extra spac
 
 Use one public import/include. ShadowOptions defaults to off. auto adjusts shading to the actual background; solid uses black. Default auto/solid shadows extend one cell right and half a row below, using Unicode half blocks or ASCII dots. dim preserves underlying text and colors with the Dim attribute for compatibility. Terminal palette and Dim overrides can change physical appearance.
 
+To leave the top of the right shadow untouched, enable Python `hide_top_cap=True`, TypeScript/JavaScript `new ShadowOptions("auto", 0, 0, true)`, C `.hide_top_cap = 1`, C++ `hide_top_cap = true`, or Java `new ShadowOptions("auto", 0, 0, true)`. Existing calls keep the default top cap. The shared [shadow guide](popup-shadows.en.md) shows both forms and the bright backdrop case.
+
 `options.layout(bounds)` allocates card and shadow inside the entire bounds. Enabled options with both offsets zero use (1,1). `popup_placement(anchor,viewport,width,height,options)` flips/clamps the whole footprint, including the shadow, into the viewport. `hit(x,y)` includes only the card. `shadow_regions()`/`shadowRegions()` returns disjoint right/bottom regions. Shadows are not input targets.
 
 Painters receive a card Canvas with origin (0,0). Hosts subtract layout.card's origin from global pointer coordinates. Wide characters crossing either card/shadow boundary are repaired while preserving outside styles. Covered cursors are hidden; child cursors propagate only when fully visible. A failing painter leaves the destination unchanged. Hosts repaint the background before composing each popup frame.

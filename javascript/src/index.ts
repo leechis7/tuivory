@@ -3895,6 +3895,68 @@ export function computeContainer(
   }
   return out;
 }
+// Application-owned hit testing, with common front-layer and gesture rules.
+export class LayerInput {
+  private front = "";
+  private presses = new Map<number, { target: string; down: boolean }>();
+  private lastClick = new Map<number, string>();
+
+  setFront(layer: string): string[] {
+    if (layer === this.front) return [];
+    this.front = layer;
+    return this.invalidate();
+  }
+
+  invalidate(): string[] {
+    const cancelled = new Set<string>();
+    for (const press of this.presses.values()) {
+      if (press.down && press.target) cancelled.add(press.target);
+      press.target = "";
+    }
+    this.lastClick.clear();
+    return [...cancelled];
+  }
+
+  keyboardTarget(focused: string): string {
+    return !this.front || this.front === focused ? focused : "";
+  }
+
+  pointer(action: string, button: number, hit: string, through = false): {
+    target: string;
+    action: string;
+  } {
+    if (this.front && !through && hit !== this.front) hit = "";
+    let press = this.presses.get(button), target = "";
+    if (action === "down") {
+      this.presses.set(button, { target: hit, down: true });
+      target = hit;
+    } else if (action === "move") {
+      if (!press && button === 0) {
+        const active = [...this.presses.values()].filter((p) => p.down);
+        if (active.length > 1) return { target, action };
+        press = active[0];
+      }
+      target = press?.down ? press.target : hit;
+    } else if (action === "up" && press) {
+      target = press.target;
+      press.down = false;
+    } else if (action === "click" || action === "double") {
+      this.presses.delete(button);
+      if (press && !press.down && hit && press.target === hit) {
+        target = hit;
+        if (action === "double" && this.lastClick.get(button) !== hit)
+          action = "click";
+        this.lastClick.set(button, hit);
+      } else {
+        this.lastClick.delete(button);
+      }
+    } else if (action === "wheel") {
+      target = hit;
+    }
+    return { target, action };
+  }
+}
+
 export class ContainerState {
   focused = "";
   captured = "";
@@ -4170,6 +4232,7 @@ export class ShadowOptions {
     readonly mode = "off",
     readonly offsetX = 0,
     readonly offsetY = 0,
+    readonly hideTopCap = false,
   ) {
     shadowOffsets(this);
     Object.freeze(this);
@@ -4265,6 +4328,10 @@ function shadowShade(
     );
   return "0";
 }
+function shadowBrightness(color: string): number {
+  const [r, g, b] = colorRGB(color);
+  return 299 * r + 587 * g + 114 * b;
+}
 function paintShadow(
   canvas: Canvas,
   region: Rect,
@@ -4276,8 +4343,12 @@ function paintShadow(
 ): void {
   const left = Math.max(0, region.x),
     right = Math.min(canvas.width, region.x + region.width),
-    top = Math.max(0, region.y),
-    bottom = Math.min(canvas.height, region.y + region.height);
+    bottom = Math.min(canvas.height, region.y + region.height),
+    hasCaps = layout.shadow.height > layout.card.height,
+    cardBottom = layout.card.y + layout.card.height;
+  let top = Math.max(0, region.y);
+  if (hasCaps && options.hideTopCap && top === layout.shadow.y && top < cardBottom)
+    top++;
   if (left >= right || top >= bottom) return;
   canvas.clearCursor(rect(left, top, right - left, bottom - top));
   for (let y = top; y < bottom; y++) {
@@ -4303,9 +4374,15 @@ function paintShadow(
         old.style = { ...old.style, dim: true };
         continue;
       }
-      const bg = backgrounds[x - left],
-        shade =
-          options.mode === "solid" ? "0" : shadowShade(bg, hasRGB, has256);
+      const bg = backgrounds[x - left];
+      let shade = options.mode === "solid" ? "0" : shadowShade(bg, hasRGB, has256);
+      if (options.mode === "auto" && !ascii && hasCaps &&
+          y === layout.shadow.y + layout.shadow.height - 1 &&
+          y - 1 > layout.shadow.y && x >= layout.card.x + layout.card.width &&
+          shadowBrightness(shade) < shadowBrightness(bg)) {
+        const side = canvas.data[y - 1][x].style.background;
+        if (shadowBrightness(side) < shadowBrightness(shade)) shade = side;
+      }
       let symbol = " ",
         background = shade;
       if (ascii) {

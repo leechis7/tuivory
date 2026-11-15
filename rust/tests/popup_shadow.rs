@@ -53,6 +53,7 @@ fn extreme_offsets_and_coordinates_do_not_wrap() {
         mode: tuivory::popup::ShadowMode::Auto,
         offset_x: usize::MAX,
         offset_y: usize::MAX,
+        ..Default::default()
     };
     let l = popup_placement(
         CellRect {
@@ -196,6 +197,75 @@ mod rendering {
         assert_eq!(t.backend().buffer()[(13, 1)].bg, backdrop);
         assert_eq!(t.backend().buffer()[(13, 1)].fg, Color::Rgb(12, 15, 20));
     }
+    #[test]
+    fn hidden_top_preserves_backdrop_and_bottom_corner_joins_side() {
+        use ratatui::{
+            style::{Color, Style},
+            widgets::Block,
+        };
+        use tuivory::ratatui::ShadowWidget;
+        for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {
+            for (profile, dark, bright) in [
+                (ColorProfile::Ansi8, Color::Indexed(4), Color::Indexed(7)),
+                (ColorProfile::Ansi16, Color::Indexed(4), Color::Indexed(7)),
+                (
+                    ColorProfile::Indexed256,
+                    Color::Indexed(236),
+                    Color::Indexed(255),
+                ),
+                (
+                    ColorProfile::Truecolor,
+                    Color::Rgb(40, 40, 40),
+                    Color::Rgb(238, 238, 238),
+                ),
+            ] {
+                let styles = Styles::new(theme, profile).unwrap();
+                for ascii in [false, true] {
+                    let mut terminal = Terminal::new(TestBackend::new(20, 10)).unwrap();
+                    terminal
+                        .draw(|f| {
+                            let b = f.buffer_mut();
+                            b.set_string(
+                                11,
+                                1,
+                                "R",
+                                Style::default().bg(dark).add_modifier(Modifier::UNDERLINED),
+                            );
+                            b[(11, 6)].set_bg(dark);
+                            b[(11, 7)].set_bg(bright);
+                            f.render_widget(
+                                ShadowWidget::new(
+                                    Block::default(),
+                                    &styles,
+                                    ShadowOptions {
+                                        mode: ShadowMode::Auto,
+                                        hide_top_cap: true,
+                                        ..Default::default()
+                                    },
+                                )
+                                .ascii(ascii),
+                                Rect::new(2, 1, 10, 7),
+                            );
+                        })
+                        .unwrap();
+                    let b = terminal.backend().buffer();
+                    assert_eq!(b[(11, 1)].symbol(), "R");
+                    assert_eq!(b[(11, 1)].bg, dark);
+                    assert!(b[(11, 1)].modifier.contains(Modifier::UNDERLINED));
+                    assert_eq!(b[(11, 7)].bg, bright);
+                    if ascii {
+                        assert_eq!(b[(11, 6)].symbol(), ".");
+                        assert_eq!(b[(11, 7)].symbol(), ".");
+                    } else {
+                        assert_eq!(b[(11, 7)].symbol(), "▀");
+                        assert_eq!(b[(11, 7)].fg, b[(11, 6)].bg);
+                        assert_ne!(b[(11, 7)].fg, bright);
+                    }
+                }
+            }
+        }
+    }
+
     #[test]
     fn modes_preserve_card_and_repair_wide_edges() {
         for theme in [Theme::Dark, Theme::Light, Theme::Blackwhite] {

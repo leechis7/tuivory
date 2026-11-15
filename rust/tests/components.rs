@@ -248,7 +248,8 @@ fn twelve_palette_widgets_geometry_and_literal_text() {
             assert_eq!(terminal.backend().buffer()[(0, 15)].bg, style.bg.unwrap());
             terminal
                 .draw(|f| {
-                    let widget = TabsWidget::new(&tabs, &styles).unwrap().with_ascii(true);
+                    let mut widget = TabsWidget::new(&tabs, &styles).unwrap().with_ascii(true);
+                    widget.focused = true;
                     f.render_stateful_widget(widget, Rect::new(0, 0, 60, 3), &mut state);
                 })
                 .unwrap();
@@ -259,6 +260,17 @@ fn twelve_palette_widgets_geometry_and_literal_text() {
             assert_eq!(output[(active, 1)].symbol(), "|");
             assert_eq!(output[(active + 1, 2)].symbol(), " ");
             assert_eq!(output[(inactive, 2)].symbol(), "-");
+            assert_eq!(
+                output[(active, 1)].bg,
+                styles.role("selection").unwrap().bg.unwrap()
+            );
+            assert!(
+                output[(inactive + 1, 1)]
+                    .modifier
+                    .contains(Modifier::UNDERLINED)
+            );
+            assert_eq!(state.active, before.active);
+            assert_eq!(state.focused, before.focused);
 
             for rows in [false, true] {
                 for width in 0..60 {

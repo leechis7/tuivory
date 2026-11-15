@@ -6,10 +6,11 @@ from check_languages import ROOT,quote,run
 from check_language_feedback import statements
 from build_language import build
 F=json.loads((ROOT/'design/controls-cases.json').read_text())['layout']
+LAYER_INPUT=json.loads((ROOT/'design/layer-input-cases.json').read_text())
 def source(lang):
  c=lang=='c';java=lang=='java'
  out=['import static io.tuivory.Tuivory.*;import java.util.*;public class ContainerCases{static void check(boolean b){if(!b)throw new AssertionError();}public static void main(String[]args){']if java else['#include "tuivory.h"'if c else'#include "tuivory.hpp"','#include <assert.h>','#include <string.h>']
- if c:out.append('''static TuiResult paint(void*context,const char*id,TuiCanvas*child,int focused){(void)context;(void)id;(void)focused;TuiResult r=tui_canvas_write(child,-1,0,"界a界b한c","selection",0,9);tui_canvas_cursor(child,3,0,2);return r;}int main(void){''')
+ if c:out.append('''static TuiResult paint(void*context,const char*id,TuiCanvas*child,int focused){(void)context;(void)id;(void)focused;TuiResult r=tui_canvas_write(child,-1,0,"界a界b한c","selection",0,9);tui_canvas_cursor(child,3,0,2);return r;}static int cancelled;static void cancel(void*ctx,const char*id){assert(!strcmp(ctx,id));cancelled++;}int main(void){''')
  elif not java:out.append('int main(){using namespace tuivory;')
  def check(e):out.append(('check('if java else'assert(')+e+');')
  def eq(e,v):check(e+'.equals('+quote(v)+')'if java else'!strcmp('+e+','+quote(v)+')'if c else e+'=='+quote(v))
@@ -50,6 +51,33 @@ def source(lang):
  {var top=new LayoutItem("top");top.track.fixed=1;var editor=new LayoutItem("editor");editor.track.fixed=1;var o=new ContainerOptions();o.kind="column";o.virtualWidth=8;o.virtualHeight=3;var c=new Container(List.of(top,editor),o);c.state.focused="editor";c.scrollX=2;c.scrollY=1;var canvas=new Canvas(9,4);canvas.write(0,0,"Outside","body");ChildPainter paint=(id,child,focused)->{child.write(-1,0,"界a界b한c","selection");child.write(0,99,"overflow","body");child.setCursor(3,0,2);};c.draw(canvas,new Rect(1,1,5,1),paint);check(canvas.cursorX==2&&canvas.cursorY==1);check(c.pointer(2,1,true,false).equals("editor"));check(c.pointer(50,50,false,true).equals("editor"));check(c.state.captured.isEmpty());check(canvas.lines().get(0).equals("Outside  "));check(canvas.lines().get(2).equals("         "));top.id="mutated";check(c.items().get(0).id.equals("top"));String before=canvas.ansi();boolean failed=false;try{c.draw(canvas,new Rect(1,1,5,1),(id,child,focused)->{throw new IllegalArgumentException("host");});}catch(IllegalArgumentException e){failed=true;}check(failed&&canvas.ansi().equals(before));}''')
  else:out.append('''{LayoutItem a,b,popup,nested;a.id="a";b.id="b";popup.id="popup";popup.modal=true;nested.id="nested";nested.modal=true;ContainerState s;s.reconcile({a,b});assert(s.move_focus({a,b})=="b");s.reconcile({a,b,popup});assert(s.focused=="popup");s.reconcile({a,b,popup,nested});s.reconcile({a,b});assert(s.focused=="b");}
  {LayoutItem top,editor;top.id="top";top.track.fixed=1;editor.id="editor";editor.track.fixed=1;ContainerOptions o;o.kind="column";o.virtual_width=8;o.virtual_height=3;Container c({top,editor},o);c.state.focused="editor";c.scroll_x=2;c.scroll_y=1;Canvas canvas(9,4);canvas.write(0,0,"Outside");auto paint=[](const std::string&,Canvas&child,bool){child.write(-1,0,"界a界b한c","selection");child.write(0,99,"overflow");child.set_cursor(3,0,2);};c.draw(canvas,{1,1,5,1},paint);assert(canvas.cursor&&canvas.cursor->first==2&&canvas.cursor->second==1);assert(c.pointer(2,1,true)=="editor");assert(c.pointer(50,50,false,true)=="editor");assert(c.state.captured.empty());assert(canvas.lines()[0]=="Outside  ");assert(canvas.lines()[2]=="         ");auto before=canvas.ansi();bool failed=false;try{c.draw(canvas,{1,1,5,1},[](const std::string&,Canvas&,bool){throw std::invalid_argument("host");});}catch(const std::invalid_argument&){failed=true;}assert(failed&&canvas.ansi()==before);}''')
+ out.append('{TuiLayerInput*gate=tui_layer_input_new();assert(gate);TuiLayerRoute route;' if c else '{var gate=new LayerInput();' if java else '{LayerInput gate;')
+ for kind,*args in LAYER_INPUT:
+  if kind=='front':
+   layer,want=map(quote,args)
+   if c:
+    out.append('cancelled=0;')
+    check('tui_layer_input_set_front(gate,'+layer+',cancel,(void*)'+want+')==TUI_OK')
+    check('cancelled=='+str(int(bool(args[1]))))
+   elif java:check('gate.setFront('+layer+').equals(List.of('+(want if args[1] else '')+'))')
+   else:check('(gate.set_front('+layer+')==std::vector<std::string>{'+(want if args[1] else '')+'})')
+  elif kind=='invalidate':
+   want=quote(args[0])
+   if c:out.append('cancelled=0;tui_layer_input_invalidate(gate,cancel,(void*)'+want+');assert(cancelled==1);')
+   elif java:check('gate.invalidate().equals(List.of('+want+'))')
+   else:check('(gate.invalidate()==std::vector<std::string>{'+want+'})')
+  elif kind=='key':
+   eq(('tui_layer_input_keyboard_target(gate,' if c else 'gate.keyboardTarget(' if java else 'gate.keyboard_target(')+quote(args[0])+')',args[1])
+  elif kind=='pointer':
+   action,button,hit,through,target,routed_action=args
+   call=','.join([quote(action),str(button),quote(hit),str(int(through))if c else str(through).lower()])
+   if c:check('tui_layer_input_pointer(gate,'+call+',&route)==TUI_OK')
+   else:out.append('{'+('var' if java else 'auto')+' route=gate.pointer('+call+');')
+   eq('route.target()' if java else 'route.target',target)
+   eq('route.action()' if java else 'route.action',routed_action)
+   if not c:out.append('}')
+ if c:out.append('tui_layer_input_free(gate);')
+ out.append('}')
  out.append('}}'if java else'return 0;}');return statements('\n'.join(out))
 
 def main():

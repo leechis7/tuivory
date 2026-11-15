@@ -55,7 +55,7 @@ impl<W: Widget> Widget for ShadowWidget<'_, W> {
                     rect(region),
                     layout,
                     self.styles,
-                    self.options.mode,
+                    self.options,
                     self.ascii,
                 );
             } else if self.options.mode == ShadowMode::Dim {
@@ -178,12 +178,17 @@ fn half_shadow_color(backdrop: Color, styles: &Styles) -> Color {
     }
 }
 
+fn shadow_brightness(color: Color) -> u32 {
+    let (r, g, b) = rgb(color);
+    299 * u32::from(r) + 587 * u32::from(g) + 114 * u32::from(b)
+}
+
 fn draw_half_shadow(
     buf: &mut Buffer,
     region: Rect,
     layout: PopupLayout,
     styles: &Styles,
-    mode: ShadowMode,
+    options: ShadowOptions,
     ascii: bool,
 ) {
     let area = region.intersection(buf.area);
@@ -191,6 +196,14 @@ fn draw_half_shadow(
         return;
     }
     for y in area.y..area.bottom() {
+        let row = usize::from(y);
+        let has_caps = layout.shadow.height > layout.card.height;
+        let card_bottom = layout.card.y.saturating_add(layout.card.height);
+        if has_caps && options.hide_top_cap && row == layout.shadow.y && row < card_bottom {
+            continue;
+        }
+        let bottom_cap =
+            has_caps && row == layout.shadow.y.saturating_add(layout.shadow.height) - 1;
         // Ratatui resets wide continuation cells. A terminal still shows the
         // leading cell's background across both columns; capture it before
         // repairing/overwriting either half of the grapheme.
@@ -208,12 +221,26 @@ fn draw_half_shadow(
         repair_edges(buf, area, y);
         for x in area.x..area.right() {
             let bg: ratatui::style::Color = backgrounds[(x - area.x) as usize].into();
-            let shade: ratatui::style::Color = if mode == ShadowMode::Solid {
+            let backdrop = backgrounds[(x - area.x) as usize];
+            let mut shade = if options.mode == ShadowMode::Solid {
                 Color::Indexed(0)
             } else {
-                half_shadow_color(backdrop_color(bg, styles), styles)
+                half_shadow_color(backdrop, styles)
+            };
+            if options.mode == ShadowMode::Auto
+                && !ascii
+                && bottom_cap
+                && row.saturating_sub(1) > layout.shadow.y
+                && y > buf.area.y
+                && usize::from(x) >= layout.card.x.saturating_add(layout.card.width)
+                && shadow_brightness(shade) < shadow_brightness(backdrop)
+            {
+                let side = backdrop_color(buf[(x, y - 1)].bg, styles);
+                if shadow_brightness(side) < shadow_brightness(shade) {
+                    shade = side;
+                }
             }
-            .into();
+            let shade = shade.into();
             let (mut symbol, mut style) = (" ", Style::default().bg(shade));
             if ascii {
                 symbol = ".";

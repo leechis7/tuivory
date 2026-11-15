@@ -42,11 +42,23 @@ func halfShadowColor(p Palette, backdrop tcell.Color) tcell.Color {
 	return tcell.PaletteColor(0)
 }
 
-func drawHalfShadow(screen tcell.Screen, region CellRect, l PopupLayout, p Palette, mode ShadowMode, ascii bool) {
+// luminance is a weighted RGB comparison for keeping the corner ink visible.
+func shadowBrightness(c tcell.Color) int32 {
+	r, g, b := c.RGB()
+	return 299*r + 587*g + 114*b
+}
+
+func drawHalfShadow(screen tcell.Screen, region CellRect, l PopupLayout, p Palette, options ShadowOptions, ascii bool) {
 	cols, rows := screen.Size()
 	safe := WideSafeScreen(screen)
 	left, right := max(0, region.X), min(cols, popupAdd(region.X, region.Width))
 	for y := max(0, region.Y); y < min(rows, popupAdd(region.Y, region.Height)); y++ {
+		hasCaps := l.Shadow.Height > l.Card.Height
+		cardBottom := popupAdd(l.Card.Y, l.Card.Height)
+		if hasCaps && options.HideTopCap && y == l.Shadow.Y && y < cardBottom {
+			continue
+		}
+		bottomCap := hasCaps && y == popupAdd(l.Shadow.Y, l.Shadow.Height)-1
 		backgrounds := make([]tcell.Color, max(0, right-left))
 		for x := left; x < right; x++ {
 			_, _, old, _ := screen.GetContent(x, y)
@@ -65,8 +77,17 @@ func drawHalfShadow(screen tcell.Screen, region CellRect, l PopupLayout, p Palet
 		for x := left; x < right; x++ {
 			bg := backgrounds[x-left]
 			shade := halfShadowColor(p, bg)
-			if mode == ShadowSolid {
+			if options.Mode == ShadowSolid {
 				shade = tcell.PaletteColor(0)
+			} else if !ascii && bottomCap && y > 0 && y-1 > l.Shadow.Y &&
+				x >= popupAdd(l.Card.X, l.Card.Width) && shadowBrightness(shade) < shadowBrightness(bg) {
+				// A brighter backdrop under the corner must not lighten the tip
+				// more than the side shadow it joins.
+				_, _, side, _ := screen.GetContent(x, y-1)
+				_, above, _ := side.Decompose()
+				if above.Valid() && shadowBrightness(above) < shadowBrightness(shade) {
+					shade = above
+				}
 			}
 			glyph := ' '
 			style := tcell.StyleDefault.Background(shade)

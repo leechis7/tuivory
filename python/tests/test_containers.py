@@ -94,3 +94,19 @@ class Containers(unittest.TestCase):
         container.scroll_x = 1000001
         with self.assertRaises(ValueError):
             container.draw(c, ui.Rect(1, 1, 5, 1), paint)
+
+
+class LayerInputCases(unittest.TestCase):
+    def test_shared_layer_input(self):
+        state = ui.LayerInput()
+        path = Path(__file__).resolve().parents[2] / 'design/layer-input-cases.json'
+        for kind, *args in json.loads(path.read_text()):
+            with self.subTest(kind=kind, args=args):
+                if kind == 'front':
+                    self.assertEqual(state.set_front(args[0]), [args[1]] if args[1] else [])
+                elif kind == 'invalidate':
+                    self.assertEqual(state.invalidate(), [args[0]])
+                elif kind == 'key':
+                    self.assertEqual(state.keyboard_target(args[0]), args[1])
+                elif kind == 'pointer':
+                    self.assertEqual(state.pointer(*args[:4]), tuple(args[4:]))

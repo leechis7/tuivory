@@ -16,6 +16,8 @@ TVR-15·16·30·31·32의 구현이다. Python·TypeScript/JavaScript·C·C++·J
 
 하나의 공개 import/include로 사용한다. `ShadowOptions`의 기본 모드는 off다. auto는 실제 배경에 맞춰 명암을 조정하고, solid는 검정을 사용한다. auto/solid의 기본 여백은 오른쪽 한 칸과 아래 반 줄이다. Unicode는 반 블록, ASCII는 점으로 대체한다. dim은 기존 문자의 색과 내용을 유지하고 Dim 속성을 적용하는 호환 모드다. 터미널이 색 팔레트나 Dim 표시를 재정의하면 실제 외관은 달라질 수 있다.
 
+오른쪽 그림자 맨 위를 비우려면 Python은 `hide_top_cap=True`, TypeScript/JavaScript는 `new ShadowOptions("auto", 0, 0, true)`, C는 `.hide_top_cap = 1`, C++는 `hide_top_cap = true`, Java는 `new ShadowOptions("auto", 0, 0, true)`를 지정합니다. 기존 호출은 기본 상단 모서리를 유지합니다. 두 모양과 밝은 배경 사례는 [공통 그림자 안내](popup-shadows.md)에서 볼 수 있습니다.
+
 `options.layout(bounds)`는 전체 bounds 안에 card와 shadow를 배치한다. enabled 상태의 두 offset이 모두 0이면 (1,1)을 사용한다. `popup_placement(anchor,viewport,width,height,options)`는 그림자를 포함한 전체 영역이 viewport 안에 들어가도록 위치를 뒤집거나 제한한다. `hit(x,y)`는 카드만 포함한다. `shadow_regions()`/`shadowRegions()`는 겹치지 않는 오른쪽·아래 영역을 반환한다. 그림자는 입력 대상이 아니다.
 
 그리기 콜백은 원점 (0,0)의 카드 Canvas를 받는다. 호스트가 전역 포인터 좌표에서 `layout.card`의 원점을 빼서 자식에 전달한다. 카드와 그림자 양쪽 경계에 걸친 두 칸 문자는 온전한 칸으로 복구하고 외부 칸의 스타일을 보존한다. 덮인 커서는 숨기고 카드가 만든 커서는 보이는 범위만 전달한다. 콜백 실패 시 대상 버퍼는 변경하지 않는다. 호스트는 프레임마다 배경을 다시 그리고 팝업을 합성한다.

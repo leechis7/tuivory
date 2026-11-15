@@ -52,6 +52,7 @@ func (v *ShadowView) Layout() PopupLayout {
 func (v *ShadowView) StyleChildren() []tview.Primitive     { return []tview.Primitive{v.Child} }
 func (v *ShadowView) HasFocus() bool                       { return v.Child.HasFocus() }
 func (v *ShadowView) Focus(delegate func(tview.Primitive)) { delegate(v.Child) }
+func (v *ShadowView) CancelPointer()                       { cancelLayerPointer(v.Child) }
 func (v *ShadowView) Blur()                                { v.Child.Blur() }
 func (v *ShadowView) AtTabBoundary(previous bool) bool     { return tabBoundary(v.Child, previous) }
 
@@ -64,7 +65,7 @@ func (v *ShadowView) Draw(screen tcell.Screen) {
 	l := v.Layout()
 	for _, region := range l.ShadowRegions() {
 		if v.options.Mode == ShadowAuto || v.options.Mode == ShadowSolid {
-			drawHalfShadow(screen, region, l, v.palette, v.options.Mode, v.ASCII)
+			drawHalfShadow(screen, region, l, v.palette, v.options, v.ASCII)
 		} else if v.options.Mode == ShadowDim {
 			DimRegion(screen, region)
 		}

@@ -110,3 +110,46 @@ func TestCompactShadowClippingAndZeroVerticalOffset(t *testing.T) {
 	outputCell(t, s, 13, 1, " ") // Explicit y=0: no half-row caps.
 	outputCell(t, s, 3, 7, "R")
 }
+
+func TestShadowCanLeaveTopCapAndKeepCornerContinuous(t *testing.T) {
+	for _, theme := range []string{"dark", "light", "blackwhite"} {
+		for _, profile := range []string{"8", "16", "256", "truecolor"} {
+			for _, ascii := range []bool{false, true} {
+				s := drawingScreen(t)
+				doc, _ := ui.CandidateTokens()
+				tokens, _ := doc.Palette(theme, profile)
+				p, _ := ui.Resolve(tokens)
+				dark, bright := ui.PaletteColor(4), ui.PaletteColor(7)
+				if profile == "256" {
+					dark, bright = ui.PaletteColor(236), ui.PaletteColor(255)
+				} else if profile == "truecolor" {
+					dark, bright = ui.NewRGBColor(40, 40, 40), ui.NewRGBColor(238, 238, 238)
+				}
+				darkStyle := ui.StyleDefault.Background(dark).Underline(true)
+				s.Fill('R', darkStyle)
+				s.Put(11, 7, "B", ui.StyleDefault.Background(bright))
+				view, err := ui.NewShadowView(ui.NewBox(), p, ui.ShadowOptions{Mode: ui.ShadowAuto, HideTopCap: true})
+				if err != nil {
+					t.Fatal(err)
+				}
+				view.SetRect(2, 1, 10, 7)
+				view.ASCII = ascii
+				view.Draw(s)
+				s.Show()
+				if got := outputCell(t, s, 11, 1, "R"); got != darkStyle {
+					t.Fatal("hidden cap changed backdrop", theme, profile, got)
+				}
+				if ascii {
+					outputCell(t, s, 11, 2, ".")
+					outputCell(t, s, 11, 7, ".")
+					continue
+				}
+				_, side, _ := outputCell(t, s, 11, 6, " ").Decompose()
+				ink, backdrop, _ := outputCell(t, s, 11, 7, "▀").Decompose()
+				if ink != side || backdrop != bright || ink == backdrop {
+					t.Fatal("corner does not join side while preserving backdrop", theme, profile, ink, side, backdrop)
+				}
+			}
+		}
+	}
+}

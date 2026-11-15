@@ -564,6 +564,25 @@ TuiResult tui_compute_container(TuiRect bounds, const TuiLayoutItem *items,
                                 size_t count,
                                 const TuiContainerOptions *options,
                                 TuiLayoutResult **out);
+/* Host input routing. An empty target means consume. Pointer result strings
+ * are borrowed until the next call or destruction. Cancel callbacks run on the
+ * calling event loop and must not reenter this state. */
+typedef struct TuiLayerInput TuiLayerInput;
+typedef void (*TuiLayerCancel)(void *context, const char *id);
+typedef struct {
+  const char *target, *action;
+} TuiLayerRoute;
+TuiLayerInput *tui_layer_input_new(void);
+void tui_layer_input_free(TuiLayerInput *state);
+TuiResult tui_layer_input_set_front(TuiLayerInput *state, const char *id,
+                                   TuiLayerCancel cancel, void *context);
+void tui_layer_input_invalidate(TuiLayerInput *state, TuiLayerCancel cancel,
+                                void *context);
+const char *tui_layer_input_keyboard_target(const TuiLayerInput *state,
+                                            const char *focused);
+TuiResult tui_layer_input_pointer(TuiLayerInput *state, const char *action,
+                                 int button, const char *hit, int through,
+                                 TuiLayerRoute *out);
 typedef struct TuiContainerState TuiContainerState;
 TuiContainerState *tui_container_state_new(void);
 void tui_container_state_free(TuiContainerState *state);
@@ -631,6 +650,8 @@ TuiResult tui_surface_draw(const TuiSurface *surface, TuiCanvas *canvas,
 typedef struct {
   const char *mode;
   int offset_x, offset_y;
+  /* Leave the original cells above the right shadow intact. */
+  int hide_top_cap;
 } TuiShadowOptions;
 typedef struct {
   TuiRect bounds, card, shadow;

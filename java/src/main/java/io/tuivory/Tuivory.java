@@ -3426,6 +3426,70 @@ public final class Tuivory {
     }
     return List.copyOf(out);
   }
+  public record LayerRoute(String target, String action) {}
+  public static final class LayerInput {
+    private record Press(String target, boolean down) {}
+    private String front = "";
+    private final java.util.Map<Integer, Press> presses = new java.util.TreeMap<>();
+    private final java.util.Map<Integer, String> lastClick = new java.util.HashMap<>();
+
+    public List<String> setFront(String layer) {
+      if (layer.equals(front)) return List.of();
+      front = layer;
+      return invalidate();
+    }
+    public List<String> invalidate() {
+      var cancelled = new java.util.LinkedHashSet<String>();
+      presses.replaceAll((button, press) -> {
+        if (press.down && !press.target.isEmpty()) cancelled.add(press.target);
+        return new Press("", press.down);
+      });
+      lastClick.clear();
+      return List.copyOf(cancelled);
+    }
+    public String keyboardTarget(String focused) {
+      return front.isEmpty() || front.equals(focused) ? focused : "";
+    }
+    public LayerRoute pointer(String action, int button, String hit, boolean through) {
+      if (!through && !front.isEmpty() && !front.equals(hit)) hit = "";
+      var press = presses.get(button);
+      String target = "";
+      switch (action) {
+        case "down" -> {
+          presses.put(button, new Press(hit, true));
+          target = hit;
+        }
+        case "move" -> {
+          if (press == null && button == 0) {
+            for (var active : presses.values()) {
+              if (active.down) {
+                if (press != null) return new LayerRoute("", action);
+                press = active;
+              }
+            }
+          }
+          target = press != null && press.down ? press.target : hit;
+        }
+        case "up" -> {
+          if (press != null) {
+            target = press.target;
+            presses.put(button, new Press(target, false));
+          }
+        }
+        case "click", "double" -> {
+          presses.remove(button);
+          if (press != null && !press.down && !hit.isEmpty() && hit.equals(press.target)) {
+            target = hit;
+            if (action.equals("double") && !hit.equals(lastClick.get(button))) action = "click";
+            lastClick.put(button, hit);
+          } else lastClick.remove(button);
+        }
+        case "wheel" -> target = hit;
+        default -> {}
+      }
+      return new LayerRoute(target, action);
+    }
+  }
   public static final class ContainerState {
     public String focused = "", captured = "";
     private String modal = "";
@@ -3622,7 +3686,10 @@ public final class Tuivory {
       return card.contains(x, y);
     }
   }
-  public record ShadowOptions(String mode, int offsetX, int offsetY) {
+  public record ShadowOptions(String mode, int offsetX, int offsetY, boolean hideTopCap) {
+    public ShadowOptions(String mode, int offsetX, int offsetY) {
+      this(mode, offsetX, offsetY, false);
+    }
     public ShadowOptions() {
       this("off", 0, 0);
     }
@@ -3688,10 +3755,18 @@ public final class Tuivory {
       return 232 + Math.max(0, Math.min(23, ((r + g + b) * factor / 15 - 3) / 10));
     return 0;
   }
+  private static int shadowBrightness(int color) {
+    var rgb = colorRGB(color);
+    return 299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2];
+  }
   private static void paintShadow(Canvas canvas, Rect region, PopupLayout layout,
       ShadowOptions options, boolean ascii, boolean hasRGB, boolean has256) {
     int left = Math.max(0, region.x), right = Math.min(canvas.width, region.x + region.width),
         top = Math.max(0, region.y), bottom = Math.min(canvas.height, region.y + region.height);
+    boolean hasCaps = layout.shadow.height > layout.card.height;
+    if (hasCaps && options.hideTopCap && top == layout.shadow.y &&
+        top < layout.card.y + layout.card.height)
+      top++;
     if (left >= right || top >= bottom)
       return;
     canvas.clearCursor(new Rect(left, top, right - left, bottom - top));
@@ -3713,8 +3788,16 @@ public final class Tuivory {
           continue;
         }
         int bg = backgrounds[x - left],
-            shade = options.mode.equals("solid") ? 0 : shadowShade(bg, hasRGB, has256),
-            background = shade;
+            shade = options.mode.equals("solid") ? 0 : shadowShade(bg, hasRGB, has256);
+        if (!ascii && options.mode.equals("auto") && hasCaps &&
+            y == layout.shadow.y + layout.shadow.height - 1 &&
+            y > 0 && y - 1 > layout.shadow.y &&
+            x >= layout.card.x + layout.card.width && shadowBrightness(shade) < shadowBrightness(bg)) {
+          int side = canvas.data[y - 1][x].style.background;
+          if (shadowBrightness(side) < shadowBrightness(shade))
+            shade = side;
+        }
+        int background = shade;
         String symbol = " ";
         if (ascii) {
           symbol = ".";

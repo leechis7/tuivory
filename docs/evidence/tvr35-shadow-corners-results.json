@@ -1,0 +1,13 @@
+{
+  "issue": "TVR-35",
+  "scope": ["Go", "Rust", "Python", "TypeScript/JavaScript", "C", "C++", "Java"],
+  "scope_exception": "The Shell terminal reference has no popup shadow renderer.",
+  "checks": [
+    "Three themes and four color profiles, with Unicode and ASCII, preserve the hidden top cap's original cell and verify the lower corner over a brighter backdrop.",
+    "Verified Go after Show(), Rust through TestBackend, Python and TypeScript/JavaScript through Canvas, and C, C++, and Java through their emitted ANSI cell buffers.",
+    "Existing wide-character boundaries, card-only hit testing, and compatibility modes passed the popup suites.",
+    "Updated bilingual shadow and API documentation and captured dark and light examples from the renderer."
+  ],
+  "github_ci": "not run for this change",
+  "publication": "unreleased local worktree"
+}

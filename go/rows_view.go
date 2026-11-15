@@ -28,7 +28,8 @@ type RowsView struct {
 	Mouse               func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
 	// SyntaxStyle optionally preserves a host's existing seven-role syntax styles.
 	// Selection/disabled spans have already replaced syntax roles before drawing.
-	SyntaxStyle func(string, tcell.Style) tcell.Style
+	SyntaxStyle   func(string, tcell.Style) tcell.Style
+	cancelPointer func()
 }
 
 func (v *RowsView) AtTabBoundary(previous bool) bool {
@@ -47,6 +48,11 @@ func (v *RowsView) releaseCursor() {
 		v.cursorScreen.HideCursor()
 	}
 	v.cursorOwned = false
+}
+func (v *RowsView) CancelPointer() {
+	if v.cancelPointer != nil {
+		v.cancelPointer()
+	}
 }
 func (v *RowsView) Blur() { v.Box.Blur(); v.releaseCursor() }
 func (v *RowsView) Draw(screen tcell.Screen) {
@@ -398,6 +404,13 @@ func NewGridView(model *Grid, palette Palette, onEvent func(GridEvent)) (*RowsVi
 	}
 	v.TabBoundary = func(bool) bool { return model.work.edit == nil }
 	v.Cursor = model.EditCursor
+	v.cancelPointer = func() {
+		model.work.dragMoveColumn = ""
+		model.work.dragMoved = false
+		model.work.editDragging = false
+		model.dragColumn = ""
+		model.dragAnchor = GridRange{}
+	}
 
 	v.Pointer = func(line ComponentLine, x int) { emit(model.Click(line.ID, line.Value, x, width, height)) }
 	v.Mouse = func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
