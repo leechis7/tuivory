@@ -94,9 +94,9 @@ try:
         send(b'\x1b[12~');send(b'\x1b[13~')
     else:
         draft = '변경된' if args.lang == 'ko' else 'Edited'
-        title = ''.join(screen.rows[title_row])
-        assert draft in title, visible()
-        draft_x = title.index(draft)
+        title_cells = screen.rows[title_row]
+        assert draft in ''.join(title_cells).replace(' ', ''), visible()
+        draft_x = title_cells.index(draft[0])
         active = '활성탭:overview' if args.lang == 'ko' else 'Activetab:overview'
         if args.tab_rows == 3:
             assert '┌' in screen.rows[2] and '─' in screen.rows[4], visible()
@@ -115,7 +115,7 @@ try:
             raise RuntimeError('Edited-tab close guard was not rendered: ' + captured[-500:].decode(errors='replace'))
         # Click another title to activate it on the actual title row.
         overview = '개요' if args.lang == 'ko' else 'Overview'
-        x = ''.join(screen.rows[title_row]).index(overview)
+        x = screen.rows[title_row].index(overview[0])
         send(f'\x1b[<0;{x+1};{title_row+1}M\x1b[<0;{x+1};{title_row+1}m'.encode())
         assert active in visible(), visible()
         send(b'\x1b[C')
