@@ -5,6 +5,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/rivo/uniseg"
+	"slices"
 )
 
 type ContainerChild struct {
@@ -22,6 +23,10 @@ type ContainerView struct {
 	rects            []NamedRect
 	palette          Palette
 	capture          tview.Primitive
+	frontInput       bool
+	layerRouting     bool
+	passThrough      func(x, y int) bool
+	layerInput       LayerInput
 	ScrollX, ScrollY int
 }
 
@@ -50,13 +55,98 @@ func NewLayoutGrid(rows, columns []Track, children []ContainerChild, palette Pal
 func NewLayerStack(children []ContainerChild, palette Palette) (*ContainerView, error) {
 	return NewContainer(ContainerOptions{Kind: "layers"}, children, palette)
 }
+
+// SetFrontInput confines input to the last visible layer. passThrough may
+// allow pointer input behind it at explicit screen coordinates. Keep this
+// container mounted as the input root while changing its children.
+func (v *ContainerView) SetFrontInput(enabled bool, passThrough func(x, y int) bool) {
+	wasFocused := v.HasFocus()
+	v.passThrough = passThrough
+	if enabled {
+		v.layerRouting = true
+	}
+	if v.frontInput != enabled {
+		v.InvalidateLayerInput()
+		v.frontInput = enabled
+		v.cancelLayerCaptures(v.layerInput.SetFront(v.frontID(v.children)))
+		v.State.Reconcile(v.inputItems())
+		if wasFocused {
+			v.focusCurrent()
+		}
+	}
+}
+
+// InvalidateLayerInput cancels gestures before the app switches a workspace
+// without replacing a child. Call on the UI event loop.
+func (v *ContainerView) InvalidateLayerInput() {
+	ids := v.layerInput.Invalidate()
+	if id := v.State.Captured; id != "" && !slices.Contains(ids, id) {
+		ids = append(ids, id)
+	}
+	v.cancelLayerCaptures(ids)
+}
+
+func (v *ContainerView) cancelLayerCaptures(ids []string) {
+	for _, id := range ids {
+		if child := v.child(id); child != nil {
+			cancelLayerPointer(child)
+		}
+	}
+	if len(ids) > 0 {
+		v.capture = nil
+		v.State.Captured = ""
+	}
+}
+
+// CancelPointer lets a parent layer cancel a nested gesture.
+func (v *ContainerView) CancelPointer() { v.InvalidateLayerInput() }
+
+func cancelLayerPointer(child tview.Primitive) {
+	if handler, ok := child.(interface{ CancelPointer() }); ok {
+		handler.CancelPointer()
+	}
+}
+
+func (v *ContainerView) inputItems() []LayoutItem {
+	items := v.items()
+	if v.frontInput && v.Options.Kind == "layers" {
+		for n := len(items) - 1; n >= 0; n-- {
+			if !items[n].Hidden {
+				items[n].Modal = true
+				break
+			}
+		}
+	}
+	return items
+}
+func (v *ContainerView) frontID(children []ContainerChild) string {
+	if v.frontInput && v.Options.Kind == "layers" {
+		for n := len(children) - 1; n >= 0; n-- {
+			item := children[n].Item
+			if !item.Hidden {
+				return item.ID
+			}
+		}
+	}
+	return ""
+}
+
 func (v *ContainerView) SetOptions(options ContainerOptions) error {
 	if _, e := ComputeContainer(CellRect{Width: 80, Height: 24}, v.items(), options); e != nil {
 		return e
 	}
 	options.Rows = append([]Track(nil), options.Rows...)
 	options.Columns = append([]Track(nil), options.Columns...)
+	wasFocused := v.HasFocus()
+	oldFront := v.frontID(v.children)
 	v.Options = options
+	if front := v.frontID(v.children); front != oldFront {
+		v.cancelLayerCaptures(v.layerInput.SetFront(front))
+		v.State.Reconcile(v.inputItems())
+		if wasFocused {
+			v.focusCurrent()
+		}
+	}
 	return nil
 }
 func (v *ContainerView) items() []LayoutItem {
@@ -90,8 +180,31 @@ func (v *ContainerView) SetChildren(children []ContainerChild) error {
 			old.Child.Blur()
 		}
 	}
+	if v.layerRouting {
+		current := v.frontID(v.children)
+		next := v.frontID(children)
+		v.cancelLayerCaptures(v.layerInput.SetFront(next))
+		if current == next {
+			for _, old := range v.children {
+				if old.Item.Hidden {
+					continue
+				}
+				unchanged := slices.ContainsFunc(children, func(c ContainerChild) bool {
+					return c.Item.ID == old.Item.ID && !c.Item.Hidden && c.Child == old.Child
+				})
+				if !unchanged {
+					v.InvalidateLayerInput()
+					break
+				}
+			}
+		}
+	}
+
 	v.children = append([]ContainerChild(nil), children...)
-	v.State.Reconcile(items)
+	if v.layerRouting {
+		v.rects = nil
+	} // Do not hit old geometry before the next draw.
+	v.State.Reconcile(v.inputItems())
 	if v.State.Captured == "" || oldCaptured != v.child(v.State.Captured) {
 		v.capture = nil
 		v.State.Captured = ""
@@ -138,7 +251,7 @@ func (v *ContainerView) focusCurrent() {
 }
 func (v *ContainerView) Focus(delegate func(tview.Primitive)) {
 	v.Box.Focus(delegate)
-	v.State.Reconcile(v.items())
+	v.State.Reconcile(v.inputItems())
 	v.focusCurrent()
 }
 func (v *ContainerView) Blur() {
@@ -148,7 +261,7 @@ func (v *ContainerView) Blur() {
 	}
 }
 func (v *ContainerView) FocusID(id string) bool {
-	for _, eligible := range v.State.Eligible(v.items()) {
+	for _, eligible := range v.State.Eligible(v.inputItems()) {
 		if id == eligible {
 			v.State.Focused = id
 			v.focusCurrent()
@@ -158,7 +271,7 @@ func (v *ContainerView) FocusID(id string) bool {
 	return false
 }
 func (v *ContainerView) MoveFocus(previous bool) string {
-	v.State.Move(v.items(), previous)
+	v.State.Move(v.inputItems(), previous)
 	v.focusCurrent()
 	return v.State.Focused
 }
@@ -169,7 +282,7 @@ func tabBoundary(p tview.Primitive, previous bool) bool {
 	return true
 }
 func (v *ContainerView) AtTabBoundary(previous bool) bool {
-	ids := v.State.Eligible(v.items())
+	ids := v.State.Eligible(v.inputItems())
 	if len(ids) == 0 {
 		return true
 	}
@@ -198,7 +311,7 @@ func (v *ContainerView) Draw(screen tcell.Screen) {
 		return
 	}
 	v.rects = rects
-	v.State.Reconcile(v.items())
+	v.State.Reconcile(v.inputItems())
 	for _, r := range rects {
 		child := v.child(r.ID)
 		if child == nil || r.Rect.Width == 0 || r.Rect.Height == 0 {
@@ -211,12 +324,12 @@ func (v *ContainerView) Draw(screen tcell.Screen) {
 func (v *ContainerView) scopeFocus(p tview.Primitive) { focusLocal(p) }
 func (v *ContainerView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
 	return v.WrapInputHandler(func(e *tcell.EventKey, _ func(tview.Primitive)) {
-		if v.CycleFocus && len(v.State.Eligible(v.items())) > 1 && (e.Key() == tcell.KeyTab || e.Key() == tcell.KeyBacktab) && tabBoundary(v.child(v.State.Focused), e.Key() == tcell.KeyBacktab) {
+		if v.CycleFocus && len(v.State.Eligible(v.inputItems())) > 1 && (e.Key() == tcell.KeyTab || e.Key() == tcell.KeyBacktab) && tabBoundary(v.child(v.State.Focused), e.Key() == tcell.KeyBacktab) {
 			v.MoveFocus(e.Key() == tcell.KeyBacktab)
 			return
 		}
-		v.State.Reconcile(v.items())
-		if child := v.child(v.State.Focused); child != nil {
+		v.State.Reconcile(v.inputItems())
+		if child := v.child(v.State.Focused); child != nil && (!v.frontInput || child.HasFocus()) {
 			if f := child.InputHandler(); f != nil {
 				f(e, v.scopeFocus)
 			}
@@ -225,17 +338,122 @@ func (v *ContainerView) InputHandler() func(*tcell.EventKey, func(tview.Primitiv
 }
 func (v *ContainerView) PasteHandler() func(string, func(tview.Primitive)) {
 	return v.WrapPasteHandler(func(text string, _ func(tview.Primitive)) {
-		v.State.Reconcile(v.items())
-		if child := v.child(v.State.Focused); child != nil {
+		v.State.Reconcile(v.inputItems())
+		if child := v.child(v.State.Focused); child != nil && (!v.frontInput || child.HasFocus()) {
 			if f := child.PasteHandler(); f != nil {
 				f(text, v.scopeFocus)
 			}
 		}
 	})
 }
+func layerMouseAction(action tview.MouseAction) (string, int) {
+	switch action {
+	case tview.MouseLeftDown:
+		return "down", 1
+	case tview.MouseLeftUp:
+		return "up", 1
+	case tview.MouseLeftClick:
+		return "click", 1
+	case tview.MouseLeftDoubleClick:
+		return "double", 1
+	case tview.MouseMiddleDown:
+		return "down", 2
+	case tview.MouseMiddleUp:
+		return "up", 2
+	case tview.MouseMiddleClick:
+		return "click", 2
+	case tview.MouseMiddleDoubleClick:
+		return "double", 2
+	case tview.MouseRightDown:
+		return "down", 3
+	case tview.MouseRightUp:
+		return "up", 3
+	case tview.MouseRightClick:
+		return "click", 3
+	case tview.MouseRightDoubleClick:
+		return "double", 3
+	case tview.MouseScrollUp, tview.MouseScrollDown, tview.MouseScrollLeft, tview.MouseScrollRight:
+		return "wheel", 0
+	case tview.MouseMove:
+		return "move", 0
+	}
+	return "", 0
+}
+
+func (v *ContainerView) layerMouse(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
+	action, button := layerMouseAction(a)
+	if action == "" {
+		return true, nil
+	}
+	x, y := e.Position()
+	through := v.frontInput && v.passThrough != nil && v.passThrough(x, y)
+	hit := ""
+	if v.InRect(x, y) {
+		items := v.inputItems()
+		if through {
+			items = v.items()
+			for i := range items {
+				if items[i].ID == v.frontID(v.children) {
+					items[i].Hidden = true
+					break
+				}
+			}
+		}
+		hit = v.State.Hit(items, v.rects, x, y)
+	}
+	route := v.layerInput.Pointer(action, button, hit, through)
+	id := route.Target
+	child := v.child(id)
+	if id != "" && v.State.Captured == id && (action == "move" || action == "up") && v.capture != nil {
+		child = v.capture
+	}
+	if child == nil {
+		return true, nil
+	}
+	if action == "double" && route.Action == "click" {
+		switch button {
+		case 1:
+			a = tview.MouseLeftClick
+		case 2:
+			a = tview.MouseMiddleClick
+		case 3:
+			a = tview.MouseRightClick
+		}
+	}
+	front := v.frontID(v.children)
+	if (action == "down" || action == "click") && (front == "" || id == front) {
+		if !v.Box.HasFocus() {
+			focus(v)
+		}
+		v.FocusID(id)
+	}
+	if handler := child.MouseHandler(); handler != nil {
+		scope := v.scopeFocus
+		if front != "" && id != front {
+			scope = func(tview.Primitive) {}
+		}
+		_, capture := handler(a, e, scope)
+		if action == "wheel" && v.capture != nil {
+			return true, v
+		}
+		// The root retains tview's capture. A scene change can revoke it
+		// before another event reaches the original child.
+		v.capture = capture
+		if capture != nil {
+			v.State.Captured = id
+			return true, v
+		}
+		v.State.Captured = ""
+	}
+	return true, nil
+}
+
 func (v *ContainerView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive) {
 	return v.WrapMouseHandler(func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
-		v.State.Reconcile(v.items())
+		if v.layerRouting {
+			return v.layerMouse(a, e, focus)
+		}
+		v.State.Reconcile(v.inputItems())
 		if v.State.Captured == "" {
 			v.capture = nil
 		}

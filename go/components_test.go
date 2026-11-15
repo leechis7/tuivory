@@ -248,3 +248,114 @@ func TestWorkspaceViewsAllPalettesAndResizeEvents(t *testing.T) {
 		}
 	}
 }
+
+type splitInputPane struct {
+	*tview.Box
+	hovered, keys int
+	paste         string
+}
+
+func (p *splitInputPane) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive) {
+	return func(action tview.MouseAction, _ *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
+		if action == tview.MouseMove {
+			p.hovered++
+			focus(p) // A passive hover must not transfer focus.
+		}
+		if action == tview.MouseLeftClick {
+			focus(p)
+		}
+		return true, nil
+	}
+}
+func (p *splitInputPane) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) {
+	return func(*tcell.EventKey, func(tview.Primitive)) { p.keys++ }
+}
+func (p *splitInputPane) PasteHandler() func(string, func(tview.Primitive)) {
+	return func(text string, _ func(tview.Primitive)) { p.paste += text }
+}
+
+func TestSplitKeyboardAndPasteFollowFocusAcrossPointerMovement(t *testing.T) {
+	doc, _ := ui.CandidateTokens()
+	tokens, _ := doc.Palette("dark", "256")
+	p, _ := ui.Resolve(tokens)
+	left, right := &splitInputPane{Box: tview.NewBox()}, &splitInputPane{Box: tview.NewBox()}
+	split, err := ui.NewSplitView(left, right, &ui.SplitState{Preferred: 20}, ui.SplitSpec{FirstMin: 5, SecondMin: 5}, p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	split.SetRect(0, 0, 50, 12)
+	focus := func(p tview.Primitive) { left.Blur(); right.Blur(); p.Focus(func(tview.Primitive) {}) }
+	key := tcell.NewEventKey(tcell.KeyEnter, 0, 0)
+	mouse := tcell.NewEventMouse(4, 4, 0, 0)
+	focus(right)
+	split.MouseHandler()(tview.MouseMove, mouse, focus)
+	split.InputHandler()(key, focus)
+	split.PasteHandler()("한글", focus)
+	if left.hovered != 1 || left.keys != 0 || left.paste != "" || right.keys != 1 || right.paste != "한글" {
+		t.Fatalf("hover changed keyboard routing: left=%+v right=%+v", left, right)
+	}
+	split.MouseHandler()(tview.MouseLeftClick, mouse, focus)
+	split.InputHandler()(key, focus)
+	if left.keys != 1 || right.keys != 1 {
+		t.Fatal("click did not move focus")
+	}
+	left.Blur()
+	split.InputHandler()(key, focus)
+	split.PasteHandler()("discard", focus)
+	if left.keys != 1 || right.keys != 1 || left.paste != "" || right.paste != "한글" {
+		t.Fatal("keyboard input went to a pane without actual focus")
+	}
+}
+
+func TestTabTitleRowReceivesClicksInCompactAndOutlinedLayouts(t *testing.T) {
+	screen := drawingScreen(t)
+	screen.SetSize(80, 10)
+	doc, _ := ui.CandidateTokens()
+	raw, _ := doc.Palette("dark", "256")
+	palette, _ := ui.Resolve(raw)
+	for _, height := range []int{1, 3} {
+		tabs, _ := ui.NewTabs([]ui.TabItem{{ID: "a", Title: "Overview"}, {ID: "b", Title: "한글", Closable: true}})
+		state := &ui.TabState{Active: "a", Focused: "b"}
+		v, err := ui.NewTabView(tabs, state, palette)
+		if err != nil {
+			t.Fatal(err)
+		}
+		v.SetRect(2, 2, 40, height)
+		focus := func(tview.Primitive) {}
+		v.Focus(focus)
+		v.Draw(screen)
+		screen.Show()
+		layout := tabs.Layout(state, 40)
+		active, candidate := layout.Cells[0], layout.Cells[1]
+		y := 2
+		if height == 3 {
+			y++
+		}
+		cells, width, _ := screen.GetContents()
+		_, activeBackground, _ := cells[y*width+2+active.Start+1].Style.Decompose()
+		_, _, candidateAttrs := cells[y*width+2+candidate.Start+1].Style.Decompose()
+		if activeBackground != palette["selection"].BG || candidateAttrs&tcell.AttrUnderline == 0 {
+			t.Fatalf("height %d lost active or focus styling", height)
+		}
+		var got ui.TabEvent
+		v.OnEvent = func(e ui.TabEvent) { got = e }
+		click := func(x, row int) {
+			v.MouseHandler()(tview.MouseLeftClick, tcell.NewEventMouse(2+x, row, 0, 0), focus)
+		}
+		if height == 3 {
+			click(candidate.Start+1, y-1)
+			click(candidate.Start+1, y+1)
+			if got.Kind != "" || state.Active != "a" {
+				t.Fatalf("decorative rows handled a click: %+v", got)
+			}
+		}
+		click(candidate.Start+uniseg.StringWidth(candidate.Text)-2, y)
+		if got.Kind != "close" || got.ID != "b" || state.Active != "a" {
+			t.Fatalf("height %d close: %+v", height, got)
+		}
+		click(candidate.Start+1, y)
+		if got.Kind != "activate" || state.Active != "b" {
+			t.Fatalf("height %d activate: %+v", height, got)
+		}
+	}
+}

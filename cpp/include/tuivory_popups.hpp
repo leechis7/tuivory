@@ -26,6 +26,7 @@ struct PopupLayout {
 struct ShadowOptions {
   std::string mode = "off";
   int offset_x = 0, offset_y = 0;
+  bool hide_top_cap = false;
   std::pair<int, int> offsets() const {
     if (mode != "off" && mode != "auto" && mode != "solid" && mode != "dim")
       throw std::invalid_argument("invalid shadow mode");
@@ -67,6 +68,10 @@ inline unsigned shade(unsigned backdrop, bool has_rgb, bool has_256) {
            std::max(0, std::min(23, ((r + g + b) * factor / 15 - 3) / 10));
   return 0;
 }
+inline int brightness(unsigned color) {
+  auto rgb = color_rgb(color);
+  return 299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2];
+}
 inline void paint(Canvas &canvas, Rect region, PopupLayout layout,
                   const ShadowOptions &o, bool ascii, bool has_rgb,
                   bool has_256) {
@@ -74,6 +79,10 @@ inline void paint(Canvas &canvas, Rect region, PopupLayout layout,
       right = std::min(canvas.width, region.x + region.width),
       top = std::max(0, region.y),
       bottom = std::min(canvas.height, region.y + region.height);
+  bool has_caps = layout.shadow.height > layout.card.height;
+  if (has_caps && o.hide_top_cap && top == layout.shadow.y &&
+      top < layout.card.y + layout.card.height)
+    top++;
   if (left >= right || top >= bottom)
     return;
   canvas.clear_cursor(Rect{left, top, right - left, bottom - top});
@@ -96,6 +105,14 @@ inline void paint(Canvas &canvas, Rect region, PopupLayout layout,
       }
       unsigned bg = backgrounds[x - left],
                color = o.mode == "solid" ? 0 : shade(bg, has_rgb, has_256);
+      if (!ascii && o.mode == "auto" && has_caps &&
+          y == layout.shadow.y + layout.shadow.height - 1 &&
+          y > 0 && y - 1 > layout.shadow.y &&
+          x >= layout.card.x + layout.card.width && brightness(color) < brightness(bg)) {
+        unsigned side = canvas.data[y - 1][x].style.background;
+        if (brightness(side) < brightness(color))
+          color = side;
+      }
       std::string symbol = " ";
       Style style{color, color, false, false, false};
       if (ascii) {

@@ -1,0 +1,13 @@
+{
+  "issue": "TVR-36",
+  "scope": ["Go", "Rust", "Python", "TypeScript/JavaScript", "C", "C++", "Java"],
+  "scope_exception": "The Shell terminal reference has no layered or split-pane input routing.",
+  "checks": [
+    "All seven SDKs exercise the same sequence of front layer changes, keyboard and paste targeting, outside gestures, explicit pass-through, cancellation, and double-click handling.",
+    "Go tview integration exercises overlapping panes, capture cancellation, nested focus restoration, and split keyboard/paste targeting after passive hover.",
+    "Rust Ratatui TestBackend exercises painted overlapping layers, focus restoration, and a paste destination restricted by the front layer.",
+    "Local Go, Rust, Python, and JavaScript suites; external C, C++, and Java harnesses; and document / generated API checks."
+  ],
+  "github_ci": "not run for this change",
+  "publication": "unreleased local worktree"
+}

@@ -81,6 +81,8 @@ The [static component layout](examples-components.txt) is language-independent r
 
 The [tabs, panels, splitters, status, and breadcrumbs guide](workspace.en.md) documents public Go/Rust APIs and shared control/color/state principles. Run database-free bilingual integrated examples with `make run-workspace-go ARGS="--lang en"` or `make run-workspace-rust ARGS="--lang en"` from the root. These APIs are included in `go/v0.1.0` and `rust/v0.1.0`; CI evidence and actual application integration are distinguished in [work tracking](https://leechis7.atlassian.net/browse/TVR-7).
 
+Workspace examples use one tab row by default. Pass `--tab-rows 3` to the Go or Rust workspace to compare the outlined style.
+
 ## Control states, focus and nested popup hosts
 
 [Go source](../go/examples/focus/main.go) · [Rust source](../rust/examples/focus/main.rs) · [Guide](focus.en.md). Run `make run-focus-go ARGS="--lang ko"` or `make run-focus-rust ARGS="--lang en"`. Hosts exercise read-only/busy/disabled navigation, nested popups, input routing/restoration and localized views. Default product builds are unchanged.

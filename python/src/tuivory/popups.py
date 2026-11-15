@@ -23,6 +23,7 @@ class ShadowOptions:
     mode:str='off'
     offset_x:int=0
     offset_y:int=0
+    hide_top_cap:bool=False
     def _offsets(self):
         if self.mode not in ('off','auto','solid','dim'):raise ValueError('invalid shadow mode')
         _number(self.offset_x);_number(self.offset_y)
@@ -53,9 +54,18 @@ def _shade(backdrop,has_rgb,has_256):
     if has_256:return str(232+max(0,min(23,((r+g+b)*factor//15-3)//10)))
     return '0'
 
+def _brightness(color):
+    r,g,b=color_rgb(color)
+    return 299*r+587*g+114*b
+
 def _paint_shadow(canvas,region,layout,options,ascii,has_rgb,has_256):
     left=max(0,region.x);right=min(canvas.width,region.x+region.width);top=max(0,region.y);bottom=min(canvas.height,region.y+region.height)
     if left>=right or top>=bottom:return
+    has_caps=layout.shadow.height>layout.card.height
+    card_bottom=layout.card.y+layout.card.height
+    if has_caps and options.hide_top_cap and top==layout.shadow.y and top<card_bottom:
+        top+=1
+    if top>=bottom:return
     canvas.clear_cursor(Rect(left,top,right-left,bottom-top))
     for y in range(top,bottom):
         backgrounds=[]
@@ -70,7 +80,13 @@ def _paint_shadow(canvas,region,layout,options,ascii,has_rgb,has_256):
             if options.mode=='dim':
                 s=old.style;old.style=Style(s.foreground,s.background,s.bold,True,s.underline,s.italic)
                 continue
-            bg=backgrounds[x-left];shade='0'if options.mode=='solid'else _shade(bg,has_rgb,has_256);symbol=' ';style=Style(shade,shade)
+            bg=backgrounds[x-left];shade='0'if options.mode=='solid'else _shade(bg,has_rgb,has_256)
+            if (options.mode=='auto' and not ascii and has_caps and y==layout.shadow.y+layout.shadow.height-1
+                and y-1>layout.shadow.y and x>=layout.card.x+layout.card.width
+                and _brightness(shade)<_brightness(bg)):
+                side=canvas.data[y-1][x].style.background
+                if _brightness(side)<_brightness(shade):shade=side
+            symbol=' ';style=Style(shade,shade)
             if ascii:symbol='.';style=Style(shade,bg)
             elif layout.shadow.height>layout.card.height:
                 if y==layout.shadow.y:symbol='▄';style=Style(shade,bg)

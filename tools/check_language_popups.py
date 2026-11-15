@@ -10,7 +10,7 @@ GEOMETRY=json.loads((ROOT/'design/popup-shadow-cases.json').read_text())['cases'
 RENDER=json.loads((ROOT/'design/popup-shadow-render-cases.json').read_text())['cases']
 def color(s):return str((int(s[1:],16)|0x1000000)if s.startswith('#')else int(s))
 def validate_output(output):
-    tokens=json.loads((ROOT/'design/tokens/candidate.json').read_text())['palettes'];known=wide=0
+    tokens=json.loads((ROOT/'design/tokens/candidate.json').read_text())['palettes'];known=wide=corners=0
     for block in output.split('\nEND\n'):
         if not block.strip():continue
         heading,ansi=block.split('\n',1);parts=heading.split('|');cells=read_cells(ansi)
@@ -21,6 +21,13 @@ def validate_output(output):
                 assert cell[1:]==(f['shade'],f['backdrop'],False,False,False),(heading,cell,f)
             assert cells[11,2][0]==('.'if ascii else' '),heading
             assert cells[11,2][2]==(f['backdrop']if ascii else f['shade']),heading
+        elif parts[0]=='CORNER':
+            _,profile,glyph=parts;ascii=glyph=='1';corners+=1
+            dark,bright={'8':('4','7'),'16':('4','7'),'256':('236','255'),'truecolor':('#282828','#eeeeee')}[profile]
+            assert cells[11,1]==('R','1',dark,False,False,True),heading
+            tip=cells[11,7]
+            assert tip[0]==('.' if ascii else '▀') and tip[2]==bright and tip[1]!=bright,(heading,tip)
+            if not ascii:assert tip[1]==cells[11,6][2],(heading,tip,cells[11,6])
         else:
             assert parts[0]=='WIDE',heading
             _,theme,colors,mode,glyph=parts;ascii=glyph=='1';wide+=1;p=tokens[theme+'-'+colors];w,h=(10,7)if mode=='off'else(9,6)
@@ -31,7 +38,7 @@ def validate_output(output):
                     if 3<=x<13 and 2<=y<9:continue
                     c=cells[x,y];assert c[1:]==(p['body']['foreground'],p['body']['background'],p['body']['fontWeight']=='bold',False,False),(heading,x,y,c,p['body'])
             if mode=='dim':assert cells[6,8][0]=='界'and cells[6,8][4],heading
-    assert known==len(RENDER)*2 and wide==96,(known,wide)
+    assert known==len(RENDER)*2 and wide==96 and corners==24,(known,wide,corners)
 
 def source(lang):
     c=lang=='c';java=lang=='java'
@@ -42,7 +49,7 @@ def source(lang):
     def rect(values):return ('new Rect('if java else'(TuiRect){'if c else'Rect{')+','.join(map(str,values))+(')'if java else'}')
     for f in GEOMETRY:
         o=f['options'];args=','.join([rect(f['anchor']),rect(f['viewport']),str(f['width']),str(f['height'])]);opts=','.join([quote(o['mode']),str(o['offsetX']),str(o['offsetY'])])
-        if c:out.append('{TuiShadowOptions o={'+opts+'};TuiPopupLayout l;assert(tui_popup_placement('+args+',&o,&l)==TUI_OK);')
+        if c:out.append('{TuiShadowOptions o={'+opts+',0};TuiPopupLayout l;assert(tui_popup_placement('+args+',&o,&l)==TUI_OK);')
         elif java:out.append('{var l=popupPlacement('+args+',new ShadowOptions('+opts+'));')
         else:out.append('{auto l=popup_placement('+args+',ShadowOptions{'+opts+'});')
         for key,values in f['expected'].items():
@@ -58,6 +65,16 @@ def source(lang):
     if c:out.append('''{const char*themes[]={"dark","light","blackwhite"},*profiles[]={"8","16","256","truecolor"},*modes[]={"off","auto","solid","dim"};for(int t=0;t<3;t++)for(int p=0;p<4;p++)for(int m=0;m<4;m++)for(int ascii=0;ascii<2;ascii++){TuiCanvas*c=tui_canvas_new(22,12,themes[t],profiles[p]);assert(c);TuiStyle style;assert(tui_style(themes[t],profiles[p],"body",0,&style)==TUI_OK);for(int y=0;y<12;y++)assert(tui_canvas_write_style(c,0,y,"界界界界界界界界界界界",&style,22)==TUI_OK);tui_canvas_cursor(c,6,8,2);TuiShadowOptions o={.mode=modes[m]};assert(tui_shadow_draw(&o,c,(TuiRect){3,2,10,7},paint,&ascii,ascii,NULL)==TUI_OK);char*ansi=tui_canvas_ansi(c);assert(ansi);printf("WIDE|%s|%s|%s|%d\\n%s\\nEND\\n",themes[t],profiles[p],modes[m],ascii,ansi);tui_string_free(ansi);tui_canvas_cursor(c,0,0,2);assert(tui_shadow_draw(&o,c,(TuiRect){3,2,10,7},paint,&ascii,ascii,NULL)==TUI_OK);char*before=tui_canvas_ansi(c);assert(before&&strstr(before,"\\033[1;1H\\033[?25h"));assert(tui_shadow_draw(&o,c,(TuiRect){3,2,10,7},fail,NULL,ascii,NULL)==TUI_INVALID);ansi=tui_canvas_ansi(c);assert(ansi&&!strcmp(ansi,before));tui_string_free(ansi);tui_string_free(before);tui_canvas_free(c);}}TuiShadowOptions bad={.mode="invalid"};TuiPopupLayout result;assert(tui_shadow_layout(&bad,(TuiRect){0},&result)==TUI_INVALID);''')
     elif java:out.append('''for(String theme:List.of("dark","light","blackwhite"))for(String colors:List.of("8","16","256","truecolor"))for(String mode:List.of("off","auto","solid","dim"))for(boolean ascii:List.of(false,true)){var c=new Canvas(22,12,new Palette(theme,colors));var style=c.palette.style("body");for(int y=0;y<12;y++)c.writeStyle(0,y,"界界界界界界界界界界界",style);c.setCursor(6,8,2);var shadow=new Shadow(new ShadowOptions(mode));java.util.function.Consumer<Canvas>paint=child->child.panel(new Rect(0,0,child.width,child.height),"Popup",false,ascii);shadow.draw(c,new Rect(3,2,10,7),paint,ascii);System.out.print("WIDE|"+theme+"|"+colors+"|"+mode+"|"+(ascii?1:0)+"\\n"+c.ansi()+"\\nEND\\n");c.setCursor(0,0,2);shadow.draw(c,new Rect(3,2,10,7),paint,ascii);check(c.cursorX==0&&c.cursorY==0);String before=c.ansi();boolean failed=false;try{shadow.draw(c,new Rect(3,2,10,7),child->{throw new IllegalArgumentException("host");},ascii);}catch(IllegalArgumentException e){failed=true;}check(failed&&c.ansi().equals(before));}''')
     else:out.append('''for(const auto&theme:{"dark","light","blackwhite"})for(const auto&colors:{"8","16","256","truecolor"})for(const auto&mode:{"off","auto","solid","dim"})for(bool ascii:{false,true}){Canvas c(22,12,Palette(theme,colors));auto style=c.palette.style("body");for(int y=0;y<12;y++)c.write_style(0,y,"界界界界界界界界界界界",style);c.set_cursor(6,8,2);Shadow shadow(ShadowOptions{mode});auto paint=[&](Canvas&child){child.panel({0,0,child.width,child.height},"Popup",false,ascii);};shadow.draw(c,{3,2,10,7},paint,ascii);printf("WIDE|%s|%s|%s|%d\\n%s\\nEND\\n",theme,colors,mode,(int)ascii,c.ansi().c_str());c.set_cursor(0,0,2);shadow.draw(c,{3,2,10,7},paint,ascii);assert(c.cursor&&c.cursor->first==0&&c.cursor->second==0);auto before=c.ansi();bool failed=false;try{shadow.draw(c,{3,2,10,7},[](Canvas&){throw std::invalid_argument("host");},ascii);}catch(const std::invalid_argument&){failed=true;}assert(failed&&c.ansi()==before);}''')
+    for theme in ['dark','light','blackwhite']:
+        for profile,dark,bright in [('8','4','7'),('16','4','7'),('256','236','255'),('truecolor','#282828','#eeeeee')]:
+            opts=','.join(map(quote,[theme,profile]))
+            label=quote('CORNER|'+profile+'|')
+            if c:
+                out.append('{for(int ascii=0;ascii<2;ascii++){TuiCanvas*c=tui_canvas_new(20,10,'+opts+');assert(c);TuiStyle s={.foreground=1,.background='+color(dark)+',.underline=1};assert(tui_canvas_write_style(c,11,1,"R",&s,1)==TUI_OK);assert(tui_canvas_write_style(c,11,6,"R",&s,1)==TUI_OK);s.background='+color(bright)+';assert(tui_canvas_write_style(c,11,7,"B",&s,1)==TUI_OK);TuiShadowOptions o={.mode="auto",.hide_top_cap=1};assert(tui_shadow_draw(&o,c,(TuiRect){2,1,10,7},paint,&ascii,ascii,NULL)==TUI_OK);char*a=tui_canvas_ansi(c);assert(a);printf("%s%d\\n%s\\nEND\\n",'+label+',ascii,a);tui_string_free(a);tui_canvas_free(c);}}')
+            elif java:
+                out.append('{for(boolean ascii:List.of(false,true)){var c=new Canvas(20,10,new Palette('+opts+'));var base=new Style(1,'+color(dark)+',false,false,true);c.writeStyle(11,1,"R",base,1);c.writeStyle(11,6,"R",base,1);c.writeStyle(11,7,"B",new Style(1,'+color(bright)+',false,false,true),1);new Shadow(new ShadowOptions("auto",0,0,true)).draw(c,new Rect(2,1,10,7),child->{},ascii);System.out.print('+label+'+(ascii?1:0)+"\\n"+c.ansi()+"\\nEND\\n");}}')
+            else:
+                out.append('{for(bool ascii:{false,true}){Canvas c(20,10,Palette('+opts+'));Style s{1,'+color(dark)+',false,false,true};c.write_style(11,1,"R",s,1);c.write_style(11,6,"R",s,1);s.background='+color(bright)+';c.write_style(11,7,"B",s,1);Shadow(ShadowOptions{"auto",0,0,true}).draw(c,{2,1,10,7},[](Canvas&){},ascii);printf("%s%d\\n%s\\nEND\\n",'+label+',int(ascii),c.ansi().c_str());}}')
     out.append('}}'if java else'return 0;}');return statements('\n'.join(out))
 
 def main():
@@ -71,5 +88,5 @@ def main():
             run(flags+([ROOT/'c/src/tuivory.c']if lang=='c'else[])+['-fsanitize=address,undefined','-o',base/'checked'],base);validate_output(subprocess.check_output([base/'checked'],cwd=base,text=True,env=dict(os.environ,ASAN_OPTIONS=os.environ.get('ASAN_OPTIONS','detect_leaks=0'))))
             if lang=='c':shutil.copy2(ROOT/'.cache/native/c/libtuivory.a',base/'libtuivory.a');flags+=[base/'libtuivory.a']
             run(flags+['-static','-o',base/'isolated'],base);validate_output(subprocess.check_output([base/'isolated'],cwd=base,text=True))
-    print(lang+':32shared geometries,20known shades and96actual wide/Dim/cursor shadow buffers passed')
+    print(lang+':32shared geometries,20known shades and96wide/Dim/cursor plus 24 corner outputs passed')
 if __name__=='__main__':main()

@@ -16,11 +16,11 @@ Following TVR-7's [Tree](tree.en.md), Go/tview and Rust/Ratatui provide shared w
 | Overflow | Keep focused tab visible; `<`/`>` edges and wheel navigate previous/next |
 | Presentation | Outlined tabs, an open lower edge on the active tab, navigation `>`, input-focus underline, edited `*`, close `x`, dimmed disabled tabs |
 
-Give the tab strip one row for side borders, two rows to add the shared bottom rule, or three rows to add the top outline. In the two- and three-row layouts, the active tab opens into the content below. The active tab uses the selection background; moving keyboard focus to another tab only adds a focus cue. Hit-test on the title row (the second row if the strip is at least three rows tall); the outline and rule are decorative.
+Use **one row by default**, with side borders and no separate divider. Use **three rows** when the app explicitly wants a top outline and an open edge connecting the active tab to its content. A host that already allocates two rows still gets the bottom rule. Every height keeps the active background and keyboard focus cue distinct. For three rows, only the middle title row accepts clicks or drag initiation.
 
-![Active tab opening into the content, with keyboard focus on a different tab](images/tab-rail-dark-en.png)
+![Default one-row tabs](images/tab-compact-dark-en.png)
 
-[Light](images/tab-rail-light-en.png) · [Monochrome](images/tab-rail-blackwhite-en.png) · [ASCII](images/tab-rail-ascii-en.png)
+Optional three-row style: [Dark](images/tab-rail-dark-en.png) · [Light](images/tab-rail-light-en.png) · [Monochrome](images/tab-rail-blackwhite-en.png) · [ASCII](images/tab-rail-ascii-en.png).
 
 Long titles truncate with `~` inside a slot of up to 24 cells, reserving state indicators first. Extremely narrow slots show what fits; hidden close markers are not clickable. Widths of two cells or less render no tabs. Expanding the viewport fills available space with earlier tabs again. Theme changes preserve active/focused/edited state. After host-approved removal, replacement models retain surviving IDs and normalize missing IDs to the first enabled tab.
 
@@ -33,6 +33,8 @@ Panels share titles, borders, surfaces, and default one-cell padding. Double bor
 `SplitSpec` defines minimum sizes; `SplitState` retains the user's preferred first-pane size. `Layout/layout(total)` calculates actual geometry including a one-cell divider. `Resize/resize` clamps user changes, while narrowing the viewport never overwrites the preference. Below the minimum-size sum, compact mode shows one host-selected pane and suspends resizing. Expanding restores the saved preference.
 
 Go `NewSplitView(first, second, state, spec, palette)` provides column/row layout, mouse dragging, and resize-key handling. When a child owns application focus, route Ctrl+arrows through `split.ResizeKey(event)` in the host input capture. Rust `split_rects` returns panel/divider rectangles from the same model; hosts pass Ctrl+arrow adjustments and drag coordinates to `SplitSpec::resize`. Resizing does not recreate tree, tab, or edit data.
+
+Keys and paste follow the focused pane. See [front-layer input and split-pane focus](layer-input.en.md) for the popup case.
 
 When the app chooses a panel to collapse, the divider or an app key can collapse and restore it. Skip drawing and input for the hidden child. A one-cell divider at the edge remains available to restore it. Restore scales the previous first-panel ratio against the current space excluding the divider, then applies both minimum sizes. If the area is too small, the split stays in compact layout until there is room. Dragging only resizes; a size or axis change cancels an outstanding gesture.
 
@@ -85,6 +87,8 @@ Structural model errors use Rust String/Go error; style errors use Rust `tuivory
 make run-workspace-go ARGS="--lang en"
 make run-workspace-rust ARGS="--lang en --ascii"
 ```
+
+The workspace demo defaults to one row. To see the optional outline, run either example with `--tab-rows 3`. Apply the same choice in your app by giving Go's `TabView` one or three rows in its parent layout, or by allocating a Ratatui `Rect` of the chosen height.
 
 Both examples default to Korean and support `--lang en`, `--theme dark|light|blackwhite`, `--colors 8|16|256|truecolor`, and `--ascii`. Tab/Shift+Tab cycles tabs→tree→content focus. F1 shows guidance, F2 themes, F3 colors, F4 ASCII, F5 active-document edited state, and F6 column/row splits. F7 or a divider click toggles the chosen panel. Ctrl+arrows and divider dragging resize panes; Ctrl+Q exits. Hosts retain edited tabs on close requests; clear edited state with F5 and close again to remove the tab. Nothing is saved to files/databases. Default product output policies for `make build` and `make build-rust` remain.
 

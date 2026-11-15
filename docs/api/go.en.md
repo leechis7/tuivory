@@ -1,4 +1,4 @@
-# Go API — source (0.12.5)
+# Go API — source (0.12.6)
 
 [한국어 (default)](go.md) · **English**
 
@@ -1498,6 +1498,9 @@ func (v *ContainerView) AtTabBoundary(previous bool) bool
 
 func (v *ContainerView) Blur()
 
+func (v *ContainerView) CancelPointer()
+    CancelPointer lets a parent layer cancel a nested gesture.
+
 func (v *ContainerView) Draw(screen tcell.Screen)
 
 func (v *ContainerView) Focus(delegate func(tview.Primitive))
@@ -1505,6 +1508,10 @@ func (v *ContainerView) Focus(delegate func(tview.Primitive))
 func (v *ContainerView) FocusID(id string) bool
 
 func (v *ContainerView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
+
+func (v *ContainerView) InvalidateLayerInput()
+    InvalidateLayerInput cancels gestures before the app switches a workspace
+    without replacing a child. Call on the UI event loop.
 
 func (v *ContainerView) Layout() ([]NamedRect, error)
 
@@ -1515,6 +1522,11 @@ func (v *ContainerView) MoveFocus(previous bool) string
 func (v *ContainerView) PasteHandler() func(string, func(tview.Primitive))
 
 func (v *ContainerView) SetChildren(children []ContainerChild) error
+
+func (v *ContainerView) SetFrontInput(enabled bool, passThrough func(x, y int) bool)
+    SetFrontInput confines input to the last visible layer. passThrough may
+    allow pointer input behind it at explicit screen coordinates. Keep this
+    container mounted as the input root while changing its children.
 
 func (v *ContainerView) SetOptions(options ContainerOptions) error
 
@@ -2638,6 +2650,47 @@ package terminal // import "github.com/leechis7/tuivory/go/terminal"
 type Key = native.Key
 ```
 
+## LayerInput
+
+```go
+type LayerInput struct {
+	// Has unexported fields.
+}
+    LayerInput enforces a front layer and retains ownership of pointer gestures.
+    A host supplies stable layer IDs, hit tests, and an explicit pass-through
+    decision for each pointer position. Its zero value has no front restriction.
+
+func (s *LayerInput) Invalidate() []string
+    Invalidate cancels recorded presses and blocks their remaining move,
+    up and click events. It does not change the current front layer.
+
+func (s *LayerInput) KeyboardTarget(focused string) string
+    KeyboardTarget applies equally to keyboard and paste. No focus means that
+    input is consumed. A pointer pass-through never grants keyboard access.
+
+func (s *LayerInput) Pointer(action string, button int, hit string, through bool) LayerRoute
+    Pointer routes down, move, up, click, double or wheel actions. Use a
+    consistent button ID throughout each gesture (zero for buttonless move and
+    wheel). Pass-through only affects hit testing; drag and release stay with
+    the press.
+
+func (s *LayerInput) SetFront(id string) []string
+    SetFront changes the input scope. Cancel gestures on each returned layer ID.
+    Invalidate explicitly when replacing the contents of a layer with the same
+    ID.
+```
+
+## LayerRoute
+
+```go
+type LayerRoute struct {
+	Target, Action string
+}
+    LayerRoute identifies a recipient of pointer input. An empty Target consumes
+    the action. Action can be "click" when a backend double click crossed
+    scopes.
+```
+
 ## LayoutItem
 
 ```go
@@ -3050,6 +3103,8 @@ func (v *PanelView) AtTabBoundary(previous bool) bool
 
 func (v *PanelView) Blur()
 
+func (v *PanelView) CancelPointer()
+
 func (v *PanelView) Draw(screen tcell.Screen)
 
 func (v *PanelView) Focus(delegate func(tview.Primitive))
@@ -3211,6 +3266,8 @@ func (v *RowsView) AtTabBoundary(previous bool) bool
 
 func (v *RowsView) Blur()
 
+func (v *RowsView) CancelPointer()
+
 func (v *RowsView) Draw(screen tcell.Screen)
 
 func (v *RowsView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
@@ -3320,6 +3377,8 @@ type ShadowOptions struct {
 	Mode    ShadowMode `json:"mode"`
 	OffsetX int        `json:"offsetX"`
 	OffsetY int        `json:"offsetY"`
+	// HideTopCap leaves the original cells above the right shadow intact.
+	HideTopCap bool `json:"hideTopCap,omitempty"`
 }
     ShadowOptions uses terminal cells. Enabled modes with both offsets zero use
     one cell right and one reserved row down. Auto/solid paint half-block caps:
@@ -3353,6 +3412,8 @@ func NewShadowView(child tview.Primitive, palette Palette, options ShadowOptions
 func (v *ShadowView) AtTabBoundary(previous bool) bool
 
 func (v *ShadowView) Blur()
+
+func (v *ShadowView) CancelPointer()
 
 func (v *ShadowView) Draw(screen tcell.Screen)
 
@@ -3522,6 +3583,8 @@ func NewSplitView(first, second tview.Primitive, state *SplitState, spec SplitSp
 
 func (v *SplitView) Blur()
 
+func (v *SplitView) CancelPointer()
+
 func (v *SplitView) Draw(screen tcell.Screen)
 
 func (v *SplitView) Focus(delegate func(tview.Primitive))
@@ -3531,6 +3594,8 @@ func (v *SplitView) HasFocus() bool
 func (v *SplitView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
 
 func (v *SplitView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive)
+
+func (v *SplitView) PasteHandler() func(string, func(tview.Primitive))
 
 func (v *SplitView) ResizeKey(e *tcell.EventKey) bool
 
@@ -4052,6 +4117,8 @@ func NewTabView(tabs *Tabs, state *TabState, palette Palette) (*TabView, error)
 
 func (v *TabView) Blur()
 
+func (v *TabView) CancelPointer()
+
 func (v *TabView) Draw(screen tcell.Screen)
 
 func (v *TabView) InputHandler() func(*tcell.EventKey, func(tview.Primitive))
@@ -4547,6 +4614,8 @@ type TreeView struct {
 func NewTreeView(tree *Tree, state *TreeState, palette Palette) (*TreeView, error)
 
 func (v *TreeView) Blur()
+
+func (v *TreeView) CancelPointer()
 
 func (v *TreeView) Draw(screen tcell.Screen)
 

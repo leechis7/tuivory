@@ -15,6 +15,7 @@ func Run(args []string) {
 	lang := flags.String("lang", "ko", "ko or en")
 	theme := flags.String("theme", "dark", "theme")
 	profile := flags.String("colors", "256", "8,16,256,truecolor")
+	tabRows := flags.Int("tab-rows", 1, "workspace tab height: 1 or 3")
 	layout := flags.String("layout", "columns", "host layout: columns/rows")
 	focusOrder := flags.String("focus-order", "tabs,tree,content", "host Tab order: permutation of tabs,tree,content")
 	quitKey := flags.String("quit-key", "ctrl-q", "host quit shortcut: ctrl-q/ctrl-x")
@@ -31,6 +32,9 @@ func Run(args []string) {
 		return ko
 	}
 	// These choices belong to this example app, not the component package.
+	if *tabRows != 1 && *tabRows != 3 {
+		log.Fatal("--tab-rows requires 1 or 3")
+	}
 	if *layout != "columns" && *layout != "rows" {
 		log.Fatal("--layout requires columns or rows")
 	}
@@ -184,7 +188,7 @@ func Run(args []string) {
 		message = fmt.Sprintf("%s: %s", text("경로 이동 요청", "Navigation request"), id)
 		refresh()
 	}
-	root := ui.NewFlex().SetDirection(ui.FlexRow).AddItem(header, 1, 0, false).AddItem(path, 1, 0, false).AddItem(tabView, 2, 0, true).AddItem(split, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
+	root := ui.NewFlex().SetDirection(ui.FlexRow).AddItem(header, 1, 0, false).AddItem(path, 1, 0, false).AddItem(tabView, *tabRows, 0, true).AddItem(split, 0, 1, false).AddItem(status, 1, 0, false).AddItem(hints, 1, 0, false)
 	// The host supplies screen composition, cross-component focus, and global keys.
 	controls := map[string]ui.Primitive{"tabs": tabView, "tree": treeView, "content": content}
 	focus := []ui.Primitive{controls[order[0]], controls[order[1]], controls[order[2]]}

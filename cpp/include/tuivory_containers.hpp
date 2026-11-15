@@ -1,6 +1,7 @@
 #ifndef TUIVORY_CONTAINERS_HPP
 #define TUIVORY_CONTAINERS_HPP
 #include <functional>
+#include <map>
 namespace tuivory {
 struct Track {
   int min = 0, max = 0, fixed = 0, weight = 0;
@@ -175,6 +176,77 @@ compute_container(Rect bounds, const std::vector<LayoutItem> &items,
   }
   return out;
 }
+struct LayerRoute {
+  std::string target, action;
+};
+
+class LayerInput {
+  struct Press { std::string target; bool down; };
+  std::string front;
+  std::map<int, Press> presses;
+  std::map<int, std::string> last_click;
+
+public:
+  std::vector<std::string> set_front(const std::string &id) {
+    if (front == id)
+      return {};
+    front = id;
+    return invalidate();
+  }
+  std::vector<std::string> invalidate() {
+    std::vector<std::string> cancelled;
+    for (auto &[button, press] : presses) {
+      if (press.down && !press.target.empty() &&
+          std::find(cancelled.begin(), cancelled.end(), press.target) == cancelled.end())
+        cancelled.push_back(press.target);
+      press.target.clear();
+    }
+    last_click.clear();
+    return cancelled;
+  }
+  std::string keyboard_target(const std::string &focused) const {
+    return front.empty() || front == focused ? focused : "";
+  }
+  LayerRoute pointer(std::string action, int button, std::string hit, bool through = false) {
+    if (!through && !front.empty() && hit != front)
+      hit.clear();
+    auto i = presses.find(button);
+    Press *press = i == presses.end() ? nullptr : &i->second;
+    std::string target;
+    if (action == "down") {
+      presses[button] = {hit, true};
+      target = hit;
+    } else if (action == "move") {
+      if (!press && button == 0) {
+        for (auto &[_, active] : presses) {
+          if (active.down) {
+            if (press)
+              return {"", action};
+            press = &active;
+          }
+        }
+      }
+      target = press && press->down ? press->target : hit;
+    } else if (action == "up" && press) {
+      press->down = false;
+      target = press->target;
+    } else if (action == "click" || action == "double") {
+      if (press && !press->down && !hit.empty() && press->target == hit) {
+        target = hit;
+        if (action == "double" && last_click[button] != hit)
+          action = "click";
+        last_click[button] = hit;
+      } else {
+        last_click.erase(button);
+      }
+      presses.erase(button);
+    } else if (action == "wheel") {
+      target = hit;
+    }
+    return {target, action};
+  }
+};
+
 class ContainerState {
   std::string modal_;
   std::map<std::string, std::string> restore_;

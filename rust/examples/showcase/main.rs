@@ -60,6 +60,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                     "--lang"
                         | "--theme"
                         | "--colors"
+                        | "--tab-rows"
                         | "--layout"
                         | "--focus-order"
                         | "--quit-key"
@@ -113,7 +114,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
         match demo.as_str() {
             "workspace" => println!(
-                "--layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --drag"
+                "--tab-rows 1|3 --layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --drag"
             ),
             "catalog" => println!(
                 "--mode forms|collections|grid|feedback|layout|dialog --grid-preset simple|data --grid-sample --grid-edit-preview (real cursor) --density auto|compact|comfortable"

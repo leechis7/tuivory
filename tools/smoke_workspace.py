@@ -16,10 +16,11 @@ from smoke_focus import Screen
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('binary', type=Path); parser.add_argument('--demo', help='select an example from the unified executable')
 parser.add_argument('--host-policy', choices=['default','alternate'], default='default')
+parser.add_argument('--tab-rows', type=int, choices=[1,3], help='test the explicit demo tab height')
 parser.add_argument('--lang', choices=['ko','en'], default='en')
 args = parser.parse_args()
 # Invalid app policy must fail before any terminal setup, not just fail for a missing TTY.
-for option,value in [('--layout','diagonal'),('--quit-key','ctrl-c'),('--focus-order','tabs,tree'),('--focus-order','tabs,tabs,content'),('--focus-order','tabs,tree,unknown')]:
+for option,value in [('--tab-rows','2'),('--layout','diagonal'),('--quit-key','ctrl-c'),('--focus-order','tabs,tree'),('--focus-order','tabs,tabs,content'),('--focus-order','tabs,tree,unknown')]:
     invalid=subprocess.run([str(args.binary.resolve()), *(['--demo', args.demo] if args.demo else []),option,value],stdin=subprocess.DEVNULL,capture_output=True,timeout=5)
     if invalid.returncode==0 or option.encode() not in invalid.stderr or b'\x1b[?1049h' in invalid.stdout:
         raise RuntimeError(f'Invalid policy reached terminal setup: {option}={value}: {invalid.stderr!r}')
@@ -60,6 +61,9 @@ def visible(): return ''.join(''.join(row) for row in screen.rows).replace(' ','
 
 try:
     options=['--layout','rows','--focus-order','content,tree,tabs','--quit-key','ctrl-x'] if args.host_policy=='alternate' else []
+    if args.tab_rows is not None:
+        options += ['--tab-rows', str(args.tab_rows)]
+    title_row = 3 if args.tab_rows == 3 else 2
     process = subprocess.Popen([str(args.binary.resolve()), *(['--demo', args.demo] if args.demo else []), '--lang', args.lang]+options, stdin=slave, stdout=slave,
                                stderr=slave, preexec_fn=terminal,
                                env=dict(os.environ, TERM='xterm-256color'))
@@ -89,12 +93,33 @@ try:
             os.killpg(process.pid,signal.SIGWINCH);drain(.2)
         send(b'\x1b[12~');send(b'\x1b[13~')
     else:
+        draft = '변경된' if args.lang == 'ko' else 'Edited'
+        title = ''.join(screen.rows[title_row])
+        assert draft in title, visible()
+        draft_x = title.index(draft)
+        active = '활성탭:overview' if args.lang == 'ko' else 'Activetab:overview'
+        if args.tab_rows == 3:
+            assert '┌' in screen.rows[2] and '─' in screen.rows[4], visible()
+            # Decorative rows should not trigger activation.
+            for y in (2, 4):
+                send(f'\x1b[<0;{draft_x+1};{y+1}M\x1b[<0;{draft_x+1};{y+1}m'.encode())
+            assert active in visible(), visible()
+        else:
+            assert '─' not in screen.rows[2], visible()
         # Focus and activate the edited document; closing must retain it in the host.
         send(b'\x1b[C')
+        assert active in visible() and '>'+draft in ''.join(screen.rows[title_row]).replace(' ',''), visible()
         send(b'\r')
         send(b'x')
         if ('보류' if args.lang=='ko' else 'retained') not in visible():
             raise RuntimeError('Edited-tab close guard was not rendered: ' + captured[-500:].decode(errors='replace'))
+        # Click another title to activate it on the actual title row.
+        overview = '개요' if args.lang == 'ko' else 'Overview'
+        x = ''.join(screen.rows[title_row]).index(overview)
+        send(f'\x1b[<0;{x+1};{title_row+1}M\x1b[<0;{x+1};{title_row+1}m'.encode())
+        assert active in visible(), visible()
+        send(b'\x1b[C')
+        send(b'\r')
         # Clear edited state, request close again, then change theme/profile/ASCII.
         for key in (b'\x1b[15~', b'x', b'\x1b[12~', b'\x1b[13~', b'\x1b[14~'):
             send(key)

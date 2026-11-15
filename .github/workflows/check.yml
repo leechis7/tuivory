@@ -103,6 +103,7 @@ jobs:
           python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --demo workspace --lang ko
           python3 tools/smoke_playground.py bin/go/tuivory-linux-x86_64 --demo workspace --lang en
           python3 tools/smoke_workspace.py bin/go/tuivory-linux-x86_64 --demo workspace
+          python3 tools/smoke_workspace.py bin/go/tuivory-linux-x86_64 --demo workspace --tab-rows 3
           python3 tools/check_split_example.py bin/go/tuivory-linux-x86_64
       - name: Check public catalog widgets
         run: |
@@ -195,6 +196,7 @@ jobs:
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --lang ko
           python3 tools/smoke_playground.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --lang en
           python3 tools/smoke_workspace.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace
+          python3 tools/smoke_workspace.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --tab-rows 3
           python3 tools/check_split_example.py "$CARGO_TARGET_DIR/debug/examples/showcase"
           python3 tools/snapshot_workspace.py "$CARGO_TARGET_DIR/debug/examples/showcase" --demo workspace --output "$RUNNER_TEMP/tuivory-workspace-images"
       - name: Check public focus scopes, popups and reference views

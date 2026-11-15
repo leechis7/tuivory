@@ -42,11 +42,14 @@ type TabView struct {
 	suppressDragClick bool
 }
 
-func (v *TabView) Blur() {
+func (v *TabView) CancelPointer() {
 	if v.Drag.Captured() {
 		v.suppressDragClick = true
 	}
 	v.Drag.Cancel()
+}
+func (v *TabView) Blur() {
+	v.CancelPointer()
 	v.Box.Blur()
 }
 func (v *TabView) SetRect(x, y, w, h int) {
@@ -426,6 +429,8 @@ func (v *PanelView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) 
 		}
 	})
 }
+func (v *PanelView) CancelPointer() { cancelLayerPointer(v.Child) }
+
 func (v *PanelView) PasteHandler() func(string, func(tview.Primitive)) {
 	return v.WrapPasteHandler(func(text string, focus func(tview.Primitive)) {
 		if handler := v.Child.PasteHandler(); handler != nil {
@@ -480,6 +485,11 @@ func (v *SplitView) HasFocus() bool                   { return v.First.HasFocus(
 func (v *SplitView) Focus(delegate func(tview.Primitive)) {
 	delegate(v.visibleChild())
 }
+func (v *SplitView) CancelPointer() {
+	v.splitControl().CancelPointer()
+	cancelLayerPointer(v.First)
+	cancelLayerPointer(v.Second)
+}
 func (v *SplitView) Blur() { v.First.Blur(); v.Second.Blur() }
 func (v *SplitView) splitControl() *SplitControl {
 	if v.Control != nil {
@@ -493,6 +503,26 @@ func (v *SplitView) visibleChild() tview.Primitive {
 	}
 	return v.First
 }
+
+// focusedChild reports the pane that owns focus, regardless of mouse position.
+func (v *SplitView) focusedChild() tview.Primitive {
+	_, _, _, _, layout := v.geometry()
+	if layout.Compact {
+		child := v.visibleChild()
+		if child.HasFocus() {
+			return child
+		}
+		return nil
+	}
+	if layout.First > 0 && v.First.HasFocus() {
+		return v.First
+	}
+	if layout.Second > 0 && v.Second.HasFocus() {
+		return v.Second
+	}
+	return nil
+}
+
 func (v *SplitView) syncSplitFocus(focus func(tview.Primitive)) {
 	if v.splitControl().Collapsed() == SplitNeither {
 		return
@@ -600,12 +630,24 @@ func (v *SplitView) InputHandler() func(*tcell.EventKey, func(tview.Primitive)) 
 		if v.ResizeKey(e) {
 			return
 		}
-		child := v.visibleChild()
-		if handler := child.InputHandler(); handler != nil {
-			handler(e, focus)
+		if child := v.focusedChild(); child != nil {
+			if handler := child.InputHandler(); handler != nil {
+				handler(e, focus)
+			}
 		}
 	})
 }
+
+func (v *SplitView) PasteHandler() func(string, func(tview.Primitive)) {
+	return v.WrapPasteHandler(func(text string, focus func(tview.Primitive)) {
+		if child := v.focusedChild(); child != nil {
+			if handler := child.PasteHandler(); handler != nil {
+				handler(text, focus)
+			}
+		}
+	})
+}
+
 func (v *SplitView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, func(tview.Primitive)) (bool, tview.Primitive) {
 	return v.WrapMouseHandler(func(a tview.MouseAction, e *tcell.EventMouse, focus func(tview.Primitive)) (bool, tview.Primitive) {
 		x, y, w, h, l := v.geometry()
@@ -652,11 +694,21 @@ func (v *SplitView) MouseHandler() func(tview.MouseAction, *tcell.EventMouse, fu
 			if position == l.First {
 				return false, nil
 			}
-			v.ActiveSecond = position > l.First
-			child = v.visibleChild()
+			child = v.First
+			if position > l.First {
+				child = v.Second
+			}
 		}
 		if handler := child.MouseHandler(); handler != nil {
-			return handler(a, e, focus)
+			return handler(a, e, func(p tview.Primitive) {
+				action, _ := layerMouseAction(a)
+				if action == "down" || action == "click" || action == "double" {
+					v.ActiveSecond = child == v.Second
+					if focus != nil {
+						focus(p)
+					}
+				}
+			})
 		}
 		return false, nil
 	})

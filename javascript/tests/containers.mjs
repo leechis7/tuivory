@@ -86,3 +86,16 @@ assert.equal(c.items[0].id, "editor");
 console.log(
   "Configured row/column/grid/layers, modal restoration, captured routing and clipped virtual rendering passed",
 );
+
+{
+  const state = new ui.LayerInput();
+  const fixture = JSON.parse(readFileSync(new URL("../../design/layer-input-cases.json", import.meta.url), "utf8"));
+  for (const [kind, ...args] of fixture) {
+    if (kind === "front")
+      assert.deepEqual(state.setFront(args[0]), args[1] ? [args[1]] : []);
+    if (kind === "invalidate") assert.deepEqual(state.invalidate(), [args[0]]);
+    if (kind === "key") assert.equal(state.keyboardTarget(args[0]), args[1]);
+    if (kind === "pointer")
+      assert.deepEqual(state.pointer(...args.slice(0, 4)), {target: args[4], action: args[5]});
+  }
+}

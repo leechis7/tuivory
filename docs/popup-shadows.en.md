@@ -23,7 +23,15 @@ The unfilled half retains its original background color. **Half-block cells repl
 
 ## Geometry
 
-ShadowOptions contains Mode/OffsetX/OffsetY (Rust snake_case). Enabled modes with both offsets zero use **one cell right and half a row down**. The former two-cell/one-row default is removed. Half rows still **reserve one whole terminal row**: Bounds is one cell wider and one row taller than Card. The first right-hand cell uses `▄`, the bottom row uses `▀`, and intermediate right-hand cells are solid.
+`ShadowOptions` contains mode, X/Y offsets, and the optional top cap flag. Enabled modes with both offsets zero use **one cell right and half a row down**. The former two-cell/one-row default is removed. Half rows still **reserve one whole terminal row**: Bounds is one cell wider and one row taller than Card. The first right-hand cell uses `▄`, the bottom row uses `▀`, and intermediate right-hand cells are solid.
+
+Set Go `HideTopCap: true` or Rust `hide_top_cap: true` on auto/solid to leave the topmost exposed row of the right shadow untouched. With the default offset this preserves one original cell, including its text and style. ASCII omits the corresponding dot. The bottom half-row, placement, and click area stay the same. Keep the default `false` for the existing shape. Off, Dim, and shadows without a top cap are unaffected.
+
+At an Auto bottom corner that meets a brighter backdrop, the ink of the upper half-block can inherit the darker shade from the right stripe above it. The lower half keeps its original background color. This keeps the right stripe joined to the lower shadow without adding a full row. Normal wide-character boundary protection still applies if a glyph also crosses the card edge.
+
+![Default top cap and opt-in hidden top cap over a bright background](images/popup-shadow-tvr35-light-en.png)
+
+[Dark example](images/popup-shadow-tvr35-dark-en.png)
 
 Explicit offsets remain supported. For auto/solid, OffsetY=N reserves N rows and paints a visual N−0.5-row shift. A single zero axis is allowed; explicit Y=0 draws only a horizontal shift without half caps. One-row allocations omit the vertical shadow. Dim uses the same one-cell/one-row default allocation with whole-cell attributes. Negative offsets are invalid; select off to remove shadows.
 
@@ -79,6 +87,8 @@ frame.render_widget(
 Wrap arbitrary widgets with ShadowWidget::new(widget, &styles, options). Configure menu ascii before shadow to carry it into the pattern. Generic wrapper ascii changes only its shadow pattern. Renderers only draw: hosts hit-test layout.card and call model input methods. Shadows add no input target.
 
 ## Boundaries, redraws and compatibility
+
+If a Rust struct literal lists every field, add `hide_top_cap: false` or use `..Default::default()`. In Go, use named fields for `ShadowOptions`. C consumers should recompile against the updated header and use designated initialization, such as `{.mode = "auto"}`.
 
 Painting clips to the assigned buffer/screen. At either horizontal card/shadow edge, replace intersected wide graphemes with spaces while retaining outside-cell styles. This can blank one adjacent cell belonging to a crossing glyph. [Overlay drawing](overlay-drawing.en.md).
 

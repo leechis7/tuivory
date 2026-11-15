@@ -136,3 +136,25 @@ assert.throws(() => ui.popupPlacement(ui.rect(), ui.rect(), -1, 1));
 console.log(
   "Popup footprint/32fixtures, backdrop-aware half/ASCII shadows, wide edges, Dim, hit isolation and cursor ownership passed",
 );
+
+for (const theme of ["dark", "light", "blackwhite"])
+  for (const [profile, dark, bright] of [
+    ["8", "4", "7"], ["16", "4", "7"], ["256", "236", "255"],
+    ["truecolor", "#282828", "#eeeeee"],
+  ])
+    for (const ascii of [false, true]) {
+      const c = new ui.Canvas(20, 10, new ui.Palette(theme, profile));
+      const base = {foreground: "1", background: dark, bold: false, dim: false, underline: true};
+      c.writeStyle(11, 1, "R", base);
+      c.writeStyle(11, 6, "R", base);
+      c.writeStyle(11, 7, "B", {...base, background: bright});
+      new ui.Shadow(new ui.ShadowOptions("auto", 0, 0, true))
+        .draw(c, ui.rect(2, 1, 10, 7), () => {}, ascii);
+      const tip = c.data[7][11];
+      assert.equal(c.data[1][11].text, "R");
+      assert.deepEqual(c.data[1][11].style, base);
+      assert.equal(tip.text, ascii ? "." : "▀");
+      assert.equal(tip.style.background, bright);
+      assert.notEqual(tip.style.foreground, bright);
+      if (!ascii) assert.equal(tip.style.foreground, c.data[6][11].style.background);
+    }

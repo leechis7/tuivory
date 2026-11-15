@@ -255,11 +255,14 @@ type TreeView struct {
 	suppressDragClick bool
 }
 
-func (v *TreeView) Blur() {
+func (v *TreeView) CancelPointer() {
 	if v.Drag.Captured() {
 		v.suppressDragClick = true
 	}
 	v.Drag.Cancel()
+}
+func (v *TreeView) Blur() {
+	v.CancelPointer()
 	v.Box.Blur()
 }
 func (v *TreeView) SetRect(x, y, w, h int) {

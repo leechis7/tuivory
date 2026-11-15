@@ -20,6 +20,8 @@ pub struct ShadowOptions {
     pub mode: ShadowMode,
     pub offset_x: usize,
     pub offset_y: usize,
+    /// Leave the original cells above the right shadow intact.
+    pub hide_top_cap: bool,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PopupLayout {

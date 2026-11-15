@@ -24,6 +24,21 @@ class Popups(unittest.TestCase):
                     cell=c.data[y][x];self.assertEqual(cell.text,'.'if ascii else symbol);self.assertEqual(cell.style,ui.Style(f['shade'],f['backdrop']))
                 middle=c.data[2][11];self.assertEqual(middle.text,'.'if ascii else' ');self.assertEqual(middle.style.background,f['backdrop']if ascii else f['shade'])
                 self.assertFalse(layout.hit(11,2));self.assertIn('\x1b[',c.ansi())
+    def test_hidden_top_cap_and_corner_on_bright_backdrop(self):
+        for theme in ('dark','light','blackwhite'):
+            for colors,dark,bright in [('8','4','7'),('16','4','7'),('256','236','255'),('truecolor','#282828','#eeeeee')]:
+                for ascii in (False,True):
+                    c=ui.Canvas(20,10,ui.Palette(theme,colors))
+                    base=ui.Style('1',dark,underline=True)
+                    c.write_style(11,1,'R',base);c.write_style(11,6,'R',base)
+                    c.write_style(11,7,'B',ui.Style('1',bright))
+                    ui.Shadow(ui.ShadowOptions('auto',hide_top_cap=True)).draw(c,ui.Rect(2,1,10,7),lambda child:None,ascii=ascii)
+                    self.assertEqual((c.data[1][11].text,c.data[1][11].style),('R',base))
+                    tip=c.data[7][11]
+                    self.assertEqual((tip.text,tip.style.background),('.' if ascii else '▀',bright))
+                    if not ascii:self.assertEqual(tip.style.foreground,c.data[6][11].style.background)
+                    self.assertNotEqual(tip.style.foreground,bright)
+
     def test_wide_edges_dim_ownership_cursor_and_failure(self):
         for theme in ['dark','light','blackwhite']:
             for colors in ['8','16','256','truecolor']:

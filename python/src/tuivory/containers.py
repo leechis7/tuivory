@@ -268,3 +268,60 @@ class Container:
         if not self._bounds.contains(x, y) and (not self.state.captured):
             return ''
         return self.state.pointer(self._items, self._rects, x - self._bounds.x + self._scroll[0], y - self._bounds.y + self._scroll[1], press, release)
+
+
+class LayerInput:
+    """Route front-layer input using stable layer IDs and host hit testing."""
+
+    def __init__(self):
+        self._front = ''
+        self._presses = {}
+        self._last_click = {}
+
+    def set_front(self, layer: str) -> list[str]:
+        if layer == self._front:
+            return []
+        self._front = layer
+        return self.invalidate()
+
+    def invalidate(self) -> list[str]:
+        """Cancel captured layers and consume the remainder of their gestures."""
+        cancelled = list(dict.fromkeys(target for target, down in self._presses.values() if target and down))
+        self._presses = {button: ('', down) for button, (_, down) in self._presses.items()}
+        self._last_click.clear()
+        return cancelled
+
+    def keyboard_target(self, focused: str) -> str:
+        return focused if not self._front or self._front == focused else ''
+
+    def pointer(self, action: str, button: int, hit: str, through: bool=False) -> tuple[str, str]:
+        """Return (layer, action). An empty layer consumes the action."""
+        if self._front and not through and hit != self._front:
+            hit = ''
+        press = self._presses.get(button)
+        target = ''
+        if action == 'down':
+            self._presses[button] = (hit, True)
+            target = hit
+        elif action == 'move':
+            if press is None and button == 0:
+                active = [p for p in self._presses.values() if p[1]]
+                if len(active) > 1:
+                    return '', action
+                press = next(iter(active), None)
+            target = press[0] if press and press[1] else hit
+        elif action == 'up' and press:
+            target = press[0]
+            self._presses[button] = (target, False)
+        elif action in ('click', 'double'):
+            self._presses.pop(button, None)
+            if press == (hit, False) and hit:
+                target = hit
+                if action == 'double' and self._last_click.get(button) != hit:
+                    action = 'click'
+                self._last_click[button] = hit
+            else:
+                self._last_click.pop(button, None)
+        elif action == 'wheel':
+            target = hit
+        return target, action

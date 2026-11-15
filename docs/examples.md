@@ -83,6 +83,8 @@ Rust 통합 예제에서 `--demo catalog --mode dialog --lang ko`로 확인창�
 
 [탭·패널·분할선·상태 표시줄·경로 사용법](workspace.md)에서 Go/Rust 공개 API와 같은 조작·색상·상태 원칙을 설명합니다. DB 없는 한영 통합 예제는 루트에서 `make run-workspace-go ARGS="--lang ko"`, `make run-workspace-rust ARGS="--lang en"`으로 실행합니다. Go `go/v0.1.0`과 Rust `rust/v0.1.0`에 포함합니다. CI 결과와 실제 앱 적용은 [작업 기록](https://leechis7.atlassian.net/browse/TVR-7)에서 구분합니다.
 
+작업 공간 예제는 기본 한 줄 탭을 사용합니다. Go·Rust 예제에 `--tab-rows 3`을 주면 윤곽이 있는 세 줄 형태를 비교할 수 있습니다.
+
 ## 상태·포커스·중첩 팝업 예제
 
 [Go 소스](../go/examples/focus/main.go) · [Rust 소스](../rust/examples/focus/main.rs) · [사용법](focus.md). `make run-focus-go ARGS="--lang ko"`, `make run-focus-rust ARGS="--lang en"`으로 실행합니다. 읽기 전용·처리 중·비활성 탐색, 중첩 팝업·입력 차단·포커스 복귀·한영 표시를 검증하는 호스트입니다. 통합 실행파일의 `--demo focus`에 포함합니다.

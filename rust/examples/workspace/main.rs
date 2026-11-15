@@ -36,6 +36,7 @@ struct App {
     tab_drag: DragState,
     tree_drag: DragState,
     tab_area: Rect,
+    tab_rows: u16,
     drag_press: Option<(bool, u16, u16)>,
     en: bool,
     ascii: bool,
@@ -345,7 +346,7 @@ impl App {
         let layout = Layout::vertical([
             Constraint::Length(1),
             Constraint::Length(1),
-            Constraint::Length(2),
+            Constraint::Length(self.tab_rows),
             Constraint::Min(0),
             Constraint::Length(1),
             Constraint::Length(1),
@@ -373,7 +374,14 @@ impl App {
             .unwrap()
             .with_ascii(self.ascii);
         tabs.focused = self.focus == 0;
-        self.tab_area = layout[2];
+        // Only the title row is interactive; the top outline and bottom rule are decorative.
+        let strip = layout[2];
+        self.tab_area = Rect::new(
+            strip.x,
+            strip.y + u16::from(strip.height >= 3),
+            strip.width,
+            strip.height.min(1),
+        );
         if self.drag_enabled {
             tabs = tabs.with_drag(&mut self.tab_drag, self.ascii);
         }
@@ -503,6 +511,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut profile = ColorProfile::Indexed256;
     // App-owned policy; no change to the public component models is needed.
     let mut rows = false;
+    let mut tab_rows = 1;
     let mut focus_order = [0, 1, 2];
     let mut quit_key = 'q';
     let mut snapshot = None;
@@ -521,6 +530,13 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--colors" => profile = args.next().ok_or("missing colors")?.parse()?,
             "--ascii" => ascii = true,
             "--drag" => drag_enabled = true,
+            "--tab-rows" => {
+                tab_rows = match args.next().as_deref() {
+                    Some("1") => 1,
+                    Some("3") => 3,
+                    _ => return Err("--tab-rows requires 1 or 3".into()),
+                }
+            }
             "--layout" => {
                 rows = match args.next().as_deref() {
                     Some("columns") => false,
@@ -554,7 +570,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--snapshot" => snapshot = Some(args.next().ok_or("missing file")?),
             "--help" => {
                 println!(
-                    "TUIVORY Workspace: --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --drag --layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --snapshot FILE.svg"
+                    "TUIVORY Workspace: --lang ko|en --theme dark|light|blackwhite --colors 8|16|256|truecolor --ascii --drag --tab-rows 1|3 --layout columns|rows --focus-order tabs,tree,content --quit-key ctrl-q|ctrl-x --snapshot FILE.svg"
                 );
                 return Ok(());
             }
@@ -674,6 +690,7 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
         tab_drag: DragState::default(),
         tree_drag: DragState::default(),
         tab_area: Rect::default(),
+        tab_rows,
         drag_press: None,
         en,
         ascii,
@@ -832,12 +849,14 @@ pub fn run(arguments: Vec<String>) -> Result<(), Box<dyn Error>> {
                 if app.drag_mouse(mouse) {
                     continue;
                 }
-                if mouse.row == 2 && mouse.kind == MouseEventKind::Down(MouseButton::Left) {
+                if app.tab_area.contains(position)
+                    && mouse.kind == MouseEventKind::Down(MouseButton::Left)
+                {
                     app.focus = 0;
                     let event = app.tabs.click(
                         &mut app.tab,
-                        usize::from(mouse.column),
-                        usize::from(app.body.width),
+                        usize::from(mouse.column - app.tab_area.x),
+                        usize::from(app.tab_area.width),
                     );
                     app.tab_event(event)
                 } else if mouse.row == 1 && mouse.kind == MouseEventKind::Down(MouseButton::Left) {

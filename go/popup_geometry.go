@@ -21,6 +21,8 @@ type ShadowOptions struct {
 	Mode    ShadowMode `json:"mode"`
 	OffsetX int        `json:"offsetX"`
 	OffsetY int        `json:"offsetY"`
+	// HideTopCap leaves the original cells above the right shadow intact.
+	HideTopCap bool `json:"hideTopCap,omitempty"`
 }
 
 func (o ShadowOptions) Validate() error {

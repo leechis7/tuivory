@@ -100,7 +100,7 @@ static void dialog_demo_draw(DialogDemo *h, TuiCanvas *c, TuiRect a,
     if (y < 0)
       y = 0;
     TuiPopupLayout layout;
-    TuiShadowOptions o = {"auto", 0, 0};
+    TuiShadowOptions o = {.mode = "auto"};
     if (tui_shadow_draw(&o, c,
                         (TuiRect){a.x + (a.width - w) / 2, a.y + y, w, ht},
                         dialog_demo_paint, h, ascii, &layout) == TUI_OK)

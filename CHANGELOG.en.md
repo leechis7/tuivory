@@ -2,6 +2,12 @@
 
 [한국어 (default)](CHANGELOG.md) · **English**
 
+## 0.12.6
+
+- TVR-35: Added an opt-in to leave the first cell of the right popup shadow untouched and kept the bottom corner continuous over brighter backdrops in all seven SDKs.
+- TVR-36: Added a front-layer input router and gesture cancellation for overlapping screens. Go split panes now send keyboard and paste to the pane that owns focus.
+- TVR-37: Workspace demos default to one tab row. Go and Rust demos offer `--tab-rows 3` for the outlined style.
+
 ## 0.12.5
 
 - All seven SDKs render outlined tabs; with room for a bottom rule, the active tab opens into the content below. Keyboard focus remains separate.
